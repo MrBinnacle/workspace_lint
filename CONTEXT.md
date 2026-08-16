@@ -17,27 +17,33 @@ The product tests declared rules. It does not infer workspace quality, intent, o
 | Term | Definition |
 | --- | --- |
 | Connection | The Notion API identity and its granted read capability. |
-| Shared scope | The pages and data sources visible to the connection. |
+| Shared scope | The pages and data sources visible to the connection. The connection cannot enumerate it. |
+| Declared root | A resource the operator names in configuration as a scan entry point. Coverage is measured against declared roots, never against the workspace. |
 | Resource | A page, database, data source, block, property, or user. |
 | Workspace graph | The normalized resources and edges from one scan. |
 | Edge | A parent, child, relation, mention, hyperlink, or configured dependency. |
 | Coverage manifest | The resources, limits, errors, and omissions that bound the verdict. |
 | Invariant | A structural statement that must remain true. |
 | Rule | Executable logic that tests one invariant. |
-| Finding | A rule result with evidence and a stable location. |
+| Observation | What the scan saw, with evidence and provenance. A 404 is an observation. |
+| Finding | A judgement a rule reached from observations, with evidence and a stable location. |
+| Outcome | What a rule concluded: `pass`, `violation`, `incomplete`, or `inapplicable`. |
 | Baseline | A set of accepted finding fingerprints that still appear in reports. |
 | Suppression | A scoped exception with a reason and expiry. |
 | Snapshot | The normalized graph state used for one deterministic run. |
 | Canonical marker | An explicit property value or configured pointer. It is not prose inference. |
+| Target state | What a scan established about a referenced object: `present`, `absent`, or `unreachable`. A property of the object, not of the finding. |
+| Normalization | The named function that strips volatile fields from an API response before hashing or comparison. Determinism is defined against its output, never against the raw response. |
 
 Two distinctions the glossary enforces, because collapsing either breaks the product contract:
 
 - **Baseline is not suppression.** A baseline records existing debt and keeps it visible. A suppression hides a finding and must carry a reason and an expiry.
 - **Confirmed is not indeterminate.** A rule reports `certainty: confirmed` only when the API proved the defect. Notion returns 404 for both "absent" and "inaccessible", so a 404 produces `indeterminate`.
+- **Certainty is not target state.** `certainty` describes the finding: did the scan prove it. `target state` describes the referenced object: `present`, `absent`, or `unreachable`. A finding can be `confirmed` about an `unreachable` target — "this link cannot be resolved" is a proved fact. Collapsing the two axes makes that finding inexpressible.
 
 ## Product principles
 
-1. A partial scan cannot pass. The report states its access boundary and incomplete queries.
+1. A partial scan cannot pass. Completeness is measured against declared roots, never against the workspace — the connection cannot enumerate its own grant, so no tool can claim workspace coverage. The report states its access boundary and incomplete queries. See ADR-0002.
 2. A rule must name its evidence: object, location, observed value, expected value.
 3. Unknown is not broken. Access failure and object absence share a 404 response.
 4. Policy must be explicit. The CLI infers no owner, canon, uniqueness, or peer status from labels alone.
@@ -76,6 +82,10 @@ The PRD names these as out of scope. They are not built.
 ## Current state
 
 Pre-build. No source code exists. The repository holds grounding docs only.
+
+`PRODUCT.md` holds the user, the job, the gates, and the kill criteria. This file is the glossary. Both are canonical. Seven research sweeps sit in `docs/research/`; the Notion PRD that seeded this file is mirrored at `docs/inputs/prd-2026-08-16.md` and is an input, not an authority.
+
+The next gate is no longer the 72-hour proof. It is a demand test — five teams that must prove a structural claim about a Notion workspace to a third party. Buildability is the smaller risk. See `PRODUCT.md`.
 
 The public repository `MrBinnacle/workspace_lint` exists as of 2026-08-16, created on the owner's instruction. This supersedes the PRD's "no repository has changed" rollback line and its "public release not approved" field. Rollback is now a repository action, not a Notion row action.
 
