@@ -1,5 +1,11 @@
 # workspace_lint
 
+A local, read-only CLI that tests a Notion workspace against explicit structural rules. Read `CONTEXT.md` before proposing anything — it holds the glossary, the principles, the v0.1 rule catalog, and the non-goals.
+
+This repository is canonical. External planning artifacts (Notion pages, memos, drafts) are inputs. They do not override `CONTEXT.md` or the ADRs in `docs/adr/`.
+
+Pre-build: no source code exists yet. The next gate is the 72-hour API proof described in `CONTEXT.md`.
+
 ## Agent skills
 
 ### Issue tracker
