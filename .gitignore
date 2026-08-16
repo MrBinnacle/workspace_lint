@@ -1,0 +1,56 @@
+# No toolchain is chosen yet. This file covers Node, Python, and Rust.
+# Delete the sections that do not apply once the stack is settled.
+
+# --- OS ---
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# --- Editors ---
+.vscode/
+!.vscode/extensions.json
+.idea/
+*.swp
+*~
+
+# --- Secrets and local environment ---
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# --- Agent scratch space ---
+.scratch/
+.claude/state/
+.claude/settings.local.json
+
+# --- Node / TypeScript ---
+node_modules/
+dist/
+build/
+coverage/
+*.tsbuildinfo
+.npm/
+npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+.coverage
+
+# --- Rust ---
+target/
+**/*.rs.bk
+
+# --- Logs and temp ---
+*.log
+tmp/
