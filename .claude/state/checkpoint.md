@@ -6,7 +6,13 @@
 
 **TESTS:** None. No toolchain. Not a gap.
 
-**IN FLIGHT AT CHECKPOINT TIME:** `verify-standards` (Tier-1 adversarial verification of 10 standards quotations) and two scout follow-ups (`scout-audit` on CONSORT/ISAE 3000 enumerative coverage; `scout-priorart` on data-quality result schemas). Their reports are not yet banked. If this session ended here, those three are the only unfinished threads.
+**ALL WORK LANDED.** Nine scout reports and two verification passes are banked. Merged to `main` as PR #11 (`7590515`), three commits:
+
+- `3254153` — `docs(demand-test): specify the gate-1 recruiting funnel`
+- `6c5981a` — `docs(research): add cross-domain prior-art sweep on incomplete verification`
+- `3e64806` — `fix(state): track session state instead of discarding it as scratch`
+
+Nothing is in flight. No unfinished threads.
 
 ### Stream 1 — demand test
 
@@ -72,13 +78,16 @@ Unchanged and still not technical. Gate 1 needs contact with teams that must pro
 
 ### EXACT NEXT STEPS
 
-1. Bank `verify-standards` and the two scout follow-ups when they land.
-2. Write `docs/research/coverage-artifact-prior-art.md` — verified material only, corrections ledger, method counts in the header. This is the synthesis the sweep exists to produce.
-3. Correct the SARIF claim in `PRODUCT.md`. Correct the rate-limit assumptions wherever they appear.
-4. Decide the outcome model before the 72-hour proof, because it determines what the proof measures. Leading candidate from the sweep: two orthogonal fields — conformity and evidence sufficiency — with `inapplicable` moved out of the outcome enum into the scope declaration. This needs an ADR and it supersedes part of ADR-0003.
-5. Only then the demand test, and the Reddit diagnosis is the first send.
+**Start here.** Write the superseding ADR — `docs/adr/0005-*`. It is the head of the chain and everything else waits on it.
 
-**Uncommitted at checkpoint time:** everything from this session. Four demand-test/input files, seven raw scout reports, one verification report.
+1. **ADR-0005, superseding part of ADR-0003: the outcome model.** Replace the flat four-value enum with two orthogonal fields — conformity and evidence-sufficiency. Move `inapplicable` out of the outcome enum into the scope declaration, because scope exclusion is declared before a run and evidence unavailability is discovered during it. Add a report-level disclaimer disposition so a pervasively incomplete scan can refuse to render a summary verdict. Adopt the XCCDF rule that a non-verdict never enters a scoring denominator. Do **not** edit ADR-0003 in place. Evidence: `docs/research/coverage-artifact-prior-art.md` §2. Full working: `store.json` → `open_decisions` → `outcome-model`.
+2. **Correct `PRODUCT.md`.** The SARIF claim is refuted; the replacement wording is in `store.json` → `corrections_pending`. Delete the 10/25/50/100 req/s figures wherever they appear. Quote nothing from the ISO 19011 or ISA 705 mirror URLs — see the citation hazards below.
+3. **Then the manifest shape**, after CONSORT and PRISMA: a staged funnel from declared roots to rules-evaluated, every drop-out carrying a specific machine-readable cause and a named resource. Generic reasons are banned. Consider Configuration Status Accounting — a standing record fed by each scan rather than a per-scan artifact that is discarded.
+4. **Only then the demand test.** The Reddit diagnosis is the first send, and `docs/demand-test/outreach.md` specifies what it must contain. It is a specification, not a draft — the words are the operator's.
+
+The 72-hour proof stays downstream of steps 1 and 3, because the outcome model determines what the proof has to measure.
+
+**Everything from this session is committed and merged.** Nothing is pending on disk.
 
 **NEXT-MODEL:** frontier model. The synthesis is a judgment call across seven reports with a live corrections ledger.
 
