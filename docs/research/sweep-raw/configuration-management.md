@@ -1,0 +1,50 @@
+# Scout report — configuration management
+
+**VERBATIM, citations NOT yet verified.** Scout `scout-configmgmt`, 2026-08-16. Self-reported method: 11 searches, 12 fetches. MIL-HDBK-61A(SE) and DOE-STD-1073-93 Pt.1 fetched in full and text-extracted with pypdf. EIA-649, MIL-STD-973, ISO 10007 and IAEA-TECDOC-1335 were NOT read as clause text and the scout flags them.
+
+---
+
+WEB TOOLS: loaded and used (WebSearch + WebFetch). 11 searches, 12 fetches. Research was already complete; transmitting as-is, no re-runs.
+
+Two primary sources were fetched in full and text-extracted locally, so quotes below are read clause text, not paraphrase:
+- MIL-HDBK-61A(SE) Configuration Management Guidance, U.S. DoD, 2001 — https://www.acqnotes.com/Attachments/MIL-HDBK-61A%20(SE)Configuration%20Management%20Guidance.pdf (221 pp., extracted via pypdf)
+- DOE-STD-1073-93 Pt.1, Guide for Operational Configuration Management Program, U.S. Department of Energy, Nov 1993 — https://www.energy.gov/sites/prod/files/2013/07/f2/s1073pt1.pdf (extracted via pypdf)
+
+EIA-649, MIL-STD-973, ISO 10007, and IAEA-TECDOC-1335 were NOT read as clause text. Details in "Softest claims."
+
+## Findings
+
+1 · CLAIM: A configuration baseline's boundary is declared as an enumerated list of items, not as a scope description. · SOURCE: DOE-STD-1073-93 Pt.1 / U.S. DOE / 1993 / https://www.energy.gov/sites/prod/files/2013/07/f2/s1073pt1.pdf — §1.3.1.2 "Equipment Scope Criteria" sets the inclusion criteria; §1.3.2.4 "Specific Equipment List" then requires that "the specific SSCs included in the CM program should be identified"; §1.3.2.2 "System and Process Boundaries" requires boundaries "established in such a manner as to contain the components necessary to satisfy the design requirements." · RELEVANCE: Declared roots have exact precedent, held as two artifacts — a stated inclusion rule plus a resolved list. The coverage manifest should carry both. · VERDICT: ADOPT
+
+2 · CLAIM: No standard claims the enumerated set is complete; selection is explicitly judgment-based. · SOURCE: MIL-HDBK-61A(SE) / U.S. DoD / 2001 / acqnotes URL above — CI selection table: "No fixed rules govern CI selection or dictate the optimum number of CIs for a particular system"; guidance is a "CI Selection Checklist." · RELEVANCE: Unprovable workspace-wide coverage is not a defect unique to Notion. CM's answer is to make the selection auditable, not complete. · VERDICT: ADAPT
+
+3 · CLAIM: The audit certification carries a mandatory attachment listing what was reviewed, bound to the verdict. · SOURCE: MIL-HDBK-61A(SE) / U.S. DoD / 2001 — Figure 8-3 "Audit Certification Package Content" (p. 8-12): "Attachments: List Items Reviewed / List Discrepancies, if any." Table 8-2 "Documenting Audit Results" requires minutes containing "Specific Items, systems, documents or processes reviewed," a "Summary of discrepancies/deficiencies in each area referenced to control number of applicable audit problem write-ups (action items)," and "Definitive statements about acceptability or non-acceptability." · RELEVANCE: This is the coverage manifest. It is an attachment to the signed certification, not a sibling document. Items-reviewed and findings travel together. · VERDICT: ADOPT
+
+4 · CLAIM: There is a named disposition for "we could not see it": Open Item. · SOURCE: DOE-STD-1073-93 Pt.1 / U.S. DOE / 1993 — glossary: "Open Item. A validated situation involving: apparent contradictions from different source documents; concerns; unanswered technical questions; or cases of missing, undocumented, or inaccurate information." §1.3.6.4 requires open items be "dispositioned by a formal resolution process and … tracked to completion and closeout." Same glossary: "Discrepancy. Those open items that are determined to have safety significance." · RELEVANCE: The `incomplete` outcome has a standard name and a severity split. Missing-information and contradictory-information share one outcome class; consequence grading is a separate axis. · VERDICT: ADOPT
+
+5 · CLAIM: A configuration record may be issued while incomplete, provided it enumerates its own open items. · SOURCE: DOE-STD-1073-93 Pt.1 / U.S. DOE / 1993 — §1.3.6: a Design Information Summary "should be initially issued when the design requirements are complete and technically validated … This Initial version should also contain available technically validated design basis information and should identify open items to be resolved," then be revised and reissued after reconstitution and field validation. · RELEVANCE: Direct precedent for shipping a bounded verdict. The artifact is valid while incomplete because it states its incompleteness. · VERDICT: ADOPT
+
+6 · CLAIM: Verified status is withheld until action items close — but no fetched source states a prohibition. · SOURCE: MIL-HDBK-61A(SE) / U.S. DoD / 2001 — §8.2.2: "it is the auditing activity's responsibility to ensure that all action items are identified, addressed and closed out before the design activity can be deemed to have successfully fulfilled the requirements." MIL-HDBK-61A is guidance, not a mandatory standard. · RELEVANCE: Answer to "does any CM standard forbid declaring verified when the audit was partial": no. The mechanism is procedural — closure gates the pass, so partial audits never reach "verified." If the project wants "no verdict without a coverage statement" to be binding, that is the project's own rule and must be stated as such, not attributed to a standard. · VERDICT: ADAPT
+
+7 · CLAIM: Completeness of the configuration record is treated as a defect class distinct from correctness. · SOURCE: DOE-STD-1073-93 Pt.1 / U.S. DOE / 1993 — §1.3.2.1(b) and §1.3.2.5(a): "If the design requirements are not fully documented, not accurate, or not complete, the design requirements should be reconstituted…" — three separate predicates. Design Reconstitution is a named adjunct program with its own plan; its "Verification" is defined as "the process of checking that the retrieved design information has been completely and accurately translated from the source documents." §3.5 is "Regeneration of Missing Critical Design Information" — only the critical subset must be recovered. · RELEVANCE: The project's wedge is precedented, and CM goes one step further: it grades which unknowns must be closed and which may remain permanently unknown. · VERDICT: ADOPT
+
+8 · CLAIM: "Configuration drift" is not a term of art in either fetched standard. · SOURCE: MIL-HDBK-61A(SE) / U.S. DoD / 2001 and DOE-STD-1073-93 Pt.1 / U.S. DOE / 1993 — zero occurrences of the string "drift" in the full extracted text of both. The operative terms are discrepancy, open item, as-built vs as-designed, and walkdown ("A visual inspection of facility structures, systems, and components to identify the as-found physical configuration and any discrepancies with currently approved facility documentation"). · RELEVANCE: Do not put "configuration drift" in the domain model. Use "discrepancy" for a detected mismatch and "as-found" for observed state. · VERDICT: NEGATIVE
+
+## Softest claims
+
+- Finding 6's supporting context that MIL-STD-973 was cancelled 30 Sep 2000 and superseded by ANSI/EIA-649: search summary only. I downloaded the MIL-STD-973 PDF (9.3 MB, cevians.com) and could not extract text — it is scanned page images with no text layer. UNVERIFIED. The §8.2.2 quote itself is from fetched MIL-HDBK-61A text and is solid.
+- EIA-649 and ISO 10007 principle wording: both paywalled. I reached only a secondary page (CMPIC, https://cmpic.com/whitepapers/configuration-management-baselines.htm, fetched) quoting EIA-649B Principles CI-11/CI-12, plus search summaries for ISO 10007:2017. I read no clause text from either standard and quote none. UNVERIFIED. IAEA-TECDOC-1335 returned HTTP 402 on two fetch attempts and te_1651 likewise; the three-element model (design requirements / physical configuration / facility configuration information) is search-summary only. UNVERIFIED. NRC and DoD IG PDFs returned HTTP 403. No nuclear-regulator source was read directly; the nuclear-domain findings above all come from the DOE standard, which was fetched in full.
+
+## What the dispatching session got wrong or missed
+
+1. Wrong branch of CM. FCA/PCA is acquisition CM — a one-time gate on a finished deliverable before handover. workspace_lint scans a live, continuously mutating system, repeatedly. The matching branch is operational configuration management (DOE-STD-1073, nuclear plant CM), which the brief listed last. Seven of eight findings came from the operational branch; the FCA/PCA branch yielded only Finding 3.
+
+2. Missed the actual analogue of the coverage manifest. It is not the audit report. It is Configuration Status Accounting — the standing record of what is under management and what its status is. MIL-HDBK-61A Figure 8-1 shows audit outputs ("Verified Configuration, Verified Changes, Open Items") flowing back to CSA. If the manifest is produced per-scan and discarded, the design omits the CM element that makes coverage claims checkable over time.
+
+3. "As-maintained" is not corroborated. as-designed / as-built appears throughout the fetched sources. "As-maintained" did not; the operational sources use as-found. Do not build a three-state model on that word.
+
+4. Overlooked the precedent for `inapplicable`. MIL-HDBK-61A §8.3 describes Table E-2 as "a matrix of the certification topics and recommendations to aid in determining which certifications to use as a part of an FCA or a PCA" for a given acquisition type. That is the fourth outcome, already standardized. The brief never asked about it.
+
+5. The severity question was not asked and matters. DOE-STD-1073 splits open items into ordinary and safety-significant ("Discrepancy"). Applied here: an `incomplete` on a rule with no consequence and an `incomplete` that voids the entire verdict are different objects. Four outcomes may be one dimension short — outcome and blast radius are separable.
+
+6. The prohibition the brief hoped for does not exist. See Finding 6.
