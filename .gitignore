@@ -22,8 +22,14 @@ desktop.ini
 
 # --- Agent scratch space ---
 .scratch/
-.claude/state/
 .claude/settings.local.json
+
+# .claude/state/ is NOT scratch and is deliberately tracked.
+# checkpoint.md, store.json, gate_events.jsonl and retrospection.jsonl are
+# the canonical surfaces the session-start ritual reads. Ignoring them made
+# session state survive only on one machine, which defeats the ritual and
+# loses the decision history. Keep them in git.
+.claude/state/tmp/
 
 # --- Node / TypeScript ---
 node_modules/

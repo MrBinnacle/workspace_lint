@@ -1,0 +1,147 @@
+{
+  "project": "workspace_lint",
+  "updated": "2026-08-16",
+  "session": "S002",
+  "phase": "pre-build",
+  "phase_detail": "Grilling closed in S001. S002 built the gate-1 demand-test instruments and ran a nine-pass cross-domain prior-art sweep with adversarial verification. No source code. Build gate not open.",
+  "next_gate": {
+    "name": "demand test",
+    "kind": "human",
+    "blocks_on": "contact with five teams holding audit-relevant data in Notion",
+    "supersedes": "72-hour API proof, which is now downstream and reclassified as a prototype",
+    "instruments": [
+      "docs/demand-test/outreach.md",
+      "docs/demand-test/screener.md",
+      "docs/demand-test/questionnaire-2026-08-16.md"
+    ],
+    "channels": [
+      "Reddit diagnosis post — the only channel with a working precedent; ranked first",
+      "warm network — highest reply rate and the only cheap route to referrals",
+      "ICT Institute — one named reachable candidate, attribution unverified"
+    ],
+    "excluded_channels": [
+      "LinkedIn — ruled out by the operator on 2026-08-16, permanently, for any project",
+      "SewerAI / Sepehr Sobhani — not a contact, not a reference, not a case study"
+    ],
+    "risk": "Cold outreach is closed. Three channels remain and the five-team target now depends on inbound from the Reddit post. If the funnel stalls below five, lower the gate or accept a longer calendar. Do not substitute weaker contacts."
+  },
+  "locked_decisions": [
+    {
+      "id": "ADR-0001",
+      "status": "accepted, amended by ADR-0003",
+      "summary": "Deterministic linter, not an entropy engine. Counting is inside this decision; scoring is outside it."
+    },
+    {
+      "id": "ADR-0002",
+      "status": "accepted",
+      "summary": "Coverage is measured against declared roots. Workspace-level coverage is not provable by any tool."
+    },
+    {
+      "id": "ADR-0003",
+      "status": "accepted, PARTIALLY INVALIDATED by S002 — superseding ADR required",
+      "summary": "SARIF 2.1.0 as output-contract design source, SonarQube issue-lifecycle as state machine. SARIF is an export target later, not a v0.1 schema commitment.",
+      "invalidation": "The OSCAL observation/finding split remains adoptable, but the `incomplete` outcome cannot be inherited from OSCAL, which defines no not-assessed value. XCCDF is the better donor. Separately, the four-valued outcome mixes two axes and must be split."
+    },
+    {
+      "id": "ADR-0004",
+      "status": "accepted",
+      "summary": "Determinism defined against a named Normalization function. Specify it before the proof runs."
+    }
+  ],
+  "corrections_pending": [
+    {
+      "target": "PRODUCT.md",
+      "claim": "No SARIF object expresses analysis scope or coverage.",
+      "status": "REFUTED by verification",
+      "replacement": "SARIF carries per-result and per-artifact not-analysed primitives — result.kind, invocation.executionSuccessful, toolExecutionNotifications, artifact.roles analysisTarget — but defines no run-level coverage aggregate.",
+      "note": "Semgrep routes coverage through its native schema, not SARIF. A SARIF export loses the manifest. Decide before integration."
+    },
+    {
+      "target": "PRODUCT.md, any throughput model",
+      "claim": "Notion rate limits scale 10/25/50/100 req/s by plan.",
+      "status": "UNPUBLISHED — sourced from third-party blogs",
+      "replacement": "Notion documents an average of three requests per second per connection. The workspace ceiling is 'scaled to the workspace's plan' with no tier table. At 3 req/s the three-minute warm-scan kill criterion is a budget of roughly 540 requests."
+    },
+    {
+      "target": "docs/adr/0003",
+      "claim": "OSCAL supplies the observation/finding split including an incomplete outcome.",
+      "status": "PARTIALLY INVALIDATED",
+      "replacement": "Write a superseding ADR. Do not edit ADR-0003 in place."
+    }
+  ],
+  "asserted_without_adr": [
+    "First release scope: selective block crawl. REF001 reads hyperlinks inside blocks, so metadata-only cannot implement a built-in rule.",
+    "Resource identity in config: stable IDs with readable aliases.",
+    "Baseline policy: report old debt, fail new only.",
+    "CI timing: after local core release.",
+    "Page titles in CI output: redact by default.",
+    "Minimum rule set: SYS001, REF001, REQ001, UNQ001.",
+    "Validation shape: build at n=1 against this workspace, release at n=3."
+  ],
+  "open_decisions": [
+    {
+      "id": "outcome-model",
+      "detail": "Replace the flat four-value enum with two orthogonal fields — conformity and evidence-sufficiency — and move `inapplicable` into the scope declaration. Add a report-level disclaimer disposition so a pervasively incomplete scan can refuse to render a summary verdict. Adopt the XCCDF rule that a non-verdict never enters a scoring denominator.",
+      "due": "before the 72-hour proof, because it determines what the proof measures",
+      "needs": "superseding ADR",
+      "evidence": "docs/research/coverage-artifact-prior-art.md §2"
+    },
+    {
+      "id": "manifest-shape",
+      "detail": "Model the coverage manifest as a staged funnel after CONSORT and PRISMA: declared roots → resolved → fetched → rules evaluated, every drop-out carrying a specific machine-readable cause and a named resource. Generic reasons are banned. Consider Configuration Status Accounting — a standing record fed by each scan rather than a per-scan artifact that is discarded.",
+      "due": "before the 72-hour proof",
+      "evidence": "docs/research/coverage-artifact-prior-art.md §1"
+    },
+    {
+      "id": "name",
+      "detail": "workspace-lint is trademark-clean and npm-blocked; every notion-* candidate is npm-available and trademark-blocked. Shortlist and npm view evidence in docs/research/name-and-legal.md.",
+      "due": "before the first package.json"
+    },
+    {
+      "id": "product-framing",
+      "detail": "Three live framings: configured rules, zero-config decay report, coverage proof. The demand test chooses. New tiebreaker from S002: acquisition cost. The decay-report buyer is reachable in r/Notion for free; the coverage-proof buyer has no public channel.",
+      "due": "demand test"
+    },
+    {
+      "id": "rule-catalogue-additions",
+      "detail": "Controlled-vocabulary membership (uncovered, testable, voiced). Orphan detection (deferral reason removed by ADR-0002). Duplicate-title should move from configured UNQ001 to built-in.",
+      "due": "after demand test"
+    }
+  ],
+  "api_target": {
+    "notion_version": "2026-03-11",
+    "requirement": "must carry request_status; its absence from a paginated list response is a hard error, never evidence of completeness",
+    "rate_limit_verified": "average of 3 requests per second per connection; workspace ceiling scaled to plan, amount undisclosed",
+    "admin_content_search": "Enterprise-only, reaches private pages, exports CSV — but it is a search, not an enumeration. Kill criterion 'Notion ships first-party coverage certification' did not fire."
+  },
+  "unknowns_assigned_to_proof": [
+    "Does a child_page block stay visible after the child's access is revoked?",
+    "Does a property ID survive a property type change?",
+    "Is result order stable across two identical paginated calls?",
+    "Does the ~11,200-object search ceiling still hold?",
+    "Is Semgrep's `skipped` output verbose-gated? The CLI reference does not say; test empirically.",
+    "Do any two values of the split outcome vocabulary ever collapse in practice? Test against a workspace with a deliberately unshared subtree."
+  ],
+  "research": {
+    "location": "docs/research/",
+    "s001_sweeps": 7,
+    "s002_synthesis": "docs/research/coverage-artifact-prior-art.md",
+    "s002_raw_corpus": "docs/research/sweep-raw/ — 9 scout reports plus 2 verification passes, verbatim and unverified except where a verification file says otherwise",
+    "s002_verification": "16 keystone claims re-verified: 6 confirmed, 9 partial, 1 misattributed, 0 fabricated",
+    "known_blind_spot": "Research agents cannot reach Reddit; community.notion.so and forum.notion.so no longer resolve. This is a limitation of the tooling, NOT of the channel — the operator reaches Reddit and has converted a buyer there. Evidence still skews toward people who publish."
+  },
+  "citation_hazards": [
+    "ISO 19011:2018 was read from a site hosting a complete unauthorised copy including its intact copyright page. Wording and clause numbers are genuine and verified. The URL must never appear in a published artifact. Cite the clause and link the ISO catalogue.",
+    "The squarespace-hosted ISA 705 mirror is unofficial. Cite paragraph numbers and point at IAASB.",
+    "Reached only through consultancy paraphrase and not citable at clause level: ISO 9001, ISO 13485, EIA-649, ISO 10007, MIL-STD-973, AICPA AT-C 320."
+  ],
+  "inputs": {
+    "location": "docs/inputs/",
+    "note": "None canonical. The PRD carries URLs and dates; the decay synthesis carries reasoning without URLs; the recruiting sweep carries claimed search coverage without URLs and a same-day correction block. Evidentiary weights differ and the files record that."
+  },
+  "operator_rulings": [
+    "No ghostwriting. Produce content specifications for anything he will send as himself, never drafted first-person copy. The literal-humanist-voice register governs how the agent writes; it does not license writing as him.",
+    "LinkedIn is excluded from every project.",
+    "SewerAI and Sepehr Sobhani are not contacts. The engagement never closed and was never paid. The artifacts are design input only."
+  ]
+}
