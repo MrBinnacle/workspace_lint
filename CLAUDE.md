@@ -4,7 +4,9 @@ A local, read-only CLI that tests a Notion workspace against explicit structural
 
 This repository is canonical. External planning artifacts (Notion pages, memos, drafts) are inputs. They do not override `CONTEXT.md` or the ADRs in `docs/adr/`.
 
-Pre-build: no source code exists yet. The next gate is the 72-hour API proof described in `CONTEXT.md`.
+Building. Source is on `main` in `slice/` — a private, unpublishable package, deliberately not `src/` until #8 settles the npm name. Two of the four v0.1 rules are built: `SYS001` and `REF001`. `REQ001` and `UNQ001` are #58 and #59. Both pre-build gates closed on 2026-08-17 and nothing gates the build.
+
+Gate, and it is two commands, not one: `cd slice && npm run check` runs 546 offline assertions with no network and no token, and `cd slice && npx tsc --noEmit` typechecks. **`npm run check` does not typecheck.** No script wires the two together, so a type error passes the suite — the hole #55 was filed to close, one layer up.
 
 ## Agent skills
 

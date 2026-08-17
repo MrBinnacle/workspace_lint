@@ -134,11 +134,11 @@ The PRD names these as out of scope. They are not built.
 
 ## Current state
 
-Pre-build. No source code exists. The repository holds grounding docs only.
+Building. `main` carries product source as of PR #56, merged 2026-08-17 — `slice/`, a private and unpublishable package, deliberately not `src/` until the name constraint below is settled. Two of the four v0.1 rules are **built**: `SYS001` and `REF001`. `REQ001` and `UNQ001` are specified and not built; they are issues #58 and #59, both blocked by #18 and #19. All four are marked **Ships** in the rule catalog above, which states v0.1 *scope*; built is a separate question and this paragraph answers it.
 
-`PRODUCT.md` holds the user, the job, the gates, and the kill criteria. This file is the glossary. Both are canonical. Seven research sweeps sit in `docs/research/`; the Notion PRD that seeded this file is mirrored at `docs/inputs/prd-2026-08-16.md` and is an input, not an authority.
+`PRODUCT.md` holds the user, the job, the gates, and the kill criteria. This file is the glossary. Both are canonical. Twelve research sweeps sit in `docs/research/`, indexed at `docs/research/INDEX.md` — start at the index, not the directory. The Notion PRD that seeded this file is mirrored at `docs/inputs/prd-2026-08-16.md` and is an input, not an authority.
 
-The next gate is no longer the 72-hour proof. It is a demand test — five teams that must prove a structural claim about a Notion workspace to a third party. Buildability is the smaller risk. See `PRODUCT.md`.
+Both pre-build gates closed on 2026-08-17 and nothing gates the build. Gate 1, the demand test, closed on owner research rather than on a five-team send: it chose an entry point — the zero-config decay report — and did not establish a price, so no willingness-to-pay figure exists for any framing. Gate 2, the 72-hour proof, closed as circular as filed, six of its nine checks requiring the build it existed to gate; those checks are build-acceptance criteria, not pre-build gates. See `PRODUCT.md` and `README.md`.
 
 The public repository `MrBinnacle/workspace_lint` exists as of 2026-08-16, created on the owner's instruction. This supersedes the PRD's "no repository has changed" rollback line and its "public release not approved" field. Rollback is now a repository action, not a Notion row action.
 
@@ -152,4 +152,4 @@ Stop condition, unchanged and not triggered: stop the project if the scan cannot
 
 No GitHub repository named `workspace-lint` exists. The nearest neighbours are `astral-sh/hawk` and `JarredAllen/cargo-workspace-lints`, both Rust/Cargo tools with different jobs.
 
-Consequence: the product name works for the repository and the docs. The **npm package name must differ** or be disputed. Decide this before the first `package.json`.
+Consequence: the product name works for the repository and the docs. The **npm package name must differ** or be disputed. Decide this before the first **publishable** `package.json`. The shipped `slice/package.json` is `private: true` and named `slice-v0.1`, so it does not consume the name and its own `description` field records that. The first `package.json` that drops `private: true` may not merge before #8 closes.

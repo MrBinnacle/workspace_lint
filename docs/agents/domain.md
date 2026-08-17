@@ -107,8 +107,10 @@ paragraph; **publish no URL for either.** Full list in `.claude/state/store.json
 
 ```
 /
+├── CLAUDE.md               ← agent front door (canonical; plan-gated)
 ├── CONTEXT.md              ← glossary + settled defaults (canonical)
 ├── PRODUCT.md              ← user, job, gates, kill criteria (canonical)
+├── slice/                  ← product source, on main since PR #56
 └── docs/
     ├── adr/                ← accepted decisions, never edited
     ├── spec/               ← behavioural specs, per-rule and per-slice, edited in place
@@ -119,7 +121,8 @@ paragraph; **publish no URL for either.** Full list in `.claude/state/store.json
     └── agents/             ← this file and its siblings
 ```
 
-There is no `src/` yet. The repo is pre-build.
+There is no `src/`, and that is deliberate rather than pending: naming a tree `src/` claims it is the
+product tree, and that claim is due the day #8 settles the npm name. The code lives in `slice/`.
 
 ## Use the glossary's vocabulary
 
@@ -171,7 +174,8 @@ the standing layer-placement rule, a discipline that must fire cannot depend on 
 
 *Revisit if:* `src/` appears. The file-structure block and the "no `src/` yet" line both go stale the
 day the first code lands, and a stale structure diagram is the kind of claim that calcifies because
-nobody follows it.
+nobody follows it. **This trigger fired on 2026-08-17**, when PR #56 put `slice/` on `main`; both were
+corrected then. It stays registered, because `src/` itself is still due the day #8 lands.
 
 **That gap is now closed.** `docs/research/INDEX.md` gives one line per file — the question it answers
 and what it refutes — and step 5 above points at it. Issue #54.
