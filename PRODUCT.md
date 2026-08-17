@@ -4,11 +4,32 @@ What this is for, who it is for, and what would make it not worth building. `CON
 
 Written 2026-08-16 from the PRD plus seven research sweeps in `docs/research/`. Every claim below that came from a sweep names its file.
 
+Revised 2026-08-17 after the first live API run. The coverage claim was narrowed, because the mechanism it rested on was refuted. Corrections are marked in place rather than removed, so a reader can see what changed and why.
+
 ## What it does
 
-Reads a declared set of Notion resources through the official API, and produces a report stating two things: which declared structural rules no longer hold, and exactly what the scan could not see.
+Reads a declared set of Notion resources through the official API, and produces a report stating two things: which declared structural rules no longer hold, and how much of the declared set the scan actually reached.
 
 The second half is the product. The first half is what makes the second half worth reading.
+
+### What the report can name, and what it cannot
+
+This section replaces an earlier claim that the report states *"exactly what the scan could not see."* That claim was wider than the API supports. It was refuted on 2026-08-17 and is corrected here. The mechanism it rested on is recorded in `docs/proof/results.md` §4; the reasoning is in issue #14.
+
+**Provable, and no surveyed tool makes the claim:**
+
+- **Declared-root coverage.** Everything you declared was read, or the report says which declared root was not and why. The operator supplies the denominator, which is the whole point of ADR-0002. A tool cannot enumerate its own grant, so no tool can supply that denominator itself.
+- **Link resolution.** A link to a page the connection cannot read still resolves to a reportable defect, because links live in page content rather than in the permission-filtered child list. **REF001 is the load-bearing coverage mechanism, not one rule among eight.**
+- **404 is ambiguous, and the report says so.** An unconnected page returns 404, not 403. Access failure and object absence share a response. Principle 3.
+
+**Not provable, and the product must stop implying it:**
+
+- **Anything about permission removal below a declared root.** A revoked descendant vanishes from enumeration entirely. Observed 2026-08-17: after disconnecting a child page under a connected parent, the parent returned 2 blocks instead of 3 and the `child_page` block was gone. A control fetch with full access confirmed the page still existed at the same ancestor path, so the child list is permission-filtered, not structurally changed. The scan cannot count that page, name it, or report it. Inside a declared root, an unreached resource arises only from rate limits, budget exhaustion, or abandoned pagination — **never from permissions.**
+- **That a child list was complete.** `GET /v1/blocks/{id}/children` carries no documented truncation signal. A complete enumeration and a silently truncated one return the same `has_more: false`. See ADR-0006 decision 2. The report discloses which endpoints a run trusted blind; it cannot close the gap.
+
+**The general rule: the coverage manifest can only name what the operator declared, or what the tool successfully enumerated.** Nothing else is expressible, and nothing else is claimed.
+
+**The honest strategic reading.** This is partial evidence for the objection recorded in `docs/research/coverage-artifact-prior-art.md` §5.1 — *"'what I could not see' may reduce to 'everything you did not give me,' which the customer already knew and the tool cannot size."* It does not carry that objection all the way. Declared roots plus link resolution still yield a real claim no competitor makes. The claim is smaller than this file previously stated. A precise smaller claim is sellable; a vague larger one is not, and a buyer who tests the larger one finds it false.
 
 ## Why the ordering is that way round
 
@@ -23,7 +44,7 @@ The gap is not specific to Notion. It is a gap in the field. State it precisely:
 
 The sharpest example is not in static analysis. Great Expectations computes `success_percent` over *evaluated* expectations rather than declared ones, so a suite in which half the expectations never ran can report 100%. The number is not incomplete. It is wrong.
 
-The working tagline "CI for Notion workspaces" undersells this. The product is a coverage prover that also runs rules.
+The working tagline "CI for Notion workspaces" undersells this. The product is a coverage prover that also runs rules — coverage against a declared set, never against the workspace.
 
 ## Who it is for
 
@@ -109,10 +130,10 @@ Steps 3 and 4 together are the standing answer to "is this a one-off script for 
 
 All four are unknowns that neither documentation nor practitioner evidence could close. Sources: `docs/research/notion-api-documented.md`, `docs/research/notion-api-practice.md`.
 
-1. Does a `child_page` block stay visible after the child's access is revoked? The claim that partial scans are detectable rests on this, and only weak evidence supports it.
-2. Does a property ID survive a property **type** change? Documentation is silent; no practitioner reports exist. If IDs churn on type change, every type change silently orphans a rule.
-3. Is result order stable across two identical paginated calls against an unchanged workspace?
-4. Does the roughly 11,200-object search ceiling still hold? Last confirmed February 2026; cursor internals changed in April.
+1. ~~Does a `child_page` block stay visible after the child's access is revoked?~~ **ANSWERED 2026-08-17. It does not.** The block disappears from the parent's children and the child 404s on `/pages`, `/blocks` and `/blocks/children`. The claim that partial scans are detectable below a declared root is **refuted**; see the boundary section under "What it does" and `docs/proof/results.md` §4. The test is kept here as a record, not as an open question.
+2. Does a property ID survive a property **type** change? Documentation is silent; no practitioner reports exist. If IDs churn on type change, every type change silently orphans a rule. Open; `TYPE_CHANGE_PROP` is set in `.env` and the test is ready to run.
+3. Is result order stable across two identical paginated calls against an unchanged workspace? **Provisionally yes**, 2026-08-17, and the result is confounded by bulk-created timestamps. Do not promote it without a re-run against organic content.
+4. Does the roughly 11,200-object search ceiling still hold? Last confirmed February 2026; cursor internals changed in April. Open; out of reach of any hand-built fixture.
 
 Note the shape of tests 1 and 2: proving a read-only tool correct requires a fixture workspace that can be **mutated**. The product never writes. The fixture setup does, by hand or by a separate throwaway integration. This is not a breach of Principle 7 and should not be read as one.
 
