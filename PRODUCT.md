@@ -15,9 +15,13 @@ The second half is the product. The first half is what makes the second half wor
 Two independent sweeps looked for a tool that refuses to report clean over an incomplete scan.
 
 - `docs/research/competitive-landscape.md` surveyed Notion tooling. Notion Custom Agents can be instructed to perform seven of the eight v0.1 rules today — imperfectly and non-deterministically, but today. They cannot perform the eighth, and the reason is structural: an agent cannot certify the boundary of what it did not read, and Notion grants agents access per object rather than workspace-wide.
-- `docs/research/static-analysis-prior-art.md` surveyed static analysis generally. It found that no SARIF object expresses analysis scope or coverage — incompleteness is representable only as a notification — and recorded as a negative result: *no surveyed tool fails a build on partial analysis coverage by default.*
+- `docs/research/static-analysis-prior-art.md` surveyed static analysis generally and recorded as a negative result: *no surveyed tool fails a build on partial analysis coverage by default.* A later sweep checked four tools at schema level — Semgrep, dbt, Great Expectations, Soda — and confirmed it. All four emit a non-execution signal. None binds the verdict to it.
 
-The gap is not specific to Notion. It is a gap in the field. Everything else in this product is available elsewhere, free, and improving without our effort.
+SARIF carries per-result and per-artifact not-analysed primitives — `result.kind`, `invocation.executionSuccessful`, `invocation.toolExecutionNotifications`, `artifact.roles: analysisTarget` — but defines **no run-level coverage aggregate**. That is the narrow, verified gap. *(This corrects an earlier claim here that no SARIF object expresses analysis scope or coverage. It was refuted against `sarif-schema-2.1.0.json`. See ADR-0005 §6.)*
+
+The gap is not specific to Notion. It is a gap in the field. State it precisely: what is unclaimed is making verdict validity a function of how much of a **user-declared** set was actually reached. That is a composition of two shipped behaviours plus a default flip, not an invention. Everything else in this product is available elsewhere, free, and improving without our effort.
+
+The sharpest example is not in static analysis. Great Expectations computes `success_percent` over *evaluated* expectations rather than declared ones, so a suite in which half the expectations never ran can report 100%. The number is not incomplete. It is wrong.
 
 The working tagline "CI for Notion workspaces" undersells this. The product is a coverage prover that also runs rules.
 
