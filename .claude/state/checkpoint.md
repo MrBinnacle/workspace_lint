@@ -6,7 +6,7 @@
 
 **TESTS:** None. No toolchain. Not a gap.
 
-**ALL WORK LANDED, ON A BRANCH, UNPUSHED.** Branch `docs/adr-0005-outcome-model`, one commit `db02541`, three files:
+**ALL WORK LANDED AND MERGED.** PR #12, merged to `main` as `ebdae1b` on 2026-08-17. Branch `docs/adr-0005-outcome-model`, two commits — `db02541` (the ADR) and `af341e4` (the S003 close). Three content files:
 
 - `docs/adr/0005-outcome-splits-into-conformity-and-evidence-sufficiency.md` (new)
 - `CONTEXT.md` — glossary carries the split model
@@ -54,7 +54,7 @@ Both caught by the claim-verification step, both before any writing began.
 
 ### EXACT NEXT STEPS
 
-1. **Push the branch and open the PR.** `git push -u origin docs/adr-0005-outcome-model`, then `gh pr create`. The work is committed but exists on one disk only.
+1. **Provision the proof's preconditions with `/wizard`.** A Notion internal integration token into a gitignored `.env`, and a fixture workspace containing a **deliberately unshared subtree** — that subtree is the instrument for ADR-0005's first Revisit-if, not an incidental detail. Two of the proof questions need the fixture to be **mutable**; that is not a breach of Principle 7. Only the operator can do this step.
 2. **Run the 72-hour proof as a `/prototype` on a `prototype/api-proof` branch** — not as build phase 0. ADR-0005 now defines what it must measure. `store.json` → `unknowns_assigned_to_proof` holds **eight** questions; three were added this session and all three test ADR-0005 itself:
    - Do `unreached` and `undecidable` ever diverge against a workspace with a deliberately unshared subtree? If they never separate, collapse evidence sufficiency to two values.
    - Can enumeration and fetching be separated against the real API? If not, the `disclaimed` disposition loses its trigger.
