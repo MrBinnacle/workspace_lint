@@ -1,395 +1,418 @@
 {
-  "project": "workspace_lint",
-  "updated": "2026-08-17",
-  "session": "S014",
-  "phase": "BUILD -- Gate 3 live, and its first tracer bullet has landed",
-  "phase_detail": "Source code exists for the first time, on branch build/t1-scan-scaffold (cut from proto/ref001-observed, origin/main merged in), in slice/ under a private:true package.json named slice-v0.1. main STILL has no src/ and no package.json, and that is now the only thing #8 gates: moving slice/ to src/ with a publishable root package.json forces the npm-name decision CONTEXT.md requires 'before the first package.json'. #42 is built, reviewed and committed (0ac7c2d, 9dcb069). 50 offline checks pass; live run exits 3 with 4 applicable resources, 3 fetched, 0 evaluated, 6 requests, 1.78 s. #43 and #44 are unblocked and can run in parallel.",
-  "gate_1_demand_test": {
-    "status": "CLOSED 2026-08-17 on owner research, not on a five-team send. Issue #40 closed with it.",
-    "what_closed_it": "docs/inputs/decay-causal-synthesis-2026-08-16.md -- the operator's own causal synthesis of workspace decay, derived from Reddit discussion no research path in this project could reach. Plus this file's own research.known_blind_spot record that the operator reaches Reddit and HAS CONVERTED A BUYER THERE, and docs/research/solo-segment-evidence.md conceding its NO 'may be a verdict on the config file, not on the segment'.",
-    "what_it_decided": "Framing 2, the zero-config decay report, is the entry point. Framing 1 (configured) is not. Framing 3 (coverage proof) is what declared rules serve once a user already runs the tool.",
-    "the_defect_it_fixed": "PRODUCT.md contradicted itself two sections apart. 'The config file is the suspect, not the segment' concluded that declared rules 'are not the entry point'; the Gates section went on recruiting five teams holding audit-relevant data, which IS that entry point, and the kill criterion killed the project on framing 3's failure. The product section absorbed the decay synthesis on 2026-08-16; the Gates section never did. That is issue #40's defect with its mechanism named, and it needed no literature to see.",
-    "limits": "TWO, and both are recorded in PRODUCT.md rather than left implicit. (1) The evidence is a synthesis carrying reasoning, not URLs; where it and a docs/research/ sweep disagree on a FACT the sweep wins, and the synthesis is the better account only of MECHANISM. (2) NO WILLINGNESS-TO-PAY FIGURE EXISTS for any of the three framings. This gate chose the entry point. It did not establish a price. competitive-landscape.md still records that deterministic linters monetize at zero. Do not let a later session read this close as demand-proven-at-a-price.",
-    "instruments_unsent": [
-      "docs/demand-test/outreach.md",
-      "docs/demand-test/screener.md",
-      "docs/demand-test/questionnaire-2026-08-16.md"
-    ],
-    "instruments_note": "All three carry an UNSENT status header as of 2026-08-17 and are kept as a record, not deleted. The questionnaire is titled 'Proving a structural claim about a Notion workspace' -- it is built around framing 3 and names the answer in its own heading, which is the clearest surviving artefact of the recruitment bias #40 recorded.",
-    "excluded_channels": [
-      "LinkedIn -- ruled out by the operator on 2026-08-16, permanently, for any project",
-      "SewerAI / Sepehr Sobhani -- not a contact, not a reference, not a case study"
-    ],
-    "revisit_if": "The built slice reaches real users and framing 2 does not return the value the synthesis predicts. That is a product finding, not a research finding, and Gate 4 is where it surfaces."
+ "project": "workspace_lint",
+ "updated": "2026-08-17",
+ "session": "S015",
+ "phase": "BUILD -- Gate 3 live, two tracer bullets landed",
+ "phase_detail": "Source code exists on branch build/t2-sys001 (cut from build/t1-scan-scaffold), in slice/ under a private:true package.json named slice-v0.1. main STILL has no src/ and no package.json, and that is still the only thing #8 gates. #42 built (ticket still OPEN) and #43 built, reviewed, hardened and CLOSED. SYS001 is the first rule: the coverage vector is non-empty for the first time and exit 0 is reachable for the first time. 53+92 offline assertions pass across two suites; live run exits 3 with 4 applicable resources, 3 evaluated, 6 requests, 1.66 s, ORACLE MATCHED. Acceptance criterion 1 is CLOSED on that run. #44 is unblocked; #49 blocks #44's exit byte being trustworthy, not #44 being built.",
+ "gate_1_demand_test": {
+  "status": "CLOSED 2026-08-17 on owner research, not on a five-team send. Issue #40 closed with it.",
+  "what_closed_it": "docs/inputs/decay-causal-synthesis-2026-08-16.md -- the operator's own causal synthesis of workspace decay, derived from Reddit discussion no research path in this project could reach. Plus this file's own research.known_blind_spot record that the operator reaches Reddit and HAS CONVERTED A BUYER THERE, and docs/research/solo-segment-evidence.md conceding its NO 'may be a verdict on the config file, not on the segment'.",
+  "what_it_decided": "Framing 2, the zero-config decay report, is the entry point. Framing 1 (configured) is not. Framing 3 (coverage proof) is what declared rules serve once a user already runs the tool.",
+  "the_defect_it_fixed": "PRODUCT.md contradicted itself two sections apart. 'The config file is the suspect, not the segment' concluded that declared rules 'are not the entry point'; the Gates section went on recruiting five teams holding audit-relevant data, which IS that entry point, and the kill criterion killed the project on framing 3's failure. The product section absorbed the decay synthesis on 2026-08-16; the Gates section never did. That is issue #40's defect with its mechanism named, and it needed no literature to see.",
+  "limits": "TWO, and both are recorded in PRODUCT.md rather than left implicit. (1) The evidence is a synthesis carrying reasoning, not URLs; where it and a docs/research/ sweep disagree on a FACT the sweep wins, and the synthesis is the better account only of MECHANISM. (2) NO WILLINGNESS-TO-PAY FIGURE EXISTS for any of the three framings. This gate chose the entry point. It did not establish a price. competitive-landscape.md still records that deterministic linters monetize at zero. Do not let a later session read this close as demand-proven-at-a-price.",
+  "instruments_unsent": [
+   "docs/demand-test/outreach.md",
+   "docs/demand-test/screener.md",
+   "docs/demand-test/questionnaire-2026-08-16.md"
+  ],
+  "instruments_note": "All three carry an UNSENT status header as of 2026-08-17 and are kept as a record, not deleted. The questionnaire is titled 'Proving a structural claim about a Notion workspace' -- it is built around framing 3 and names the answer in its own heading, which is the clearest surviving artefact of the recruitment bias #40 recorded.",
+  "excluded_channels": [
+   "LinkedIn -- ruled out by the operator on 2026-08-16, permanently, for any project",
+   "SewerAI / Sepehr Sobhani -- not a contact, not a reference, not a case study"
+  ],
+  "revisit_if": "The built slice reaches real users and framing 2 does not return the value the synthesis predicts. That is a product finding, not a research finding, and Gate 4 is where it surfaces."
+ },
+ "gate_2_api_proof": {
+  "status": "CLOSED as completed by the OPERATOR 2026-08-17 at 15:21:55Z, mid-session, while the slice spec was being written. #10.",
+  "why_it_closed": "Its triage comment establishes the issue was CIRCULAR AS FILED: six of nine proof checks require the build the issue existed to gate, and checks 3, 5, 6 and 7 'cannot be run before the build.' They are BUILD-ACCEPTANCE criteria, not pre-build gate criteria. Both originally named blockers had also cleared -- #21 closed with ADR-0007 merged at 280524e, and the un-runnable checklist item was confirmed live in docs/proof/results-ref001-live.md at ba25b7a.",
+  "what_still_holds": "The fixture is NARROWER than #10 specified: one data source rather than three, no archived target, no seeded UNQ001/SCH001/DEP001/CAN001. Any recorded build result must state which criteria the fixture could not exercise. Long relation values remain untested. REAL_ROOT_ID remains unexercised.",
+  "two_corrections_it_carried_that_this_session_missed": "#10's triage comment corrected proof checks 4 and 7, and docs/spec/v0.1-scan-slice.md shipped BOTH defects verbatim in PR #41 because the issue BODY was read and its COMMENTS were not. Check 4: an unshared target does not exist to be labelled -- it VANISHES -- and the finding is certainty CONFIRMED about target state UNREACHABLE, not indeterminate. Check 7: exit 2 is the disclaimed disposition ONLY; a scan that could not run as declared is 4, a confined gap below threshold is 3. Corrected on branch fix/spec-criteria-4-and-7."
+ },
+ "next_gate": {
+  "name": "Gate 3 -- build at n=1, against this workspace",
+  "kind": "runnable, live, first tracer bullet landed",
+  "tracker": "#42 built (ticket OPEN) -> #43 DONE and CLOSED -> #44 -> #45 -> #46, with #49 gating whether #44 exit byte can be believed",
+  "why_it_is_next": "Gates 1 and 2 both closed 2026-08-17. #42 shipped the scan scaffold on 2026-08-17 and the stop condition did not fire: the scan produced a coverage manifest against a declared root, read-only, with no LLM. #43 is the ticket that makes the coverage vector non-empty and exit 0 reachable, so it is the first result that means anything about coverage.",
+  "criterion_1_status": "CLOSED 2026-08-17 on #43 live run. ORACLE MATCHED, ten comparisons, against slice/fixture-oracle.ts committed in 9dcb069 BEFORE that run existed -- the pre-registration property criterion 1 requires. NOT closed retroactively for #42, whose applicable set was validated against the code own output."
+ },
+ "locked_decisions": [
+  {
+   "id": "ADR-0001",
+   "status": "accepted, amended by ADR-0003",
+   "summary": "Deterministic linter, not an entropy engine. Counting is inside this decision; scoring is outside it."
   },
-  "gate_2_api_proof": {
-    "status": "CLOSED as completed by the OPERATOR 2026-08-17 at 15:21:55Z, mid-session, while the slice spec was being written. #10.",
-    "why_it_closed": "Its triage comment establishes the issue was CIRCULAR AS FILED: six of nine proof checks require the build the issue existed to gate, and checks 3, 5, 6 and 7 'cannot be run before the build.' They are BUILD-ACCEPTANCE criteria, not pre-build gate criteria. Both originally named blockers had also cleared -- #21 closed with ADR-0007 merged at 280524e, and the un-runnable checklist item was confirmed live in docs/proof/results-ref001-live.md at ba25b7a.",
-    "what_still_holds": "The fixture is NARROWER than #10 specified: one data source rather than three, no archived target, no seeded UNQ001/SCH001/DEP001/CAN001. Any recorded build result must state which criteria the fixture could not exercise. Long relation values remain untested. REAL_ROOT_ID remains unexercised.",
-    "two_corrections_it_carried_that_this_session_missed": "#10's triage comment corrected proof checks 4 and 7, and docs/spec/v0.1-scan-slice.md shipped BOTH defects verbatim in PR #41 because the issue BODY was read and its COMMENTS were not. Check 4: an unshared target does not exist to be labelled -- it VANISHES -- and the finding is certainty CONFIRMED about target state UNREACHABLE, not indeterminate. Check 7: exit 2 is the disclaimed disposition ONLY; a scan that could not run as declared is 4, a confined gap below threshold is 3. Corrected on branch fix/spec-criteria-4-and-7."
+  {
+   "id": "ADR-0002",
+   "status": "accepted, DECISION 4 INVALIDATED by the 2026-08-17 proof run \u2014 superseding ADR required",
+   "summary": "Coverage is measured against declared roots. Workspace-level coverage is not provable by any tool.",
+   "invalidation": "Decision 4 makes the ABSENCE of request_status from a paginated list response a hard error. Observed live at Notion-Version 2026-03-11: the field is absent from every normal response (data_sources query has_more true; block children has_more true; block children has_more false). The primary reference documents it as CONDITIONAL, emitted at the 10,000-result cap, with the prescribed test being positive: request_status.type === 'incomplete'. As written, decision 4 hard-errors every healthy scan. Decisions 1, 2, 3, 5 stand. Do NOT edit ADR-0002.",
+   "still_standing": "Coverage is measured against declared roots. An unreachable declared root is a hard coverage failure exiting 2. Every unresolvable reference is an explicit observation. The report states start and end times."
   },
-  "next_gate": {
-    "name": "Gate 3 -- build at n=1, against this workspace",
-    "kind": "runnable, live, first tracer bullet landed",
-    "tracker": "#42 DONE (not merged to main) -> #43, #44 in parallel -> #45 -> #46",
-    "why_it_is_next": "Gates 1 and 2 both closed 2026-08-17. #42 shipped the scan scaffold on 2026-08-17 and the stop condition did not fire: the scan produced a coverage manifest against a declared root, read-only, with no LLM. #43 is the ticket that makes the coverage vector non-empty and exit 0 reachable, so it is the first result that means anything about coverage.",
-    "criterion_1_status": "OPEN, deliberately. Spec section 2 criterion 1 requires the hand-written manifest to be written BEFORE the run; none existed when #42 ran, so its applicable set of 4 was validated against the code's own output. slice/fixture-oracle.ts pre-registers the expectation and closes the criterion for #43's run, NOT retroactively for #42."
+  {
+   "id": "ADR-0003",
+   "status": "accepted, PARTIALLY SUPERSEDED by ADR-0005",
+   "summary": "SARIF 2.1.0 as output-contract design source, SonarQube issue-lifecycle as state machine. SARIF is an export target later, not a v0.1 schema commitment.",
+   "superseded_parts": "Decision 2 (four-valued outcome enum), decision 3 (`incomplete` fails the run), and the final Consequences paragraph (the SARIF coverage claim). The file was NOT edited \u2014 ADR-0005 supersedes those three parts by reference. Decisions 1, 4, 5, 6 stand.",
+   "still_standing": "Finding identity is the Notion object ID. Observation/finding split from OSCAL. Baseline entries are never counts. Suppressions require a reason and an expiry, with no escape hatch."
   },
-  "locked_decisions": [
-    {
-      "id": "ADR-0001",
-      "status": "accepted, amended by ADR-0003",
-      "summary": "Deterministic linter, not an entropy engine. Counting is inside this decision; scoring is outside it."
-    },
-    {
-      "id": "ADR-0002",
-      "status": "accepted, DECISION 4 INVALIDATED by the 2026-08-17 proof run — superseding ADR required",
-      "summary": "Coverage is measured against declared roots. Workspace-level coverage is not provable by any tool.",
-      "invalidation": "Decision 4 makes the ABSENCE of request_status from a paginated list response a hard error. Observed live at Notion-Version 2026-03-11: the field is absent from every normal response (data_sources query has_more true; block children has_more true; block children has_more false). The primary reference documents it as CONDITIONAL, emitted at the 10,000-result cap, with the prescribed test being positive: request_status.type === 'incomplete'. As written, decision 4 hard-errors every healthy scan. Decisions 1, 2, 3, 5 stand. Do NOT edit ADR-0002.",
-      "still_standing": "Coverage is measured against declared roots. An unreachable declared root is a hard coverage failure exiting 2. Every unresolvable reference is an explicit observation. The report states start and end times."
-    },
-    {
-      "id": "ADR-0003",
-      "status": "accepted, PARTIALLY SUPERSEDED by ADR-0005",
-      "summary": "SARIF 2.1.0 as output-contract design source, SonarQube issue-lifecycle as state machine. SARIF is an export target later, not a v0.1 schema commitment.",
-      "superseded_parts": "Decision 2 (four-valued outcome enum), decision 3 (`incomplete` fails the run), and the final Consequences paragraph (the SARIF coverage claim). The file was NOT edited — ADR-0005 supersedes those three parts by reference. Decisions 1, 4, 5, 6 stand.",
-      "still_standing": "Finding identity is the Notion object ID. Observation/finding split from OSCAL. Baseline entries are never counts. Suppressions require a reason and an expiry, with no escape hatch."
-    },
-    {
-      "id": "ADR-0004",
-      "status": "accepted",
-      "summary": "Determinism defined against a named Normalization function. Specify it before the proof runs."
-    },
-    {
-      "id": "ADR-0005",
-      "status": "accepted",
-      "summary": "Outcome is a pair — conformity (conforms|violates, absent when nothing was evaluated) × evidence sufficiency (sufficient|unreached|undecidable). `inapplicable` deleted: operator exclusion moves to the scope declaration, precondition mismatch becomes an applicability filter in the manifest. Report disposition unqualified|qualified|disclaimed; a disclaimed report renders no summary verdict. Coverage manifest is a five-stage funnel: declared, resolved, enumerated, fetched, evaluated.",
-      "governing_rule": "A value earns its place only if it changes what the operator does next. This is why evidence sufficiency has three values (different remedies) and why ISA 705's `adverse` was dropped (materiality is not computable by a CLI).",
-      "hard_rule": "No ratio is published without the coverage figure bounding it. XCCDF's exclude-from-scoring rule applied alone reproduces the Great Expectations defect — success_percent over evaluated expectations lets a half-unrun suite report 100%.",
-      "pervasiveness_predicate": "Gaps are pervasive when a declared root was never reached, or any gap is unbounded. Structural, not a percentage: a ratio threshold would be computed over a denominator the scan has just admitted it cannot establish. Generalises ADR-0002 decision 2.",
-      "deviations_from_checkpoint_plan": "Five funnel stages, not four — `enumerated` was added between resolved and fetched because it is the only source of unbounded gaps, and the disclaimed disposition keys on those.",
-      "evidential_standing": "Decisions 1-3 rest on adversarially re-verified primary sources (ISA 705 paras 5(a) and 17, XCCDF value list, OSCAL metaschema negative, SARIF schema, PCAOB AS 3105.45, ISO 19011 6.5.1 k, Semgrep enum). Decision 5's funnel shape rests on CONSORT 13a/13b, PRISMA 16b and STROBE 13 — fetched but NOT re-verified, adopted on three-way convergence. Re-verify clause numbers before publishing them."
-    },
-    {
-      "id": "ADR-0006",
-      "status": "accepted. Decision 2's POST /v1/search row is SUPERSEDED by ADR-0007. Decisions 1, 3, 4, 5 and 6 stand; the other two rows of decision 2's table stand. Not edited.",
-      "supersedes": "ADR-0002 decision 4 in full. ADR-0002 decisions 1, 2, 3 and 5 stand; ADR-0002 is not edited.",
-      "corrects": "The closing sentence of docs/proof/results.md section 1, which mapped an absent request_status to ADR-0005's `unreached`. Corrected by reference; the evidence record is not edited.",
-      "summary": "Truncation is detected by a positive test -- request_status.type === 'incomplete' -- and that test covers ONE endpoint family. The signal is documented on POST /v1/data_sources/{id}/query only. It is absent from /reference/intro#pagination, the normative shared-envelope description, and from GET /v1/blocks/{id}/children. Absence of the field is neither an error nor proof of completeness.",
-      "the_larger_finding": "GET /v1/blocks/{id}/children is the traversal spine of the scan and carries NO truncation signal. A complete enumeration and a silently truncated one return the same has_more: false -- the value that lied at the data-source cap before 2026-04-20. Every completeness claim the product makes over page content rests on it. The scan cannot close this; ADR-0006 decision 5 discloses it per-run instead. STRENGTHENED by ADR-0007: this finding rested on documentation silence when written -- the same inference that failed on the search row -- and now rests on notion-sdk-js PR #711 threading request_status through seven named response types and OMITTING ListBlockChildrenResponse. An enumerated omission, not an unchecked silence.",
-      "evidence_sufficiency_ruling": "No fourth value. An absent request_status maps to `sufficient`. Rejected on ADR-0005's governing rule -- a value earns its place only if it changes what the operator does next. The absent case has no remedy, fires on 100% of runs, and a permanent universal qualifier is the mechanism ADR-0005's fourth Revisit-if predicts will train readers to skip the limitations half.",
-      "cap_trip": "Where a documented cap exists, a terminal count AT the cap makes the enumerated count a lower bound, not an equality: cause suspected_result_limit, marked unbounded, remedy 'partition the declared root'. Transplanted from Elasticsearch hits.total.relation 'gte', the OSIsoft PI Web API documented silent-truncation case, and fetch n+1. Applies to dataSources.query only -- block children and search have no documented cap constant, and building one from the observed ~11,200 search wall is rejected.",
-      "unobserved": "request_status.type === 'complete' has never been seen emitted on either branch. No decision depends on it and no code path may block on it.",
-      "unverified": "The 10,000 cap constant is vendor-documented and has never been confirmed by a real capped response. Vendor documentation has already been wrong once in this project (notion-api-practice.md section 5.2). The Elasticsearch field path was read from a search summary, not the reference.",
-      "artifact": "docs/adr/0006-truncation-is-detected-by-a-positive-test-on-one-endpoint-family.md",
-      "refuted_2026_08_17": "Decision 2's endpoint table is wrong on the POST /v1/search row. Search DOES carry request_status. The block-children row is CONFIRMED and now independently corroborated by notion-sdk-js PR #711, which omits ListBlockChildrenResponse. ADR-0006 is not edited; #21 carries the superseding ADR."
-    },
-    {
-      "id": "ADR-0007",
-      "status": "accepted and MERGED to main as 280524e (5e22750)",
-      "supersedes": "ONE ROW of ADR-0006 decision 2 -- POST /v1/search. ADR-0006 decisions 1, 3, 4, 5, 6 and the other two table rows stand. ADR-0006 is not edited.",
-      "corrects": "Nothing in docs/research/. Both research files carried the correct fact before ADR-0006 was written. This ADR corrects the ADR, not the evidence.",
-      "summary": "POST /v1/search carries request_status: type complete|incomplete, incomplete_reason query_result_limit_reached. No documented cap, so ADR-0006 decision 4's exclusion of search from the cap-proximity trip SURVIVES on its stated reason -- a signal is not a cap. The ~11,200 figure is moved out of the signal column and marked NOT re-confirmed on refetch.",
-      "finding_inert": "The error gated no behaviour. Decision 1's positive test means the scan looks for the field on every response page regardless of the table. If search never emits it, behaviour equals the old table. No downside branch, and no code path needs revision.",
-      "finding_conditional": "The coverage benefit does not reach v0.1. Search has no declared role in a scan across five opened design surfaces. ADR-0007 states their silence and does NOT assert the negative, since misreading silence as absence is the error it corrects. Filed as #24.",
-      "finding_method": "Second ADR to contradict a file already in the tree, and the fact stood in TWO research files three hours earlier. Method rules adopted: a per-endpoint claim needs the per-endpoint page; absence from a doc page is not-checked, not absent; grep docs/research/ before asserting a factual table. Rule 3 is UNENFORCED -- enforcement filed as #25.",
-      "evidence_class": "WEAK, and stated in the ADR rather than buried. Both sources are statements of intent -- a doc page and an SDK type. No capped search has been observed and neither branch of request_status has been seen on ANY endpoint. This is the class that produced ADR-0002 decision 4, a field documented as present and absent from every real response.",
-      "evidence": "https://developers.notion.com/reference/post-search and makenotion/notion-sdk-js PR #711, both re-fetched while drafting; docs/research/notion-api-practice.md section 4.5; docs/research/competitive-landscape.md section 4"
-    },
-    {
-      "id": "ADR-0008",
-      "status": "accepted and MERGED to main as f6f8c5c (33017b8)",
-      "title": "Exit status is a priority signal over two axes; resolved is a coverage claim the baseline must earn",
-      "implements": "ADR-0005 decision 4. Generalises ADR-0002 decision 2 -- exit 2 keeps its number and widens from unreachable-declared-root to the disclaimed disposition.",
-      "corrects": "the Baseline glossary entry in CONTEXT.md. The PRD input is NOT edited.",
-      "key": "Exit precedence 4>2>3>1>0, non-monotonic by choice to leave ADR-0002 untouched. Exit 0 asserts exactly two things: no new unsuppressed finding, and coverage at or above the declared threshold. Five baseline states with suppression as an orthogonal axis. resolved requires the (rule,resource) pair to have reached the manifest's evaluated stage.",
-      "defect": "Decision 6 is DEFECTIVE -- see issue #31. Any-match fingerprinting is not transitive. Needs a superseding ADR before any identity code is written."
-    },
-    {
-      "id": "ADR-0009",
-      "status": "accepted and MERGED to main as 6faf04c (40062cd)",
-      "title": "The integration is the primary credential, the Operator is the accountability locus for the access boundary, and membership drift is disclosed rather than detected",
-      "closes": "#1, narrowly -- the accountable role only. The buyer half was untracked by the auto-close and is refiled as #29.",
-      "key": "Operator / Executor / Consumer split; roles distinct, people may coincide. Principal added as a term rather than dual mode-labelled definitions of Connection. A coverage threshold may never relax a disclaimed disposition.",
-      "caveat": "Decision 1's claim that the integration grant does not move with employment is asserted into a DOCUMENTED SILENCE. The capabilities reference covers loss of EDIT access only. See docs/research/notion-developer-platform.md section 7. Comparative ranking survives; the independence claim does not."
-    },
-    {
-      "id": "ADR-0010",
-      "status": "accepted and MERGED to main as 612875a (7e318ba, PR #32)",
-      "title": "Baseline matching is a hierarchy of matchkeys over a resource anchor, not an equivalence relation over fingerprints",
-      "supersedes": "ADR-0008 decision 6 -- its matching rule and its key-composition table. ADR-0008 decisions 1-5 and 7 stand, as do decision 6's four SARIF constraints and its two-hazard analysis. ADR-0008 not edited.",
-      "restores": "ADR-0003 decision 1, which ADR-0008 decision 6 drifted from without citing it",
-      "closes": "#31, including its third Revisit-if (entity-resolution literature)",
-      "decisions": [
-        "1. Identity is two layers: anchor = (rule ID, resource ID) on the native object ID, normalized to hyphenated UUIDv4 on ingest; discriminator = matchkey hierarchy scoped inside one anchor",
-        "2. The hierarchy runs as ordered passes over sets, not as a probe per finding -- a pass is a set join and has no visiting order",
-        "3. Matching is one-to-one; a matched pair leaves the pool (Wray 2024)",
-        "4. Transitive closure is prohibited -- the failure it forbids is over-merging",
-        "5. Ties inside a pass are broken by a published total order; a rule without one does not ship",
-        "6. The observed value is evidence, never identity -- this is what makes `updated` reachable",
-        "7. Key list v1 for all four shipping rules; n=0 and n=1 are valid hierarchies",
-        "8. Keys are appended, never inserted"
-      ],
-      "evidence_note": "Three record-linkage sources fetched while drafting, quoted from the fetched text, NOT adversarially re-verified. Wray 2024 DOI 10.23889/ijpds.v9i5.2656; Binette & Steorts 2022 DOI 10.1126/sciadv.abi8021 (quote confirmed on a second independent fetch); NCBI Bookshelf NBK253312. Stated negative: the NCBI overview contains NO statement about link-once/pool removal -- that constraint rests on Wray alone.",
-      "incomplete": "decision 8 says how to ADD a key and nothing about REMOVING a defective one. Named in the ADR as missing, not as unnecessary."
-    },
-    "ADR-0011 (MERGED to main in PR #38 at 88d401e): coverage is measured over a per-rule coverage item and the coverage ratio is a vector whose headline is the minimum. Supersedes ADR-0005 decision 4's ratio definition, ADR-0008 decision 4's --min-coverage referent, and the coverage clause of ADR-0008 decision 2's exit-0 invariant. Neither ADR edited. Generalises ADR-0008 decision 5's 'the pair, not the resource, is the unit'. UNQ001's pair denominator makes its coverage quadratic: 90 of 100 resources is 80.9 percent of pairs, not 90."
-  ],
-  "corrections_pending": [
-    {
-      "id": "competitive-landscape wedge",
-      "target": "docs/research/competitive-landscape.md section 270",
-      "detail": "States the wedge as 'R1 the coverage manifest combined with a CI exit code'. Under the false-green synthesis the manifest is the soundness certificate rather than half a wedge. Not yet decided; do not edit before the rule-catalogue re-read."
-    }
-  ],
-  "corrections_applied": [
-    {
-      "target": "PRODUCT.md, Gates gate 1 and the kill criteria list",
-      "claim": "The demand test recruits five teams holding audit-relevant data, and the kill criterion fires when no team must prove a structural claim to a third party.",
-      "status": "CORRECTED 2026-08-17 on branch docs/40-unseen-population-and-demand-test-framing. Issue #40 closed.",
-      "replacement": "Gate 1 is recorded as CLOSED on owner research. The three framings stand because they are what the build targets. The auditor kill criterion is struck through and kept visible, replaced by: the zero-config surface returns nothing a workspace owner recognises as a defect worth repairing.",
-      "the_conditional_half": "S009's capability refutation of the auditor buyer was CONDITIONAL on ADR-0005 decision 3's unexamined 'an unbounded gap cannot be sized' claim. That claim was swept on 2026-08-17 and SURVIVES, so the refutation stands. See docs/research/unseen-population-sizing.md.",
-      "the_unconditional_half": "The recruitment-bias objection never depended on decision 3 and did not need the sweep. PRODUCT.md already concluded under 'The config file is the suspect, not the segment' that declared rules 'are not the entry point'. The Gates section had not absorbed the decay synthesis that the product section absorbed the same day.",
-      "method_note": "The whole session's plan, and a literature sweep, were built before docs/inputs/ was opened once. That is the THIRD time the decay synthesis has been skipped. docs/agents/domain.md now carries docs/inputs/ as step 7 of the reading list instead of as a paragraph denying it authority."
-    },
-    {
-      "target": "PRODUCT.md",
-      "claim": "No SARIF object expresses analysis scope or coverage.",
-      "status": "REFUTED — corrected in S003, commit db02541",
-      "replacement": "SARIF carries per-result and per-artifact not-analysed primitives — result.kind, invocation.executionSuccessful, toolExecutionNotifications, artifact.roles analysisTarget — but defines no run-level coverage aggregate.",
-      "residual": "The same refuted sentence still stands in ADR-0002 Consequences and ADR-0003 Consequences. Both are deliberately NOT edited — ADRs are immutable records and ADR-0005 supersedes those paragraphs by reference. Do not 'fix' them.",
-      "decided": "Semgrep routes coverage through its native schema, not SARIF. A SARIF export loses the manifest. ADR-0005 §6 accepts that export loss explicitly."
-    },
-    {
-      "target": "PRODUCT.md, any throughput model",
-      "claim": "Notion rate limits scale 10/25/50/100 req/s by plan.",
-      "status": "NO-OP — verified in S003, the figures appear in no canonical doc",
-      "detail": "grep over PRODUCT.md, CONTEXT.md and docs/adr/ returns nothing. Remaining instances are in checkpoint.md (as the instruction), coverage-artifact-prior-art.md (marked PARTIAL), sweep-raw/verify-platform.md (the correction itself) and sweep-raw/wildcard.md (fenced CONTEXT-ONLY). Nothing to delete.",
-      "standing_figure": "Size every throughput model on 3 req/s per connection. The three-minute warm-scan kill criterion is a budget of roughly 540 requests."
-    },
-    {
-      "target": "docs/adr/0003",
-      "claim": "OSCAL supplies the observation/finding split including an incomplete outcome.",
-      "status": "RESOLVED by ADR-0005",
-      "replacement": "The observation/finding split remains adopted. `incomplete` is not inherited from OSCAL — it is defined in ADR-0005 from XCCDF."
-    },
-    {
-      "target": "docs/adr/0002 decision 4",
-      "claim": "Absence of request_status from a paginated list response is a hard error.",
-      "resolution": "SUPERSEDED IN FULL by ADR-0006 decision 1 (commit f8917fa, PR #17 open). ADR-0002 is not edited; decisions 1, 2, 3 and 5 stand.",
-      "replacement": "Test positively: request_status.type === 'incomplete' means the query was cut off. Absence is neither an error nor proof of completeness.",
-      "correction_to_the_correction": "The replacement text previously held in corrections_pending said absence 'is uninformative, which is the state ADR-0005's unreached exists to express'. That was WRONG and is removed. Absence is NOT unreached: unreached carries the remedy 'widen access or raise the request budget', and no operator action produces a field the server declined to send. ADR-0006 decision 3 rules that absence maps to `sufficient`, with the residual doubt carried by the sampling-risk statement rather than by the outcome axis. The wrong sentence also stands in docs/proof/results.md section 1 and is corrected there by reference, not by edit.",
-      "evidence": "docs/proof/results.md section 1; docs/adr/0006"
-    },
-    {
-      "target": "PRODUCT.md",
-      "claim": "The report states 'exactly what the scan could not see'.",
-      "resolution": "NARROWED in commit cc16d63 (PR #17 open). Issue #14 left OPEN deliberately: it is labelled ready-for-human and the wording of a product claim is the operator's call. The draft is a proposal, not a close.",
-      "replacement": "Provable: declared-root coverage, link resolution, and the ambiguity of 404. Not provable: anything about permission removal below a declared root, and that a child list was complete. REF001 is the load-bearing coverage mechanism.",
-      "second_location": "The refuted claim stood in a SECOND place in the same file -- proof test 1 under 'Four proof tests the PRD does not list'. Marked ANSWERED and refuted rather than deleted.",
-      "evidence": "docs/proof/results.md section 4; docs/adr/0006 decision 2"
-    },
-    {
-      "target": "docs/adr/0006 decision 2, the POST /v1/search row",
-      "claim": "POST /v1/search carries no documented truncation signal.",
-      "status": "REFUTED 2026-08-17 by the #15 verification pass, one day after the ADR was accepted.",
-      "replacement": "Search DOES carry request_status. Notion's post-search reference documents type complete|incomplete with incomplete_reason query_result_limit_reached, and notion-sdk-js PR #711 adds the field to SearchResponse. A truncated search is therefore detectable and the ~11,200 wall is a reportable gap, not a silent one.",
-      "method_failure": "A negative was asserted across three endpoints having opened two references. Silence on the shared pagination page was read as absence rather than as not-checked. docs/research/notion-api-practice.md section 4.5 had the correct list since 2026-08-16 and was never consulted. CORRECTED AND SHARPENED by ADR-0007: the fact stood in TWO research files, not one. docs/research/competitive-landscape.md section 4 stated it independently with the post-search URL. Both landed in 12106c5 at 18:51; ADR-0006 is f8917fa at 21:42, ancestry confirmed with git merge-base --is-ancestor. The grep would have returned two files.",
-      "unaffected": "ADR-0006 decisions 1, 3, 4, 5 and 6 stand. The block-children finding is now corroborated by PR #711 omitting ListBlockChildrenResponse.",
-      "urgency": "Before #10 ratifies the proof. Do not ratify against a known-wrong table.",
-      "tracked_as": "#21 CLOSED by PR #23 (open). Follow-ups: #24 (search's role), #25 (grep enforcement).",
-      "evidence": "docs/research/notion-api-practice.md, Verification pass 2026-08-17",
-      "resolution": "RESOLVED by ADR-0007, commit 5e22750 on branch docs/adr-0007-search-truncation-signal, MERGED to main as 280524e during the close. Both primary sources were re-fetched directly for the ADR rather than inherited from #21, because the error being corrected was caused by trusting an unopened page.",
-      "containment": "The error was INERT. ADR-0006 decision 1 makes the truncation test positive, so the scan never consults the table to decide whether to look for request_status. A wrong 'None' in a descriptive column gated nothing, and if search never emits the field the behaviour is identical to the old table. This is containment by a decision made for another reason, NOT a defence -- a negative in a table that DID gate behaviour would have shipped. Do not let this argue the grep rule down.",
-      "scope_limit": "The coverage benefit is CONDITIONAL and does not reach v0.1. No document gives POST /v1/search a role in a scan. Five surfaces opened and silent: ADR-0002, CONTEXT.md, PRODUCT.md, #18's hydration map, and the 2026-08-17 proof run. ADR-0007 states the silence and REFUSES to assert the negative. Filed as #24."
-    }
-  ],
-  "asserted_without_adr": [
-    "Validation shape: build at n=1 against this workspace, release at n=3."
-  ],
-  "open_decisions": [
-    {
-      "id": "request-status-handling",
-      "detail": "Write the ADR superseding ADR-0002 decision 4. Positive test for request_status.type === 'incomplete'; absence is uninformative, not an error. Decide also how an uninformative response maps onto ADR-0005's evidence-sufficiency axis — it is not `sufficient` and it is not `unreached`.",
-      "due": "BEFORE any scan code. The current rule hard-errors the healthy path.",
-      "needs": "superseding ADR",
-      "evidence": "docs/proof/results.md section 1"
-    },
-    {
-      "id": "product-claim-narrowing",
-      "detail": "PRODUCT.md overstates coverage. Provable: declared-root coverage plus link resolution (REF001, now the load-bearing mechanism). Not provable: anything about permission removal below a declared root, which is silent. This is partial evidence for the wildcard objection in coverage-artifact-prior-art.md section 5.1 — the boundary may be smaller than claimed.",
-      "due": "before the demand test puts the claim in front of a buyer",
-      "evidence": "docs/proof/results.md section 4"
-    },
-    {
-      "id": "configuration-status-accounting",
-      "detail": "Is the coverage manifest a per-scan artifact or a standing record fed by each scan? MIL-HDBK-61A shows audit outputs flowing back into a standing record of what is under management. If the manifest is produced per scan and discarded, coverage claims can be asserted once but never checked over time.",
-      "status": "DEFERRED by ADR-0005, deliberately. It is a storage decision, not a model decision, and its source is unverified.",
-      "due": "after the 72-hour proof",
-      "blocked_on": "re-verifying MIL-HDBK-61A Fig 8-3, which no verifier has checked"
-    },
-    {
-      "id": "name",
-      "detail": "workspace-lint is trademark-clean and npm-blocked; every notion-* candidate is npm-available and trademark-blocked. Shortlist and npm view evidence in docs/research/name-and-legal.md.",
-      "due": "before the first package.json"
-    },
-    {
-      "id": "product-framing",
-      "detail": "Three live framings: configured rules, zero-config decay report, coverage proof. The demand test chooses. New tiebreaker from S002: acquisition cost. The decay-report buyer is reachable in r/Notion for free; the coverage-proof buyer has no public channel.",
-      "due": "demand test"
-    },
-    {
-      "id": "rule-catalogue-additions",
-      "detail": "Controlled-vocabulary membership (uncovered, testable, voiced). Orphan detection (deferral reason removed by ADR-0002). Duplicate-title should move from configured UNQ001 to built-in.",
-      "due": "after demand test",
-      "note": "SYS001 was already restated in S003 — from 'Scan result is incomplete' to 'A declared root or applicable resource was not evaluated'. It keeps only its finding-identity job: a stable ID a baseline can reference. The run-failure decision moved to the report disposition in ADR-0005."
-    },
-    {
-      "id": "product-identity-false-green",
-      "detail": "S009's largest finding, not yet an ADR. Every high-intensity item in the repository is one defect class -- a system reporting success over an unverified state. Sources: notion-user-pain.md section 4 (chronic irritation vs acute incident, and the Sundararajan quote 'The execution log still shows green'), ADR-0002 (has_more lying at 10,000 rows), ADR-0006 (block-children carry no truncation signal), notion-user-pain.md P10 (relations truncate at 25), the 2026-08-05 unsupported formula value, docs/proof/results.md section 4 (the child_page block vanishes). Consequence: the product is an anti-false-green instrument, not a tidiness linter, and the engineer-versus-auditor fork dissolves because both buyers have the same defect on different surfaces.",
-      "next": "Re-read the eight rules as false-green detectors before writing the ADR. P3's four named defect classes look uncovered."
-    },
-    {
-      "id": "soundness-classification",
-      "detail": "Four formal literatures apply to this product and none has been opened across nine ADRs: certain-vs-possible answers in incomplete-information databases (ADR-0005's outcome pair is a folk re-derivation), transaction isolation and phantom reads (UNQ001 is phantom-prone by construction and may return conforms over a workspace holding a duplicate), unseen-population estimation (ADR-0005 decision 3 asserts an unbounded gap cannot be sized without consulting the field that sizes unobserved populations), and entity resolution (where issue #31's defect is a standard result).",
-      "unseen_population_ANSWERED": "SWEPT 2026-08-17, recorded at docs/research/unseen-population-sizing.md. ADR-0005 decision 3 SURVIVES, and its stated reason should be replaced rather than kept. The field agrees no upper bound is available in the general case (Alfo, Bohning & Rocchetti 2020, DOI 10.1111/biom.13265; Mao, Huang & Zhang 2016, DOI 10.1111/biom.12553). Every estimator that does produce a bound -- Chao1, ACE, jackknife, Good-Turing, Horvitz-Thompson -- runs on a FREQUENCY-OF-FREQUENCIES distribution and needs the same unit observed more than once. Cursor pagination returns each child exactly once, so singletons equal n and doubletons are zero by construction: the input does not exist. These estimators also assume the miss is RANDOM; a cursor stops at a deterministic prefix. UUIDv4 IDs rule out the serial-number family. NEW REVISIT-IF: two independent enumerations of one scope over identifiable IDs WOULD give a frequency-of-frequencies distribution -- the project has two paths, block-children and POST /v1/search (#24). DO NOT USE IT: both share one permission grant, so the lists are positively dependent, and positive dependence biases the estimate DOWN, reporting a SMALLER gap than the true gap. That is the flattering direction and the product's own false-green class inside the coverage instrument. Incidental: Bar-Ilan & Peritz 2009 DOI 10.1002/asi.21097 independently reaches ADR-0006's 'partition the declared root' remedy. Four of eight quotes verified against Crossref abstracts; four rest on a Wiley retrieval tool and are marked unverified in the file. ACM and IEEE venues NOT CHECKED, not absent.",
-      "next": "Rule-by-rule soundness classification: sound / sound-with-hypotheses / not soundly implementable against this API. Three of the four named literatures remain unopened -- incomplete-information databases, transaction isolation and phantom reads, entity resolution (partly closed by ADR-0010). Operator framing: soundness is what buyers pay for, and free linters are free because they are unsound."
-    },
-    {
-      "id": "architecture-provenance-type",
-      "detail": "Called in S009, not yet ADR'd. Core type is provenance, not Page: Observed<T> = complete | partial+cause | unreachable, with NO function Observed<T> -> T, and combinators that propagate partiality so that unique over a partial list cannot return true. One adapter seam is the only code permitted to construct an Observed. Language: TypeScript, because the official SDK's types are the request_status source of truth and give drift detection at tsc time; the Rust fuzzing NEVER-rule does not fire because JSON over HTTPS is not in its named class.",
-      "next": "Validate by prototype rather than by ADR. Does Observed<T> stay ergonomic or poison every call site?"
-    },
-    {
-      "id": "applicable-set-unit",
-      "detail": "CONTEXT.md defines the applicable set as a set of RESOURCES and ADR-0005 decision 4 defines the coverage ratio the same way, but REF001's applicable set is a set of internal references (glossary term: Edge) and UNQ001's is a set of property values across a scope, which is neither. Three options: widen the word to `subject`, make the unit a per-rule declaration, or leave each spec to state its own denominator in prose (the current state, and the one to argue against explicitly). CONTEXT.md is a living doc and is corrected in place; ADR-0005 is not edited.",
-      "due": "before a second rule is specified",
-      "tracker": "#36",
-      "evidence": "docs/spec/REF001-link-recognition.md section 1, closing paragraph",
-      "status": "ANSWERED 2026-08-17 by ADR-0011, MERGED to main in PR #38 at 88d401e. Option 2 -- each rule declares its own coverage item. SYS001 resources, REF001 internal references, REQ001 (resource, required property) pairs, UNQ001 unordered pairs of resources in a uniqueness scope. The coverage ratio is a vector; the headline is the minimum, never a mean. Issue #36's own table was wrong about REQ001 and ADR-0011 corrects it. #36 is CLOSED."
-    },
-    {
-      "id": "denominator-never-built-from-tool-competence",
-      "detail": "Whether 'a rule's applicable set is derived from what the API returned, never from the subset the tool knows how to handle' binds every rule and needs an ADR, or is a consequence of ADR-0005 decision 5 honestly applied. Two independent observed instances in one run (results-ref001-live.md sections 2 and 3) plus the soundiness manifesto. Do not settle by asserting the stronger option because it feels safer.",
-      "due": "before the second and third rules are implemented",
-      "tracker": "#35",
-      "evidence": "docs/proof/results-ref001-live.md sections 2 and 3; Livshits et al., CACM 58(2), Feb 2015, DOI 10.1145/2644805"
-    }
-  ],
-  "api_target": {
-    "notion_version": "2026-03-11",
-    "requirement": "CORRECTED 2026-08-17. request_status is CONDITIONAL, not guaranteed. It is absent from normal responses at Notion-Version 2026-03-11. Test positively for request_status.type === 'incomplete'. Never treat its absence as an error, and never as proof of completeness.",
-    "rate_limit_verified": "average of 3 requests per second per connection; workspace ceiling scaled to plan, amount undisclosed",
-    "admin_content_search": "Enterprise-only, reaches private pages, exports CSV — but it is a search, not an enumeration. Kill criterion 'Notion ships first-party coverage certification' did not fire.",
-    "notion_version_verified": "2026-03-11 returns HTTP 200 on /v1/users/me — the pin is valid.",
-    "permission_filtering": "A page disconnected under a connected parent DISAPPEARS from GET /v1/blocks/{parent}/children. It is not listed-but-unreadable. Verified 2026-08-17 with a full-access control confirming the page still exists at the same ancestor path. An unconnected page returns 404, not 403."
+  {
+   "id": "ADR-0004",
+   "status": "accepted",
+   "summary": "Determinism defined against a named Normalization function. Specify it before the proof runs."
   },
-  "unknowns_assigned_to_proof": [
-    "ANSWERED 2026-08-17 — NO. A child_page block does NOT stay visible after the child's access is revoked; it vanishes from the parent's child list. The 'detectable hole' does not exist.",
-    "Does a property ID survive a property type change? UNTESTED — the fixture has TYPE_CHANGE_PROP=Status ready.",
-    "ANSWERED 2026-08-17 — provisionally YES. Two identical paginated queries returned the same 100 IDs in the same order. Fixture-confounded by bulk-created timestamps; re-run against real content before settling.",
-    "Does the ~11,200-object search ceiling still hold? UNTESTED — needs a workspace larger than any hand-built fixture.",
-    "Is Semgrep's `skipped` output verbose-gated? UNTESTED — a local Semgrep CLI test, nothing to do with Notion.",
-    "Do `unreached` and `undecidable` ever diverge in practice? UNTESTED. Note the fixture can no longer produce a permission-caused unreached inside a declared root — that route is closed. Rate limits and abandoned pagination are the remaining routes.",
-    "ANSWERED 2026-08-17 — YES, enumeration IS separable from fetching. A 151-block page paged 100 + 51 with has_more and next_cursor. ADR-0005's second Revisit-if does not fire; decision 5 stands.",
-    "How often does `disclaimed` fire on a real workspace? UNTESTED — needs REAL_ROOT_ID.",
-    {
-      "id": "_S008_real_root_id",
-      "note": "REAL_ROOT_ID reported set by the operator 2026-08-17, UNVERIFIED -- .env cannot be read. If good, it unblocks Q8 (disclaimed-frequency), the Q3 re-run against organic timestamps, and #7. Two gates before any run: the integration must be CONNECTED to that page (human step in Notion share settings), and Q8 output is a manifest of REAL page titles and IDs -- CONTEXT.md already redacts titles from CI output by default, so decide redaction before results land in the repo."
-    }
-  ],
-  "research": {
-    "location": "docs/research/",
-    "s001_sweeps": 7,
-    "s002_synthesis": "docs/research/coverage-artifact-prior-art.md",
-    "s002_raw_corpus": "docs/research/sweep-raw/ — 9 scout reports plus 2 verification passes, verbatim and unverified except where a verification file says otherwise",
-    "s002_verification": "16 keystone claims re-verified: 6 confirmed, 9 partial, 1 misattributed, 0 fabricated",
-    "known_blind_spot": "Research agents cannot reach Reddit; community.notion.so and forum.notion.so no longer resolve. This is a limitation of the tooling, NOT of the channel — the operator reaches Reddit and has converted a buyer there. Evidence still skews toward people who publish.",
-    "refuted_sources": "docs/research/notion-api-practice.md section 5.2 'Detectable hole' is REFUTED by direct observation 2026-08-17. It was rated (C) and self-flagged as the highest-value item to verify. The rest of that file has not been re-verified and one of its two headline claims was false — treat the remainder as suspect until checked.",
-    "link_hosts_evidence": "ONLY app.notion.com is observed as an internal-link host (docs/proof/results-ref001-live.md section 2, 2026-08-17). notion.so, www.notion.so, notion.com and *.notion.site are in the prototype's regex and are NOT claimed by the proof record. Do not let them into a spec on S010's authority.",
-    "ref001_link_recognition_sweep": {
-      "date": "2026-08-17",
-      "for": "#34, section 0.5 hard trigger before specifying the instrument",
-      "sources_verified": [
-        "Livshits et al., In Defense of Soundiness: A Manifesto, CACM 58(2), Feb 2015, DOI 10.1145/2644805 -- read verbatim from the author-hosted PDF; cacm.acm.org returns 403 to fetch",
-        "XCCDF 1.1.4 schema resultEnumType, csrc.nist.gov/schema/xccdf/1.1.4/xccdf-1.1.4.xsd, fetched 2026-08-17 -- all nine values quoted verbatim with a version label",
-        "LinkChecker linkcheck/checker/unknownurl.py -- source read; two outcomes, neither is silence",
-        "Notion Help, Manage your Notion Sites, sections 'Create a new notion.site domain' and 'Connect a custom domain', fetched 2026-08-17",
-        "Notion API reference, Rich text, developers.notion.com/reference/rich-text, fetched 2026-08-17"
-      ],
-      "not_checked": [
-        "notion.so, www.notion.so and notion.com as internal-link hosts -- no Notion-owned source states any of them; third-party reports describe an in-progress vendor migration and are NOT relied on"
-      ]
-    }
+  {
+   "id": "ADR-0005",
+   "status": "accepted",
+   "summary": "Outcome is a pair \u2014 conformity (conforms|violates, absent when nothing was evaluated) \u00d7 evidence sufficiency (sufficient|unreached|undecidable). `inapplicable` deleted: operator exclusion moves to the scope declaration, precondition mismatch becomes an applicability filter in the manifest. Report disposition unqualified|qualified|disclaimed; a disclaimed report renders no summary verdict. Coverage manifest is a five-stage funnel: declared, resolved, enumerated, fetched, evaluated.",
+   "governing_rule": "A value earns its place only if it changes what the operator does next. This is why evidence sufficiency has three values (different remedies) and why ISA 705's `adverse` was dropped (materiality is not computable by a CLI).",
+   "hard_rule": "No ratio is published without the coverage figure bounding it. XCCDF's exclude-from-scoring rule applied alone reproduces the Great Expectations defect \u2014 success_percent over evaluated expectations lets a half-unrun suite report 100%.",
+   "pervasiveness_predicate": "Gaps are pervasive when a declared root was never reached, or any gap is unbounded. Structural, not a percentage: a ratio threshold would be computed over a denominator the scan has just admitted it cannot establish. Generalises ADR-0002 decision 2.",
+   "deviations_from_checkpoint_plan": "Five funnel stages, not four \u2014 `enumerated` was added between resolved and fetched because it is the only source of unbounded gaps, and the disclaimed disposition keys on those.",
+   "evidential_standing": "Decisions 1-3 rest on adversarially re-verified primary sources (ISA 705 paras 5(a) and 17, XCCDF value list, OSCAL metaschema negative, SARIF schema, PCAOB AS 3105.45, ISO 19011 6.5.1 k, Semgrep enum). Decision 5's funnel shape rests on CONSORT 13a/13b, PRISMA 16b and STROBE 13 \u2014 fetched but NOT re-verified, adopted on three-way convergence. Re-verify clause numbers before publishing them."
   },
-  "citation_hazards": [
-    "ISO 19011:2018 was read from a site hosting a complete unauthorised copy including its intact copyright page. Wording and clause numbers are genuine and verified. The URL must never appear in a published artifact. Cite the clause and link the ISO catalogue.",
-    "The squarespace-hosted ISA 705 mirror is unofficial. Cite paragraph numbers and point at IAASB.",
-    "Reached only through consultancy paraphrase and not citable at clause level: ISO 9001, ISO 13485, EIA-649, ISO 10007, MIL-STD-973, AICPA AT-C 320."
-  ],
-  "inputs": {
-    "location": "docs/inputs/",
-    "note": "None canonical. The PRD carries URLs and dates; the decay synthesis carries reasoning without URLs; the recruiting sweep carries claimed search coverage without URLs and a same-day correction block. Evidentiary weights differ and the files record that."
+  {
+   "id": "ADR-0006",
+   "status": "accepted. Decision 2's POST /v1/search row is SUPERSEDED by ADR-0007. Decisions 1, 3, 4, 5 and 6 stand; the other two rows of decision 2's table stand. Not edited.",
+   "supersedes": "ADR-0002 decision 4 in full. ADR-0002 decisions 1, 2, 3 and 5 stand; ADR-0002 is not edited.",
+   "corrects": "The closing sentence of docs/proof/results.md section 1, which mapped an absent request_status to ADR-0005's `unreached`. Corrected by reference; the evidence record is not edited.",
+   "summary": "Truncation is detected by a positive test -- request_status.type === 'incomplete' -- and that test covers ONE endpoint family. The signal is documented on POST /v1/data_sources/{id}/query only. It is absent from /reference/intro#pagination, the normative shared-envelope description, and from GET /v1/blocks/{id}/children. Absence of the field is neither an error nor proof of completeness.",
+   "the_larger_finding": "GET /v1/blocks/{id}/children is the traversal spine of the scan and carries NO truncation signal. A complete enumeration and a silently truncated one return the same has_more: false -- the value that lied at the data-source cap before 2026-04-20. Every completeness claim the product makes over page content rests on it. The scan cannot close this; ADR-0006 decision 5 discloses it per-run instead. STRENGTHENED by ADR-0007: this finding rested on documentation silence when written -- the same inference that failed on the search row -- and now rests on notion-sdk-js PR #711 threading request_status through seven named response types and OMITTING ListBlockChildrenResponse. An enumerated omission, not an unchecked silence.",
+   "evidence_sufficiency_ruling": "No fourth value. An absent request_status maps to `sufficient`. Rejected on ADR-0005's governing rule -- a value earns its place only if it changes what the operator does next. The absent case has no remedy, fires on 100% of runs, and a permanent universal qualifier is the mechanism ADR-0005's fourth Revisit-if predicts will train readers to skip the limitations half.",
+   "cap_trip": "Where a documented cap exists, a terminal count AT the cap makes the enumerated count a lower bound, not an equality: cause suspected_result_limit, marked unbounded, remedy 'partition the declared root'. Transplanted from Elasticsearch hits.total.relation 'gte', the OSIsoft PI Web API documented silent-truncation case, and fetch n+1. Applies to dataSources.query only -- block children and search have no documented cap constant, and building one from the observed ~11,200 search wall is rejected.",
+   "unobserved": "request_status.type === 'complete' has never been seen emitted on either branch. No decision depends on it and no code path may block on it.",
+   "unverified": "The 10,000 cap constant is vendor-documented and has never been confirmed by a real capped response. Vendor documentation has already been wrong once in this project (notion-api-practice.md section 5.2). The Elasticsearch field path was read from a search summary, not the reference.",
+   "artifact": "docs/adr/0006-truncation-is-detected-by-a-positive-test-on-one-endpoint-family.md",
+   "refuted_2026_08_17": "Decision 2's endpoint table is wrong on the POST /v1/search row. Search DOES carry request_status. The block-children row is CONFIRMED and now independently corroborated by notion-sdk-js PR #711, which omits ListBlockChildrenResponse. ADR-0006 is not edited; #21 carries the superseding ADR."
   },
-  "operator_rulings": [
-    "NO MORE SESSION GRADES, 2026-08-17. 'We're not doing these grades anymore. It's a waste of tokens.' The session-end ritual's step 6.5 performance scorecard is UN-ADOPTED for this project. Do NOT solicit a VERDICT, do NOT write a SELF-ASSESS line into the checkpoint, and do NOT ask the grading question at close. The ritual line records verdict=n/a. The skill's own text permits this -- 'projects without adopted metrics skip, record nothing rather than a hollow verdict.' ATTRIB was answered as 'skill' in the same exchange: the skill layer is where the gaps were, which is recorded in the S013 band rather than as a grade.",
-    "No ghostwriting. Produce content specifications for anything he will send as himself, never drafted first-person copy. The literal-humanist-voice register governs how the agent writes; it does not license writing as him.",
-    "LinkedIn is excluded from every project.",
-    "SewerAI and Sepehr Sobhani are not contacts. The engagement never closed and was never paid. The artifacts are design input only.",
-    "Citations are receipts, 2026-08-17. A claim carries a locator a third party can follow -- ADR, repo file plus section, official API doc, commit SHA, dated post. Paraphrase without a pointer, 'as we discussed', 'Notion's docs say', 'the ADR covers this' -- all commentary, not evidence. In a system treating UNMEASURED and claim ceilings as first-class, the citation is the only mechanism keeping the ceiling honest.",
-    "The gap is rigour, not triage, 2026-08-17. 'The real hole here is in lack of rigor, computer science research, and systems design analysis - not ticket triage.' Proved the same session by issue #31: a merged ADR adopted a matching rule that is not an equivalence relation, and no template, PR review or hook caught it. Check formal properties before writing the evidence section.",
-    "Notion Workers and the PAT are not v0.1 surfaces, 2026-08-17. The PAT is ruled out by Principle 7 -- its API capability is a single bundle including create and update, with no read-only variant -- so the planned PAT fixture test in #27's DoD is NOT to be run. Workers are technically viable via an integration token and strategically premature: no exit byte, both output shapes reopen a stated boundary, Business/Enterprise only, and billed since 2026-08-11 on a per-run credit meter that charges more the more completely the scan reads."
-  ],
-  "tracker": {
-    "host": "GitHub issues, gh CLI",
-    "open": "#10 ratify the 72-hour proof -- NOW THE CRITICAL PATH and the next gate. Its 'Proof checks' section is nine falsifiable end-to-end acceptance criteria and is effectively the build spec, written before S005 and never run as a set. Runnable remainder Q2/Q3-rerun/Q8/restore wl-revoke-child; two human steps first - #39 README contradicts ADR-0005/0008 in four places - #35 denominator rule, ADR or consequence - #29 buyer question: PARTIALLY ANSWERED by the Gate 1 close (framing 2 is the entry point) but the WILLINGNESS-TO-PAY half is still open and the gate did NOT establish a price; its 'answered by demand-test respondents' framing is dead, there are no respondents - #27 observation half only, PAT test to be DROPPED - #25 ADR-vs-research enforcement, FOUR shapes, now has a working hook precedent - #24 does v0.1 call search (also the Revisit-if surface for the unseen-population sweep -- see soundness-classification) - #19, #18 mechanical, fast-tier session - #8 npm name - #7 perf budgets",
-    "closed_S005": "#2 #3 #4 #5 #6 #9 consolidated into #16 — they were undocumented decisions, not open questions.",
-    "closed_S013": "#40 CLOSED by the Gate 1 close. Its statistics half was swept and ADR-0005 decision 3 survives; its recruitment-bias half never depended on that sweep and was visible inside PRODUCT.md all along.",
-    "phase_transition_S013": "The project left the decision phase. Eleven ADRs, five of them superseding parts of earlier ones, every supersession found by re-reading documents rather than by running the product. Across S008-S012 the board closed 7 and filed 6 -- not converging. Every open issue produced a document, a decision, or a spec, so /implement had nothing to take. Gate 1 is now closed and the next artefact is a BUILD SPEC seeded from #10's nine proof checks, not a twelfth ADR.",
-    "note": "ALL WORK MERGED. main carries ADR-0011 at 88d401e; nothing in flight. Every open issue carries a triage role, and a PreToolUse guard now enforces one at issue-creation time from the next session onward. GATE 1 IS NOT ON THIS BOARD as a gate: it advances when the operator sends, and #40 blocks the send.",
-    "closed_S006": "#13 closes on the PR #17 merge (Closes #13 in commit f8917fa).",
-    "closed_S007": "#15 and #16 closed by PR #22. #13 closed by PR #17.",
-    "closed_S008": "#21 closed by PR #23, MERGED as 280524e. #24 and #25 filed as its follow-ups.",
-    "closed_S009": "#20 (ADR-0008), #1 (ADR-0009, narrowly -- buyer half refiled as #29)",
-    "closed_S010": "#31 (closed by ADR-0010 via PR #32)",
-    "filed_S010": "#34 -- specify REF001 link recognition: the host set, and the unrecognised outcome",
-    "closed_S011": "#34 closed by PR #37 (spec, not ADR).",
-    "closed_S012": "#14 CLOSED as ALREADY COMPLETE -- finished 2026-08-16 in cc16d63, on origin/main, every DoD element present in the issue's own wording. S010 and S011 both carried it as the Gate 1 blocker anyway. #36 CLOSED by PR #38, merged as 88d401e.",
-    "filed_S012": "#39 -- README.md contradicts ADR-0005 and ADR-0008 in four places, untouched since 2026-08-16. #40 -- PRODUCT.md's demand test and kill criterion name the auditor buyer; the only item marked blocks:Gate 1 and it had never been filed."
+  {
+   "id": "ADR-0007",
+   "status": "accepted and MERGED to main as 280524e (5e22750)",
+   "supersedes": "ONE ROW of ADR-0006 decision 2 -- POST /v1/search. ADR-0006 decisions 1, 3, 4, 5, 6 and the other two table rows stand. ADR-0006 is not edited.",
+   "corrects": "Nothing in docs/research/. Both research files carried the correct fact before ADR-0006 was written. This ADR corrects the ADR, not the evidence.",
+   "summary": "POST /v1/search carries request_status: type complete|incomplete, incomplete_reason query_result_limit_reached. No documented cap, so ADR-0006 decision 4's exclusion of search from the cap-proximity trip SURVIVES on its stated reason -- a signal is not a cap. The ~11,200 figure is moved out of the signal column and marked NOT re-confirmed on refetch.",
+   "finding_inert": "The error gated no behaviour. Decision 1's positive test means the scan looks for the field on every response page regardless of the table. If search never emits it, behaviour equals the old table. No downside branch, and no code path needs revision.",
+   "finding_conditional": "The coverage benefit does not reach v0.1. Search has no declared role in a scan across five opened design surfaces. ADR-0007 states their silence and does NOT assert the negative, since misreading silence as absence is the error it corrects. Filed as #24.",
+   "finding_method": "Second ADR to contradict a file already in the tree, and the fact stood in TWO research files three hours earlier. Method rules adopted: a per-endpoint claim needs the per-endpoint page; absence from a doc page is not-checked, not absent; grep docs/research/ before asserting a factual table. Rule 3 is UNENFORCED -- enforcement filed as #25.",
+   "evidence_class": "WEAK, and stated in the ADR rather than buried. Both sources are statements of intent -- a doc page and an SDK type. No capped search has been observed and neither branch of request_status has been seen on ANY endpoint. This is the class that produced ADR-0002 decision 4, a field documented as present and absent from every real response.",
+   "evidence": "https://developers.notion.com/reference/post-search and makenotion/notion-sdk-js PR #711, both re-fetched while drafting; docs/research/notion-api-practice.md section 4.5; docs/research/competitive-landscape.md section 4"
   },
-  "build": {
-    "branch": "build/t1-scan-scaffold",
-    "commits": [
-      "aaab38f merge main",
-      "0ac7c2d T1 scan scaffold",
-      "9dcb069 report seam + fixture oracle"
-    ],
-    "directory": "slice/ -- private package, NOT src/, because src/ asserts 'this is the product tree' and that claim is due the day #8 lands",
-    "modules": [
-      "ids.ts",
-      "config.ts",
-      "notion-port.ts",
-      "observed.ts",
-      "manifest.ts",
-      "verdict.ts",
-      "scan.ts",
-      "report.ts",
-      "fixture-oracle.ts",
-      "cli.ts",
-      "CHECK-scan-scaffold.ts",
-      "make-fixture-config.ts"
-    ],
-    "suite": "npx tsx CHECK-scan-scaffold.ts -- 50 checks, offline, no network and no token",
-    "mutation_checks": [
-      "TEST 5: disable gapsFrom, exit byte must move 3 -> 0",
-      "TEST 7: remove a required child, the oracle must go red"
-    ],
-    "live_command": "cd slice && npx tsx cli.ts scan --config ../wl.config.json --oracle",
-    "config_generator": "npx tsx make-fixture-config.ts -- reads FIXTURE_ROOT_ID from .env and writes the gitignored wl.config.json; the config contract is ID-only and there is deliberately no ${VAR} escape in the loader",
-    "no_rule_consequences": [
-      "ADR-0011 coverage vector is EMPTY -- one entry per rule and there are no rules",
-      "exit 0 is UNREACHABLE in T1 by construction; a perfect run still exits 3",
-      "newUnsuppressedFindings is passed as an explicit 0 -- deriveVerdict defaults it to violations+gaps.length, which would exit 1 on a slice with no findings"
-    ]
+  {
+   "id": "ADR-0008",
+   "status": "accepted and MERGED to main as f6f8c5c (33017b8)",
+   "title": "Exit status is a priority signal over two axes; resolved is a coverage claim the baseline must earn",
+   "implements": "ADR-0005 decision 4. Generalises ADR-0002 decision 2 -- exit 2 keeps its number and widens from unreachable-declared-root to the disclaimed disposition.",
+   "corrects": "the Baseline glossary entry in CONTEXT.md. The PRD input is NOT edited.",
+   "key": "Exit precedence 4>2>3>1>0, non-monotonic by choice to leave ADR-0002 untouched. Exit 0 asserts exactly two things: no new unsuppressed finding, and coverage at or above the declared threshold. Five baseline states with suppression as an orthogonal axis. resolved requires the (rule,resource) pair to have reached the manifest's evaluated stage.",
+   "defect": "Decision 6 is DEFECTIVE -- see issue #31. Any-match fingerprinting is not transitive. Needs a superseding ADR before any identity code is written."
+  },
+  {
+   "id": "ADR-0009",
+   "status": "accepted and MERGED to main as 6faf04c (40062cd)",
+   "title": "The integration is the primary credential, the Operator is the accountability locus for the access boundary, and membership drift is disclosed rather than detected",
+   "closes": "#1, narrowly -- the accountable role only. The buyer half was untracked by the auto-close and is refiled as #29.",
+   "key": "Operator / Executor / Consumer split; roles distinct, people may coincide. Principal added as a term rather than dual mode-labelled definitions of Connection. A coverage threshold may never relax a disclaimed disposition.",
+   "caveat": "Decision 1's claim that the integration grant does not move with employment is asserted into a DOCUMENTED SILENCE. The capabilities reference covers loss of EDIT access only. See docs/research/notion-developer-platform.md section 7. Comparative ranking survives; the independence claim does not."
+  },
+  {
+   "id": "ADR-0010",
+   "status": "accepted and MERGED to main as 612875a (7e318ba, PR #32)",
+   "title": "Baseline matching is a hierarchy of matchkeys over a resource anchor, not an equivalence relation over fingerprints",
+   "supersedes": "ADR-0008 decision 6 -- its matching rule and its key-composition table. ADR-0008 decisions 1-5 and 7 stand, as do decision 6's four SARIF constraints and its two-hazard analysis. ADR-0008 not edited.",
+   "restores": "ADR-0003 decision 1, which ADR-0008 decision 6 drifted from without citing it",
+   "closes": "#31, including its third Revisit-if (entity-resolution literature)",
+   "decisions": [
+    "1. Identity is two layers: anchor = (rule ID, resource ID) on the native object ID, normalized to hyphenated UUIDv4 on ingest; discriminator = matchkey hierarchy scoped inside one anchor",
+    "2. The hierarchy runs as ordered passes over sets, not as a probe per finding -- a pass is a set join and has no visiting order",
+    "3. Matching is one-to-one; a matched pair leaves the pool (Wray 2024)",
+    "4. Transitive closure is prohibited -- the failure it forbids is over-merging",
+    "5. Ties inside a pass are broken by a published total order; a rule without one does not ship",
+    "6. The observed value is evidence, never identity -- this is what makes `updated` reachable",
+    "7. Key list v1 for all four shipping rules; n=0 and n=1 are valid hierarchies",
+    "8. Keys are appended, never inserted"
+   ],
+   "evidence_note": "Three record-linkage sources fetched while drafting, quoted from the fetched text, NOT adversarially re-verified. Wray 2024 DOI 10.23889/ijpds.v9i5.2656; Binette & Steorts 2022 DOI 10.1126/sciadv.abi8021 (quote confirmed on a second independent fetch); NCBI Bookshelf NBK253312. Stated negative: the NCBI overview contains NO statement about link-once/pool removal -- that constraint rests on Wray alone.",
+   "incomplete": "decision 8 says how to ADD a key and nothing about REMOVING a defective one. Named in the ADR as missing, not as unnecessary."
+  },
+  "ADR-0011 (MERGED to main in PR #38 at 88d401e): coverage is measured over a per-rule coverage item and the coverage ratio is a vector whose headline is the minimum. Supersedes ADR-0005 decision 4's ratio definition, ADR-0008 decision 4's --min-coverage referent, and the coverage clause of ADR-0008 decision 2's exit-0 invariant. Neither ADR edited. Generalises ADR-0008 decision 5's 'the pair, not the resource, is the unit'. UNQ001's pair denominator makes its coverage quadratic: 90 of 100 resources is 80.9 percent of pairs, not 90."
+ ],
+ "corrections_pending": [
+  {
+   "id": "competitive-landscape wedge",
+   "target": "docs/research/competitive-landscape.md section 270",
+   "detail": "States the wedge as 'R1 the coverage manifest combined with a CI exit code'. Under the false-green synthesis the manifest is the soundness certificate rather than half a wedge. Not yet decided; do not edit before the rule-catalogue re-read."
   }
+ ],
+ "corrections_applied": [
+  {
+   "target": "PRODUCT.md, Gates gate 1 and the kill criteria list",
+   "claim": "The demand test recruits five teams holding audit-relevant data, and the kill criterion fires when no team must prove a structural claim to a third party.",
+   "status": "CORRECTED 2026-08-17 on branch docs/40-unseen-population-and-demand-test-framing. Issue #40 closed.",
+   "replacement": "Gate 1 is recorded as CLOSED on owner research. The three framings stand because they are what the build targets. The auditor kill criterion is struck through and kept visible, replaced by: the zero-config surface returns nothing a workspace owner recognises as a defect worth repairing.",
+   "the_conditional_half": "S009's capability refutation of the auditor buyer was CONDITIONAL on ADR-0005 decision 3's unexamined 'an unbounded gap cannot be sized' claim. That claim was swept on 2026-08-17 and SURVIVES, so the refutation stands. See docs/research/unseen-population-sizing.md.",
+   "the_unconditional_half": "The recruitment-bias objection never depended on decision 3 and did not need the sweep. PRODUCT.md already concluded under 'The config file is the suspect, not the segment' that declared rules 'are not the entry point'. The Gates section had not absorbed the decay synthesis that the product section absorbed the same day.",
+   "method_note": "The whole session's plan, and a literature sweep, were built before docs/inputs/ was opened once. That is the THIRD time the decay synthesis has been skipped. docs/agents/domain.md now carries docs/inputs/ as step 7 of the reading list instead of as a paragraph denying it authority."
+  },
+  {
+   "target": "PRODUCT.md",
+   "claim": "No SARIF object expresses analysis scope or coverage.",
+   "status": "REFUTED \u2014 corrected in S003, commit db02541",
+   "replacement": "SARIF carries per-result and per-artifact not-analysed primitives \u2014 result.kind, invocation.executionSuccessful, toolExecutionNotifications, artifact.roles analysisTarget \u2014 but defines no run-level coverage aggregate.",
+   "residual": "The same refuted sentence still stands in ADR-0002 Consequences and ADR-0003 Consequences. Both are deliberately NOT edited \u2014 ADRs are immutable records and ADR-0005 supersedes those paragraphs by reference. Do not 'fix' them.",
+   "decided": "Semgrep routes coverage through its native schema, not SARIF. A SARIF export loses the manifest. ADR-0005 \u00a76 accepts that export loss explicitly."
+  },
+  {
+   "target": "PRODUCT.md, any throughput model",
+   "claim": "Notion rate limits scale 10/25/50/100 req/s by plan.",
+   "status": "NO-OP \u2014 verified in S003, the figures appear in no canonical doc",
+   "detail": "grep over PRODUCT.md, CONTEXT.md and docs/adr/ returns nothing. Remaining instances are in checkpoint.md (as the instruction), coverage-artifact-prior-art.md (marked PARTIAL), sweep-raw/verify-platform.md (the correction itself) and sweep-raw/wildcard.md (fenced CONTEXT-ONLY). Nothing to delete.",
+   "standing_figure": "Size every throughput model on 3 req/s per connection. The three-minute warm-scan kill criterion is a budget of roughly 540 requests."
+  },
+  {
+   "target": "docs/adr/0003",
+   "claim": "OSCAL supplies the observation/finding split including an incomplete outcome.",
+   "status": "RESOLVED by ADR-0005",
+   "replacement": "The observation/finding split remains adopted. `incomplete` is not inherited from OSCAL \u2014 it is defined in ADR-0005 from XCCDF."
+  },
+  {
+   "target": "docs/adr/0002 decision 4",
+   "claim": "Absence of request_status from a paginated list response is a hard error.",
+   "resolution": "SUPERSEDED IN FULL by ADR-0006 decision 1 (commit f8917fa, PR #17 open). ADR-0002 is not edited; decisions 1, 2, 3 and 5 stand.",
+   "replacement": "Test positively: request_status.type === 'incomplete' means the query was cut off. Absence is neither an error nor proof of completeness.",
+   "correction_to_the_correction": "The replacement text previously held in corrections_pending said absence 'is uninformative, which is the state ADR-0005's unreached exists to express'. That was WRONG and is removed. Absence is NOT unreached: unreached carries the remedy 'widen access or raise the request budget', and no operator action produces a field the server declined to send. ADR-0006 decision 3 rules that absence maps to `sufficient`, with the residual doubt carried by the sampling-risk statement rather than by the outcome axis. The wrong sentence also stands in docs/proof/results.md section 1 and is corrected there by reference, not by edit.",
+   "evidence": "docs/proof/results.md section 1; docs/adr/0006"
+  },
+  {
+   "target": "PRODUCT.md",
+   "claim": "The report states 'exactly what the scan could not see'.",
+   "resolution": "NARROWED in commit cc16d63 (PR #17 open). Issue #14 left OPEN deliberately: it is labelled ready-for-human and the wording of a product claim is the operator's call. The draft is a proposal, not a close.",
+   "replacement": "Provable: declared-root coverage, link resolution, and the ambiguity of 404. Not provable: anything about permission removal below a declared root, and that a child list was complete. REF001 is the load-bearing coverage mechanism.",
+   "second_location": "The refuted claim stood in a SECOND place in the same file -- proof test 1 under 'Four proof tests the PRD does not list'. Marked ANSWERED and refuted rather than deleted.",
+   "evidence": "docs/proof/results.md section 4; docs/adr/0006 decision 2"
+  },
+  {
+   "target": "docs/adr/0006 decision 2, the POST /v1/search row",
+   "claim": "POST /v1/search carries no documented truncation signal.",
+   "status": "REFUTED 2026-08-17 by the #15 verification pass, one day after the ADR was accepted.",
+   "replacement": "Search DOES carry request_status. Notion's post-search reference documents type complete|incomplete with incomplete_reason query_result_limit_reached, and notion-sdk-js PR #711 adds the field to SearchResponse. A truncated search is therefore detectable and the ~11,200 wall is a reportable gap, not a silent one.",
+   "method_failure": "A negative was asserted across three endpoints having opened two references. Silence on the shared pagination page was read as absence rather than as not-checked. docs/research/notion-api-practice.md section 4.5 had the correct list since 2026-08-16 and was never consulted. CORRECTED AND SHARPENED by ADR-0007: the fact stood in TWO research files, not one. docs/research/competitive-landscape.md section 4 stated it independently with the post-search URL. Both landed in 12106c5 at 18:51; ADR-0006 is f8917fa at 21:42, ancestry confirmed with git merge-base --is-ancestor. The grep would have returned two files.",
+   "unaffected": "ADR-0006 decisions 1, 3, 4, 5 and 6 stand. The block-children finding is now corroborated by PR #711 omitting ListBlockChildrenResponse.",
+   "urgency": "Before #10 ratifies the proof. Do not ratify against a known-wrong table.",
+   "tracked_as": "#21 CLOSED by PR #23 (open). Follow-ups: #24 (search's role), #25 (grep enforcement).",
+   "evidence": "docs/research/notion-api-practice.md, Verification pass 2026-08-17",
+   "resolution": "RESOLVED by ADR-0007, commit 5e22750 on branch docs/adr-0007-search-truncation-signal, MERGED to main as 280524e during the close. Both primary sources were re-fetched directly for the ADR rather than inherited from #21, because the error being corrected was caused by trusting an unopened page.",
+   "containment": "The error was INERT. ADR-0006 decision 1 makes the truncation test positive, so the scan never consults the table to decide whether to look for request_status. A wrong 'None' in a descriptive column gated nothing, and if search never emits the field the behaviour is identical to the old table. This is containment by a decision made for another reason, NOT a defence -- a negative in a table that DID gate behaviour would have shipped. Do not let this argue the grep rule down.",
+   "scope_limit": "The coverage benefit is CONDITIONAL and does not reach v0.1. No document gives POST /v1/search a role in a scan. Five surfaces opened and silent: ADR-0002, CONTEXT.md, PRODUCT.md, #18's hydration map, and the 2026-08-17 proof run. ADR-0007 states the silence and REFUSES to assert the negative. Filed as #24."
+  }
+ ],
+ "asserted_without_adr": [
+  "Validation shape: build at n=1 against this workspace, release at n=3."
+ ],
+ "open_decisions": [
+  {
+   "id": "request-status-handling",
+   "detail": "Write the ADR superseding ADR-0002 decision 4. Positive test for request_status.type === 'incomplete'; absence is uninformative, not an error. Decide also how an uninformative response maps onto ADR-0005's evidence-sufficiency axis \u2014 it is not `sufficient` and it is not `unreached`.",
+   "due": "BEFORE any scan code. The current rule hard-errors the healthy path.",
+   "needs": "superseding ADR",
+   "evidence": "docs/proof/results.md section 1"
+  },
+  {
+   "id": "product-claim-narrowing",
+   "detail": "PRODUCT.md overstates coverage. Provable: declared-root coverage plus link resolution (REF001, now the load-bearing mechanism). Not provable: anything about permission removal below a declared root, which is silent. This is partial evidence for the wildcard objection in coverage-artifact-prior-art.md section 5.1 \u2014 the boundary may be smaller than claimed.",
+   "due": "before the demand test puts the claim in front of a buyer",
+   "evidence": "docs/proof/results.md section 4"
+  },
+  {
+   "id": "configuration-status-accounting",
+   "detail": "Is the coverage manifest a per-scan artifact or a standing record fed by each scan? MIL-HDBK-61A shows audit outputs flowing back into a standing record of what is under management. If the manifest is produced per scan and discarded, coverage claims can be asserted once but never checked over time.",
+   "status": "DEFERRED by ADR-0005, deliberately. It is a storage decision, not a model decision, and its source is unverified.",
+   "due": "after the 72-hour proof",
+   "blocked_on": "re-verifying MIL-HDBK-61A Fig 8-3, which no verifier has checked"
+  },
+  {
+   "id": "name",
+   "detail": "workspace-lint is trademark-clean and npm-blocked; every notion-* candidate is npm-available and trademark-blocked. Shortlist and npm view evidence in docs/research/name-and-legal.md.",
+   "due": "before the first package.json"
+  },
+  {
+   "id": "product-framing",
+   "detail": "Three live framings: configured rules, zero-config decay report, coverage proof. The demand test chooses. New tiebreaker from S002: acquisition cost. The decay-report buyer is reachable in r/Notion for free; the coverage-proof buyer has no public channel.",
+   "due": "demand test"
+  },
+  {
+   "id": "rule-catalogue-additions",
+   "detail": "Controlled-vocabulary membership (uncovered, testable, voiced). Orphan detection (deferral reason removed by ADR-0002). Duplicate-title should move from configured UNQ001 to built-in.",
+   "due": "after demand test",
+   "note": "SYS001 was already restated in S003 \u2014 from 'Scan result is incomplete' to 'A declared root or applicable resource was not evaluated'. It keeps only its finding-identity job: a stable ID a baseline can reference. The run-failure decision moved to the report disposition in ADR-0005."
+  },
+  {
+   "id": "product-identity-false-green",
+   "detail": "S009's largest finding, not yet an ADR. Every high-intensity item in the repository is one defect class -- a system reporting success over an unverified state. Sources: notion-user-pain.md section 4 (chronic irritation vs acute incident, and the Sundararajan quote 'The execution log still shows green'), ADR-0002 (has_more lying at 10,000 rows), ADR-0006 (block-children carry no truncation signal), notion-user-pain.md P10 (relations truncate at 25), the 2026-08-05 unsupported formula value, docs/proof/results.md section 4 (the child_page block vanishes). Consequence: the product is an anti-false-green instrument, not a tidiness linter, and the engineer-versus-auditor fork dissolves because both buyers have the same defect on different surfaces.",
+   "next": "Re-read the eight rules as false-green detectors before writing the ADR. P3's four named defect classes look uncovered."
+  },
+  {
+   "id": "soundness-classification",
+   "detail": "Four formal literatures apply to this product and none has been opened across nine ADRs: certain-vs-possible answers in incomplete-information databases (ADR-0005's outcome pair is a folk re-derivation), transaction isolation and phantom reads (UNQ001 is phantom-prone by construction and may return conforms over a workspace holding a duplicate), unseen-population estimation (ADR-0005 decision 3 asserts an unbounded gap cannot be sized without consulting the field that sizes unobserved populations), and entity resolution (where issue #31's defect is a standard result).",
+   "unseen_population_ANSWERED": "SWEPT 2026-08-17, recorded at docs/research/unseen-population-sizing.md. ADR-0005 decision 3 SURVIVES, and its stated reason should be replaced rather than kept. The field agrees no upper bound is available in the general case (Alfo, Bohning & Rocchetti 2020, DOI 10.1111/biom.13265; Mao, Huang & Zhang 2016, DOI 10.1111/biom.12553). Every estimator that does produce a bound -- Chao1, ACE, jackknife, Good-Turing, Horvitz-Thompson -- runs on a FREQUENCY-OF-FREQUENCIES distribution and needs the same unit observed more than once. Cursor pagination returns each child exactly once, so singletons equal n and doubletons are zero by construction: the input does not exist. These estimators also assume the miss is RANDOM; a cursor stops at a deterministic prefix. UUIDv4 IDs rule out the serial-number family. NEW REVISIT-IF: two independent enumerations of one scope over identifiable IDs WOULD give a frequency-of-frequencies distribution -- the project has two paths, block-children and POST /v1/search (#24). DO NOT USE IT: both share one permission grant, so the lists are positively dependent, and positive dependence biases the estimate DOWN, reporting a SMALLER gap than the true gap. That is the flattering direction and the product's own false-green class inside the coverage instrument. Incidental: Bar-Ilan & Peritz 2009 DOI 10.1002/asi.21097 independently reaches ADR-0006's 'partition the declared root' remedy. Four of eight quotes verified against Crossref abstracts; four rest on a Wiley retrieval tool and are marked unverified in the file. ACM and IEEE venues NOT CHECKED, not absent.",
+   "next": "Rule-by-rule soundness classification: sound / sound-with-hypotheses / not soundly implementable against this API. Three of the four named literatures remain unopened -- incomplete-information databases, transaction isolation and phantom reads, entity resolution (partly closed by ADR-0010). Operator framing: soundness is what buyers pay for, and free linters are free because they are unsound."
+  },
+  {
+   "id": "architecture-provenance-type",
+   "detail": "Called in S009, not yet ADR'd. Core type is provenance, not Page: Observed<T> = complete | partial+cause | unreachable, with NO function Observed<T> -> T, and combinators that propagate partiality so that unique over a partial list cannot return true. One adapter seam is the only code permitted to construct an Observed. Language: TypeScript, because the official SDK's types are the request_status source of truth and give drift detection at tsc time; the Rust fuzzing NEVER-rule does not fire because JSON over HTTPS is not in its named class.",
+   "next": "Validate by prototype rather than by ADR. Does Observed<T> stay ergonomic or poison every call site?"
+  },
+  {
+   "id": "applicable-set-unit",
+   "detail": "CONTEXT.md defines the applicable set as a set of RESOURCES and ADR-0005 decision 4 defines the coverage ratio the same way, but REF001's applicable set is a set of internal references (glossary term: Edge) and UNQ001's is a set of property values across a scope, which is neither. Three options: widen the word to `subject`, make the unit a per-rule declaration, or leave each spec to state its own denominator in prose (the current state, and the one to argue against explicitly). CONTEXT.md is a living doc and is corrected in place; ADR-0005 is not edited.",
+   "due": "before a second rule is specified",
+   "tracker": "#36",
+   "evidence": "docs/spec/REF001-link-recognition.md section 1, closing paragraph",
+   "status": "ANSWERED 2026-08-17 by ADR-0011, MERGED to main in PR #38 at 88d401e. Option 2 -- each rule declares its own coverage item. SYS001 resources, REF001 internal references, REQ001 (resource, required property) pairs, UNQ001 unordered pairs of resources in a uniqueness scope. The coverage ratio is a vector; the headline is the minimum, never a mean. Issue #36's own table was wrong about REQ001 and ADR-0011 corrects it. #36 is CLOSED."
+  },
+  {
+   "id": "denominator-never-built-from-tool-competence",
+   "detail": "Whether 'a rule's applicable set is derived from what the API returned, never from the subset the tool knows how to handle' binds every rule and needs an ADR, or is a consequence of ADR-0005 decision 5 honestly applied. Two independent observed instances in one run (results-ref001-live.md sections 2 and 3) plus the soundiness manifesto. Do not settle by asserting the stronger option because it feels safer.",
+   "due": "before the second and third rules are implemented",
+   "tracker": "#35",
+   "evidence": "docs/proof/results-ref001-live.md sections 2 and 3; Livshits et al., CACM 58(2), Feb 2015, DOI 10.1145/2644805"
+  },
+  {
+   "id": "#49",
+   "question": "May slice/verdict.ts diverge from the frozen prototypes/verdict.ts, and what replaces the scalar coverage comparison?",
+   "why_now": "deriveVerdict compares evaluated/applicable over the funnel against the declared threshold. ADR-0011 decision 5 makes the threshold a floor on EVERY rule, i.e. on the minimum of the coverage vector. Those are the same number only while one rule exists, because SYS001 coverage item is the resource the funnel stages. REF001 counts internal references, so a run can read every resource and resolve few references: the funnel figure stays high and exit 3 never fires. Second defect: the why string prints a bare ratio, which criterion 6 forbids, worked around at the render layer in 95c60c5.",
+   "constraint": "spec section 5 freezes the prototype as a primary source and requires an ADR BEFORE the code. A spec never supersedes an ADR."
+  },
+  {
+   "id": "#50",
+   "question": "Does ADR-0005 decision 2 applicability filter ship in v0.1?",
+   "why_now": "SYS001 reports evidence unreached for the fixture child_database, which is never enumerated BY DESIGN (spec 1.2). ADR-0005 decision 1 remedy for unreached is widen access or raise the budget, and neither can help. But applying the filter removes the resource from the denominator and coverage reads 3/3 = 100% over a root with four resources, one never looked inside -- the shape ADR-0011 exists to prevent, reached by a legitimate mechanism.",
+   "related": "#35, same family; likely decided together."
+  }
+ ],
+ "api_target": {
+  "notion_version": "2026-03-11",
+  "requirement": "CORRECTED 2026-08-17. request_status is CONDITIONAL, not guaranteed. It is absent from normal responses at Notion-Version 2026-03-11. Test positively for request_status.type === 'incomplete'. Never treat its absence as an error, and never as proof of completeness.",
+  "rate_limit_verified": "average of 3 requests per second per connection; workspace ceiling scaled to plan, amount undisclosed",
+  "admin_content_search": "Enterprise-only, reaches private pages, exports CSV \u2014 but it is a search, not an enumeration. Kill criterion 'Notion ships first-party coverage certification' did not fire.",
+  "notion_version_verified": "2026-03-11 returns HTTP 200 on /v1/users/me \u2014 the pin is valid.",
+  "permission_filtering": "A page disconnected under a connected parent DISAPPEARS from GET /v1/blocks/{parent}/children. It is not listed-but-unreadable. Verified 2026-08-17 with a full-access control confirming the page still exists at the same ancestor path. An unconnected page returns 404, not 403."
+ },
+ "unknowns_assigned_to_proof": [
+  "ANSWERED 2026-08-17 \u2014 NO. A child_page block does NOT stay visible after the child's access is revoked; it vanishes from the parent's child list. The 'detectable hole' does not exist.",
+  "Does a property ID survive a property type change? UNTESTED \u2014 the fixture has TYPE_CHANGE_PROP=Status ready.",
+  "ANSWERED 2026-08-17 \u2014 provisionally YES. Two identical paginated queries returned the same 100 IDs in the same order. Fixture-confounded by bulk-created timestamps; re-run against real content before settling.",
+  "Does the ~11,200-object search ceiling still hold? UNTESTED \u2014 needs a workspace larger than any hand-built fixture.",
+  "Is Semgrep's `skipped` output verbose-gated? UNTESTED \u2014 a local Semgrep CLI test, nothing to do with Notion.",
+  "Do `unreached` and `undecidable` ever diverge in practice? UNTESTED. Note the fixture can no longer produce a permission-caused unreached inside a declared root \u2014 that route is closed. Rate limits and abandoned pagination are the remaining routes.",
+  "ANSWERED 2026-08-17 \u2014 YES, enumeration IS separable from fetching. A 151-block page paged 100 + 51 with has_more and next_cursor. ADR-0005's second Revisit-if does not fire; decision 5 stands.",
+  "How often does `disclaimed` fire on a real workspace? UNTESTED \u2014 needs REAL_ROOT_ID.",
+  {
+   "id": "_S008_real_root_id",
+   "note": "REAL_ROOT_ID reported set by the operator 2026-08-17, UNVERIFIED -- .env cannot be read. If good, it unblocks Q8 (disclaimed-frequency), the Q3 re-run against organic timestamps, and #7. Two gates before any run: the integration must be CONNECTED to that page (human step in Notion share settings), and Q8 output is a manifest of REAL page titles and IDs -- CONTEXT.md already redacts titles from CI output by default, so decide redaction before results land in the repo."
+  }
+ ],
+ "research": {
+  "location": "docs/research/",
+  "s001_sweeps": 7,
+  "s002_synthesis": "docs/research/coverage-artifact-prior-art.md",
+  "s002_raw_corpus": "docs/research/sweep-raw/ \u2014 9 scout reports plus 2 verification passes, verbatim and unverified except where a verification file says otherwise",
+  "s002_verification": "16 keystone claims re-verified: 6 confirmed, 9 partial, 1 misattributed, 0 fabricated",
+  "known_blind_spot": "Research agents cannot reach Reddit; community.notion.so and forum.notion.so no longer resolve. This is a limitation of the tooling, NOT of the channel \u2014 the operator reaches Reddit and has converted a buyer there. Evidence still skews toward people who publish.",
+  "refuted_sources": "docs/research/notion-api-practice.md section 5.2 'Detectable hole' is REFUTED by direct observation 2026-08-17. It was rated (C) and self-flagged as the highest-value item to verify. The rest of that file has not been re-verified and one of its two headline claims was false \u2014 treat the remainder as suspect until checked.",
+  "link_hosts_evidence": "ONLY app.notion.com is observed as an internal-link host (docs/proof/results-ref001-live.md section 2, 2026-08-17). notion.so, www.notion.so, notion.com and *.notion.site are in the prototype's regex and are NOT claimed by the proof record. Do not let them into a spec on S010's authority.",
+  "ref001_link_recognition_sweep": {
+   "date": "2026-08-17",
+   "for": "#34, section 0.5 hard trigger before specifying the instrument",
+   "sources_verified": [
+    "Livshits et al., In Defense of Soundiness: A Manifesto, CACM 58(2), Feb 2015, DOI 10.1145/2644805 -- read verbatim from the author-hosted PDF; cacm.acm.org returns 403 to fetch",
+    "XCCDF 1.1.4 schema resultEnumType, csrc.nist.gov/schema/xccdf/1.1.4/xccdf-1.1.4.xsd, fetched 2026-08-17 -- all nine values quoted verbatim with a version label",
+    "LinkChecker linkcheck/checker/unknownurl.py -- source read; two outcomes, neither is silence",
+    "Notion Help, Manage your Notion Sites, sections 'Create a new notion.site domain' and 'Connect a custom domain', fetched 2026-08-17",
+    "Notion API reference, Rich text, developers.notion.com/reference/rich-text, fetched 2026-08-17"
+   ],
+   "not_checked": [
+    "notion.so, www.notion.so and notion.com as internal-link hosts -- no Notion-owned source states any of them; third-party reports describe an in-progress vendor migration and are NOT relied on"
+   ]
+  }
+ },
+ "citation_hazards": [
+  "ISO 19011:2018 was read from a site hosting a complete unauthorised copy including its intact copyright page. Wording and clause numbers are genuine and verified. The URL must never appear in a published artifact. Cite the clause and link the ISO catalogue.",
+  "The squarespace-hosted ISA 705 mirror is unofficial. Cite paragraph numbers and point at IAASB.",
+  "Reached only through consultancy paraphrase and not citable at clause level: ISO 9001, ISO 13485, EIA-649, ISO 10007, MIL-STD-973, AICPA AT-C 320."
+ ],
+ "inputs": {
+  "location": "docs/inputs/",
+  "note": "None canonical. The PRD carries URLs and dates; the decay synthesis carries reasoning without URLs; the recruiting sweep carries claimed search coverage without URLs and a same-day correction block. Evidentiary weights differ and the files record that."
+ },
+ "operator_rulings": [
+  "NO MORE SESSION GRADES, 2026-08-17. 'We're not doing these grades anymore. It's a waste of tokens.' The session-end ritual's step 6.5 performance scorecard is UN-ADOPTED for this project. Do NOT solicit a VERDICT, do NOT write a SELF-ASSESS line into the checkpoint, and do NOT ask the grading question at close. The ritual line records verdict=n/a. The skill's own text permits this -- 'projects without adopted metrics skip, record nothing rather than a hollow verdict.' ATTRIB was answered as 'skill' in the same exchange: the skill layer is where the gaps were, which is recorded in the S013 band rather than as a grade.",
+  "No ghostwriting. Produce content specifications for anything he will send as himself, never drafted first-person copy. The literal-humanist-voice register governs how the agent writes; it does not license writing as him.",
+  "LinkedIn is excluded from every project.",
+  "SewerAI and Sepehr Sobhani are not contacts. The engagement never closed and was never paid. The artifacts are design input only.",
+  "Citations are receipts, 2026-08-17. A claim carries a locator a third party can follow -- ADR, repo file plus section, official API doc, commit SHA, dated post. Paraphrase without a pointer, 'as we discussed', 'Notion's docs say', 'the ADR covers this' -- all commentary, not evidence. In a system treating UNMEASURED and claim ceilings as first-class, the citation is the only mechanism keeping the ceiling honest.",
+  "The gap is rigour, not triage, 2026-08-17. 'The real hole here is in lack of rigor, computer science research, and systems design analysis - not ticket triage.' Proved the same session by issue #31: a merged ADR adopted a matching rule that is not an equivalence relation, and no template, PR review or hook caught it. Check formal properties before writing the evidence section.",
+  "Notion Workers and the PAT are not v0.1 surfaces, 2026-08-17. The PAT is ruled out by Principle 7 -- its API capability is a single bundle including create and update, with no read-only variant -- so the planned PAT fixture test in #27's DoD is NOT to be run. Workers are technically viable via an integration token and strategically premature: no exit byte, both output shapes reopen a stated boundary, Business/Enterprise only, and billed since 2026-08-11 on a per-run credit meter that charges more the more completely the scan reads."
+ ],
+ "tracker": {
+  "host": "GitHub issues, gh CLI",
+  "open": "#10 ratify the 72-hour proof -- NOW THE CRITICAL PATH and the next gate. Its 'Proof checks' section is nine falsifiable end-to-end acceptance criteria and is effectively the build spec, written before S005 and never run as a set. Runnable remainder Q2/Q3-rerun/Q8/restore wl-revoke-child; two human steps first - #39 README contradicts ADR-0005/0008 in four places - #35 denominator rule, ADR or consequence - #29 buyer question: PARTIALLY ANSWERED by the Gate 1 close (framing 2 is the entry point) but the WILLINGNESS-TO-PAY half is still open and the gate did NOT establish a price; its 'answered by demand-test respondents' framing is dead, there are no respondents - #27 observation half only, PAT test to be DROPPED - #25 ADR-vs-research enforcement, FOUR shapes, now has a working hook precedent - #24 does v0.1 call search (also the Revisit-if surface for the unseen-population sweep -- see soundness-classification) - #19, #18 mechanical, fast-tier session - #8 npm name - #7 perf budgets",
+  "closed_S005": "#2 #3 #4 #5 #6 #9 consolidated into #16 \u2014 they were undocumented decisions, not open questions.",
+  "closed_S013": "#40 CLOSED by the Gate 1 close. Its statistics half was swept and ADR-0005 decision 3 survives; its recruitment-bias half never depended on that sweep and was visible inside PRODUCT.md all along.",
+  "phase_transition_S013": "The project left the decision phase. Eleven ADRs, five of them superseding parts of earlier ones, every supersession found by re-reading documents rather than by running the product. Across S008-S012 the board closed 7 and filed 6 -- not converging. Every open issue produced a document, a decision, or a spec, so /implement had nothing to take. Gate 1 is now closed and the next artefact is a BUILD SPEC seeded from #10's nine proof checks, not a twelfth ADR.",
+  "note": "ALL WORK MERGED. main carries ADR-0011 at 88d401e; nothing in flight. Every open issue carries a triage role, and a PreToolUse guard now enforces one at issue-creation time from the next session onward. GATE 1 IS NOT ON THIS BOARD as a gate: it advances when the operator sends, and #40 blocks the send.",
+  "closed_S006": "#13 closes on the PR #17 merge (Closes #13 in commit f8917fa).",
+  "closed_S007": "#15 and #16 closed by PR #22. #13 closed by PR #17.",
+  "closed_S008": "#21 closed by PR #23, MERGED as 280524e. #24 and #25 filed as its follow-ups.",
+  "closed_S009": "#20 (ADR-0008), #1 (ADR-0009, narrowly -- buyer half refiled as #29)",
+  "closed_S010": "#31 (closed by ADR-0010 via PR #32)",
+  "filed_S010": "#34 -- specify REF001 link recognition: the host set, and the unrecognised outcome",
+  "closed_S011": "#34 closed by PR #37 (spec, not ADR).",
+  "closed_S012": "#14 CLOSED as ALREADY COMPLETE -- finished 2026-08-16 in cc16d63, on origin/main, every DoD element present in the issue's own wording. S010 and S011 both carried it as the Gate 1 blocker anyway. #36 CLOSED by PR #38, merged as 88d401e.",
+  "filed_S012": "#39 -- README.md contradicts ADR-0005 and ADR-0008 in four places, untouched since 2026-08-16. #40 -- PRODUCT.md's demand test and kill criterion name the auditor buyer; the only item marked blocks:Gate 1 and it had never been filed.",
+  "closed_S015": "#43 CLOSED as completed. Its DoD is met item by item and acceptance criterion 1 closed with it. #49 and #50 filed from it: #49 verdict.ts must be permitted to diverge from the frozen prototype (blocks #44 exit byte), #50 SYS001 reports unreached for a resource excluded by design (ADR-0005 decision 2 applicability filter). #42 remains OPEN although its code shipped in S014 -- nobody closed the ticket.",
+  "github_outage_S015": "GraphQL returned HTTP 503 for ~15 minutes while REST reads succeeded. gh issue comment and gh issue create both route through GraphQL. Verify a tracker write by re-reading it; a retry loop reported success on a 503 body because --jq printed the error JSON to stdout and the check tested only for non-empty."
+ },
+ "build": {
+  "branch": "build/t2-sys001",
+  "commits": [
+   "aaab38f merge main",
+   "0ac7c2d T1 scan scaffold",
+   "9dcb069 report seam + fixture oracle",
+   "0d3c723 T2 SYS001",
+   "95c60c5 six review defects + self-documenting-code pass"
+  ],
+  "directory": "slice/ -- private package, NOT src/, because src/ asserts 'this is the product tree' and that claim is due the day #8 lands",
+  "modules": [
+   "ids.ts",
+   "config.ts",
+   "notion-port.ts",
+   "observed.ts",
+   "manifest.ts",
+   "verdict.ts",
+   "finding.ts",
+   "sys001.ts",
+   "scan.ts",
+   "report.ts",
+   "fixture-oracle.ts",
+   "cli.ts",
+   "CHECK-harness.ts",
+   "CHECK-fakes.ts",
+   "CHECK-scan-scaffold.ts",
+   "CHECK-sys001.ts",
+   "make-fixture-config.ts"
+  ],
+  "suite": "cd slice && npm run check -- two files, 53 + 92 assertions, offline, no network and no token",
+  "mutation_checks": [
+   "CHECK-scan-scaffold TEST 5: disable gapsFrom, exit byte must move 3 -> 0",
+   "CHECK-scan-scaffold TEST 7: remove a required child, the oracle must go red",
+   "CHECK-sys001 TEST 4: remove the findings from the verdict input, byte must move 1 -> 0 at a threshold coverage clears",
+   "CHECK-sys001 TEST 5: judge on fetched alone (drop the no-Loss clause), byte must move 2 -> 0 and disposition disclaimed -> unqualified",
+   "CHECK-sys001 TEST 7: feed a gap naming a resource the manifest does not hold, the disagreement must be reported"
+  ],
+  "live_command": "cd slice && npx tsx cli.ts scan --config ../wl.config.json --oracle",
+  "config_generator": "npx tsx make-fixture-config.ts -- reads FIXTURE_ROOT_ID from .env and writes the gitignored wl.config.json; the config contract is ID-only and there is deliberately no ${VAR} escape in the loader",
+  "toolchain": "TypeScript 7.0.2 (the Go port, microsoft/typescript-go) on Node 22.13.1. tsconfig uses none of the options the port removed (outFile, baseUrl, target ES5, moduleResolution node10/classic, AMD/UMD/System). The port marks its public compiler API not-ready; nothing here imports typescript programmatically.",
+  "rules_implemented": [
+   "SYS001 -- coverage item: resources. Judges a resource only when the funnel delivered it whole (reached fetched AND carries no Loss). Findings are about coverage items OUTSIDE its own evaluated set, which is unique among the four rules and follows from SYS001 being the finding identity of a gap. Certainty is always confirmed: the proposition is about the scan, not the target."
+  ]
+ }
 }

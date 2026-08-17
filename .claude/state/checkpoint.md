@@ -124,16 +124,20 @@ without a triage-role label**, reading the roles from `docs/agents/triage-labels
 - **Gate 2, the 72-hour proof (#10) — CLOSED 2026-08-17** by the operator, on the grounds its own
   triage comment gave: circular as filed, six of nine checks requiring the build it existed to gate.
   Its checks are **build-acceptance criteria**, not pre-build gates.
-- **Gate 3, build at n=1, is live, and #42 has landed.** Tracked as #42 **DONE** → #43, #44 in
-  parallel → #45 → #46. #10's "no source on `main`" constraint is discharged; building on a branch
-  from `proto/ref001-observed` is now a preference.
-- **Source code exists, on `build/t1-scan-scaffold`, in `slice/`.** Commits `0ac7c2d` and `9dcb069`.
+- **Gate 3, build at n=1, is live. #42 and #43 have landed.** Tracked as #42 built (ticket still
+  **OPEN** — the code shipped and nobody closed it) → **#43 DONE and CLOSED** → #44 → #45 → #46.
+  #10's "no source on `main`" constraint is discharged; building on a branch from
+  `proto/ref001-observed` is now a preference.
+- **Acceptance criterion 1 is CLOSED**, on #43's live run, against an oracle committed before that
+  run existed. Ten comparisons, `ORACLE MATCHED`. It is not closed retroactively for #42.
+- **Source code exists, on `build/t2-sys001`, in `slice/`.** Commits `0ac7c2d`, `9dcb069`,
+  `0d3c723`, `95c60c5`.
   A **`private: true`** package named `slice-v0.1`, deliberately **not** `src/` and not on `main`:
   `src/` asserts *this is the product tree*, and that claim is due the same day **#8** lands.
   **#8, the npm name, is now the only thing between this branch and `main`** — `CONTEXT.md` requires
   it "before the first `package.json`", and a private unpublishable package does not consume it.
-  Suite: `cd slice && npx tsx CHECK-scan-scaffold.ts` — **50 checks, offline, no network, no token**.
-  Live: `npx tsx cli.ts scan --config ../wl.config.json --oracle`, after
+  Suite: `cd slice && npm run check` — **two files, 53 + 92 assertions, offline, no network, no
+  token**. Live: `npx tsx cli.ts scan --config ../wl.config.json --oracle`, after
   `npx tsx make-fixture-config.ts` writes the gitignored config from `.env`.
 - **#14 is CLOSED** — finished in `cc16d63` on 2026-08-16, and three checkpoints carried it as the
   blocker anyway.
@@ -150,6 +154,34 @@ comment had already corrected, and `docs/inputs/` was skipped a third time the s
 artifact was opened and the discussion attached to it was not** — that is one failure shape, and it
 fired twice in one session.
 
+**The code, and the four rules it has already paid for.** Added S015, each earned by a defect that
+shipped past a green suite.
+
+- **A drop-out carries STRUCTURE, never prose.** `Manifest` stores a
+  `Loss { cause, bounded, target }` written by the site that lost the resource. Recovering those
+  facts from a cause string was wrong twice in one commit: boundedness was pattern-matched, so a
+  root whose child list failed **outright** was `bounded` (exit 3) while one that failed **halfway**
+  was `unbounded` (exit 2) — failing harder bought the milder verdict; and `target` was inferred
+  from the `resolved` stage, which `scan.ts` stamps straight from the parent's block listing, so a
+  child whose own call 404'd was reported `present`.
+- **The report may not print a value the run did not compute.** Three suppressions now live in
+  `report.ts` because `verdict.ts` is frozen: a **disclaimed** report withholds the headline and the
+  conformity ratio (ADR-0005 decision 3 — the per-rule vector still prints, it is evidence not a
+  summary); an **exit-4** run prints no disposition, because `deriveVerdict` returns `unqualified`
+  when there are no gaps and no violations; an **empty applicable set** has no evidence sufficiency.
+  A JSON exporter that serialises the raw `verdict` object reintroduces all three.
+- **Test assertions compare with `Object.is`, and section membership means cutting the section out.**
+  Both suites carried `String(got) === String(want)`, which passes when the types differ, and
+  `/GAPS[\s\S]*<id>/`, which spans the rest of the report. Shared harness: `CHECK-harness.ts`.
+- **`evaluated` becomes an INTERSECTION the moment a second rule exists.** ADR-0005 decision 5 says
+  *every applicable rule reached a judgement*. A union marks a resource evaluated because one rule
+  judged it, and inflates every figure downstream. One edit away in `scan.ts`.
+- **Verify a tracker write by reading it back.** `gh issue create` and `gh issue comment` route
+  through GraphQL, which returned HTTP 503 for ~15 minutes in S015 while REST reads kept working.
+  A retry loop reported success on a 503 body, because `--jq .html_url` prints the error JSON to
+  stdout and the check tested only for a non-empty string. **A command's own output is not evidence
+  it succeeded** — re-read the comment list. Full account in `gate_events.jsonl`, S015.
+
 **No session grades. Operator ruling 2026-08-17:** *"We're not doing these grades anymore. It's a
 waste of tokens."* Do not solicit a `VERDICT`, do not write a `SELF-ASSESS` line. Every other step
 of the close ritual still runs; the ritual line records `verdict=n/a`.
@@ -158,108 +190,94 @@ of the close ritual still runs; the ritual line records `verdict=n/a`.
 
 ---
 
----
+## S015 — 2026-08-17 — SYS001 ships, and review found three false claims the green suite could not
 
----
+**PHASE:** **BUILD, and building.** Second tracer bullet landed. `#43` is built, reviewed, hardened,
+committed on `build/t2-sys001`, and **CLOSED**. The coverage vector is no longer empty and exit `0`
+is reachable for the first time.
 
----
+**TESTS:** `tsc --noEmit` clean on **TypeScript 7.0.2** (the Go port; the repo's `tsconfig` uses no
+removed option). **53 + 92 offline assertions pass**, no network and no token. **Five mutation
+checks:** `gapsFrom` disabled → byte 3→0; findings removed from the verdict → byte 1→0; the
+drop-out-cause clause removed from `judgeable` → **byte 2→0 and disposition disclaimed→unqualified**;
+a required child removed → oracle red; a gap invented for a resource the manifest does not hold →
+the disagreement is reported. Live run: **exit 3**, 4 applicable, 3 evaluated, 6 requests, 1.66 s,
+**`ORACLE MATCHED`**. **Deref: 14 checked / 1 flagged / 14 hand-verified.**
 
-## S014 — 2026-08-17 — The first product code, and the live run found two defects the green suite could not
+**COMMITTED:** **`0d3c723`** (SYS001), **`95c60c5`** (the six review defects + a whole-slice
+self-documenting-code pass). **Nothing merged to `main`. Nothing pushed.**
+**FILED:** **#49**, **#50**. **COMMENTED:** #43, #44, #45. **CLOSED:** #43.
 
-**PHASE:** **BUILD, and building.** Gate 3's first tracer bullet landed. `#42` is built, reviewed
-and committed on `build/t1-scan-scaffold`. **The stop condition did not fire** — the scan produced a
-coverage manifest against a declared root, read-only, with no LLM.
+### What SYS001 may count as evaluated — the decision that took the session
 
-**TESTS:** `tsc --noEmit` clean. **50 offline checks pass** (`slice/CHECK-scan-scaffold.ts`), no
-network and no token. **Two mutation checks, both live:** TEST 5 disables `gapsFrom` and the exit
-byte moves **3 → 0**; TEST 7 removes a required child and the oracle goes **red**. Live run: **exit
-3**, 4 applicable, 3 fetched, **0 evaluated**, 6 requests, 1.78 s, `ORACLE MATCHED`.
-`grep -ci "ntn_\|secret_"` over full output: **0**. Titles in output: **0**.
-**Deref: 11 checked / 0 flagged / 11 hand-verified.**
+A resource is judged only when the funnel delivered it **whole**: it reached `fetched` **and**
+carries no `Loss`. The rejected alternative — SYS001 judges every manifest entry, because the entry
+itself is the evidence — makes SYS001 report **100% coverage on every run by construction** and
+deletes the exit-`3` path spec criterion 7 requires.
 
-**COMMITTED:** `aaab38f` (merge main), **`0ac7c2d`** (T1 scaffold), **`9dcb069`** (report seam +
-fixture oracle). **Nothing merged to `main`. Nothing pushed.** **COMMENTED:** #42, #43, #44, #45,
-#46, #8.
+The consequence is unusual and deliberate: **SYS001's findings are about coverage items outside its
+own evaluated set.** Every other rule finds a defect in something it read. SYS001 finds the absence
+of a reading, and `CONTEXT.md`'s Gap entry forces it — *"one resource drop-out produces a gap in
+every rule whose coverage items depended on it"*, and SYS001's coverage item **is** a resource.
 
-### The design point that governs #43
+**Certainty is always `confirmed`, including on a 404.** That is not a contradiction of
+`CONTEXT.md`'s "a 404 produces indeterminate": certainty is about the proposition the finding
+asserts. `REF001` asserts something about the **target**, which a 404 does not prove. `SYS001`
+asserts something about **the scan** — *this resource was not evaluated* — which the manifest proves
+outright.
 
-`#42` says *"no rules yet."* ADR-0005 decision 5's `evaluated` stage means **a rule judged it**. So
-this slice evaluates **nothing** and names that cause on every resource. Three consequences, and a
-later session must not re-derive them:
+### The review is what found the defects, and it returned after the commit
 
-1. **The ADR-0011 coverage vector is EMPTY.** The printed `0/4` and `3/4` are **funnel** figures with
-   the unit `resources` named on the line. **They are not a coverage ratio.**
-2. **Exit `0` is unreachable in T1 by construction.** A perfect run still exits `3`. #43 is the first
-   ticket that can return `0`.
-3. **`newUnsuppressedFindings: 0` is passed explicitly.** `deriveVerdict` defaults it to
-   `violations + gaps.length`, which would exit `1` on a slice with no findings at all. **This is the
-   single most likely place for #43 to put the exit byte quietly wrong.**
+The offline suites were green and the live run was clean before any of six defects was visible.
+**Three were introduced by the commit under review**, and every one was the report claiming
+something the run had not established — a disclaimed report publishing a summary verdict over a
+denominator it had just called unestablishable; a child the API refused reported `present`; a run
+that made no successful call reporting `evidence: sufficient`. All are now standing constraints
+above, with nineteen regression assertions naming each.
 
-Letting `evaluated` mean "fetched without error" would have printed a `3/4` that reads as rule
-coverage and is not — the flattering direction, inside the coverage instrument.
-
-### Running it against the real workspace is what found the bugs
-
-The offline suite was green before either defect was visible. **That is the argument for Gate 3 in
-one line.** Titles reached stdout under a report claiming redaction; three distinct resources
-rendered identically because Notion IDs are time-ordered. Both fixed, both now in the standing
-constraints above, both regression-checked over *every* rendered line rather than one section.
-
-### Acceptance criterion 1 is OPEN, deliberately
-
-Spec §2 criterion 1: *"The hand-written manifest is the test oracle and must be written **before**
-the run."* None existed when `#42` ran, so its applicable set of 4 was validated **against the code's
-own output** — the defect class this product exists to detect. `slice/fixture-oracle.ts` now
-pre-registers the expectation, transcribed from `docs/proof/fixture.md`'s "What exists" table, and
-**closes the criterion for #43's run, not retroactively for #42's.** It matched live, including both
-absence predictions: `wl-outside-grant` is not a child of the root, and **`wl-revoke-child` is still
-invisible**, which re-confirms Q1 against the live API on 2026-08-17.
-
-### The review ran without its context isolation, and the close says so
-
-`mattpocock-skills:code-review` spawns two sub-agents so the axes cannot pollute each other. **Both
-idled repeatedly and neither ever returned a report** — three notifications from one, four from the
-other. Both axes were then run in the main context. Every finding was checked against the files
-(`verdict.ts` byte-compared to the frozen prototype, every cited ADR decision number resolved,
-ADR-0008's exit table compared row by row), but **no independent context confirmed them.** Findings:
-0 hard violations, 4 judgement calls, 2 partial spec requirements.
-
-### Two skills could not be invoked, and that is a harness fact, not a missing install
-
-**14 of the 25 registered** `mattpocock-skills` carry **`disable-model-invocation: true`** (20 of
-the 35 `SKILL.md` files on disk, but 10 of those are unregistered `in-progress/` and `misc/`). The
-flag hides a skill from the model's listing **and refuses the `Skill` tool outright even after the
-operator types the name**. A slash command typed **mid-turn** arrives as literal text and never expands.
-`/to-tickets` and `/implement` both failed this way before `/implement` was re-sent from idle.
-Recorded as project memory `hidden-skills-need-their-own-message`.
+**Ordering failure worth fixing:** `/code-review` was launched before committing and returned
+mid-refactor, so the fixes landed as a second commit. `/implement` specifies review **then** commit.
 
 ### BLOCKERS
 
-**None.** #43 and #44 are unblocked and can run in parallel.
+**None for building.** **#49 blocks #44's exit byte being trustworthy**, not #44 being built.
 
 ### EXACT NEXT STEPS
 
-1. **`/clear`, then `/mattpocock-skills:implement` #43** in a fresh context — sent as its own
-   message from idle, or it will not expand. Branch from `build/t1-scan-scaffold`.
-   **Run with `--oracle`; criterion 1 closes on that run.**
-2. **#44 in parallel**, separate context. `REF001`, the load-bearing mechanism. `prototypes/`
-   already holds the recogniser and `docs/spec/REF001-link-recognition.md` specifies it — copy out,
-   do not edit the frozen prototype.
-3. **Then #45, then #46.** `slice/report.ts` already exists as a separate file so #45 does not
-   hand-merge against #43 and #44.
-4. **Two human steps, neither blocking:** **#8**, the npm name — now the only thing between the
+1. **#44 — `REF001`.** Branch from `build/t2-sys001`. Its comment on the ticket carries the full
+   handoff: the `evaluated`-intersection hazard, the `Loss` record contract for its two new drop-out
+   sites, the shared seams, and criterion 4, which is still open and is its to close.
+2. **#49 before #44's byte is believed.** `verdict.ts` compares the funnel scalar; ADR-0011
+   decision 5 requires the minimum of the vector. They coincide only while one rule exists.
+   **Check where the freeze actually lives before deciding how high the bar is.** `slice/verdict.ts`
+   says *"frozen as a primary source (spec §5)"* and *"that is a decision, and it goes in an ADR
+   before it goes in here."* **Spec §5 says only that the prototype "is kept as a primary source."**
+   The ADR-before-code requirement is asserted by the code comment, not by the spec — caught by the
+   S015 deref, after both the checkpoint and #49 had already attributed it to §5.
+3. **#50** — whether ADR-0005 decision 2's applicability filter ships in v0.1. Likely decided
+   alongside **#35**; same family.
+4. **#42 is still OPEN** and its code shipped two sessions ago. Close it or say why not.
+5. **Then #45, then #46.** #45's comment lists the three suppressions its JSON exporter must honour.
+6. **Two human steps, neither blocking:** **#8**, the npm name — still the only thing between the
    branch and `main` — and connecting the integration to `REAL_ROOT_ID`, which #7 needs.
-5. **Title redaction is NO LONGER a pending human step.** `#42` implements `CONTEXT.md`'s settled
-   default: titles redacted, `--show-titles` opts in, and the live run printed zero titles.
-6. **#39, #35, #27, #25, #24, #19, #18, #29, #7** unchanged.
+7. **#39, #35, #27, #25, #24, #19, #18, #29, #7** unchanged.
 
-**NEXT-MODEL:** **fast tier.** #43 is separable execution mechanics against a written spec, a
-written DoD, and an existing test harness with two working mutation checks — the ambiguity was spent
-in #42. **Do not straddle:** if the session would also reopen the manifest serialisation shape, the
-npm name (#8), or whether `SYS001` needs its own ADR, that is a frontier head and belongs in its own
-session.
+**NEXT-MODEL:** **frontier.** The next head is **#49**, an ADR that decides what the exit byte
+compares and whether a frozen primary source may diverge — irreversible, cross-cutting, and it
+governs #44's result. **Do not straddle:** if the session is instead scoped to #44's recogniser
+alone, against `docs/spec/REF001-link-recognition.md` and the existing harness, that is separable
+execution mechanics and belongs on the fast tier in its own session. Pick one before starting.
 
 **NEXT-REPO/CWD:** `C:\Users\mlpgr\2026_Projects\workspace_lint` — single repo; state, plan and
-resume ritual all at the root. The build lives on `build/t1-scan-scaffold` in this same clone.
+resume ritual all at the root. The build lives on `build/t2-sys001` in this same clone.
 
 **NO SELF-ASSESS LINE, BY OPERATOR RULING 2026-08-17.** The ritual line records `verdict=n/a`.
+
+---
+
+---
+
+---
+
+---
+

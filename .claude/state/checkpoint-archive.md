@@ -1173,3 +1173,105 @@ same clone.
 It's a waste of tokens."* Recorded in `store.json` → `operator_rulings` and in project memory
 `no-session-grades`. Do not solicit a verdict at the next close. Every other step of the ritual
 still runs.
+
+---
+
+## S014 — 2026-08-17 — The first product code, and the live run found two defects the green suite could not
+
+**PHASE:** **BUILD, and building.** Gate 3's first tracer bullet landed. `#42` is built, reviewed
+and committed on `build/t1-scan-scaffold`. **The stop condition did not fire** — the scan produced a
+coverage manifest against a declared root, read-only, with no LLM.
+
+**TESTS:** `tsc --noEmit` clean. **50 offline checks pass** (`slice/CHECK-scan-scaffold.ts`), no
+network and no token. **Two mutation checks, both live:** TEST 5 disables `gapsFrom` and the exit
+byte moves **3 → 0**; TEST 7 removes a required child and the oracle goes **red**. Live run: **exit
+3**, 4 applicable, 3 fetched, **0 evaluated**, 6 requests, 1.78 s, `ORACLE MATCHED`.
+`grep -ci "ntn_\|secret_"` over full output: **0**. Titles in output: **0**.
+**Deref: 11 checked / 0 flagged / 11 hand-verified.**
+
+**COMMITTED:** `aaab38f` (merge main), **`0ac7c2d`** (T1 scaffold), **`9dcb069`** (report seam +
+fixture oracle). **Nothing merged to `main`. Nothing pushed.** **COMMENTED:** #42, #43, #44, #45,
+#46, #8.
+
+### The design point that governs #43
+
+`#42` says *"no rules yet."* ADR-0005 decision 5's `evaluated` stage means **a rule judged it**. So
+this slice evaluates **nothing** and names that cause on every resource. Three consequences, and a
+later session must not re-derive them:
+
+1. **The ADR-0011 coverage vector is EMPTY.** The printed `0/4` and `3/4` are **funnel** figures with
+   the unit `resources` named on the line. **They are not a coverage ratio.**
+2. **Exit `0` is unreachable in T1 by construction.** A perfect run still exits `3`. #43 is the first
+   ticket that can return `0`.
+3. **`newUnsuppressedFindings: 0` is passed explicitly.** `deriveVerdict` defaults it to
+   `violations + gaps.length`, which would exit `1` on a slice with no findings at all. **This is the
+   single most likely place for #43 to put the exit byte quietly wrong.**
+
+Letting `evaluated` mean "fetched without error" would have printed a `3/4` that reads as rule
+coverage and is not — the flattering direction, inside the coverage instrument.
+
+### Running it against the real workspace is what found the bugs
+
+The offline suite was green before either defect was visible. **That is the argument for Gate 3 in
+one line.** Titles reached stdout under a report claiming redaction; three distinct resources
+rendered identically because Notion IDs are time-ordered. Both fixed, both now in the standing
+constraints above, both regression-checked over *every* rendered line rather than one section.
+
+### Acceptance criterion 1 is OPEN, deliberately
+
+Spec §2 criterion 1: *"The hand-written manifest is the test oracle and must be written **before**
+the run."* None existed when `#42` ran, so its applicable set of 4 was validated **against the code's
+own output** — the defect class this product exists to detect. `slice/fixture-oracle.ts` now
+pre-registers the expectation, transcribed from `docs/proof/fixture.md`'s "What exists" table, and
+**closes the criterion for #43's run, not retroactively for #42's.** It matched live, including both
+absence predictions: `wl-outside-grant` is not a child of the root, and **`wl-revoke-child` is still
+invisible**, which re-confirms Q1 against the live API on 2026-08-17.
+
+### The review ran without its context isolation, and the close says so
+
+`mattpocock-skills:code-review` spawns two sub-agents so the axes cannot pollute each other. **Both
+idled repeatedly and neither ever returned a report** — three notifications from one, four from the
+other. Both axes were then run in the main context. Every finding was checked against the files
+(`verdict.ts` byte-compared to the frozen prototype, every cited ADR decision number resolved,
+ADR-0008's exit table compared row by row), but **no independent context confirmed them.** Findings:
+0 hard violations, 4 judgement calls, 2 partial spec requirements.
+
+### Two skills could not be invoked, and that is a harness fact, not a missing install
+
+**14 of the 25 registered** `mattpocock-skills` carry **`disable-model-invocation: true`** (20 of
+the 35 `SKILL.md` files on disk, but 10 of those are unregistered `in-progress/` and `misc/`). The
+flag hides a skill from the model's listing **and refuses the `Skill` tool outright even after the
+operator types the name**. A slash command typed **mid-turn** arrives as literal text and never expands.
+`/to-tickets` and `/implement` both failed this way before `/implement` was re-sent from idle.
+Recorded as project memory `hidden-skills-need-their-own-message`.
+
+### BLOCKERS
+
+**None.** #43 and #44 are unblocked and can run in parallel.
+
+### EXACT NEXT STEPS
+
+1. **`/clear`, then `/mattpocock-skills:implement` #43** in a fresh context — sent as its own
+   message from idle, or it will not expand. Branch from `build/t1-scan-scaffold`.
+   **Run with `--oracle`; criterion 1 closes on that run.**
+2. **#44 in parallel**, separate context. `REF001`, the load-bearing mechanism. `prototypes/`
+   already holds the recogniser and `docs/spec/REF001-link-recognition.md` specifies it — copy out,
+   do not edit the frozen prototype.
+3. **Then #45, then #46.** `slice/report.ts` already exists as a separate file so #45 does not
+   hand-merge against #43 and #44.
+4. **Two human steps, neither blocking:** **#8**, the npm name — now the only thing between the
+   branch and `main` — and connecting the integration to `REAL_ROOT_ID`, which #7 needs.
+5. **Title redaction is NO LONGER a pending human step.** `#42` implements `CONTEXT.md`'s settled
+   default: titles redacted, `--show-titles` opts in, and the live run printed zero titles.
+6. **#39, #35, #27, #25, #24, #19, #18, #29, #7** unchanged.
+
+**NEXT-MODEL:** **fast tier.** #43 is separable execution mechanics against a written spec, a
+written DoD, and an existing test harness with two working mutation checks — the ambiguity was spent
+in #42. **Do not straddle:** if the session would also reopen the manifest serialisation shape, the
+npm name (#8), or whether `SYS001` needs its own ADR, that is a frontier head and belongs in its own
+session.
+
+**NEXT-REPO/CWD:** `C:\Users\mlpgr\2026_Projects\workspace_lint` — single repo; state, plan and
+resume ritual all at the root. The build lives on `build/t1-scan-scaffold` in this same clone.
+
+**NO SELF-ASSESS LINE, BY OPERATOR RULING 2026-08-17.** The ritual line records `verdict=n/a`.
