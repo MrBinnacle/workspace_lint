@@ -41,8 +41,9 @@ The product tests declared rules. It does not infer workspace quality, intent, o
 | Report disposition | What the report as a whole may claim: `unqualified`, `qualified`, or `disclaimed`. A disclaimed report renders no summary verdict. |
 | Conformity ratio | Conforming rules over rules that reached a conformity claim. Never published without the coverage ratio. |
 | Coverage ratio | Resources evaluated over resources in the applicable set. Never published without the conformity ratio. Publishing either alone is prohibited. |
-| Fingerprint | The stable identity of a finding across runs. Not one value: a map of named, versioned partial fingerprints, where two findings are the same finding when any one key matches. Contains no page title, no ancestor path, and nothing volatile. |
-| Baseline | The accepted-debt record. Each entry holds a map of partial fingerprints, an evidence digest, and the (rule, resource) pair it anchors to. Entries still appear in reports. See ADR-0008. |
+| Fingerprint | The stable identity of a finding across runs, in two layers. The **anchor** is the (rule, resource) pair, using Notion's native object ID. The **discriminator** is a map of named, versioned partial fingerprints answering *which finding of this rule on this resource*, matched by an ordered hierarchy of keys inside one anchor. Contains no observed value, no expected value, no page title, no ancestor path, and nothing volatile. See ADR-0010. |
+| Matchkey hierarchy | The ordered key list that matches produced findings to baseline entries inside one anchor. Run as passes, highest-precision key first; a matched pair leaves the pool, so matching is one-to-one. Never a relation, and its transitive closure is never taken. See ADR-0010. |
+| Baseline | The accepted-debt record. Each entry holds an anchor, a discriminator map, and an evidence digest — three disjoint parts. Entries still appear in reports. See ADR-0008 and ADR-0010. |
 | Baseline state | Where a finding stands against the baseline: `new`, `unchanged`, `updated`, `resolved`, or `unverified`. A property of the finding, not of the run. |
 | Suppression | A scoped exception with a reason and expiry. Orthogonal to baseline state — a finding is in some baseline state *and* is or is not suppressed. |
 | Snapshot | The normalized graph state used for one deterministic run. |
