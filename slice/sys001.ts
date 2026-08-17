@@ -48,12 +48,15 @@
  *    non-evaluation stops being a proved fact and certainty stops being constant.
  */
 
-import { STAGES, type Entry, type Manifest, type Stage } from './manifest.js';
+import { STAGES, type Entry, type Manifest, type ResourceKey, type Stage } from './manifest.js';
 import type { Gap } from './verdict.js';
 import {
   anchorFor,
   coverageRow,
+  LINK_NOT_CAPTURED,
   type CoverageRow,
+  type Discriminator,
+  type Evidence,
   type Finding,
   type Outcome,
   type TargetState,
@@ -87,7 +90,7 @@ export const DROPOUT_STAGE_KEY = 'sys001/dropout-stage@1';
  * disposition from `disclaimed` to `qualified`, and move the exit byte from 2 to
  * 3 — three regressions from one omission, all toward the flattering answer.
  */
-export const judgeable = (e: Entry): boolean => e.stages.has('fetched') && e.cause === '';
+export const judgeable = (e: Entry): boolean => e.stages.has('fetched') && e.loss === null;
 
 /** The furthest funnel stage a resource reached. Structural; never parsed from a cause string. */
 export function lastStage(e: Entry): Stage | null {
@@ -105,9 +108,16 @@ export type Sys001Rule = {
    * "every applicable rule reached a judgement" and only the caller knows how
    * many rules there are.
    */
-  judge(m: Manifest): Set<string>;
-  /** One finding per gap. The gap set is the input, never recomputed here. */
-  report(m: Manifest, gaps: Gap[]): Finding[];
+  judge(m: Manifest): Set<ResourceKey>;
+  /**
+   * One finding per gap. The gap set is the input, never recomputed here.
+   *
+   * Named `findingsFrom` and not `report` because `Report` is taken: CONTEXT.md
+   * gives it one meaning — the artifact carrying a disposition, a coverage
+   * vector and a conformity ratio — and renderReport builds that. One term, one
+   * concept.
+   */
+  findingsFrom(m: Manifest, gaps: Gap[]): Finding[];
   /**
    * This rule's row of the coverage vector, or null when its applicable set is
    * empty. `judged` is the SAME SET judge() returned and is not re-derived —
@@ -115,10 +125,49 @@ export type Sys001Rule = {
    * and the funnel disagreeing by one resource. Two code paths for one number is
    * the defect recorded in docs/proof/results-ref001-live.md §4.
    */
-  coverage(m: Manifest, judged: Set<string>): CoverageRow | null;
+  coverage(m: Manifest, judged: Set<ResourceKey>): CoverageRow | null;
   /** The outcome PAIR — ADR-0005 decision 1. Never one value. */
-  outcome(m: Manifest, judged: Set<string>, findings: Finding[]): Outcome;
+  outcome(m: Manifest, judged: Set<ResourceKey>, findings: Finding[]): Outcome;
 };
+
+/**
+ * Build one SYS001 finding. Both call sites go through here, so a field added to
+ * `Finding` cannot reach one path and miss the other — the two sites previously
+ * carried a ten-field literal each and differed in four of them.
+ */
+function sys001Finding(args: {
+  resource: ResourceKey;
+  stage: Stage | 'unrecorded';
+  targetState: TargetState;
+  cause: string;
+  bounded: boolean;
+  isRootMiss: boolean;
+  location: string;
+  message: string;
+}): Finding {
+  const anchor = anchorFor(SYS001_ID, args.resource);
+  const discriminator: Discriminator = { [DROPOUT_STAGE_KEY]: args.stage };
+  const evidence: Evidence = {
+    object: anchor.resource,
+    location: args.location,
+    observed: args.cause,
+    expected: 'evaluated',
+  };
+  return {
+    rule: SYS001_ID,
+    anchor,
+    discriminator,
+    /* Always confirmed — see this file's header, property 2. Non-evaluation is
+     * a fact about the scan, which the manifest proves outright. */
+    certainty: 'confirmed',
+    targetState: args.targetState,
+    bounded: args.bounded,
+    isRootMiss: args.isRootMiss,
+    evidence,
+    link: null,
+    message: args.message,
+  };
+}
 
 export const SYS001: Sys001Rule = {
   id: SYS001_ID,
@@ -130,7 +179,7 @@ export const SYS001: Sys001Rule = {
     return judged;
   },
 
-  report(m, gaps) {
+  findingsFrom(m, gaps) {
     /* The join runs off the manifest, so a gap that names a resource the
      * manifest does not hold is REPORTED as a disagreement rather than smoothed
      * over with a default. The two structures drifting apart is the recorded
@@ -139,64 +188,47 @@ export const SYS001: Sys001Rule = {
 
     return gaps.map((g): Finding => {
       const e = byKey.get(g.resource);
-      const anchor = anchorFor(SYS001_ID, g.resource);
+      const isRootMiss = g.isRootMiss ?? false;
 
       if (!e) {
-        return {
-          rule: SYS001_ID,
-          anchor,
-          discriminator: { [DROPOUT_STAGE_KEY]: 'unrecorded' },
-          /* The disagreement is proved — the gap set says one thing and the
-           * manifest says another — but nothing is established about the object. */
-          certainty: 'confirmed',
+        return sys001Finding({
+          resource: g.resource,
+          stage: 'unrecorded',
+          /* The disagreement is proved, but nothing is established about the
+           * object — there is no manifest record of it to establish it from. */
           targetState: 'unreachable',
+          cause: g.cause,
           bounded: g.bounded,
-          isRootMiss: g.isRootMiss === true,
-          evidence: {
-            object: anchor.resource,
-            location: 'gap set, with no matching manifest entry',
-            observed: g.cause,
-            expected: 'a manifest entry for every gap',
-          },
-          link: null,
+          isRootMiss,
+          location: 'gap set, with no matching manifest entry',
           message:
             'the gap set names a resource the coverage manifest does not hold — ' +
             'the two disagree, and neither may be believed until they are reconciled',
-        };
+        });
       }
 
       const stage = lastStage(e);
-      /* `resolved` means the identifier reached an object. Anything short of it
-       * is `unreachable`, never `absent`: Principle 3, a 404 is access failure
-       * OR object absence and the API does not say which. */
-      const targetState: TargetState = e.stages.has('resolved') ? 'present' : 'unreachable';
-
-      return {
-        rule: SYS001_ID,
-        anchor,
+      return sys001Finding({
+        resource: e.key,
         /* One finding per resource in this slice, so the bucket holds at most
          * one element and the ordering ADR-0010 decision 5 requires is total by
-         * construction. The stage key is here because it is the discriminator
-         * the revisable one-finding-per-cause split would need, and because it
-         * is a structural selector rather than an observed value — ADR-0010
-         * decision 6 keeps the cause OUT of the key and in the evidence. */
-        discriminator: { [DROPOUT_STAGE_KEY]: stage ?? 'unrecorded' },
-        certainty: 'confirmed',
-        targetState,
+         * construction. The stage key is a structural selector, not an observed
+         * value — ADR-0010 decision 6 keeps the cause OUT of the key. */
+        stage: stage ?? 'unrecorded',
+        /* Read from the drop-out record, which the site that lost the resource
+         * wrote. It is NOT inferred from the `resolved` stage: scan.ts stamps
+         * `resolved` on every child straight from the parent's block listing, so
+         * a child whose own call returned 404 was being reported `present`. */
+        targetState: e.loss?.target ?? 'present',
+        cause: g.cause,
         bounded: g.bounded,
-        isRootMiss: g.isRootMiss === true,
-        evidence: {
-          object: e.key,
-          location: `coverage funnel, after ${stage ?? 'no stage'}`,
-          observed: g.cause,
-          expected: 'evaluated',
-        },
-        link: null,
+        isRootMiss,
+        location: `coverage funnel, after ${stage ?? 'no stage'}`,
         /* No alias. The alias is a page title and CONTEXT.md redacts titles by
          * default; a message built from one would carry workspace content into
          * every consumer of this finding, redaction flag or not. */
         message: `${e.isRoot ? 'declared root' : 'resource'} was not evaluated — ${g.cause}`,
-      };
+      });
     });
   },
 
@@ -216,15 +248,22 @@ export const SYS001: Sys001Rule = {
      * Not a third enum value — a verdict that was never formed is not a verdict. */
     const conformity = judged.size === 0 ? null : findings.length > 0 ? 'violates' : 'conforms';
 
+    /* AN EMPTY APPLICABLE SET HAS NO SUFFICIENCY, and saying `sufficient` there
+     * is the loudest false claim this rule can make. Every `some()` below is
+     * false over an empty manifest, so the fall-through reported a run that made
+     * no successful call as one whose evidence covered everything it applied to.
+     * Absent, for the same reason conformity is absent: a judgement that was
+     * never formed is not a judgement. */
+    if (entries.length === 0) return { conformity, evidence: null };
+
     /* `unreached` — an applicable resource was never fetched. Remedy: widen
      * access or raise the request budget.
      * `undecidable` — it was fetched and could not be judged. Remedy: neither
      * sharing more nor re-running helps.
      * ADR-0005 decision 1 gives `unreached` precedence where both hold. */
     const unreached = entries.some(e => !e.stages.has('fetched'));
-    const undecidable = entries.some(e => e.stages.has('fetched') && e.cause !== '');
-    const evidence = unreached ? 'unreached' : undecidable ? 'undecidable' : 'sufficient';
+    const undecidable = entries.some(e => e.stages.has('fetched') && e.loss !== null);
 
-    return { conformity, evidence };
+    return { conformity, evidence: unreached ? 'unreached' : undecidable ? 'undecidable' : 'sufficient' };
   },
 };

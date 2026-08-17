@@ -65,10 +65,16 @@ export const anchorKey = (a: Anchor): string => `${a.rule}:${a.resource}`;
 /** ADR-0005 decision 1. Absent — not a third value — when the evaluated set is empty. */
 export type Conformity = 'conforms' | 'violates' | null;
 
-/** ADR-0005 decision 1. `unreached` takes precedence over `undecidable`. */
-export type EvidenceSufficiency = 'sufficient' | 'unreached' | 'undecidable';
+/**
+ * ADR-0005 decision 1. `unreached` takes precedence over `undecidable`.
+ *
+ * Null when the applicable set is empty. Sufficiency asks whether the evaluated
+ * set covered the applicable set, and over nothing that question has no answer —
+ * `sufficient` would assert full cover on a run that read nothing.
+ */
+export type EvidenceSufficiency = 'sufficient' | 'unreached' | 'undecidable' | null;
 
-/** An outcome is a PAIR. Never one value. */
+/** An outcome is a PAIR. Never one value. Either half may be absent. */
 export type Outcome = { conformity: Conformity; evidence: EvidenceSufficiency };
 
 /**
@@ -107,24 +113,45 @@ export type Finding = {
   /** ADR-0005 decision 3 condition (a): a declared root that was never reached. */
   isRootMiss: boolean;
   evidence: Evidence;
-  /**
-   * CONTEXT.md settled defaults: "a finding in CI names its resource by ID and
-   * link, never by title." NULL IN THIS SLICE, AND THAT IS A DISCLOSED GAP, not
-   * an oversight. The authoritative link is the object's own `url` field, which
-   * this slice never reads — NotionPort.retrievePage is typed `{ id: string }`
-   * and the child listing returns blocks, not page objects. A link CONSTRUCTED
-   * from the ID would be an assertion about Notion's URL scheme for an object
-   * whose kind the manifest does not record; `app.notion.com/p/{id}` is observed
-   * for pages (docs/research/notion-live-probe.md, search results carrying the
-   * API's own `url` field) and is unevidenced for a data source. The report
-   * discloses the null per run.
-   */
+  /** Null in this slice. The reason is `LINK_NOT_CAPTURED`, and the report prints it. */
   link: string | null;
   /** One line a human reads. Carries no page title. */
   message: string;
 };
 
+/**
+ * Why `Finding.link` is null, stated once and printed verbatim by the report.
+ *
+ * CONTEXT.md settled defaults: "a finding in CI names its resource by ID and
+ * link, never by title." THIS IS A DISCLOSED GAP, not an oversight. The
+ * authoritative link is the object's own `url` field, which this slice never
+ * reads — `NotionPort.retrievePage` is typed `{ id: string }` and the child
+ * listing returns blocks, not page objects. A link CONSTRUCTED from the ID
+ * would be an assertion about Notion's URL scheme for an object whose kind the
+ * manifest does not record: `app.notion.com/p/{id}` is observed for pages
+ * (docs/research/notion-live-probe.md, search results carrying the API's own
+ * `url` field) and is unevidenced for a data source.
+ */
+export const LINK_NOT_CAPTURED = "not captured — this slice does not read the object's url field";
+
 /* --------------------------------------------------------------- coverage -- */
+
+/**
+ * The nouns a rule's applicable set can be a set of — ADR-0011 decision 2,
+ * which assigns exactly these to the four shipping rules.
+ *
+ * A CLOSED UNION ON PURPOSE. ADR-0011 requires each of the four deferred rules
+ * to declare a coverage item before it is built, and states that a deferred
+ * rule whose unit duplicates an existing one is the Revisit-if that would
+ * collapse the whole per-rule scheme. A `string` here lets a rule ship with an
+ * undeclared unit, or with `resource` where another says `resources`, and two
+ * spellings of one unit is how a vector stops being comparable to itself.
+ */
+export type CoverageUnit =
+  | 'resources'
+  | 'internal references'
+  | 'resource–property pairs'
+  | 'resource pairs in a uniqueness scope';
 
 /**
  * One row of the coverage vector — ADR-0011 decision 1. `unit` travels with the
@@ -134,13 +161,13 @@ export type Finding = {
 export type CoverageRow = {
   rule: string;
   /** The noun this rule's applicable set is a set of. Declared by the rule. */
-  unit: string;
+  unit: CoverageUnit;
   evaluated: number;
   applicable: number;
   ratio: number;
 };
 
-export const coverageRow = (rule: string, unit: string, evaluated: number, applicable: number): CoverageRow | null =>
+export const coverageRow = (rule: string, unit: CoverageUnit, evaluated: number, applicable: number): CoverageRow | null =>
   /* ADR-0011 decision 6: a rule with an empty applicable set has an undefined
    * ratio. It LEAVES the vector rather than scoring zero — scoring zero would
    * report a failure where the rule simply had nothing to count. */

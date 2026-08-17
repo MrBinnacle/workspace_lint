@@ -11,7 +11,7 @@
  */
 
 import { STAGES, type Stage } from './manifest.js';
-import { formatRow, headlineCoverage } from './finding.js';
+import { formatRow, headlineCoverage, LINK_NOT_CAPTURED } from './finding.js';
 import type { ScanResult } from './scan.js';
 
 export type RenderOptions = {
@@ -38,7 +38,7 @@ export function renderReport(r: ScanResult, opts: RenderOptions = {}): string[] 
   out.push('');
   out.push('──────── COVERAGE MANIFEST ────────');
   for (const e of r.manifest.all())
-    out.push(`  ${label(e.alias, e.key).padEnd(width)} ${STAGES.map((s: Stage) => (e.stages.has(s) ? '●' : '○')).join(' ')}  ${e.cause}`);
+    out.push(`  ${label(e.alias, e.key).padEnd(width)} ${STAGES.map((s: Stage) => (e.stages.has(s) ? '●' : '○')).join(' ')}  ${e.loss?.cause ?? ''}`);
   out.push(`  ${''.padEnd(width)} ${STAGES.map(s => s[0]).join(' ')}   (declared resolved enumerated fetched evaluated)`);
   if (!opts.showTitles) out.push('  page titles redacted by default; --show-titles opts in');
 
@@ -64,7 +64,7 @@ export function renderReport(r: ScanResult, opts: RenderOptions = {}): string[] 
       `gap: ${f.bounded ? 'bounded' : 'UNBOUNDED'}${f.isRootMiss ? ' · declared root never reached' : ''}`,
     );
     out.push(`      evidence: expected ${f.evidence.expected}, observed ${f.evidence.observed} (${f.evidence.location})`);
-    out.push(`      link: ${f.link ?? 'not captured — this slice does not read the object\'s url field'}`);
+    out.push(`      link: ${f.link ?? LINK_NOT_CAPTURED}`);
   }
   out.push('  no baseline state is printed: this slice computes none (spec §1.2).');
 
@@ -99,6 +99,21 @@ export function renderReport(r: ScanResult, opts: RenderOptions = {}): string[] 
       : `  disposition:      ${r.verdict.disposition}${r.verdict.disposition === 'disclaimed' ? '   ← NO SUMMARY VERDICT RENDERED' : ''}`,
   );
 
+  /* A DISCLAIMED REPORT RENDERS NO SUMMARY VERDICT. ADR-0005 decision 3 gives
+   * `disclaimed` exactly one behaviour — "No summary verdict is rendered. The
+   * manifest and the findings are still printed" — and the headline coverage
+   * figure and the conformity ratio are the summary verdict. Printing them under
+   * "← NO SUMMARY VERDICT RENDERED" contradicted the line above them.
+   *
+   * The arithmetic makes it worse than a formatting slip. A disclaimed run is
+   * disclaimed because a gap is unbounded, so its applicable set is a number the
+   * run has just declared unestablishable — and decision 3 rejects a percentage
+   * threshold on exactly that ground: it would be "computed over a denominator
+   * the scan has just admitted it cannot establish."
+   *
+   * The VECTOR still prints. It is per-rule evidence, not a summary. */
+  const summaryVerdictWithheld = r.verdict.disposition === 'disclaimed';
+
   /* ADR-0011 decision 4. One row per rule over that rule's OWN coverage item,
    * every figure carrying its unit, and the headline is the MINIMUM over the
    * vector — never a mean, never a count pooled across rules, because counts of
@@ -113,11 +128,22 @@ export function renderReport(r: ScanResult, opts: RenderOptions = {}): string[] 
   }
   for (const row of r.coverage) out.push(`    ${row.rule.padEnd(8)} ${formatRow(row)}`);
   const headline = headlineCoverage(r.coverage);
-  out.push(`  headline:         ${headline ? `${formatRow(headline)} — the MINIMUM of the vector, set by ${headline.rule}` : 'none — the vector is empty'}`);
+  out.push(
+    `  headline:         ${
+      summaryVerdictWithheld
+        ? 'WITHHELD — the disposition is disclaimed, so no summary verdict is rendered (ADR-0005 decision 3)'
+        : headline
+          ? `${formatRow(headline)} — the MINIMUM of the vector, set by ${headline.rule}`
+          : 'none — the vector is empty'
+    }`,
+  );
 
   out.push(`  funnel:           ${r.verdict.evaluated}/${r.verdict.applicable} resources evaluated · ${r.manifest.reached('fetched')}/${r.verdict.applicable} fetched   (unit: resources)`);
   for (const [rule, o] of Object.entries(r.outcomes))
-    out.push(`  outcome ${rule}:   conformity ${o.conformity ?? 'ABSENT — the evaluated set is empty, so no verdict was formed'} · evidence ${o.evidence}`);
+    out.push(
+      `  outcome ${rule}:   conformity ${o.conformity ?? 'ABSENT — the evaluated set is empty, so no verdict was formed'}` +
+      ` · evidence ${o.evidence ?? 'ABSENT — the applicable set is empty, so there is nothing for evidence to cover'}`,
+    );
 
   /* ADR-0005 decision 4: the conformity ratio and the coverage figure are
    * published TOGETHER OR NOT AT ALL. Printing conformity alone is the Great
@@ -127,9 +153,11 @@ export function renderReport(r: ScanResult, opts: RenderOptions = {}): string[] 
   const claimed = Object.values(r.outcomes).filter(o => o.conformity !== null);
   out.push(
     `  conformity ratio: ${
-      claimed.length
-        ? `${claimed.filter(o => o.conformity === 'conforms').length}/${claimed.length} rules conforming (unit: rules that reached a conformity claim)`
-        : 'none — no rule formed a conformity verdict, so there is no ratio'
+      summaryVerdictWithheld
+        ? 'WITHHELD — the disposition is disclaimed (ADR-0005 decision 3)'
+        : claimed.length
+          ? `${claimed.filter(o => o.conformity === 'conforms').length}/${claimed.length} rules conforming (unit: rules that reached a conformity claim)`
+          : 'none — no rule formed a conformity verdict, so there is no ratio'
     }`,
   );
   out.push(`  requests:         ${r.requestCount} · wall ${r.wallMs} ms   (NOT a validated budget — #7 owns that)`);

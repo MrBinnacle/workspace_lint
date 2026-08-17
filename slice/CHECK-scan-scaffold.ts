@@ -22,6 +22,7 @@
  */
 
 import { parseConfig } from './config.js';
+import { createHarness, reportSection } from './CHECK-harness.js';
 import { scan } from './scan.js';
 import { renderReport } from './report.js';
 import { checkAgainstOracle } from './fixture-oracle.js';
@@ -35,13 +36,10 @@ import {
   THREE_CHILDREN, MIDSTREAM, type FakeResource,
 } from './CHECK-fakes.js';
 
-let fails = 0;
-const check = (name: string, got: unknown, want: unknown) => {
-  const ok = String(got) === String(want);
-  if (!ok) fails++;
-  console.log(`${ok ? 'PASS' : 'FAIL'}  ${name}: got=${got} want=${want}`);
-};
-const head = (s: string) => console.log(`\n== ${s} ==`);
+/* The harness is shared and its comparison is STRICT — see CHECK-harness.ts.
+ * Both suites previously carried their own copy comparing stringified
+ * values, which passes when the types differ. */
+const { check, head, finish } = createHarness();
 
 /* =========================================================================
  * TEST 1 — the config rejects a root it cannot address
@@ -84,7 +82,7 @@ const entry = (id: string) => r2.manifest.all().find(e => e.key === hyphenate(id
 check('applicable set is 4 — the root and all three children', r2.verdict.applicable, 4);
 check('the data source is IN the denominator', entry(DATASET) !== undefined, true);
 check('  and it stalled at enumerated', entry(DATASET)!.stages.has('fetched'), false);
-check('  with a named, specific cause', /data-source enumeration is not implemented/.test(entry(DATASET)!.cause), true);
+check('  with a named, specific cause', /data-source enumeration is not implemented/.test(entry(DATASET)!.loss!.cause), true);
 check('the two child pages were fetched', [entry(PAGE_A)!, entry(PAGE_B)!].every(e => e.stages.has('fetched')), true);
 /* CHANGED BY T2. This read "NOTHING was evaluated — this slice implements no
  * rule", want 0. SYS001 exists now and judges the three resources the funnel
@@ -92,9 +90,9 @@ check('the two child pages were fetched', [entry(PAGE_A)!, entry(PAGE_B)!].every
 check('the three delivered resources were evaluated by SYS001', r2.verdict.evaluated, 3);
 check('  and the data source was NOT — it stalled before fetched', entry(DATASET)!.stages.has('evaluated'), false);
 /* CHANGED BY T2. This asserted the "implements no rule" cause on a fetched
- * page. That cause is gone from every path; a delivered resource now carries no
- * cause at all, which is what makes it judgeable. */
-check('  a delivered resource carries no drop-out cause', entry(PAGE_A)!.cause, '');
+ * page. That cause is gone from every path; a delivered resource records no
+ * LOSS at all, which is what makes it judgeable. */
+check('  a delivered resource records no loss', entry(PAGE_A)!.loss, null);
 check('every gap names a resource and a cause', r2.gaps.every(g => g.resource.length > 0 && g.cause.length > 0), true);
 check('every gap is bounded — each missing resource is named', r2.gaps.every(g => g.bounded), true);
 check('disposition is qualified, not unqualified', r2.verdict.disposition, 'qualified');
@@ -185,6 +183,7 @@ head('TEST 6 — no page title reaches the report unless the operator opts in');
  * would have stayed green. The assertion is over EVERY rendered line. */
 
 const TITLES = ['wl-outside-grant', 'wl-revoke-parent', 'wl-dataset'];
+const DATASET_HYPHENATED = hyphenate(DATASET)!;
 const r6 = await scan({ config: cfg(), port: fakePort(THREE_CHILDREN), now: clock() });
 
 const redacted = renderReport(r6, {}).join('\n');
@@ -194,9 +193,14 @@ check('  and it names each resource by full ID instead', redacted.includes('3bf1
  * evaluated now and is correctly absent from that section, so the assertion
  * moved to the resource that IS a gap — the data source — and gained the
  * findings section, which is new output and the likeliest place for a title to
- * leak next. */
-check('  including in the gap list', /GAPS[\s\S]*5db3573f-8cf6-a332-afe7-fee0d11db964/.test(redacted), true);
-check('  and in the findings, by full ID', /FINDINGS[\s\S]*SYS001 {2}5db3573f-8cf6-a332-afe7-fee0d11db964/.test(redacted), true);
+ * leak next.
+ *
+ * CUT THE SECTION OUT FIRST. The original wrote /GAPS[\s\S]*<id>/, which spans
+ * the rest of the report — the ID appearing only in CALLS MADE would have
+ * satisfied an assertion claiming it appeared in GAPS. */
+check('  including in the gap list', reportSection(redacted, 'GAPS').includes(DATASET_HYPHENATED), true);
+check('  and in the findings, by full ID', reportSection(redacted, 'FINDINGS').includes(`SYS001  ${DATASET_HYPHENATED}`), true);
+check('  and the section cut is real — the ID is NOT in DISCLOSURES', reportSection(redacted, 'DISCLOSURES').includes(DATASET_HYPHENATED), false);
 
 const shown = renderReport(r6, { showTitles: true }).join('\n');
 check('--show-titles opts in, and then the titles appear', TITLES.every(t => shown.includes(t)), true);
@@ -257,12 +261,9 @@ console.log('    never derived from it. An oracle that cannot go red is a restat
 /* --------------------------------------------------------------- helper -- */
 
 function entryCause(r: Awaited<ReturnType<typeof scan>>, id: string): string {
-  return r.manifest.all().find(e => e.key === hyphenate(id))?.cause ?? '';
+  return r.manifest.all().find(e => e.key === hyphenate(id))?.loss?.cause ?? '';
 }
 
 /* ------------------------------------------------------------------------ */
 
-console.log('');
-console.log(fails === 0 ? `ALL CHECKS PASS` : `${fails} CHECK(S) FAILED`);
-console.log('SYS001 is implemented (#43). This file covers the FUNNEL; CHECK-sys001.ts covers the RULE.');
-process.exit(fails === 0 ? 0 : 1);
+finish('SYS001 is implemented (#43). This file covers the FUNNEL; CHECK-sys001.ts covers the RULE.');

@@ -38,8 +38,13 @@ committed on 2026-08-17 in `9dcb069`, **before** this run existed. Criterion 1 r
 hand-written manifest to be written before the run, which is why #42's run could not close it: that
 run's applicable set was checked against the code's own output.
 
-Result: **`ORACLE MATCHED`**, twelve comparisons, no mismatch. The oracle asserted, and the run
+Result: **`ORACLE MATCHED`**, **ten** comparisons, no mismatch. The oracle asserted, and the run
 confirmed:
+
+*(Corrected. This file first said twelve. `checkAgainstOracle` emits ten `MATCH` lines for a
+fixture-shaped run — 3 for the root, 5 for the children, 2 for the required absences — and the two
+`NOTE` lines are not comparisons. The count was wrong in a file whose own header claims it outranks
+documentation on questions of fact. Found by review, confirmed by counting the live output.)*
 
 - the applicable set is 4;
 - the declared root and both `child_page` children reached `fetched`;
@@ -103,6 +108,48 @@ contradiction legible. ADR-0005 decision 3's three dispositions describe a repor
 ran, and exit `4` says this one did not. The render layer prints `none — the scan did not run as
 declared, so no disposition was formed`. Same rule as the baseline state: a value the run did not
 compute is a false claim whichever value it carries.
+
+## 4b. Four more defects, found by review after the first commit
+
+The offline suites were green and the live run was clean before any of these was visible. Three
+were introduced by this ticket. Every one is a claim the report made and the run had not earned.
+
+**A disclaimed report published a summary verdict.** `disposition: disclaimed ← NO SUMMARY VERDICT
+RENDERED`, and three lines later a headline coverage figure and a conformity ratio. ADR-0005
+decision 3 gives `disclaimed` exactly one behaviour: no summary verdict, manifest and findings still
+printed. The arithmetic is worse than the contradiction — a run is disclaimed because a gap is
+unbounded, so the headline's denominator is the number the run has just declared unestablishable,
+which is the precise ground on which decision 3 rejects a percentage threshold. Both figures are now
+`WITHHELD`. The per-rule vector still prints: it is evidence, not a summary.
+
+**A child the API refused was reported `target state: present`.** `targetState` was inferred from
+the `resolved` stage, and `scan.ts` stamps `resolved` on every child straight out of the parent's
+block listing — no retrieval involved. A child whose own call returned 404 therefore carried a
+positive claim about an object the API had just declined. This is the `wl-revoke-child` shape, which
+the fixture exists to model.
+
+**A run that made no successful call reported `evidence: sufficient`.** Every `some()` over an empty
+manifest is false, so sufficiency fell through to its most flattering value on the auth-failure path.
+Evidence sufficiency is now **absent** over an empty applicable set, for the same reason conformity
+is: a judgement never formed is not a judgement.
+
+**Failing outright produced a milder verdict than failing halfway.** Boundedness was recovered by
+matching three phrases in the drop-out's prose. A root whose child list failed *outright* matched
+none of them and was classified `bounded` → exit 3; one that failed *mid-stream* matched and was
+`unbounded` → exit 2. `request_status: incomplete` was misread the same way.
+
+**The root cause of the last two is one design defect.** The manifest stored a drop-out as a cause
+string, and two later readers recovered structure from prose. A drop-out now carries a `Loss` record
+— cause, `bounded`, and `target` — written by the site that lost the resource, which is the only
+place all three facts are known. The pattern-matching regex is deleted. Each drop-out site states
+all three, and a new site cannot omit them.
+
+**One review finding is recorded and not acted on.** `unreached` fires for the `child_database`,
+which was never fetched *by design* rather than for want of access or budget, so ADR-0005's remedy
+column for that value — widen access, raise the request budget — fits neither. The honest fix is
+decision 2's applicability filter, which removes a resource from a rule's applicable set with a
+stated justification. That is an ADR-scale change and it is not made here. The resource stays in the
+applicable set and `unreached` remains the least-wrong of the three available values.
 
 ## 5. What this run did not exercise, stated so the result is not read as complete
 

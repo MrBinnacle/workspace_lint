@@ -20,6 +20,7 @@
  *            must report the disagreement instead of defaulting around it.
  */
 
+import { createHarness, reportSection } from './CHECK-harness.js';
 import { scan } from './scan.js';
 import { renderReport } from './report.js';
 import { hyphenate } from './ids.js';
@@ -29,16 +30,13 @@ import type { Entry, Manifest } from './manifest.js';
 import type { Finding } from './finding.js';
 import {
   ROOT, PAGE_A, PAGE_B, DATASET,
-  cfg, clock, fakePort, THREE_CHILDREN, MIDSTREAM,
+  cfg, clock, fakePort, THREE_CHILDREN, MIDSTREAM, ROOT_ENUM_FAILS, CHILD_UNREACHABLE,
 } from './CHECK-fakes.js';
 
-let fails = 0;
-const check = (name: string, got: unknown, want: unknown) => {
-  const ok = String(got) === String(want);
-  if (!ok) fails++;
-  console.log(`${ok ? 'PASS' : 'FAIL'}  ${name}: got=${got} want=${want}`);
-};
-const head = (s: string) => console.log(`\n== ${s} ==`);
+/* The harness is shared and its comparison is STRICT — see CHECK-harness.ts.
+ * Both suites previously carried their own copy comparing stringified
+ * values, which passes when the types differ. */
+const { check, head, finish } = createHarness();
 
 const findingFor = (fs: Finding[], id: string) => fs.find(f => f.anchor.resource === hyphenate(id));
 
@@ -146,8 +144,8 @@ check('coverage 0.75 resources clears the declared threshold 0.5', control4.verd
 check('gaps still exist and the report is qualified', control4.verdict.disposition, 'qualified');
 check('EXIT 1 — a finding is new and unsuppressed', control4.verdict.exit, 1);
 
-const noReport: Sys001Rule = { ...SYS001, report: () => [] };
-const mutated4 = await scan({ config: lenient, port: fakePort(THREE_CHILDREN), now: clock(), rule: noReport });
+const noFindings: Sys001Rule = { ...SYS001, findingsFrom: () => [] };
+const mutated4 = await scan({ config: lenient, port: fakePort(THREE_CHILDREN), now: clock(), rule: noFindings });
 check('with the findings removed the byte is 0', mutated4.verdict.exit, 0);
 check('the mutation moved the byte', control4.verdict.exit !== mutated4.verdict.exit, true);
 check('  and the coverage figure is unchanged by it', mutated4.coverage[0]!.ratio, control4.coverage[0]!.ratio);
@@ -275,9 +273,64 @@ check('  and a stalled resource stops at enumerated',
 check('  a judged resource is judgeable, a stalled one is not',
   `${SYS001.judge(r1.manifest).has(hyphenate(PAGE_B)!)}/${SYS001.judge(r1.manifest).has(hyphenate(DATASET)!)}`, 'true/false');
 
+/* =========================================================================
+ * TEST 9 — four claims the report must NOT make
+ *
+ * Every one of these was live in the first implementation of this ticket and
+ * was found by review, not by these suites. They are regression tests, and each
+ * names the claim the code was making.
+ * ========================================================================= */
+
+head('TEST 9 — a disclaimed report renders NO summary verdict');
+
+/* ADR-0005 decision 3 allows a disclaimed report the manifest and the findings.
+ * The headline coverage figure and the conformity ratio ARE the summary verdict,
+ * and the headline's denominator is the very number an unbounded gap says
+ * cannot be established. */
+const disclaimedReport = renderReport(rMid, {}).join('\n');
+check('the run is disclaimed', rMid.verdict.disposition, 'disclaimed');
+check('  no headline coverage figure is published', /headline: *WITHHELD/.test(disclaimedReport), true);
+check('  no conformity ratio is published', /conformity ratio: *WITHHELD/.test(disclaimedReport), true);
+check('  but the per-rule VECTOR still prints — it is evidence, not a summary',
+  reportSection(disclaimedReport, 'REPORT').includes('SYS001'), true);
+check('  and the findings still print (ADR-0005 decision 3)',
+  reportSection(disclaimedReport, 'FINDINGS').includes('SYS001'), true);
+
+head('TEST 9b — failing outright is not milder than failing halfway');
+
+/* The root resolves and its child list is then never retrieved. Boundedness used
+ * to be recovered by matching three phrases in the cause text, and this cause
+ * matched none of them — so a total failure was `bounded` (exit 3) while a
+ * half-finished one was `unbounded` (exit 2). */
+const rNoEnum = await scan({ config: cfg(), port: fakePort(ROOT_ENUM_FAILS), now: clock() });
+check('the root resolved', rNoEnum.manifest.reached('resolved'), 1);
+check('  so this is NOT a declared-root miss', rNoEnum.gaps[0]!.isRootMiss, false);
+check('  the gap is UNBOUNDED — the child list was never retrieved', rNoEnum.gaps[0]!.bounded, false);
+check('  disposition is disclaimed', rNoEnum.verdict.disposition, 'disclaimed');
+check('  and the byte is 2, not 3', rNoEnum.verdict.exit, 2);
+check('  the root itself is still present — it was retrieved a moment earlier',
+  rNoEnum.findings[0]!.targetState, 'present');
+
+head('TEST 9c — a child the API refused is not reported present');
+
+const rChildGone = await scan({ config: cfg(), port: fakePort(CHILD_UNREACHABLE), now: clock() });
+const fChild = findingFor(rChildGone.findings, PAGE_A)!;
+check('the child is in the manifest', fChild !== undefined, true);
+check('  it reached resolved — the parent listed its block', rChildGone.manifest.all().find(e => e.key === hyphenate(PAGE_A))!.stages.has('resolved'), true);
+check('  but its own call 404d, so target state is unreachable', fChild.targetState, 'unreachable');
+check('  and certainty is still confirmed — non-evaluation is proved', fChild.certainty, 'confirmed');
+console.log('  ^ `resolved` is stamped from the parent\'s block listing, so it never proved');
+console.log('    the object was retrievable. The drop-out record states the target instead.');
+
+head('TEST 9d — a run that read nothing claims no evidence sufficiency');
+
+check('the auth-failure run has an empty applicable set', rAuth.verdict.applicable, 0);
+check('  conformity is absent', rAuth.outcomes[SYS001_ID]!.conformity, null);
+check('  evidence sufficiency is ABSENT, not `sufficient`', rAuth.outcomes[SYS001_ID]!.evidence, null);
+check('  and the report says why', /evidence ABSENT — the applicable set is empty/.test(authReport), true);
+console.log('  ^ every some() over an empty manifest is false, so the fall-through');
+console.log('    reported a run that made no successful call as fully covered.');
+
 /* ------------------------------------------------------------------------ */
 
-console.log('');
-console.log(fails === 0 ? `ALL CHECKS PASS` : `${fails} CHECK(S) FAILED`);
-console.log('SYS001 keeps its finding-identity job only. The run-failure decision is verdict.ts (ADR-0005 decision 4).');
-process.exit(fails === 0 ? 0 : 1);
+finish('SYS001 keeps its finding-identity job only. The run-failure decision is verdict.ts (ADR-0005 decision 4).');

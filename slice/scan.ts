@@ -32,7 +32,7 @@
 import type { Config } from './config.js';
 import type { NotionPort } from './notion-port.js';
 import { createObserver, listAllChildren, type Call } from './observed.js';
-import { Manifest, gapsFrom } from './manifest.js';
+import { Manifest, gapsFrom, KEEP_ALIAS } from './manifest.js';
 import { deriveVerdict, type Gap, type Verdict } from './verdict.js';
 import { SYS001, type Sys001Rule } from './sys001.js';
 import type { CoverageRow, Finding, Outcome } from './finding.js';
@@ -115,10 +115,10 @@ export async function scan(opts: ScanOptions): Promise<ScanResult> {
      * parallel loop that marks the same stage — a union here would mark a
      * resource evaluated because ONE rule judged it, which is the flattering
      * answer and would inflate every coverage figure computed downstream. */
-    for (const key of judged) manifest.mark(key, '', 'evaluated');
+    for (const key of judged) manifest.mark(key, KEEP_ALIAS, 'evaluated');
 
     const gaps = deriveGaps(manifest);
-    const findings = rule.report(manifest, gaps);
+    const findings = rule.findingsFrom(manifest, gaps);
     /* `judged` is threaded through rather than recomputed. The rule's coverage
      * row, its outcome pair and the funnel's `evaluated` stage are then three
      * readings of ONE judgement. */
@@ -179,11 +179,17 @@ export async function scan(opts: ScanOptions): Promise<ScanResult> {
   /* -- the declared root -------------------------------------------------- */
   const root = config.roots[0]!;
   const rootAlias = root.alias ?? root.id;
-  manifest.mark(root.id, rootAlias, 'declared', '', true);
+  manifest.mark(root.id, rootAlias, 'declared', null, true);
 
   const page = await observer.observe('GET /v1/pages/{root}', () => port.retrievePage(root.id));
   if (page.state === 'unreachable') {
-    manifest.note(root.id, `declared root was never reached — ${page.cause}`);
+    manifest.note(root.id, {
+      cause: `declared root was never reached — ${page.cause}`,
+      /* The missing item is the root itself, which is named. Pervasiveness
+       * comes from isRootMiss here, not from boundedness. */
+      bounded: true,
+      target: 'unreachable',
+    });
     say(`declared root UNREACHABLE — ${page.cause}`);
     return finish();
   }
@@ -193,11 +199,27 @@ export async function scan(opts: ScanOptions): Promise<ScanResult> {
   /* -- enumerate the root ------------------------------------------------- */
   const rootBlocks = await listAllChildren(port, observer, root.id, 'root');
   if (rootBlocks.state === 'unreachable') {
-    manifest.note(root.id, `root enumeration failed — ${rootBlocks.cause}`);
+    manifest.note(root.id, {
+      cause: `root enumeration failed — ${rootBlocks.cause}`,
+      /* UNBOUNDED. The child list was never retrieved, so the scan can neither
+       * count nor name what it missed — ADR-0005 decision 3(b) exactly. The
+       * previous pattern-matched classification called this BOUNDED while
+       * calling a half-finished enumeration unbounded, so failing outright
+       * produced the milder verdict. */
+      bounded: false,
+      /* The root itself was retrieved a moment ago. The loss is its contents. */
+      target: 'present',
+    });
     say(`root enumeration FAILED — ${rootBlocks.cause}`);
     return finish();
   }
-  manifest.mark(root.id, rootAlias, 'enumerated', rootBlocks.state === 'partial' ? rootBlocks.cause : '');
+  manifest.mark(
+    root.id, rootAlias, 'enumerated',
+    /* A partial enumeration is unbounded whatever produced it — a mid-stream
+     * error, an exhausted page budget, or a positive `request_status:
+     * incomplete`. In every case the remainder is unknown. */
+    rootBlocks.state === 'partial' ? { cause: rootBlocks.cause, bounded: false, target: 'present' } : null,
+  );
   manifest.mark(root.id, rootAlias, 'fetched');
   const blocks = rootBlocks.value;
   say(`root enumerated — ${blocks.length} block(s), ${rootBlocks.state}.`);
@@ -220,8 +242,9 @@ export async function scan(opts: ScanOptions): Promise<ScanResult> {
   for (const c of children) {
     const alias = titleOf(c);
     if (c.type === 'child_database') {
-      /* A NAMED gap. Bounded, because the resource is named and counted. */
-      manifest.mark(c.id, alias, 'enumerated', DATA_SOURCE_CAUSE);
+      /* A NAMED gap. Bounded, because the resource is named and counted, and
+       * present, because its block was returned in the parent's listing. */
+      manifest.mark(c.id, alias, 'enumerated', { cause: DATA_SOURCE_CAUSE, bounded: true, target: 'present' });
       continue;
     }
     /* The label is the ID, NOT the alias. The alias is a page title, the call
@@ -232,10 +255,24 @@ export async function scan(opts: ScanOptions): Promise<ScanResult> {
      * guarantee either way. */
     const kids = await listAllChildren(port, observer, c.id, c.id);
     if (kids.state === 'unreachable') {
-      manifest.note(c.id, `enumeration failed — ${kids.cause}`);
+      manifest.note(c.id, {
+        cause: `enumeration failed — ${kids.cause}`,
+        /* Bounded: the resource that was lost is this child, and it is named.
+         * Its own descendants are outside this slice's applicable set, which
+         * descends one level (spec §1.1). */
+        bounded: true,
+        /* UNREACHABLE, not present. The parent's listing returned this block,
+         * but the call about the resource itself failed, and a 404 is access
+         * failure or object absence with no way to tell which. Claiming
+         * `present` here was reporting an object the API had just refused. */
+        target: 'unreachable',
+      });
       continue;
     }
-    manifest.mark(c.id, alias, 'enumerated', kids.state === 'partial' ? kids.cause : '');
+    manifest.mark(
+      c.id, alias, 'enumerated',
+      kids.state === 'partial' ? { cause: kids.cause, bounded: false, target: 'present' } : null,
+    );
     manifest.mark(c.id, alias, 'fetched');
   }
 

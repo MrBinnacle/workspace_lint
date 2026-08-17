@@ -67,6 +67,23 @@ export const THREE_CHILDREN: Record<string, FakeResource> = {
   [DATASET]: { steps: [page([])] },
 };
 
+/* The root resolves, then its child list is never retrieved at all. The scan can
+ * neither count nor name what it missed, so this is unbounded for the same
+ * reason MIDSTREAM is — and it used to be classified BOUNDED, because
+ * boundedness was recovered by pattern-matching the cause text. */
+export const ROOT_ENUM_FAILS: Record<string, FakeResource> = {
+  [ROOT]: { steps: [] },
+};
+
+/* A child the parent listed, whose own call then 404s. This is the shape the
+ * fixture's revocation case models: the object was named by its parent and the
+ * API refuses it. `target: present` would be a claim about an object the API
+ * just declined to return. */
+export const CHILD_UNREACHABLE: Record<string, FakeResource> = {
+  ...THREE_CHILDREN,
+  [PAGE_A]: {},
+};
+
 /* The root's enumeration dies mid-stream: one child listed, the next call 502s.
  * The remainder cannot be counted OR named, so the gap is unbounded. */
 export const MIDSTREAM: Record<string, FakeResource> = {
