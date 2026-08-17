@@ -59,9 +59,26 @@ The fixture is synthetic no matter who builds it. **Q8** — how often a pervasi
 Two things, and neither can be delegated.
 
 1. **Create the `workspace-lint-proof` integration and connect it to `wl-proof-fixture`.** Read content only; Insert and Update off, per Principle 7. Paste the token into `.env` as `NOTION_TOKEN`.
-2. **Attempt the revocation on `wl-revoke-child`, and record `REVOCATION_SUPPORTED`.** Notion documents that a connection inherits to every child. Whether one child can then be un-shared is unverified — the research marks it `(C)`, community reports with no reproduced primary source. It is proof question 1.
+2. ~~Attempt the revocation on `wl-revoke-child`.~~ **Done 2026-08-17. `REVOCATION_SUPPORTED=yes`.** See below.
 
-**A `no` on step 2 is a finding, not a setup failure.** It would mean every descendant of a Declared root is always readable, so an `unreached` Gap inside a Declared root could arise only from rate limits and pagination, never from permissions. That narrows ADR-0005's evidence-sufficiency axis and must be written up before the proof runs.
+## Selective revocation exists — observed 2026-08-17
+
+`docs/research/notion-api-practice.md` §5.2 rated this `(C)`: community reports, no reproduced primary write-up. **It is now confirmed by direct observation**, and the mechanism is more specific than "revoke a child".
+
+Opening `wl-revoke-child` → ⋯ → Connections → remove `workspace-lint-proof` produces a confirmation dialog reading, verbatim:
+
+> **Disconnect workspace-lint-proof and unlink share settings from parent page?**
+> This page will no longer inherit share settings from its parent. Admins can still restore settings later.
+
+Three things follow, and the wording is load-bearing.
+
+1. **Notion does not model this as a per-child deny.** It models it as **breaking inheritance**. The child stops inheriting the parent's share settings entirely and becomes independently permissioned. A tool cannot ask "is this child denied?" — it can only observe that the child's effective grant differs from its parent's.
+2. **The action is reversible by an admin** — "Admins can still restore settings later." So an access gap observed during a scan is not necessarily a permanent property of the resource. A Coverage manifest that records a gap is recording a fact about one scan window, which is what ADR-0002 decision 5 already implies by requiring start and end times.
+3. **`unreached` inside a Declared root is reachable by permissions, not only by rate limits.** This settles the branch that ADR-0005 flagged. The evidence-sufficiency axis keeps its full range and does **not** narrow. No superseding ADR is needed.
+
+**What this does not yet establish.** Proof question 1 asks whether `wl-revoke-parent` still lists a `child_page` block pointing at the disconnected child while a direct retrieve of that child returns 404. That is the mechanism a completeness claim would rest on, and it is an API observation, not a UI one. It remains open until the proof runs.
+
+Status: the UI capability is **CONFIRMED**. The API consequence is **still the open question**.
 
 ## Rebuilding
 
