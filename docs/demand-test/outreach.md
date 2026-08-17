@@ -1,5 +1,10 @@
 # Outreach — message specifications
 
+> **Status: UNSENT. Superseded 2026-08-17.** Gate 1 closed on the owner's own research rather than
+> on a five-team send — see `PRODUCT.md`, Gates, gate 1, and issue #40. No message specified here
+> was ever sent. This file is kept as the record of how the gate was going to be tested, not as a
+> pending instrument. **Do not send from it without reopening Gate 1 first.**
+
 This file specifies what each first-contact message must contain. It does not supply the words. The words are Matthew's, written in his own voice at send time.
 
 Each spec states the purpose, the required content, the prohibited content, the length limit, and the failure mode the spec exists to prevent.

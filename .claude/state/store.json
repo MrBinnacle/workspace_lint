@@ -1,30 +1,36 @@
 {
   "project": "workspace_lint",
   "updated": "2026-08-17",
-  "session": "S012",
-  "phase": "pre-build",
+  "session": "S013",
+  "phase": "pre-build, spec phase -- Gate 1 closed, Gate 2 (#10) is next",
   "phase_detail": "Pre-build on main -- still no src/, no package.json, no toolchain there. The toolchain and all working code remain on the throwaway branch proto/ref001-observed. S011 closed #34: docs/spec/ now exists as a directory (merged in PR #37, origin/main at 39d6d2a) and holds docs/spec/REF001-link-recognition.md. The #34 fork is answered -- an unrecognised link is ADR-0005's `undecidable`, not a new axis value, so no ADR was needed. The section 0.5 sweep established from Notion's own help pages that Notion Sites supports custom domains, so the host set is UNBOUNDED and no allow-list can be complete; the unrecognised residue path is therefore the primary detection mechanism and the host list is only an optimisation. A 34-assertion offline suite (prototypes/CHECK-link-recognition.ts) exercises link DISCOVERY and carries a mutation check that proves its own control is load-bearing. That suite refuted spec section 5 on its first run: exit 0 with an unrecognised link requires the gap to be BASELINED, because ADR-0008 fires exit 1 on a new unsuppressed SYS001 finding.",
-  "next_gate": {
-    "name": "demand test",
-    "kind": "human",
-    "blocks_on": "contact with five teams holding audit-relevant data in Notion",
-    "supersedes": "72-hour API proof, which is now downstream and reclassified as a prototype",
-    "instruments": [
+  "gate_1_demand_test": {
+    "status": "CLOSED 2026-08-17 on owner research, not on a five-team send. Issue #40 closed with it.",
+    "what_closed_it": "docs/inputs/decay-causal-synthesis-2026-08-16.md -- the operator's own causal synthesis of workspace decay, derived from Reddit discussion no research path in this project could reach. Plus this file's own research.known_blind_spot record that the operator reaches Reddit and HAS CONVERTED A BUYER THERE, and docs/research/solo-segment-evidence.md conceding its NO 'may be a verdict on the config file, not on the segment'.",
+    "what_it_decided": "Framing 2, the zero-config decay report, is the entry point. Framing 1 (configured) is not. Framing 3 (coverage proof) is what declared rules serve once a user already runs the tool.",
+    "the_defect_it_fixed": "PRODUCT.md contradicted itself two sections apart. 'The config file is the suspect, not the segment' concluded that declared rules 'are not the entry point'; the Gates section went on recruiting five teams holding audit-relevant data, which IS that entry point, and the kill criterion killed the project on framing 3's failure. The product section absorbed the decay synthesis on 2026-08-16; the Gates section never did. That is issue #40's defect with its mechanism named, and it needed no literature to see.",
+    "limits": "TWO, and both are recorded in PRODUCT.md rather than left implicit. (1) The evidence is a synthesis carrying reasoning, not URLs; where it and a docs/research/ sweep disagree on a FACT the sweep wins, and the synthesis is the better account only of MECHANISM. (2) NO WILLINGNESS-TO-PAY FIGURE EXISTS for any of the three framings. This gate chose the entry point. It did not establish a price. competitive-landscape.md still records that deterministic linters monetize at zero. Do not let a later session read this close as demand-proven-at-a-price.",
+    "instruments_unsent": [
       "docs/demand-test/outreach.md",
       "docs/demand-test/screener.md",
       "docs/demand-test/questionnaire-2026-08-16.md"
     ],
-    "channels": [
-      "Reddit diagnosis post — the only channel with a working precedent; ranked first",
-      "warm network — highest reply rate and the only cheap route to referrals",
-      "ICT Institute — one named reachable candidate, attribution unverified"
-    ],
+    "instruments_note": "All three carry an UNSENT status header as of 2026-08-17 and are kept as a record, not deleted. The questionnaire is titled 'Proving a structural claim about a Notion workspace' -- it is built around framing 3 and names the answer in its own heading, which is the clearest surviving artefact of the recruitment bias #40 recorded.",
     "excluded_channels": [
-      "LinkedIn — ruled out by the operator on 2026-08-16, permanently, for any project",
-      "SewerAI / Sepehr Sobhani — not a contact, not a reference, not a case study"
+      "LinkedIn -- ruled out by the operator on 2026-08-16, permanently, for any project",
+      "SewerAI / Sepehr Sobhani -- not a contact, not a reference, not a case study"
     ],
-    "risk": "Cold outreach is closed. Three channels remain and the five-team target now depends on inbound from the Reddit post. If the funnel stalls below five, lower the gate or accept a longer calendar. Do not substitute weaker contacts.",
-    "blocker_resolved_S006": "ADR-0002 decision 4 no longer blocks scan code. ADR-0006 replaces it. Gate 1 (the demand test) is unchanged and still advances only when the operator sends."
+    "revisit_if": "The built slice reaches real users and framing 2 does not return the value the synthesis predicts. That is a product finding, not a research finding, and Gate 4 is where it surfaces."
+  },
+  "next_gate": {
+    "name": "72-hour API proof, ratified",
+    "kind": "runnable, with two human steps in front of it",
+    "tracker": "#10",
+    "blocks_on": "#10's nine proof checks, which have never been run as a set",
+    "why_it_is_next": "PRODUCT.md orders the gates 1 demand test, 2 API proof, 3 build at n=1, 4 release at n=3. Gate 1 is now closed, so Gate 2 is next and it sits between Gate 1 and any build. #10 says so in its own words: 'Do not start the multi-weekend build until this issue closes with a recorded result.'",
+    "method_named_by_the_issue": "Build it with /mattpocock-skills:prototype in its own session. Keep the prototype on a prototype branch as a primary source. The existing toolchain is on proto/ref001-observed.",
+    "human_steps_first": "Connect the integration to REAL_ROOT_ID in Notion share settings, and decide title redaction before Q8 output lands in the repo -- CONTEXT.md redacts titles from CI output by default.",
+    "blocker_resolved_S006": "ADR-0002 decision 4 no longer blocks scan code. ADR-0006 replaces it."
   },
   "locked_decisions": [
     {
@@ -131,16 +137,18 @@
       "id": "competitive-landscape wedge",
       "target": "docs/research/competitive-landscape.md section 270",
       "detail": "States the wedge as 'R1 the coverage manifest combined with a CI exit code'. Under the false-green synthesis the manifest is the soundness certificate rather than half a wedge. Not yet decided; do not edit before the rule-catalogue re-read."
-    },
-    {
-      "id": "#40",
-      "target": "PRODUCT.md section 110 (demand test) and section 152 (kill criterion)",
-      "detail": "Both name the auditor buyer -- 'five teams holding audit-relevant data', 'must prove a structural claim to a third party'. S009 argued that buyer is refuted on capability grounds, and the refutation is CONDITIONAL on ADR-0005 decision 3's unexamined 'an unbounded gap cannot be sized' claim. A demand test framed around the auditor buyer selects for auditors and confirms its own framing; section 122 says recruitment runs through direct contacts, which is the configuration most likely to manufacture agreement. First step is a sweep of the unseen-population literature against decision 3. That literature is a LEAD, NOT A CITATION -- nothing is verified and no source was fetched.",
-      "blocks": "Gate 1",
-      "was": "recorded here as 'PRODUCT.md demand test' with no issue for three sessions; now filed"
     }
   ],
   "corrections_applied": [
+    {
+      "target": "PRODUCT.md, Gates gate 1 and the kill criteria list",
+      "claim": "The demand test recruits five teams holding audit-relevant data, and the kill criterion fires when no team must prove a structural claim to a third party.",
+      "status": "CORRECTED 2026-08-17 on branch docs/40-unseen-population-and-demand-test-framing. Issue #40 closed.",
+      "replacement": "Gate 1 is recorded as CLOSED on owner research. The three framings stand because they are what the build targets. The auditor kill criterion is struck through and kept visible, replaced by: the zero-config surface returns nothing a workspace owner recognises as a defect worth repairing.",
+      "the_conditional_half": "S009's capability refutation of the auditor buyer was CONDITIONAL on ADR-0005 decision 3's unexamined 'an unbounded gap cannot be sized' claim. That claim was swept on 2026-08-17 and SURVIVES, so the refutation stands. See docs/research/unseen-population-sizing.md.",
+      "the_unconditional_half": "The recruitment-bias objection never depended on decision 3 and did not need the sweep. PRODUCT.md already concluded under 'The config file is the suspect, not the segment' that declared rules 'are not the entry point'. The Gates section had not absorbed the decay synthesis that the product section absorbed the same day.",
+      "method_note": "The whole session's plan, and a literature sweep, were built before docs/inputs/ was opened once. That is the THIRD time the decay synthesis has been skipped. docs/agents/domain.md now carries docs/inputs/ as step 7 of the reading list instead of as a paragraph denying it authority."
+    },
     {
       "target": "PRODUCT.md",
       "claim": "No SARIF object expresses analysis scope or coverage.",
@@ -241,7 +249,8 @@
     {
       "id": "soundness-classification",
       "detail": "Four formal literatures apply to this product and none has been opened across nine ADRs: certain-vs-possible answers in incomplete-information databases (ADR-0005's outcome pair is a folk re-derivation), transaction isolation and phantom reads (UNQ001 is phantom-prone by construction and may return conforms over a workspace holding a duplicate), unseen-population estimation (ADR-0005 decision 3 asserts an unbounded gap cannot be sized without consulting the field that sizes unobserved populations), and entity resolution (where issue #31's defect is a standard result).",
-      "next": "Rule-by-rule soundness classification: sound / sound-with-hypotheses / not soundly implementable against this API. Operator framing: soundness is what buyers pay for, and free linters are free because they are unsound."
+      "unseen_population_ANSWERED": "SWEPT 2026-08-17, recorded at docs/research/unseen-population-sizing.md. ADR-0005 decision 3 SURVIVES, and its stated reason should be replaced rather than kept. The field agrees no upper bound is available in the general case (Alfo, Bohning & Rocchetti 2020, DOI 10.1111/biom.13265; Mao, Huang & Zhang 2016, DOI 10.1111/biom.12553). Every estimator that does produce a bound -- Chao1, ACE, jackknife, Good-Turing, Horvitz-Thompson -- runs on a FREQUENCY-OF-FREQUENCIES distribution and needs the same unit observed more than once. Cursor pagination returns each child exactly once, so singletons equal n and doubletons are zero by construction: the input does not exist. These estimators also assume the miss is RANDOM; a cursor stops at a deterministic prefix. UUIDv4 IDs rule out the serial-number family. NEW REVISIT-IF: two independent enumerations of one scope over identifiable IDs WOULD give a frequency-of-frequencies distribution -- the project has two paths, block-children and POST /v1/search (#24). DO NOT USE IT: both share one permission grant, so the lists are positively dependent, and positive dependence biases the estimate DOWN, reporting a SMALLER gap than the true gap. That is the flattering direction and the product's own false-green class inside the coverage instrument. Incidental: Bar-Ilan & Peritz 2009 DOI 10.1002/asi.21097 independently reaches ADR-0006's 'partition the declared root' remedy. Four of eight quotes verified against Crossref abstracts; four rest on a Wiley retrieval tool and are marked unverified in the file. ACM and IEEE venues NOT CHECKED, not absent.",
+      "next": "Rule-by-rule soundness classification: sound / sound-with-hypotheses / not soundly implementable against this API. Three of the four named literatures remain unopened -- incomplete-information databases, transaction isolation and phantom reads, entity resolution (partly closed by ADR-0010). Operator framing: soundness is what buyers pay for, and free linters are free because they are unsound."
     },
     {
       "id": "architecture-provenance-type",
@@ -329,8 +338,10 @@
   ],
   "tracker": {
     "host": "GitHub issues, gh CLI",
-    "open": "#40 PRODUCT.md's demand test names the auditor buyer -- THE CRITICAL PATH, blocks Gate 1 - #39 README contradicts ADR-0005/0008 in four places - #35 denominator rule, ADR or consequence - #29 buyer question (needs-info; answered by demand-test respondents, not from the repo) - #27 observation half only, PAT test to be DROPPED - #25 ADR-vs-research enforcement, FOUR shapes, now has a working hook precedent - #24 does v0.1 call search - #19, #18 mechanical, fast-tier session - #10 ratify the proof: TRIAGED to ready-for-human, circular as filed, runnable remainder is Q2/Q3-rerun/Q8/restore wl-revoke-child - #8 npm name - #7 perf budgets",
+    "open": "#10 ratify the 72-hour proof -- NOW THE CRITICAL PATH and the next gate. Its 'Proof checks' section is nine falsifiable end-to-end acceptance criteria and is effectively the build spec, written before S005 and never run as a set. Runnable remainder Q2/Q3-rerun/Q8/restore wl-revoke-child; two human steps first - #39 README contradicts ADR-0005/0008 in four places - #35 denominator rule, ADR or consequence - #29 buyer question: PARTIALLY ANSWERED by the Gate 1 close (framing 2 is the entry point) but the WILLINGNESS-TO-PAY half is still open and the gate did NOT establish a price; its 'answered by demand-test respondents' framing is dead, there are no respondents - #27 observation half only, PAT test to be DROPPED - #25 ADR-vs-research enforcement, FOUR shapes, now has a working hook precedent - #24 does v0.1 call search (also the Revisit-if surface for the unseen-population sweep -- see soundness-classification) - #19, #18 mechanical, fast-tier session - #8 npm name - #7 perf budgets",
     "closed_S005": "#2 #3 #4 #5 #6 #9 consolidated into #16 — they were undocumented decisions, not open questions.",
+    "closed_S013": "#40 CLOSED by the Gate 1 close. Its statistics half was swept and ADR-0005 decision 3 survives; its recruitment-bias half never depended on that sweep and was visible inside PRODUCT.md all along.",
+    "phase_transition_S013": "The project left the decision phase. Eleven ADRs, five of them superseding parts of earlier ones, every supersession found by re-reading documents rather than by running the product. Across S008-S012 the board closed 7 and filed 6 -- not converging. Every open issue produced a document, a decision, or a spec, so /implement had nothing to take. Gate 1 is now closed and the next artefact is a BUILD SPEC seeded from #10's nine proof checks, not a twelfth ADR.",
     "note": "ALL WORK MERGED. main carries ADR-0011 at 88d401e; nothing in flight. Every open issue carries a triage role, and a PreToolUse guard now enforces one at issue-creation time from the next session onward. GATE 1 IS NOT ON THIS BOARD as a gate: it advances when the operator sends, and #40 blocks the send.",
     "closed_S006": "#13 closes on the PR #17 merge (Closes #13 in commit f8917fa).",
     "closed_S007": "#15 and #16 closed by PR #22. #13 closed by PR #17.",

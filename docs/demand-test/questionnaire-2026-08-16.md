@@ -1,5 +1,12 @@
 # Proving a structural claim about a Notion workspace
 
+> **Status: UNSENT. Superseded 2026-08-17.** Gate 1 closed on the owner's own research rather than
+> on a five-team send — see `PRODUCT.md`, Gates, gate 1, and issue #40. **Note the title.** This
+> instrument is built around framing 3, the coverage proof, which Gate 1 concluded is not the entry
+> point. It is the clearest surviving artefact of the recruitment bias issue #40 recorded: the
+> questionnaire names the answer in its own heading. Kept as a record. **Do not send from it
+> without reopening Gate 1 first.**
+
 > **Header note — not part of the sent document.** The three lines below are placeholders. Matthew writes them in his own words at send time. Required content: (1) what decision the answers control — whether a read-only Notion CLI gets built at all, and which of three versions; (2) that the same questions go to a small number of people and the sets are read together; (3) what happens to the recipient's name. Prohibited: any description of the tool beyond "read-only command-line, reports what it could not see." Describing it teaches the recipient the answer to give. Delete this note before sending.
 
 **Purpose:** `<one or two sentences — see header note>`

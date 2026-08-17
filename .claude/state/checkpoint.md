@@ -98,9 +98,13 @@ without a triage-role label**, reading the roles from `docs/agents/triage-labels
 
 **The gate, and what actually blocks it.** Gate 1 is the demand test and it has not moved since
 2026-08-16. **#14 is CLOSED — it was finished in `cc16d63` on 2026-08-16 and three checkpoints
-carried it as the blocker anyway.** The real blocker is **#40**: `PRODUCT.md` §110 and §152 both
-name the auditor buyer, and that refutation is conditional on **ADR-0005 decision 3's unexamined
-"an unbounded gap cannot be sized" claim**. Do not send before #40 closes. **Deref a NEXT-STEPS
+carried it as the blocker anyway.** **#40 is now CLOSED too, and Gate 1 with it — closed 2026-08-17
+on owner research rather than on a five-team send.** Its statistics half was swept and **ADR-0005
+decision 3 survives** (`docs/research/unseen-population-sizing.md`); its recruitment-bias half never
+depended on that sweep and was visible inside `PRODUCT.md` all along. **The next gate is Gate 2, the
+72-hour proof, tracked as #10** — and #10's own "Proof checks" section is nine falsifiable
+end-to-end criteria, written before S005 and never run as a set. Cite `PRODUCT.md` by heading —
+"Gates, in order" and "Kill criteria" — never by line number. **Deref a NEXT-STEPS
 blocker against the artifact before adopting it** — `git log -- <file>` is usually enough — and
 confirm every `store.json` `corrections_pending` entry marked as gate-blocking exists on the board.
 

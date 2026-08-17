@@ -1,5 +1,9 @@
 # Screener — four questions
 
+> **Status: UNSENT. Superseded 2026-08-17.** Gate 1 closed on the owner's own research rather than
+> on a five-team send — see `PRODUCT.md`, Gates, gate 1, and issue #40. Kept as a record of the
+> gate's intended method. **Do not send from it without reopening Gate 1 first.**
+
 Send this after someone replies. Do not send it first. Do not attach the full questionnaire until these four answers come back.
 
 Purpose: confirm the person meets the gate-1 screen before you spend their fifteen minutes and your one ask. Four questions, about sixty seconds.

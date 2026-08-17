@@ -21,9 +21,23 @@ assertion.
    claim, not after.**
 6. **`docs/proof/`** — what the API actually did when asked. Outranks everything above it on any
    question of fact.
+7. **`docs/inputs/`** — external artifacts, **none canonical**. Read them; never cite one as
+   authority. Read `docs/inputs/decay-causal-synthesis-2026-08-16.md` **before** making any claim
+   about demand, the buyer, the segment, or Gate 1. It is the owner's own market research, derived
+   from Reddit discussion no agent in this project can reach, and it carries the objection the
+   product must answer.
 
-`docs/inputs/` holds external artifacts. **None of it is canonical**, and the files carry differing
-evidentiary weight. Never cite an input as authority.
+**Not canonical is not the same as not read, and conflating the two is a live defect in this repo.**
+The decay synthesis has now been skipped three times: the Shape C incident below, a second session
+that reasoned about the buyer without opening it, and 2026-08-17, when a session built an entire
+issue-#40 plan and a literature sweep without opening `docs/inputs/` once. The mechanism each time
+was this reading list, which named the directory only in a paragraph telling the reader it had no
+authority. That paragraph is now step 7 instead.
+
+The files carry differing evidentiary weight and say so in their own headers. Where a
+`docs/inputs/` file and a `docs/research/` sweep disagree on a **fact**, the sweep wins. On a
+**mechanism**, the input may be the better account — the decay synthesis explains the sweeps'
+negative results more completely than the sweeps did.
 
 If a file does not exist, proceed silently. Don't flag its absence or propose creating it upfront.
 
