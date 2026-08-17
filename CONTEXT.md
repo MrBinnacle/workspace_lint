@@ -16,7 +16,11 @@ The product tests declared rules. It does not infer workspace quality, intent, o
 
 | Term | Definition |
 | --- | --- |
-| Connection | The Notion API identity and its granted read capability. |
+| Operator | The role that decides what the scan is allowed to see, and is accountable for that decision. Declares roots and owns the grant. See ADR-0009. |
+| Executor | The role that decides when the scan runs. Holds no authority over scope. |
+| Consumer | The role that reads the attested boundary. Decides nothing about the scan. |
+| Principal | The Notion user identity whose membership a personal access token inherits, recorded by user ID. Present only in PAT mode; a report either has a Principal or it does not. |
+| Connection | The Notion API identity and its granted read capability. Describes the internal-integration model, which is the primary one. |
 | Shared scope | The pages and data sources visible to the connection. The connection cannot enumerate it. |
 | Declared root | A resource the operator names in configuration as a scan entry point. Coverage is measured against declared roots, never against the workspace. |
 | Resource | A page, database, data source, block, property, or user. |
@@ -35,20 +39,27 @@ The product tests declared rules. It does not infer workspace quality, intent, o
 | Gap | An applicable resource that left the coverage funnel before evaluation, with a named cause. Bounded when the missing resources can be named, unbounded when they cannot. |
 | Pervasive | The property of a gap set that voids the summary verdict: a declared root was never reached, or any gap is unbounded. |
 | Report disposition | What the report as a whole may claim: `unqualified`, `qualified`, or `disclaimed`. A disclaimed report renders no summary verdict. |
-| Baseline | A set of accepted finding fingerprints that still appear in reports. |
-| Suppression | A scoped exception with a reason and expiry. |
+| Conformity ratio | Conforming rules over rules that reached a conformity claim. Never published without the coverage ratio. |
+| Coverage ratio | Resources evaluated over resources in the applicable set. Never published without the conformity ratio. Publishing either alone is prohibited. |
+| Fingerprint | The stable identity of a finding across runs. Not one value: a map of named, versioned partial fingerprints, where two findings are the same finding when any one key matches. Contains no page title, no ancestor path, and nothing volatile. |
+| Baseline | The accepted-debt record. Each entry holds a map of partial fingerprints, an evidence digest, and the (rule, resource) pair it anchors to. Entries still appear in reports. See ADR-0008. |
+| Baseline state | Where a finding stands against the baseline: `new`, `unchanged`, `updated`, `resolved`, or `unverified`. A property of the finding, not of the run. |
+| Suppression | A scoped exception with a reason and expiry. Orthogonal to baseline state — a finding is in some baseline state *and* is or is not suppressed. |
 | Snapshot | The normalized graph state used for one deterministic run. |
 | Canonical marker | An explicit property value or configured pointer. It is not prose inference. |
 | Certainty | Whether the API proved a finding: `confirmed` or `indeterminate`. A property of the finding, not of the rule's coverage. |
 | Target state | What a scan established about a referenced object: `present`, `absent`, or `unreachable`. A property of the object, not of the finding. |
 | Normalization | The named function that strips volatile fields from an API response before hashing or comparison. Determinism is defined against its output, never against the raw response. |
 
-Four distinctions the glossary enforces, because collapsing any of them breaks the product contract:
+Five distinctions the glossary enforces, because collapsing any of them breaks the product contract:
 
 - **Baseline is not suppression.** A baseline records existing debt and keeps it visible. A suppression hides a finding and must carry a reason and an expiry.
 - **Confirmed is not indeterminate.** A rule reports `certainty: confirmed` only when the API proved the defect. Notion returns 404 for both "absent" and "inaccessible", so a 404 produces `indeterminate`.
 - **Certainty is not target state.** `certainty` describes the finding: did the scan prove it. `target state` describes the referenced object: `present`, `absent`, or `unreachable`. A finding can be `confirmed` about an `unreachable` target — "this link cannot be resolved" is a proved fact. Collapsing the two axes makes that finding inexpressible.
 - **Evidence sufficiency is not certainty.** `certainty` is about a finding the rule made: was this defect proved. Evidence sufficiency is about findings the rule may have failed to make: were there applicable resources it never judged. A rule can be `confirmed` on every finding it produced and still be `unreached`. Collapsing the two makes "nothing was wrong in what I read, and here is what I did not read" inexpressible — which is the product.
+- **The Operator is not the Executor and not the Consumer.** Three roles, one word until ADR-0009. The Operator chose the scope, so the Consumer's attestation means something. The roles are distinct; the people may coincide.
+
+The rule that produces those distinctions, stated once so it stops being re-derived: **a value is distinct when its remedy is distinct.** It works as a deletion test too — a value whose remedy duplicates another's is not a value. ADR-0005 decision 1, ADR-0006's correction of the proof record, and ADR-0008 decision 1 were all decided by it. See ADR-0009 decision 6.
 
 ## Product principles
 
