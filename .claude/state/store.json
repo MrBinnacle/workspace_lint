@@ -2,7 +2,7 @@
   "project": "workspace_lint",
   "updated": "2026-08-17",
   "session": "S013",
-  "phase": "pre-build, spec phase -- Gate 1 closed, Gate 2 (#10) is next",
+  "phase": "BUILD -- Gates 1 and 2 both closed 2026-08-17; nothing gates the build for the first time",
   "phase_detail": "Pre-build on main -- still no src/, no package.json, no toolchain there. The toolchain and all working code remain on the throwaway branch proto/ref001-observed. S011 closed #34: docs/spec/ now exists as a directory (merged in PR #37, origin/main at 39d6d2a) and holds docs/spec/REF001-link-recognition.md. The #34 fork is answered -- an unrecognised link is ADR-0005's `undecidable`, not a new axis value, so no ADR was needed. The section 0.5 sweep established from Notion's own help pages that Notion Sites supports custom domains, so the host set is UNBOUNDED and no allow-list can be complete; the unrecognised residue path is therefore the primary detection mechanism and the host list is only an optimisation. A 34-assertion offline suite (prototypes/CHECK-link-recognition.ts) exercises link DISCOVERY and carries a mutation check that proves its own control is load-bearing. That suite refuted spec section 5 on its first run: exit 0 with an unrecognised link requires the gap to be BASELINED, because ADR-0008 fires exit 1 on a new unsuppressed SYS001 finding.",
   "gate_1_demand_test": {
     "status": "CLOSED 2026-08-17 on owner research, not on a five-team send. Issue #40 closed with it.",
@@ -22,14 +22,19 @@
     ],
     "revisit_if": "The built slice reaches real users and framing 2 does not return the value the synthesis predicts. That is a product finding, not a research finding, and Gate 4 is where it surfaces."
   },
+  "gate_2_api_proof": {
+    "status": "CLOSED as completed by the OPERATOR 2026-08-17 at 15:21:55Z, mid-session, while the slice spec was being written. #10.",
+    "why_it_closed": "Its triage comment establishes the issue was CIRCULAR AS FILED: six of nine proof checks require the build the issue existed to gate, and checks 3, 5, 6 and 7 'cannot be run before the build.' They are BUILD-ACCEPTANCE criteria, not pre-build gate criteria. Both originally named blockers had also cleared -- #21 closed with ADR-0007 merged at 280524e, and the un-runnable checklist item was confirmed live in docs/proof/results-ref001-live.md at ba25b7a.",
+    "what_still_holds": "The fixture is NARROWER than #10 specified: one data source rather than three, no archived target, no seeded UNQ001/SCH001/DEP001/CAN001. Any recorded build result must state which criteria the fixture could not exercise. Long relation values remain untested. REAL_ROOT_ID remains unexercised.",
+    "two_corrections_it_carried_that_this_session_missed": "#10's triage comment corrected proof checks 4 and 7, and docs/spec/v0.1-scan-slice.md shipped BOTH defects verbatim in PR #41 because the issue BODY was read and its COMMENTS were not. Check 4: an unshared target does not exist to be labelled -- it VANISHES -- and the finding is certainty CONFIRMED about target state UNREACHABLE, not indeterminate. Check 7: exit 2 is the disclaimed disposition ONLY; a scan that could not run as declared is 4, a confined gap below threshold is 3. Corrected on branch fix/spec-criteria-4-and-7."
+  },
   "next_gate": {
-    "name": "72-hour API proof, ratified",
-    "kind": "runnable, with two human steps in front of it",
-    "tracker": "#10",
-    "blocks_on": "#10's nine proof checks, which have never been run as a set",
-    "why_it_is_next": "PRODUCT.md orders the gates 1 demand test, 2 API proof, 3 build at n=1, 4 release at n=3. Gate 1 is now closed, so Gate 2 is next and it sits between Gate 1 and any build. #10 says so in its own words: 'Do not start the multi-weekend build until this issue closes with a recorded result.'",
-    "method_named_by_the_issue": "Build it with /mattpocock-skills:prototype in its own session. Keep the prototype on a prototype branch as a primary source. The existing toolchain is on proto/ref001-observed.",
-    "human_steps_first": "Connect the integration to REAL_ROOT_ID in Notion share settings, and decide title redaction before Q8 output lands in the repo -- CONTEXT.md redacts titles from CI output by default.",
+    "name": "Gate 3 -- build at n=1, against this workspace",
+    "kind": "runnable, and now unblocked",
+    "tracker": "#42 -> #43, #44 -> #45 -> #46",
+    "why_it_is_next": "PRODUCT.md orders the gates 1 demand test, 2 API proof, 3 build at n=1, 4 release at n=3. Gate 1 closed on owner research and Gate 2 closed as completed, both 2026-08-17. NOTHING NOW GATES THE BUILD. This is the first time that has been true in the project's history.",
+    "method": "Build on a branch from proto/ref001-observed. The prototype is kept as a PRIMARY SOURCE and the toolchain is already there. This is now a preference rather than a gate -- #10's 'nothing on main' constraint is discharged with it. Putting the slice on main forces the npm-name decision (#8), which CONTEXT.md requires 'before the first package.json'.",
+    "human_steps_still_outstanding": "Connect the integration to REAL_ROOT_ID in Notion share settings, and decide title redaction before any output naming real pages lands in the repo -- CONTEXT.md redacts titles from CI output by default. Neither blocks #42.",
     "blocker_resolved_S006": "ADR-0002 decision 4 no longer blocks scan code. ADR-0006 replaces it."
   },
   "locked_decisions": [
