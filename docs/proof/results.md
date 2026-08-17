@@ -56,20 +56,56 @@ Two consecutive `POST /v1/data_sources/{id}/query` calls with `page_size: 100` r
 
 ---
 
-## 4. Q1 — the mechanism a completeness claim would rest on is NOT yet demonstrated.
+## 4. Q1 — ANSWERED, AND THE ANSWER IS NO. The detectable hole does not exist.
 
-The control behaves correctly:
+The disconnect was applied to `wl-revoke-child` at 2026-08-17, then the sequence was re-run.
 
-| Page | Grant | Retrieve |
+| Call | Before disconnect | After disconnect |
 | --- | --- | --- |
-| `wl-outside-grant` | never connected | **404** |
-| `wl-revoke-child` | disconnect dialog was opened | **200** |
+| `GET /blocks/{parent}/children` | 3 blocks, **including a `child_page` block** for the child | **2 blocks. The `child_page` block is gone.** |
+| `GET /pages/{child}` | 200 | **404** `object_not_found` |
+| `GET /blocks/{child}` | 200 | **404** `object_not_found` |
+| `GET /blocks/{child}/children` | 200 | **404** `object_not_found` |
 
-`wl-revoke-parent` still lists a `child_page` block for `wl-revoke-child` — but the child also still retrieves successfully, so this is the ordinary connected case, not the detectable-hole case.
+**Control — the page was not moved or deleted.** Fetched through the claude.ai connector, which holds full workspace access: `wl-revoke-child` still exists, with its ancestor path unchanged at `wl-proof-fixture → wl-revoke-parent → wl-revoke-child`. The block list is **permission-filtered**, not structurally changed.
 
-**The 404 on `wl-outside-grant` is worth keeping.** It confirms that an unconnected page returns 404 rather than 403, which is the ambiguity `CONTEXT.md` Principle 3 is built on: access failure and object absence share a response.
+### What this refutes
 
-**Unresolved:** whether the disconnect was actually applied. The dialog was opened and screenshotted; it is not established that it was confirmed. Until that is known, this run says nothing about proof question 1.
+`docs/research/notion-api-practice.md` §5.2 states, under **Detectable hole**:
+
+> "A `child_page` or `child_database` block appears in `GET /v1/blocks/{id}/children` with an ID and title even when the page itself subsequently 404s on retrieve. This gives a named, enumerable hole."
+
+It was rated **(C)** — community reports, no reproduced primary write-up — and carried this note: *"This is the highest-value item to verify directly in the 72-hour proof, because a completeness proof would rest on this mechanism."*
+
+**Verified directly. The claim is false.** Notion filters the child list by permission. A revoked child is not *named but unreadable*. It is **invisible**, exactly like a subtree that was never shared. §5.2's "Detectable hole" and "Undetectable hole" are not two cases. They are one case.
+
+### It also falsifies an inference recorded earlier the same day
+
+After observing the disconnect dialog in the UI, `docs/proof/fixture.md` and the S003 checkpoint recorded: *"`unreached` inside a declared root **is** reachable by permissions, not only by rate limits and pagination — so ADR-0005's evidence-sufficiency axis keeps its full range."*
+
+**That inference is wrong.** It was drawn from a UI dialog before the API was asked. Revocation does not produce an `unreached` Gap; it removes the resource from enumeration entirely, so the resource never enters the applicable set and there is nothing to count. The write-up at the time labelled itself "UI capability CONFIRMED; API consequence OPEN" — the label was right and the inference next to it was not.
+
+### What actually survives
+
+**The declared-root model is intact.** ADR-0002 is unaffected. *"Everything you declared was read"* is still provable, because the denominator is supplied by the operator.
+
+**REF001 is now the load-bearing rule, and it is confirmed working.** The `wl-outside-grant` control returns **404** on retrieve while the link to it sits in readable content. A *link* to an inaccessible page survives revocation, because the link lives in another page's content rather than in the permission-filtered child list. That is the real detectable-hole mechanism, and it is a link-resolution mechanism, not a tree-enumeration one.
+
+The 404 also confirms `CONTEXT.md` Principle 3's premise directly: an unconnected page returns 404, not 403. Access failure and object absence are indistinguishable in the response.
+
+### What narrows
+
+Inside a Declared root, an `unreached` Gap can arise **only** from rate limits, request-budget exhaustion, or abandoned pagination. **Never from permissions.** Permission removal below a declared root is silent: the scan cannot count it, name it, or report it.
+
+Permissions still produce a detectable gap at exactly one place — an inaccessible **declared root**, which ADR-0002 decision 2 already makes a hard coverage failure. It is detectable *because the operator declared it*. The declaration is what makes it nameable.
+
+**The general rule this establishes: the coverage manifest can only name what the operator declared, or what the tool successfully enumerated. Nothing else is expressible.**
+
+### The counter-argument this strengthens
+
+`docs/research/coverage-artifact-prior-art.md` §5.1 recorded the wildcard scout's strongest objection: *"A Notion integration sees only what a human explicitly shared with it. 'What I could not see' may reduce to 'everything you did not give me' — which the customer already knew and the tool cannot size."*
+
+This result is evidence **for** that objection, in a specific and bounded way. It does not carry the objection all the way: declared roots plus link resolution still yield a real, provable coverage claim. But the claim is narrower than the repository has been stating it, and `PRODUCT.md` should be corrected before the claim is put in front of a buyer.
 
 ---
 
@@ -80,12 +116,16 @@ The control behaves correctly:
 | ADR-0002 decision 4 | assumed sound | **inoperable as written; needs a superseding decision** |
 | ADR-0005 Revisit-if 2 (enumeration separable) | open | **does not fire — decision 5 stands** |
 | Q3 order stability | open | **provisionally stable; fixture-confounded** |
-| Q1 child_page visibility | open | **still open** |
-| Selective revocation exists | `(C)` unverified | confirmed in UI 2026-08-17 (`docs/proof/fixture.md`) |
-| `Notion-Version: 2026-03-11` valid | assumed | **confirmed — HTTP 200 on `/v1/users/me`** |
+| Q1 `child_page` survives revocation | `(C)`, "highest-value item to verify" | **REFUTED — the block vanishes; the hole is undetectable** |
+| Detectable vs undetectable hole | two cases | **one case** |
+| `unreached` from permissions inside a root | claimed possible (2026-08-17, from UI) | **impossible — that claim is withdrawn** |
+| REF001's role | one rule among eight | **the load-bearing coverage mechanism, confirmed working** |
+| Selective revocation exists in the UI | `(C)` unverified | confirmed |
+| `Notion-Version: 2026-03-11` valid | assumed | **confirmed** |
 
 ## Next
 
-1. **Draft the ADR superseding ADR-0002 decision 4.** It is on the healthy path, so it blocks scan code.
-2. **Settle Q1.** Confirm the disconnect on `wl-revoke-child`, then re-run the parent-children listing and the direct retrieve.
+1. **Draft the ADR superseding ADR-0002 decision 4.** It sits on the healthy path and blocks scan code.
+2. **Correct `PRODUCT.md`.** The coverage claim is narrower than stated: the tool proves declared-root coverage and resolves links, and it cannot see permission removal below a declared root.
 3. **Re-run Q3 against real content.** The fixture cannot settle it alone.
+4. **Re-check §5.2's remaining claims.** One of its two headline claims was false. The rest of that file has not been re-verified.

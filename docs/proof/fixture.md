@@ -74,11 +74,17 @@ Three things follow, and the wording is load-bearing.
 
 1. **Notion does not model this as a per-child deny.** It models it as **breaking inheritance**. The child stops inheriting the parent's share settings entirely and becomes independently permissioned. A tool cannot ask "is this child denied?" — it can only observe that the child's effective grant differs from its parent's.
 2. **The action is reversible by an admin** — "Admins can still restore settings later." So an access gap observed during a scan is not necessarily a permanent property of the resource. A Coverage manifest that records a gap is recording a fact about one scan window, which is what ADR-0002 decision 5 already implies by requiring start and end times.
-3. **`unreached` inside a Declared root is reachable by permissions, not only by rate limits.** This settles the branch that ADR-0005 flagged. The evidence-sufficiency axis keeps its full range and does **not** narrow. No superseding ADR is needed.
+3. ~~**`unreached` inside a Declared root is reachable by permissions, not only by rate limits.** This settles the branch that ADR-0005 flagged. The evidence-sufficiency axis keeps its full range and does **not** narrow. No superseding ADR is needed.~~
 
-**What this does not yet establish.** Proof question 1 asks whether `wl-revoke-parent` still lists a `child_page` block pointing at the disconnected child while a direct retrieve of that child returns 404. That is the mechanism a completeness claim would rest on, and it is an API observation, not a UI one. It remains open until the proof runs.
+> **WITHDRAWN the same day, by the API.** Point 3 was inferred from the UI dialog before the API was asked, and it is wrong. Revocation does not produce an `unreached` Gap — it removes the resource from enumeration entirely, so the resource never enters the applicable set and there is nothing to count. Inside a Declared root, `unreached` arises only from rate limits, budget exhaustion, or abandoned pagination. See `docs/proof/results.md` §4.
 
-Status: the UI capability is **CONFIRMED**. The API consequence is **still the open question**.
+**What this did not establish, and what the API then settled.** Proof question 1 asked whether `wl-revoke-parent` still lists a `child_page` block pointing at the disconnected child while a direct retrieve returns 404.
+
+**It does not.** After the disconnect, the parent returns 2 blocks instead of 3 and the `child_page` block is gone, while the page itself still exists at the same ancestor path when fetched with full access. The block list is permission-filtered. The "detectable hole" that `docs/research/notion-api-practice.md` §5.2 described — and that the same file called the highest-value item to verify, "because a completeness proof would rest on this mechanism" — **does not exist**.
+
+Status: UI capability **CONFIRMED**. API consequence **REFUTED**. Full working in `docs/proof/results.md` §4.
+
+**The lesson, recorded because it nearly propagated into an ADR:** a UI affordance is not an API behaviour. The dialog said the child would stop inheriting share settings, and that was true. What it did not say — and could not say — is that the parent's enumerable child list would stop mentioning the child at all.
 
 ## Rebuilding
 
