@@ -572,3 +572,54 @@ This is an ongoing maintenance tax, not a one-time integration cost.
 
 4. **Does the approximately 11,200-object search ceiling still hold in August 2026?**
    Last confirmed February 2026. Notion changed cursor internals on 2026-04-22 (session identifiers) — that fix targeted a different failure mode, but it may have moved this one. Cheap to test given a large enough workspace. If no large workspace is available, this finding remains a documented risk that cannot be ruled out.
+
+---
+
+# Verification pass — 2026-08-17
+
+Appended, not edited. Every original claim above stands as written; this section records what each was checked against and what the check returned. Issue #15.
+
+## Why this scope
+
+The issue's own Revisit-if said to scope down to spot-checks if the file turned out to be vendor-documented rather than community-sourced. **It does not fire.** The 18 rated claims are 7 **(A)**, 3 **(B)**, 8 **(C)** — eleven of eighteen are single anecdote or secondary.
+
+The refuted claim in §5.2 was **(C)**. So the **(C)** tier was audited first, on calibration rather than on importance: the tier that produced one falsehood is where the next one is most likely.
+
+## Verdicts
+
+| Claim | Verdict | Basis |
+| --- | --- | --- |
+| §3.4 worked example — 250 blocks, 50 toggles × 150 children = **103 calls, >34 s** | **CONFIRMED, and the (C) rating understates it** | Derivable from two vendor-documented primitives, no blog required. `ceil(250/100) = 3`, plus `50 × ceil(150/100) = 100`, totals **103**. At 3 req/s that is **34.33 s**. `page_size` max 100 is documented on the pagination reference; 3 req/s is documented by Notion. This is arithmetic, not secondary evidence. |
+| §3.4 enumeration rate — 11,200 pages / 112 calls / 353 s ≈ 32 objects/s | **CONFIRMED internally consistent** | 11,200 ÷ 112 = exactly 100 per call, matching `page_size` max. 11,200 ÷ 353 = 31.7 objects/s. Note the implied **0.32 req/s**, an order of magnitude under the 3 req/s ceiling — the reporter was not rate-limited, so this is not a throughput bound. |
+| §4.1 / §1.1 — `outline/outline#11573` closed with no merged fix | **CONFIRMED** | Refetched 2026-08-17: closed as **not planned**, no PR merged, no comment after 2026-07-10, nothing indicating Notion fixed the cursor limit. |
+| §4.1 / §1.1 — the **~11,200** figure itself | **NOT RE-CONFIRMED** | The refetch surfaced ~15,000 pages, ~600 calls, and a 5,448-page recovery test — it did **not** quote 11,200 back. The number may sit in a comment the fetch did not surface. Recorded as unverified rather than passed over, because silence reads as confirmation and is not. |
+| §4.5 — the seven response types carrying `request_status` | **CONFIRMED against the primary source** | `makenotion/notion-sdk-js` PR #711 refetched. All seven type names match the file exactly: `ListCommentsResponse`, `QueryDataSourceResponse`, `ListFileUploadsResponse`, `SearchResponse`, `ViewQueryResponse`, `ListDatabaseViewsResponse`, `GetViewQueryResultsResponse`. |
+| §4.5 — *"treat its absence from a list response as a hard error"* | **REFUTED 2026-08-17** | This sentence is the origin of ADR-0002 decision 4, which hard-errored every healthy scan. Superseded by **ADR-0006**: the test is positive — `request_status.type === "incomplete"`. Absence is neither an error nor proof of completeness. |
+| §5.2 — the detectable hole | **REFUTED 2026-08-17** | `docs/proof/results.md` §4. Already recorded; restated here so this table is complete. |
+
+## The pass refuted a decision made the day before it ran
+
+**ADR-0006 decision 2's endpoint table is wrong in one row, and this file is why it was caught.**
+
+ADR-0006 lists `POST /v1/search` as carrying **no** documented truncation signal. That was inferred from silence — `/reference/intro#pagination` does not mention `request_status`, and the search reference was never opened. §4.5 above says otherwise, and two independent primary sources agree with §4.5:
+
+- `https://developers.notion.com/reference/post-search` documents `request_status` on the search response, with `type: "complete" | "incomplete"` and `incomplete_reason: "query_result_limit_reached"`.
+- SDK PR #711 adds the field to `SearchResponse`.
+
+**Search has a truncation signal. ADR-0006 says it does not.**
+
+Two things follow, and the second is the larger one.
+
+1. The product's coverage story **improves**. A truncated search is detectable, so the ~11,200 wall is a *reportable* gap rather than a silent one.
+2. **ADR-0006's central finding is unchanged and is now independently corroborated.** PR #711 threads `request_status` through seven response types and **`ListBlockChildrenResponse` is not among them.** Block-children enumeration — the traversal spine of the scan — carries no truncation signal, and that now rests on two sources rather than on documentation silence.
+
+ADR-0006 is **not** edited. Correction tracked as an issue for a superseding ADR, per the standing rule that ADRs are never edited in place.
+
+## Untested, and named rather than passed over
+
+- **§1.1** — the ~10-minute search index lag. **(C)**, search-snippet only. No primary source located.
+- **§2.1** — signed-URL `X-Amz-*` parameters. **(C)**. Low stakes; ADR-0004 defines determinism against a normalization function, which strips them regardless.
+- **§3.4** — *"a 30-minute sync becomes 2–3 hours"* with retry overhead. **(C)**, aggregator, no method given.
+- **§6.3** — the 403-vs-404 security rationale. **(C)**, search-snippet only, but it matches the documentation text and the 404 behaviour was confirmed live on 2026-08-17.
+- **§7.2** — property ID survival across a **type** change. Still open. This is proof question 2 and it is ready to run: `TYPE_CHANGE_PROP=Status` is set in `.env`. It requires mutating the fixture, which is a deliberate act, not a side effect.
+- **§4.3** — silent truncation at exactly 10,000 rows. Unobserved on both branches. ADR-0006 decision 4 keys a cap-proximity trip to that constant, so it is load-bearing and unconfirmed.
