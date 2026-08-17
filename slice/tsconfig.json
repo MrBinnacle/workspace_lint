@@ -1,0 +1,8 @@
+{
+  "compilerOptions": {
+    "target": "ES2022", "module": "ESNext", "moduleResolution": "bundler",
+    "strict": true, "noEmit": true, "skipLibCheck": true,
+    "types": ["node"], "allowJs": false
+  },
+  "include": ["ids.ts", "make-fixture-config.ts", "config.ts", "notion-port.ts", "observed.ts", "manifest.ts", "verdict.ts", "scan.ts", "cli.ts", "CHECK-scan-scaffold.ts"]
+}
