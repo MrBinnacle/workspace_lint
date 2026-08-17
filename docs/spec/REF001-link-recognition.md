@@ -251,8 +251,28 @@ The costs are not symmetric and the tool must fail toward the cheaper one. This 
 `results-ref001-live.md` §3 reached from the other direction — *the applicable set is derived from
 the enumerated response, never from the subset the scan knows how to handle*. Links and child
 resources are two instances of one rule: **the tool's own competence must never define its
-denominator.** Whether that rule binds every future rule and therefore deserves an ADR is filed
-separately; it is not decided here.
+denominator.**
+
+**That rule is now decided, and it is a settled default rather than an ADR.** It binds every rule and
+it is recorded in `CONTEXT.md`'s settled defaults, because it is a **consequence of ADR-0005
+decision 5 honestly applied** rather than a new decision: the funnel already requires every drop-out
+to name its resource and carry a specific cause, and a type the recogniser cannot handle is a
+drop-out like any other. Issue #35, closed by ADR-0013.
+
+**And ADR-0013 draws the boundary this section needs a reader to know.** The rule above is about
+**tool competence** — the denominator built from what the code can name. It does **not** cover
+**frame fidelity**, where the enumeration itself was filtered upstream. A permission-filtered child
+listing **satisfies** the rule above — the denominator was built from exactly what the API returned —
+and still produces a false green, because `GET /v1/blocks/{id}/children` carries no truncation signal
+and a filtered listing is identical to a complete one in the response. That failure has a different
+remedy and is disclosed as a **residual**, not as a gap. Nothing in §4 detects it, and §4 is not
+where it is fixed.
+
+***Revisit if:*** a **third** instance of the tool-competence failure appears in a **third** rule.
+Two stand today, both in this family — the `app.notion.com` host allow-list and the `child_page`-only
+applicable set, at `docs/proof/results-ref001-live.md` §2 and §3. At three, the "consequence of an
+honestly applied funnel" reading is much weaker, because the funnel is being applied and the defect
+recurs anyway, and the default earns promotion to an ADR. `CONTEXT.md` carries the same clause.
 
 ## 5. What `unrecognised` does to the report, the coverage ratio, and the exit byte
 
