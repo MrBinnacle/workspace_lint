@@ -91,6 +91,17 @@ read this block instead. Nothing here depends on a band still being present.
 **Environment.** `~/.claude/settings.json` is gitignored, so the `guard-downstream-framing-gh.py`
 PreToolUse wiring exists only on this machine. **CC Safety Net failed closed once on a long
 `gh issue create` heredoc** — write the body to the scratchpad and pass `--body-file`. The
+**`guard-canonical-doc-edit.py` (added 2026-08-17) blocks `Edit`/`Write` to `CONTEXT.md`,
+`PRODUCT.md`, `docs/adr/**` and `docs/spec/**` unless an approved plan under `~/.claude/plans/`,
+modified within 24h, **names that file**.** The approved plan's Files table is the authorisation
+token. **There is deliberately no environment-variable escape** — an env var is a blanket unlock the
+model can set for itself, which is the failure the guard exists to stop. The escape is
+`EnterPlanMode` → name the file in the plan → `ExitPlanMode`. **Not guarded, deliberately:**
+`.claude/state/*` (the close ritual writes it after the plan is spent) and `docs/research/` +
+`docs/proof/` (evidence, appended not decided — and gating them would tax the activity that outranks
+an ADR on a question of fact). Suite: `~/.claude/hooks/test_guard_canonical_doc_edit.py`, 32
+assertions **including a mutation check**, plus a 6-case end-to-end run against the wired hook. It
+exists because the §5 plan gate was model-pull and failed on two consecutive sessions. The
 `guard-git-pull-rebase.py` hook **blocks bare `git pull`**; use `git fetch origin <branch>` then
 `git merge --ff-only origin/<branch>`. **`guard-gh-issue-triage-label.py` blocks `gh issue create`
 without a triage-role label**, reading the roles from `docs/agents/triage-labels.md`; escape is
