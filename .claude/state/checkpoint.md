@@ -54,13 +54,17 @@ Both caught by the claim-verification step, both before any writing began.
 
 ### EXACT NEXT STEPS
 
-1. **Provision the proof's preconditions with `/wizard`.** A Notion internal integration token into a gitignored `.env`, and a fixture workspace containing a **deliberately unshared subtree** — that subtree is the instrument for ADR-0005's first Revisit-if, not an incidental detail. Two of the proof questions need the fixture to be **mutable**; that is not a breach of Principle 7. Only the operator can do this step.
+1. **Run `bash scripts/setup-proof-fixture.sh`.** Written in S003; eight stages, ~15 minutes, operator-only. It provisions a read-only Notion integration, captures the token into a gitignored `.env`, and walks the build of a mutable fixture: a >100-block page, a 150-row data source with a type-changeable property, a revoke-probe parent/child pair, and a second top-level page deliberately left outside the grant. **Stage 5 is itself a proof result** — see below.
 2. **Run the 72-hour proof as a `/prototype` on a `prototype/api-proof` branch** — not as build phase 0. ADR-0005 now defines what it must measure. `store.json` → `unknowns_assigned_to_proof` holds **eight** questions; three were added this session and all three test ADR-0005 itself:
    - Do `unreached` and `undecidable` ever diverge against a workspace with a deliberately unshared subtree? If they never separate, collapse evidence sufficiency to two values.
    - Can enumeration and fetching be separated against the real API? If not, the `disclaimed` disposition loses its trigger.
    - How often does `disclaimed` fire on a real workspace? If it is the normal case, ADR-0002's declared-root model needs revisiting before ADR-0005 does.
 3. **The demand test needs no session.** The instruments are written. The Reddit diagnosis is the first send and the words are the operator's.
 4. **Do not open Configuration Status Accounting yet.** ADR-0005 deferred it deliberately; it is blocked on re-verifying MIL-HDBK-61A Fig 8-3, which no verifier has checked.
+
+**Stage 5 of the wizard answers a question the fixture design cannot assume.** Notion documents that a connection inherits to every child — "all child entities come along for the ride." Whether a single child can then be **un**-shared is not established: the research marks it `(C)`, community reports with no reproduced primary source, and it is proof question 1. So the wizard does not instruct a revocation as though the UI supports it. It has the operator attempt it and records `REVOCATION_SUPPORTED=yes|no` in `.env`.
+
+**If that comes back `no`, read it as a finding, not a setup failure, and stop before running the proof.** It would mean every descendant of a declared root is always readable, so `unreached` inside a declared root could arise only from rate limits and pagination, never from permissions. That narrows ADR-0005's evidence-sufficiency axis and needs writing up first.
 
 **NEXT-MODEL:** fast tier. The proof is execution mechanics — write probes, measure, record what the API does. The ambiguity that justified a frontier model was the outcome model, and it is now locked. If the proof's results reopen ADR-0005 (any of its three Revisit-ifs firing), close that session and reopen on a frontier model rather than crossing the tier boundary mid-session.
 

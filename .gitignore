@@ -20,6 +20,11 @@ desktop.ini
 *.pem
 *.key
 
+# --- Proof-fixture scratch (setup-proof-fixture.sh writes these, then deletes
+# them at its last stage; these lines cover a Ctrl-C mid-run) ---
+.proof-fixture-blocks.txt
+.proof-fixture-rows.csv
+
 # --- Agent scratch space ---
 .scratch/
 .claude/settings.local.json
