@@ -16,7 +16,9 @@
 
 import { parseConfig } from './config.js';
 import { PortError, type BlockListResponse, type NotionPort } from './notion-port.js';
-import { scan, renderReport, NO_RULE_CAUSE } from './scan.js';
+import { scan, NO_RULE_CAUSE } from './scan.js';
+import { renderReport } from './report.js';
+import { checkAgainstOracle } from './fixture-oracle.js';
 import { gapsFrom } from './manifest.js';
 import { hyphenate } from './ids.js';
 import type { Config } from './config.js';
@@ -243,6 +245,51 @@ check('every manifest key is distinct', new Set(ids).size, ids.length);
 check('every RENDERED label is distinct too', new Set(redacted.split('\n').filter(l => /^ {2}[0-9a-f]{8}-/.test(l)).map(l => l.trim().split(/\s+/)[0])).size, 4);
 
 console.log('  ^ truncation is not redaction, and here it was not disambiguation either.');
+
+/* =========================================================================
+ * TEST 7 — the hand-written oracle, and it must be able to go red
+ * ========================================================================= */
+
+head('TEST 7 — the oracle matches a fixture-shaped run, and FAILS when one child goes missing');
+
+/* IDs built to the suffixes docs/proof/fixture.md records. The shared LEADING
+ * hex is deliberate: it is what the real workspace looks like. */
+const O_ROOT = '3bf1351d-6af4-8057-8496-ee302a3bee7c';
+const O_PAGINATION = '3bf1351d-6af4-81ee-990b-f7c5fef57e44';
+const O_REVOKE_PARENT = '3bf1351d-6af4-8108-8ff3-c2d170a06142';
+const O_DATABASE = 'f937580c-0964-4ea7-a781-b9119887ee5b';
+
+const ORACLE_SHAPED: Record<string, FakeResource> = {
+  [O_ROOT]: { steps: [page([childPage(O_PAGINATION, 'wl-pagination'), childPage(O_REVOKE_PARENT, 'wl-revoke-parent'), childDb(O_DATABASE, 'wl-dataset')])] },
+  [O_PAGINATION]: { steps: [page([], { has_more: true, next_cursor: '1' }), page([])] },
+  [O_REVOKE_PARENT]: { steps: [page([])] },
+  [O_DATABASE]: { steps: [page([])] },
+};
+
+const r7 = await scan({ config: cfg(O_ROOT), port: fakePort(ORACLE_SHAPED), now: clock() });
+const o7 = checkAgainstOracle(r7);
+check('the oracle MATCHES a fixture-shaped run', o7.ok, true);
+check('  and it names its own source', /fixture\.md/.test(o7.lines.join('\n')), true);
+check('  wl-outside-grant and wl-revoke-child are absent, as required', /absent, as the oracle requires/.test(o7.lines.join('\n')), true);
+
+/* MUTATION: delete one child the oracle requires. If the oracle stays green
+ * here it is checking nothing — the same failure the exit byte's mutation check
+ * exists to catch, one layer up. */
+const MISSING_CHILD: Record<string, FakeResource> = {
+  ...ORACLE_SHAPED,
+  [O_ROOT]: { steps: [page([childPage(O_PAGINATION, 'wl-pagination'), childDb(O_DATABASE, 'wl-dataset')])] },
+};
+const r7b = await scan({ config: cfg(O_ROOT), port: fakePort(MISSING_CHILD), now: clock() });
+const o7b = checkAgainstOracle(r7b);
+check('with wl-revoke-parent removed the oracle goes RED', o7b.ok, false);
+check('  and it says which resource is missing', /MISMATCH.*wl-revoke-parent/.test(o7b.lines.join('\n')), true);
+check('  and the applicable count mismatch is named too', /applicable set is 3, oracle says 4/.test(o7b.lines.join('\n')), true);
+
+/* A fixture edit must NOT masquerade as a coverage failure. */
+check('the exit byte is unchanged by the oracle mismatch', r7b.verdict.exit, r7.verdict.exit);
+
+console.log('  ^ the oracle is hand-written from fixture.md and compared to the run,');
+console.log('    never derived from it. An oracle that cannot go red is a restatement.');
 
 /* --------------------------------------------------------------- helper -- */
 

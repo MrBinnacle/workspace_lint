@@ -18,7 +18,9 @@ import { dirname, join, resolve } from 'node:path';
 
 import { loadConfig } from './config.js';
 import { liveNotionPort } from './notion-port.js';
-import { scan, renderReport } from './scan.js';
+import { scan } from './scan.js';
+import { renderReport } from './report.js';
+import { checkAgainstOracle } from './fixture-oracle.js';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 
@@ -60,7 +62,7 @@ const value = (name: string): string | undefined => {
   return i >= 0 ? argv[i + 1] : undefined;
 };
 
-const USAGE = 'usage: tsx cli.ts scan --config <path.json> [--show-titles]';
+const USAGE = 'usage: tsx cli.ts scan --config <path.json> [--show-titles] [--oracle]';
 
 async function main(): Promise<never> {
   if (argv[0] !== 'scan') {
@@ -99,6 +101,21 @@ async function main(): Promise<never> {
   });
 
   for (const line of renderReport(result, { showTitles: flag('show-titles') })) say(line);
+
+  /* Acceptance criterion 1. The oracle is hand-written from docs/proof/fixture.md
+   * and is compared to, never derived from, this run. A mismatch does NOT change
+   * the exit byte: the byte reports the scan's coverage verdict, and the oracle
+   * reports whether the scan agrees with a human's written expectation. Two
+   * different questions; collapsing them would let a fixture edit look like a
+   * coverage failure. */
+  if (flag('oracle')) {
+    say('');
+    say('──────── HAND-WRITTEN MANIFEST ORACLE (criterion 1) ────────');
+    const o = checkAgainstOracle(result);
+    for (const line of o.lines) say(line);
+    if (!o.ok) say('  The scan and the pre-registered expectation disagree. Investigate before believing either.');
+  }
+
   process.exit(result.verdict.exit);
 }
 

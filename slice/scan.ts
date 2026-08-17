@@ -31,7 +31,7 @@
 import type { Config } from './config.js';
 import type { NotionPort } from './notion-port.js';
 import { createObserver, listAllChildren, type Call } from './observed.js';
-import { Manifest, gapsFrom, STAGES, type Stage } from './manifest.js';
+import { Manifest, gapsFrom } from './manifest.js';
 import { deriveVerdict, type Gap, type Verdict } from './verdict.js';
 
 export const NO_RULE_CAUSE =
@@ -195,63 +195,4 @@ export async function scan(opts: ScanOptions): Promise<ScanResult> {
     if (e.stages.has('fetched') && !e.cause) manifest.note(e.key, NO_RULE_CAUSE);
 
   return finish();
-}
-
-/* ------------------------------------------------------------- report ---- */
-
-export type RenderOptions = {
-  /**
-   * Page titles are redacted by default — CONTEXT.md settled defaults, "a
-   * finding in CI names its resource by ID and link, never by title." A title
-   * carries workspace content into logs readable by more people than the
-   * workspace is. The operator opts in; the default does not.
-   */
-  showTitles?: boolean;
-};
-
-export function renderReport(r: ScanResult, opts: RenderOptions = {}): string[] {
-  const out: string[] = [...r.log];
-  /* The FULL ID, not a prefix. Notion IDs are time-ordered, so resources created
-   * in one session share their leading hex: the first live run rendered three
-   * distinct pages as «3bf1351d…» and the manifest read like a double-count when
-   * it was in fact correct. Truncation is not redaction, and here it was not
-   * even disambiguation. The ID is the right thing to print — CONTEXT.md's
-   * settled default names a resource "by ID and link, never by title". */
-  const label = (alias: string, key: string) => (opts.showTitles ? alias : key);
-  const width = Math.max(20, ...r.manifest.all().map(e => label(e.alias, e.key).length));
-
-  out.push('');
-  out.push('──────── COVERAGE MANIFEST ────────');
-  for (const e of r.manifest.all())
-    out.push(`  ${label(e.alias, e.key).padEnd(width)} ${STAGES.map((s: Stage) => (e.stages.has(s) ? '●' : '○')).join(' ')}  ${e.cause}`);
-  out.push(`  ${''.padEnd(width)} ${STAGES.map(s => s[0]).join(' ')}   (declared resolved enumerated fetched evaluated)`);
-  if (!opts.showTitles) out.push('  page titles redacted by default; --show-titles opts in');
-
-  out.push('');
-  out.push('──────── GAPS ────────');
-  if (!r.gaps.length) out.push('  none');
-  for (const g of r.gaps)
-    out.push(`  ${g.bounded ? 'bounded  ' : 'UNBOUNDED'} ${g.resource}  ${g.isRootMiss ? '[declared root never reached] ' : ''}${g.cause}`);
-
-  out.push('');
-  out.push('──────── DISCLOSURES ────────');
-  out.push('  GET /v1/blocks/{id}/children carries NO truncation signal (ADR-0006 decision 5).');
-  out.push('  A complete enumeration and a silently truncated one both return has_more: false.');
-  out.push('  The traversal spine of this scan is trusted blind, and this run discloses it.');
-  out.push('  request_status is tested positively only; its absence proves nothing either way.');
-
-  out.push('');
-  out.push('──────── REPORT ────────');
-  out.push(`  disposition:      ${r.verdict.disposition}${r.verdict.disposition === 'disclaimed' ? '   ← NO SUMMARY VERDICT RENDERED' : ''}`);
-  out.push(`  coverage vector:  EMPTY — this slice implements no rule, so no rule has a coverage item (ADR-0011)`);
-  out.push(`  funnel:           ${r.verdict.evaluated}/${r.verdict.applicable} resources evaluated · ${r.manifest.reached('fetched')}/${r.verdict.applicable} fetched   (unit: resources)`);
-  out.push(`  conformity:       withheld — no rule ran, so no invariant was tested`);
-  out.push(`  requests:         ${r.requestCount} · wall ${r.wallMs} ms   (NOT a validated budget — #7 owns that)`);
-  out.push(`  exit:             ${r.verdict.exit}   (${r.verdict.why})`);
-
-  out.push('');
-  out.push('──────── CALLS MADE (read-only) ────────');
-  for (const c of r.calls) out.push(`  ${String(c.status).padEnd(4)} ${c.code ?? ''} ${c.endpoint}`);
-
-  return out;
 }
