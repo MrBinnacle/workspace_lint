@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "roots": [
+    {
+      "id": "00000000-0000-4000-8000-000000000000",
+      "alias": "example-root"
+    }
+  ],
+  "minCoverage": 1.0
+}

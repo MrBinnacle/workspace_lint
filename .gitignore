@@ -25,6 +25,12 @@ desktop.ini
 .proof-fixture-blocks.txt
 .proof-fixture-rows.csv
 
+# --- Local scan configuration ---
+# wl.config.json addresses a real page in a real workspace by ID. The example
+# file is tracked; the generated one is not. slice/make-fixture-config.ts
+# writes it from .env.
+wl.config.json
+
 # --- Agent scratch space ---
 .scratch/
 .claude/settings.local.json

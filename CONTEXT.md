@@ -39,6 +39,8 @@ The product tests declared rules. It does not infer workspace quality, intent, o
 | Evaluated set | The applicable coverage items the rule actually judged. |
 | Gap | An applicable coverage item that left the coverage funnel before evaluation, with a named cause. The funnel stages resources, so one resource drop-out produces a gap in every rule whose coverage items depended on it. Bounded when the missing items can be named, unbounded when they cannot. |
 | Pervasive | The property of a gap set that voids the summary verdict: a declared root was never reached, or any gap is unbounded. |
+| Attestation | Whether an enumeration's endpoint carries a completeness signal the scan checked: `attested` or `unattested`. A property of the method, read off the endpoint called, never inferred from a response and never computed. `POST /v1/search` is attested; `GET /v1/blocks/{id}/children` is unattested. See ADR-0013. |
+| Residual | A named, structured doubt about the evidence base that no in-band mechanism can resolve. It is not a Gap and enters no ratio. Every unattested enumeration produces one, with cause `enumeration_unattested`, and the count prints on the byte's basis line. See ADR-0013. |
 | Report disposition | What the report as a whole may claim: `unqualified`, `qualified`, or `disclaimed`. A disclaimed report renders no summary verdict. |
 | Conformity ratio | Conforming rules over rules that reached a conformity claim. Never published without the coverage vector. |
 | Coverage ratio | Per rule: coverage items evaluated over coverage items in that rule's applicable set. The report publishes the **vector** of them, one figure per rule with its unit named. The headline figure is the **minimum** over the vector; there is no figure computed by pooling counts across rules, because counts of different things do not add. Never published without the conformity ratio, and the headline is never published without the vector. Publishing any of them alone is prohibited. See ADR-0011. |
@@ -53,7 +55,7 @@ The product tests declared rules. It does not infer workspace quality, intent, o
 | Target state | What a scan established about a referenced object: `present`, `absent`, or `unreachable`. A property of the object, not of the finding. |
 | Normalization | The named function that strips volatile fields from an API response before hashing or comparison. Determinism is defined against its output, never against the raw response. |
 
-Six distinctions the glossary enforces, because collapsing any of them breaks the product contract:
+Seven distinctions the glossary enforces, because collapsing any of them breaks the product contract:
 
 - **Baseline is not suppression.** A baseline records existing debt and keeps it visible. A suppression hides a finding and must carry a reason and an expiry.
 - **Confirmed is not indeterminate.** A rule reports `certainty: confirmed` only when the API proved the defect. Notion returns 404 for both "absent" and "inaccessible", so a 404 produces `indeterminate`.
@@ -61,6 +63,7 @@ Six distinctions the glossary enforces, because collapsing any of them breaks th
 - **Evidence sufficiency is not certainty.** `certainty` is about a finding the rule made: was this defect proved. Evidence sufficiency is about findings the rule may have failed to make: were there applicable resources it never judged. A rule can be `confirmed` on every finding it produced and still be `unreached`. Collapsing the two makes "nothing was wrong in what I read, and here is what I did not read" inexpressible — which is the product.
 - **The Operator is not the Executor and not the Consumer.** Three roles, one word until ADR-0009. The Operator chose the scope, so the Consumer's attestation means something. The roles are distinct; the people may coincide.
 - **A resource is not a coverage item.** A resource is what the scan fetches. A coverage item is what a rule counts, and it differs per rule. Collapsing them puts the wrong denominator under every rule whose unit is not a resource, and it does so in the flattering direction: at 90% of resources read, `UNQ001` has evaluated 80.9% of the pairs it quantifies over. This distinction was absent until ADR-0011 and the collapse had already shipped a `2/2 — 100%` figure over a root with three children.
+- **A residual is not a gap.** A gap is an applicable coverage item that *left* the funnel, so it can be counted, and it belongs in a denominator. A residual is a doubt about whether the item was ever *in* the funnel, and it cannot be counted at all — two independent literatures state the quantity is not estimable from this access pattern. Collapsing them puts an invented number in a coverage figure, and it would be invented in the flattering direction. This distinction was absent until ADR-0013, and the run that forced it exited `0` at `1/1 resources (100.0%)` over a page whose child the connection could not see.
 
 The rule that produces those distinctions, stated once so it stops being re-derived: **a value is distinct when its remedy is distinct.** It works as a deletion test too — a value whose remedy duplicates another's is not a value. ADR-0005 decision 1, ADR-0006's correction of the proof record, and ADR-0008 decision 1 were all decided by it. See ADR-0009 decision 6.
 
@@ -76,7 +79,7 @@ The rule that produces those distinctions, stated once so it stops being re-deri
 
 ## Settled defaults
 
-Six defaults that govern v0.1. Each was asserted with stated reasoning and no ADR, because none is hard to reverse in the ADR sense. They are recorded here so the tracker and the state file stop disagreeing about what is settled. Reversing one costs a paragraph in this file, not a superseding ADR.
+Seven defaults that govern v0.1. Each was asserted with stated reasoning and no ADR, because none is hard to reverse in the ADR sense. They are recorded here so the tracker and the state file stop disagreeing about what is settled. Reversing one costs a paragraph in this file, not a superseding ADR.
 
 **The block crawl is selective, not metadata-only.** The scan fetches block content for the resources a rule needs, rather than reading page and database metadata alone. `REF001` reads hyperlinks inside blocks, so a metadata-only scan cannot implement a built-in rule. The 2026-08-17 proof run makes this over-determined: a link is the only surviving trace of an inaccessible resource, which makes `REF001` the load-bearing coverage mechanism. Metadata-only would ship a product whose central claim it cannot support.
 
@@ -87,6 +90,8 @@ Six defaults that govern v0.1. Each was asserted with stated reasoning and no AD
 **A baseline reports old debt and fails only on new findings.** Accepted fingerprints stay visible in the report and do not fail the run. A finding absent from the baseline does. This governs the contribution of *findings* to exit status only: ADR-0005 decision 4 makes the run's exit status a function of the report disposition and the coverage ratio as well, so a scan can fail on coverage while every finding it produced is baselined. The two inputs are independent and both are published.
 
 **CI mode ships after the local core.** The local CLI is the first release surface. CI integration follows it, and the gates filed with that decision stand as its acceptance criteria.
+
+**A rule's applicable set is derived from what the API returned, never from the subset the tool knows how to handle.** A denominator built from recognised inputs silently excludes everything the tool does not support, so it reports the highest coverage exactly where the tool is weakest. This is a **consequence of ADR-0005 decision 5 honestly applied, not a new decision** — the funnel requires every drop-out to name its resource and carry a specific cause, and a type the recogniser cannot handle is a drop-out like any other. It is recorded here because it has been violated twice by code written against documents that stated it only in prose: the `app.notion.com` host allow-list and the `child_page`-only applicable set, both in `docs/proof/results-ref001-live.md` §2 and §3. **It does not cover frame fidelity** — an enumeration filtered upstream satisfies this default and can still report a false green, which is ADR-0013. *Revisit if:* a third instance appears in a third rule, per issue #35's own Revisit-if; at three the "consequence" reading is much weaker, because the funnel is being applied and the defect recurs anyway.
 
 **Page titles are redacted from CI output by default.** A finding in CI names its resource by ID and link, never by title. A title carries workspace content into logs that are frequently readable by more people than the workspace is. An operator can opt in; the default does not.
 

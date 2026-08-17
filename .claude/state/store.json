@@ -1,9 +1,9 @@
 {
   "project": "workspace_lint",
   "updated": "2026-08-17",
-  "session": "S013",
-  "phase": "BUILD -- Gates 1 and 2 both closed 2026-08-17; nothing gates the build for the first time",
-  "phase_detail": "Pre-build on main -- still no src/, no package.json, no toolchain there. The toolchain and all working code remain on the throwaway branch proto/ref001-observed. S011 closed #34: docs/spec/ now exists as a directory (merged in PR #37, origin/main at 39d6d2a) and holds docs/spec/REF001-link-recognition.md. The #34 fork is answered -- an unrecognised link is ADR-0005's `undecidable`, not a new axis value, so no ADR was needed. The section 0.5 sweep established from Notion's own help pages that Notion Sites supports custom domains, so the host set is UNBOUNDED and no allow-list can be complete; the unrecognised residue path is therefore the primary detection mechanism and the host list is only an optimisation. A 34-assertion offline suite (prototypes/CHECK-link-recognition.ts) exercises link DISCOVERY and carries a mutation check that proves its own control is load-bearing. That suite refuted spec section 5 on its first run: exit 0 with an unrecognised link requires the gap to be BASELINED, because ADR-0008 fires exit 1 on a new unsuppressed SYS001 finding.",
+  "session": "S017",
+  "phase": "BUILD -- Gate 3 complete at n=1, all five tracer bullets closed",
+  "phase_detail": "Source code on branch build/t3-ref001, in slice/, under a private:true package.json named slice-v0.1. main STILL has no src/ and no package.json, and that is still correct: #8, the npm name, is the only thing between this branch and main. All five tracer bullets are built and CLOSED -- #42 scaffold, #43 SYS001, #44 REF001, #45 reports, #46 red test. 449 offline assertions across six suites, tsc clean on TypeScript 7.0.2 in both packages, and ALL FIVE ADR-0008 exit bytes reached LIVE against the proof fixture, each by its own seeded fault. Acceptance criteria 1, 4 and 5 are closed. Nothing merged, nothing pushed. The build phase produced one finding larger than itself: a permission-filtered child list yields exit 0 with conforms/sufficient over a page whose subtree the connection cannot see, reproduced live with a full-access control and filed against #35 WITHOUT changing the coverage model.",
   "gate_1_demand_test": {
     "status": "CLOSED 2026-08-17 on owner research, not on a five-team send. Issue #40 closed with it.",
     "what_closed_it": "docs/inputs/decay-causal-synthesis-2026-08-16.md -- the operator's own causal synthesis of workspace decay, derived from Reddit discussion no research path in this project could reach. Plus this file's own research.known_blind_spot record that the operator reaches Reddit and HAS CONVERTED A BUYER THERE, and docs/research/solo-segment-evidence.md conceding its NO 'may be a verdict on the config file, not on the segment'.",
@@ -30,12 +30,10 @@
   },
   "next_gate": {
     "name": "Gate 3 -- build at n=1, against this workspace",
-    "kind": "runnable, and now unblocked",
-    "tracker": "#42 -> #43, #44 -> #45 -> #46",
-    "why_it_is_next": "PRODUCT.md orders the gates 1 demand test, 2 API proof, 3 build at n=1, 4 release at n=3. Gate 1 closed on owner research and Gate 2 closed as completed, both 2026-08-17. NOTHING NOW GATES THE BUILD. This is the first time that has been true in the project's history.",
-    "method": "Build on a branch from proto/ref001-observed. The prototype is kept as a PRIMARY SOURCE and the toolchain is already there. This is now a preference rather than a gate -- #10's 'nothing on main' constraint is discharged with it. Putting the slice on main forces the npm-name decision (#8), which CONTEXT.md requires 'before the first package.json'.",
-    "human_steps_still_outstanding": "Connect the integration to REAL_ROOT_ID in Notion share settings, and decide title redaction before any output naming real pages lands in the repo -- CONTEXT.md redacts titles from CI output by default. Neither blocks #42.",
-    "blocker_resolved_S006": "ADR-0002 decision 4 no longer blocks scan code. ADR-0006 replaces it."
+    "kind": "runnable, live, first tracer bullet landed",
+    "tracker": "#42 built (ticket OPEN) -> #43 DONE and CLOSED -> #44 -> #45 -> #46, with #49 gating whether #44 exit byte can be believed",
+    "why_it_is_next": "Gates 1 and 2 both closed 2026-08-17. #42 shipped the scan scaffold on 2026-08-17 and the stop condition did not fire: the scan produced a coverage manifest against a declared root, read-only, with no LLM. #43 is the ticket that makes the coverage vector non-empty and exit 0 reachable, so it is the first result that means anything about coverage.",
+    "criterion_1_status": "CLOSED 2026-08-17 on #43 live run. ORACLE MATCHED, ten comparisons, against slice/fixture-oracle.ts committed in 9dcb069 BEFORE that run existed -- the pre-registration property criterion 1 requires. NOT closed retroactively for #42, whose applicable set was validated against the code own output."
   },
   "locked_decisions": [
     {
@@ -45,7 +43,7 @@
     },
     {
       "id": "ADR-0002",
-      "status": "accepted, DECISION 4 INVALIDATED by the 2026-08-17 proof run — superseding ADR required",
+      "status": "accepted, DECISION 4 INVALIDATED by the 2026-08-17 proof run \u2014 superseding ADR required",
       "summary": "Coverage is measured against declared roots. Workspace-level coverage is not provable by any tool.",
       "invalidation": "Decision 4 makes the ABSENCE of request_status from a paginated list response a hard error. Observed live at Notion-Version 2026-03-11: the field is absent from every normal response (data_sources query has_more true; block children has_more true; block children has_more false). The primary reference documents it as CONDITIONAL, emitted at the 10,000-result cap, with the prescribed test being positive: request_status.type === 'incomplete'. As written, decision 4 hard-errors every healthy scan. Decisions 1, 2, 3, 5 stand. Do NOT edit ADR-0002.",
       "still_standing": "Coverage is measured against declared roots. An unreachable declared root is a hard coverage failure exiting 2. Every unresolvable reference is an explicit observation. The report states start and end times."
@@ -54,7 +52,7 @@
       "id": "ADR-0003",
       "status": "accepted, PARTIALLY SUPERSEDED by ADR-0005",
       "summary": "SARIF 2.1.0 as output-contract design source, SonarQube issue-lifecycle as state machine. SARIF is an export target later, not a v0.1 schema commitment.",
-      "superseded_parts": "Decision 2 (four-valued outcome enum), decision 3 (`incomplete` fails the run), and the final Consequences paragraph (the SARIF coverage claim). The file was NOT edited — ADR-0005 supersedes those three parts by reference. Decisions 1, 4, 5, 6 stand.",
+      "superseded_parts": "Decision 2 (four-valued outcome enum), decision 3 (`incomplete` fails the run), and the final Consequences paragraph (the SARIF coverage claim). The file was NOT edited \u2014 ADR-0005 supersedes those three parts by reference. Decisions 1, 4, 5, 6 stand.",
       "still_standing": "Finding identity is the Notion object ID. Observation/finding split from OSCAL. Baseline entries are never counts. Suppressions require a reason and an expiry, with no escape hatch."
     },
     {
@@ -65,12 +63,12 @@
     {
       "id": "ADR-0005",
       "status": "accepted",
-      "summary": "Outcome is a pair — conformity (conforms|violates, absent when nothing was evaluated) × evidence sufficiency (sufficient|unreached|undecidable). `inapplicable` deleted: operator exclusion moves to the scope declaration, precondition mismatch becomes an applicability filter in the manifest. Report disposition unqualified|qualified|disclaimed; a disclaimed report renders no summary verdict. Coverage manifest is a five-stage funnel: declared, resolved, enumerated, fetched, evaluated.",
+      "summary": "Outcome is a pair \u2014 conformity (conforms|violates, absent when nothing was evaluated) \u00d7 evidence sufficiency (sufficient|unreached|undecidable). `inapplicable` deleted: operator exclusion moves to the scope declaration, precondition mismatch becomes an applicability filter in the manifest. Report disposition unqualified|qualified|disclaimed; a disclaimed report renders no summary verdict. Coverage manifest is a five-stage funnel: declared, resolved, enumerated, fetched, evaluated.",
       "governing_rule": "A value earns its place only if it changes what the operator does next. This is why evidence sufficiency has three values (different remedies) and why ISA 705's `adverse` was dropped (materiality is not computable by a CLI).",
-      "hard_rule": "No ratio is published without the coverage figure bounding it. XCCDF's exclude-from-scoring rule applied alone reproduces the Great Expectations defect — success_percent over evaluated expectations lets a half-unrun suite report 100%.",
+      "hard_rule": "No ratio is published without the coverage figure bounding it. XCCDF's exclude-from-scoring rule applied alone reproduces the Great Expectations defect \u2014 success_percent over evaluated expectations lets a half-unrun suite report 100%.",
       "pervasiveness_predicate": "Gaps are pervasive when a declared root was never reached, or any gap is unbounded. Structural, not a percentage: a ratio threshold would be computed over a denominator the scan has just admitted it cannot establish. Generalises ADR-0002 decision 2.",
-      "deviations_from_checkpoint_plan": "Five funnel stages, not four — `enumerated` was added between resolved and fetched because it is the only source of unbounded gaps, and the disclaimed disposition keys on those.",
-      "evidential_standing": "Decisions 1-3 rest on adversarially re-verified primary sources (ISA 705 paras 5(a) and 17, XCCDF value list, OSCAL metaschema negative, SARIF schema, PCAOB AS 3105.45, ISO 19011 6.5.1 k, Semgrep enum). Decision 5's funnel shape rests on CONSORT 13a/13b, PRISMA 16b and STROBE 13 — fetched but NOT re-verified, adopted on three-way convergence. Re-verify clause numbers before publishing them."
+      "deviations_from_checkpoint_plan": "Five funnel stages, not four \u2014 `enumerated` was added between resolved and fetched because it is the only source of unbounded gaps, and the disclaimed disposition keys on those.",
+      "evidential_standing": "Decisions 1-3 rest on adversarially re-verified primary sources (ISA 705 paras 5(a) and 17, XCCDF value list, OSCAL metaschema negative, SARIF schema, PCAOB AS 3105.45, ISO 19011 6.5.1 k, Semgrep enum). Decision 5's funnel shape rests on CONSORT 13a/13b, PRISMA 16b and STROBE 13 \u2014 fetched but NOT re-verified, adopted on three-way convergence. Re-verify clause numbers before publishing them."
     },
     {
       "id": "ADR-0006",
@@ -157,15 +155,15 @@
     {
       "target": "PRODUCT.md",
       "claim": "No SARIF object expresses analysis scope or coverage.",
-      "status": "REFUTED — corrected in S003, commit db02541",
-      "replacement": "SARIF carries per-result and per-artifact not-analysed primitives — result.kind, invocation.executionSuccessful, toolExecutionNotifications, artifact.roles analysisTarget — but defines no run-level coverage aggregate.",
-      "residual": "The same refuted sentence still stands in ADR-0002 Consequences and ADR-0003 Consequences. Both are deliberately NOT edited — ADRs are immutable records and ADR-0005 supersedes those paragraphs by reference. Do not 'fix' them.",
-      "decided": "Semgrep routes coverage through its native schema, not SARIF. A SARIF export loses the manifest. ADR-0005 §6 accepts that export loss explicitly."
+      "status": "REFUTED \u2014 corrected in S003, commit db02541",
+      "replacement": "SARIF carries per-result and per-artifact not-analysed primitives \u2014 result.kind, invocation.executionSuccessful, toolExecutionNotifications, artifact.roles analysisTarget \u2014 but defines no run-level coverage aggregate.",
+      "residual": "The same refuted sentence still stands in ADR-0002 Consequences and ADR-0003 Consequences. Both are deliberately NOT edited \u2014 ADRs are immutable records and ADR-0005 supersedes those paragraphs by reference. Do not 'fix' them.",
+      "decided": "Semgrep routes coverage through its native schema, not SARIF. A SARIF export loses the manifest. ADR-0005 \u00a76 accepts that export loss explicitly."
     },
     {
       "target": "PRODUCT.md, any throughput model",
       "claim": "Notion rate limits scale 10/25/50/100 req/s by plan.",
-      "status": "NO-OP — verified in S003, the figures appear in no canonical doc",
+      "status": "NO-OP \u2014 verified in S003, the figures appear in no canonical doc",
       "detail": "grep over PRODUCT.md, CONTEXT.md and docs/adr/ returns nothing. Remaining instances are in checkpoint.md (as the instruction), coverage-artifact-prior-art.md (marked PARTIAL), sweep-raw/verify-platform.md (the correction itself) and sweep-raw/wildcard.md (fenced CONTEXT-ONLY). Nothing to delete.",
       "standing_figure": "Size every throughput model on 3 req/s per connection. The three-minute warm-scan kill criterion is a budget of roughly 540 requests."
     },
@@ -173,7 +171,7 @@
       "target": "docs/adr/0003",
       "claim": "OSCAL supplies the observation/finding split including an incomplete outcome.",
       "status": "RESOLVED by ADR-0005",
-      "replacement": "The observation/finding split remains adopted. `incomplete` is not inherited from OSCAL — it is defined in ADR-0005 from XCCDF."
+      "replacement": "The observation/finding split remains adopted. `incomplete` is not inherited from OSCAL \u2014 it is defined in ADR-0005 from XCCDF."
     },
     {
       "target": "docs/adr/0002 decision 4",
@@ -211,15 +209,27 @@
   ],
   "open_decisions": [
     {
+      "id": "#35",
+      "question": "May a coverage figure built from the subset the tool can see be published as evidence:sufficient with exit 0?",
+      "status": "OPEN, and it now has a LIVE REPRODUCTION rather than an argument",
+      "evidence": "A scan of wl-revoke-parent returns exit 0 -- unqualified, SYS001 1/1 resources 100.0%, conforms, evidence sufficient -- over a page holding wl-revoke-child, confirmed present by the full-access builder identity. The subject's GET /v1/blocks/{parent}/children returns no child_page block at all. docs/proof/results-t5-red-test.md section 1.",
+      "candidate_shapes": [
+        "It may -- coverage is scoped to declared roots (ADR-0002) and the blind-spine disclosure already ships. Cost: the disclosure and the byte contradict each other, and CI reads the byte.",
+        "It may not, when the traversal spine is blind -- at most undecidable, never sufficient. Cost: every v0.1 run permanently qualified, which ADR-0005's fourth Revisit-if names as a failure mode.",
+        "A third axis for confidence in the APPLICABLE set. Cost: a fourth thing on the report contract, which ADR-0011's Consequences calls the expensive direction."
+      ],
+      "not_done": "The coverage model was NOT changed. Pinned as a documented limit in CHECK-redtest.ts TEST 2, carrying the issue number in the assertion text."
+    },
+    {
       "id": "request-status-handling",
-      "detail": "Write the ADR superseding ADR-0002 decision 4. Positive test for request_status.type === 'incomplete'; absence is uninformative, not an error. Decide also how an uninformative response maps onto ADR-0005's evidence-sufficiency axis — it is not `sufficient` and it is not `unreached`.",
+      "detail": "Write the ADR superseding ADR-0002 decision 4. Positive test for request_status.type === 'incomplete'; absence is uninformative, not an error. Decide also how an uninformative response maps onto ADR-0005's evidence-sufficiency axis \u2014 it is not `sufficient` and it is not `unreached`.",
       "due": "BEFORE any scan code. The current rule hard-errors the healthy path.",
       "needs": "superseding ADR",
       "evidence": "docs/proof/results.md section 1"
     },
     {
       "id": "product-claim-narrowing",
-      "detail": "PRODUCT.md overstates coverage. Provable: declared-root coverage plus link resolution (REF001, now the load-bearing mechanism). Not provable: anything about permission removal below a declared root, which is silent. This is partial evidence for the wildcard objection in coverage-artifact-prior-art.md section 5.1 — the boundary may be smaller than claimed.",
+      "detail": "PRODUCT.md overstates coverage. Provable: declared-root coverage plus link resolution (REF001, now the load-bearing mechanism). Not provable: anything about permission removal below a declared root, which is silent. This is partial evidence for the wildcard objection in coverage-artifact-prior-art.md section 5.1 \u2014 the boundary may be smaller than claimed.",
       "due": "before the demand test puts the claim in front of a buyer",
       "evidence": "docs/proof/results.md section 4"
     },
@@ -244,7 +254,7 @@
       "id": "rule-catalogue-additions",
       "detail": "Controlled-vocabulary membership (uncovered, testable, voiced). Orphan detection (deferral reason removed by ADR-0002). Duplicate-title should move from configured UNQ001 to built-in.",
       "due": "after demand test",
-      "note": "SYS001 was already restated in S003 — from 'Scan result is incomplete' to 'A declared root or applicable resource was not evaluated'. It keeps only its finding-identity job: a stable ID a baseline can reference. The run-failure decision moved to the report disposition in ADR-0005."
+      "note": "SYS001 was already restated in S003 \u2014 from 'Scan result is incomplete' to 'A declared root or applicable resource was not evaluated'. It keeps only its finding-identity job: a stable ID a baseline can reference. The run-failure decision moved to the report disposition in ADR-0005."
     },
     {
       "id": "product-identity-false-green",
@@ -276,25 +286,37 @@
       "due": "before the second and third rules are implemented",
       "tracker": "#35",
       "evidence": "docs/proof/results-ref001-live.md sections 2 and 3; Livshits et al., CACM 58(2), Feb 2015, DOI 10.1145/2644805"
+    },
+    {
+      "id": "#49",
+      "question": "May slice/verdict.ts diverge from the frozen prototypes/verdict.ts, and what replaces the scalar coverage comparison?",
+      "why_now": "deriveVerdict compares evaluated/applicable over the funnel against the declared threshold. ADR-0011 decision 5 makes the threshold a floor on EVERY rule, i.e. on the minimum of the coverage vector. Those are the same number only while one rule exists, because SYS001 coverage item is the resource the funnel stages. REF001 counts internal references, so a run can read every resource and resolve few references: the funnel figure stays high and exit 3 never fires. Second defect: the why string prints a bare ratio, which criterion 6 forbids, worked around at the render layer in 95c60c5.",
+      "constraint": "spec section 5 freezes the prototype as a primary source and requires an ADR BEFORE the code. A spec never supersedes an ADR."
+    },
+    {
+      "id": "#50",
+      "question": "Does ADR-0005 decision 2 applicability filter ship in v0.1?",
+      "why_now": "SYS001 reports evidence unreached for the fixture child_database, which is never enumerated BY DESIGN (spec 1.2). ADR-0005 decision 1 remedy for unreached is widen access or raise the budget, and neither can help. But applying the filter removes the resource from the denominator and coverage reads 3/3 = 100% over a root with four resources, one never looked inside -- the shape ADR-0011 exists to prevent, reached by a legitimate mechanism.",
+      "related": "#35, same family; likely decided together."
     }
   ],
   "api_target": {
     "notion_version": "2026-03-11",
     "requirement": "CORRECTED 2026-08-17. request_status is CONDITIONAL, not guaranteed. It is absent from normal responses at Notion-Version 2026-03-11. Test positively for request_status.type === 'incomplete'. Never treat its absence as an error, and never as proof of completeness.",
     "rate_limit_verified": "average of 3 requests per second per connection; workspace ceiling scaled to plan, amount undisclosed",
-    "admin_content_search": "Enterprise-only, reaches private pages, exports CSV — but it is a search, not an enumeration. Kill criterion 'Notion ships first-party coverage certification' did not fire.",
-    "notion_version_verified": "2026-03-11 returns HTTP 200 on /v1/users/me — the pin is valid.",
+    "admin_content_search": "Enterprise-only, reaches private pages, exports CSV \u2014 but it is a search, not an enumeration. Kill criterion 'Notion ships first-party coverage certification' did not fire.",
+    "notion_version_verified": "2026-03-11 returns HTTP 200 on /v1/users/me \u2014 the pin is valid.",
     "permission_filtering": "A page disconnected under a connected parent DISAPPEARS from GET /v1/blocks/{parent}/children. It is not listed-but-unreadable. Verified 2026-08-17 with a full-access control confirming the page still exists at the same ancestor path. An unconnected page returns 404, not 403."
   },
   "unknowns_assigned_to_proof": [
-    "ANSWERED 2026-08-17 — NO. A child_page block does NOT stay visible after the child's access is revoked; it vanishes from the parent's child list. The 'detectable hole' does not exist.",
-    "Does a property ID survive a property type change? UNTESTED — the fixture has TYPE_CHANGE_PROP=Status ready.",
-    "ANSWERED 2026-08-17 — provisionally YES. Two identical paginated queries returned the same 100 IDs in the same order. Fixture-confounded by bulk-created timestamps; re-run against real content before settling.",
-    "Does the ~11,200-object search ceiling still hold? UNTESTED — needs a workspace larger than any hand-built fixture.",
-    "Is Semgrep's `skipped` output verbose-gated? UNTESTED — a local Semgrep CLI test, nothing to do with Notion.",
-    "Do `unreached` and `undecidable` ever diverge in practice? UNTESTED. Note the fixture can no longer produce a permission-caused unreached inside a declared root — that route is closed. Rate limits and abandoned pagination are the remaining routes.",
-    "ANSWERED 2026-08-17 — YES, enumeration IS separable from fetching. A 151-block page paged 100 + 51 with has_more and next_cursor. ADR-0005's second Revisit-if does not fire; decision 5 stands.",
-    "How often does `disclaimed` fire on a real workspace? UNTESTED — needs REAL_ROOT_ID.",
+    "ANSWERED 2026-08-17 \u2014 NO. A child_page block does NOT stay visible after the child's access is revoked; it vanishes from the parent's child list. The 'detectable hole' does not exist.",
+    "Does a property ID survive a property type change? UNTESTED \u2014 the fixture has TYPE_CHANGE_PROP=Status ready.",
+    "ANSWERED 2026-08-17 \u2014 provisionally YES. Two identical paginated queries returned the same 100 IDs in the same order. Fixture-confounded by bulk-created timestamps; re-run against real content before settling.",
+    "Does the ~11,200-object search ceiling still hold? UNTESTED \u2014 needs a workspace larger than any hand-built fixture.",
+    "Is Semgrep's `skipped` output verbose-gated? UNTESTED \u2014 a local Semgrep CLI test, nothing to do with Notion.",
+    "Do `unreached` and `undecidable` ever diverge in practice? UNTESTED. Note the fixture can no longer produce a permission-caused unreached inside a declared root \u2014 that route is closed. Rate limits and abandoned pagination are the remaining routes.",
+    "ANSWERED 2026-08-17 \u2014 YES, enumeration IS separable from fetching. A 151-block page paged 100 + 51 with has_more and next_cursor. ADR-0005's second Revisit-if does not fire; decision 5 stands.",
+    "How often does `disclaimed` fire on a real workspace? UNTESTED \u2014 needs REAL_ROOT_ID.",
     {
       "id": "_S008_real_root_id",
       "note": "REAL_ROOT_ID reported set by the operator 2026-08-17, UNVERIFIED -- .env cannot be read. If good, it unblocks Q8 (disclaimed-frequency), the Q3 re-run against organic timestamps, and #7. Two gates before any run: the integration must be CONNECTED to that page (human step in Notion share settings), and Q8 output is a manifest of REAL page titles and IDs -- CONTEXT.md already redacts titles from CI output by default, so decide redaction before results land in the repo."
@@ -304,10 +326,10 @@
     "location": "docs/research/",
     "s001_sweeps": 7,
     "s002_synthesis": "docs/research/coverage-artifact-prior-art.md",
-    "s002_raw_corpus": "docs/research/sweep-raw/ — 9 scout reports plus 2 verification passes, verbatim and unverified except where a verification file says otherwise",
+    "s002_raw_corpus": "docs/research/sweep-raw/ \u2014 9 scout reports plus 2 verification passes, verbatim and unverified except where a verification file says otherwise",
     "s002_verification": "16 keystone claims re-verified: 6 confirmed, 9 partial, 1 misattributed, 0 fabricated",
-    "known_blind_spot": "Research agents cannot reach Reddit; community.notion.so and forum.notion.so no longer resolve. This is a limitation of the tooling, NOT of the channel — the operator reaches Reddit and has converted a buyer there. Evidence still skews toward people who publish.",
-    "refuted_sources": "docs/research/notion-api-practice.md section 5.2 'Detectable hole' is REFUTED by direct observation 2026-08-17. It was rated (C) and self-flagged as the highest-value item to verify. The rest of that file has not been re-verified and one of its two headline claims was false — treat the remainder as suspect until checked.",
+    "known_blind_spot": "Research agents cannot reach Reddit; community.notion.so and forum.notion.so no longer resolve. This is a limitation of the tooling, NOT of the channel \u2014 the operator reaches Reddit and has converted a buyer there. Evidence still skews toward people who publish.",
+    "refuted_sources": "docs/research/notion-api-practice.md section 5.2 'Detectable hole' is REFUTED by direct observation 2026-08-17. It was rated (C) and self-flagged as the highest-value item to verify. The rest of that file has not been re-verified and one of its two headline claims was false \u2014 treat the remainder as suspect until checked.",
     "link_hosts_evidence": "ONLY app.notion.com is observed as an internal-link host (docs/proof/results-ref001-live.md section 2, 2026-08-17). notion.so, www.notion.so, notion.com and *.notion.site are in the prototype's regex and are NOT claimed by the proof record. Do not let them into a spec on S010's authority.",
     "ref001_link_recognition_sweep": {
       "date": "2026-08-17",
@@ -344,8 +366,21 @@
   ],
   "tracker": {
     "host": "GitHub issues, gh CLI",
-    "open": "#10 ratify the 72-hour proof -- NOW THE CRITICAL PATH and the next gate. Its 'Proof checks' section is nine falsifiable end-to-end acceptance criteria and is effectively the build spec, written before S005 and never run as a set. Runnable remainder Q2/Q3-rerun/Q8/restore wl-revoke-child; two human steps first - #39 README contradicts ADR-0005/0008 in four places - #35 denominator rule, ADR or consequence - #29 buyer question: PARTIALLY ANSWERED by the Gate 1 close (framing 2 is the entry point) but the WILLINGNESS-TO-PAY half is still open and the gate did NOT establish a price; its 'answered by demand-test respondents' framing is dead, there are no respondents - #27 observation half only, PAT test to be DROPPED - #25 ADR-vs-research enforcement, FOUR shapes, now has a working hook precedent - #24 does v0.1 call search (also the Revisit-if surface for the unseen-population sweep -- see soundness-classification) - #19, #18 mechanical, fast-tier session - #8 npm name - #7 perf budgets",
-    "closed_S005": "#2 #3 #4 #5 #6 #9 consolidated into #16 — they were undocumented decisions, not open questions.",
+    "open": [
+      "#51",
+      "#50",
+      "#39",
+      "#35",
+      "#29",
+      "#27",
+      "#25",
+      "#24",
+      "#19",
+      "#18",
+      "#8",
+      "#7"
+    ],
+    "closed_S005": "#2 #3 #4 #5 #6 #9 consolidated into #16 \u2014 they were undocumented decisions, not open questions.",
     "closed_S013": "#40 CLOSED by the Gate 1 close. Its statistics half was swept and ADR-0005 decision 3 survives; its recruitment-bias half never depended on that sweep and was visible inside PRODUCT.md all along.",
     "phase_transition_S013": "The project left the decision phase. Eleven ADRs, five of them superseding parts of earlier ones, every supersession found by re-reading documents rather than by running the product. Across S008-S012 the board closed 7 and filed 6 -- not converging. Every open issue produced a document, a decision, or a spec, so /implement had nothing to take. Gate 1 is now closed and the next artefact is a BUILD SPEC seeded from #10's nine proof checks, not a twelfth ADR.",
     "note": "ALL WORK MERGED. main carries ADR-0011 at 88d401e; nothing in flight. Every open issue carries a triage role, and a PreToolUse guard now enforces one at issue-creation time from the next session onward. GATE 1 IS NOT ON THIS BOARD as a gate: it advances when the operator sends, and #40 blocks the send.",
@@ -357,6 +392,97 @@
     "filed_S010": "#34 -- specify REF001 link recognition: the host set, and the unrecognised outcome",
     "closed_S011": "#34 closed by PR #37 (spec, not ADR).",
     "closed_S012": "#14 CLOSED as ALREADY COMPLETE -- finished 2026-08-16 in cc16d63, on origin/main, every DoD element present in the issue's own wording. S010 and S011 both carried it as the Gate 1 blocker anyway. #36 CLOSED by PR #38, merged as 88d401e.",
-    "filed_S012": "#39 -- README.md contradicts ADR-0005 and ADR-0008 in four places, untouched since 2026-08-16. #40 -- PRODUCT.md's demand test and kill criterion name the auditor buyer; the only item marked blocks:Gate 1 and it had never been filed."
+    "filed_S012": "#39 -- README.md contradicts ADR-0005 and ADR-0008 in four places, untouched since 2026-08-16. #40 -- PRODUCT.md's demand test and kill criterion name the auditor buyer; the only item marked blocks:Gate 1 and it had never been filed.",
+    "closed_S015": "#43 CLOSED as completed. Its DoD is met item by item and acceptance criterion 1 closed with it. #49 and #50 filed from it: #49 verdict.ts must be permitted to diverge from the frozen prototype (blocks #44 exit byte), #50 SYS001 reports unreached for a resource excluded by design (ADR-0005 decision 2 applicability filter). #42 remains OPEN although its code shipped in S014 -- nobody closed the ticket.",
+    "github_outage_S015": "GraphQL returned HTTP 503 for ~15 minutes while REST reads succeeded. gh issue comment and gh issue create both route through GraphQL. Verify a tracker write by re-reading it; a retry loop reported success on a 503 body because --jq printed the error JSON to stdout and the check tested only for non-empty.",
+    "closed_S017": [
+      "#49 (ADR-0012)",
+      "#45 (T4 reports)",
+      "#46 (T5 red test)"
+    ],
+    "commented_S017": [
+      "#45",
+      "#46",
+      "#35 (the false green, with the live reproduction)"
+    ],
+    "filed_S017": [],
+    "note_S017": "All five tracer bullets are CLOSED. The build queue is empty. The head is now #35, a decision and not a build: may a scan that cannot detect permission filtering report evidence:sufficient and exit 0."
+  },
+  "build": {
+    "branch": "build/t3-ref001",
+    "commits": [
+      "0ac7c2d",
+      "9dcb069",
+      "0d3c723",
+      "95c60c5",
+      "a633e96",
+      "8dd2d36 (ADR-0012, the exit byte compares the vector minimum)",
+      "37bd9e1 (T4 reports: one document, three renderings)",
+      "6b719cf (T5 red test: five live bytes, and the false green)"
+    ],
+    "directory": "slice/",
+    "modules": [
+      "ids.ts",
+      "config.ts",
+      "notion-port.ts",
+      "observed.ts",
+      "manifest.ts",
+      "verdict.ts",
+      "normalize.ts (NEW S017 -- ADR-0004 Normalization, wl-norm-1, RFC 8785)",
+      "finding.ts",
+      "rule.ts",
+      "references.ts",
+      "sys001.ts",
+      "ref001.ts",
+      "scan.ts",
+      "report.ts (one document, three renderers)",
+      "fixture-oracle.ts",
+      "cli.ts"
+    ],
+    "suite": "cd slice && npm run check -- SIX files, 38+56+92+124+89+50 = 449 assertions, offline, no network, no token. CHECK-verdict / CHECK-scan-scaffold / CHECK-sys001 / CHECK-ref001 / CHECK-report / CHECK-redtest. prototypes/CHECK-link-recognition.ts: 23, green.",
+    "mutation_checks": [
+      "CHECK-scan-scaffold TEST 5: disable gapsFrom, exit byte must move 3 -> 0",
+      "CHECK-scan-scaffold TEST 7: remove a required child, the oracle must go red",
+      "CHECK-sys001 TEST 4: remove the findings from the verdict input, byte must move 1 -> 0 at a threshold coverage clears",
+      "CHECK-sys001 TEST 5: judge on fetched alone (drop the no-Loss clause), byte must move 2 -> 0 and disposition disclaimed -> unqualified",
+      "CHECK-sys001 TEST 7: feed a gap naming a resource the manifest does not hold, the disagreement must be reported",
+      "CHECK-ref001 TEST 1b: remove app.notion.com from KNOWN_INTERNAL_HOSTS, the observed href must stop classifying internal and must NOT fall through to external",
+      "CHECK-ref001 TEST 6: add a second rule over resources that judges nothing, the funnel must fall 2/2 -> 0/2, which is what proves stage 5 is an intersection and not a union",
+      "CHECK-ref001 TEST 7: same host removal driven through a whole scan, the dead-link finding must disappear AND a link-host-unrecognised gap must appear in its place",
+      "Verified out of band, not in the suite: disable readBlockTree -> the nested link is undiscovered; disable the database drop-out -> one invented confirmed/unreachable finding appears; disable cross-page dedupe -> the external count reads 2 for one href"
+    ],
+    "live_command": "cd slice && npx tsx make-fixture-config.ts [ENV_KEY] && npx tsx cli.ts scan --config ../wl.config.json [--oracle] [--json PATH] [--markdown PATH] [--deterministic]. THE ENV_KEY ARGUMENT is how the live exit-byte table was produced: FIXTURE_ROOT_ID, REVOKE_PARENT_ID, UNSHARED_PAGE_ID.",
+    "config_generator": "npx tsx make-fixture-config.ts -- reads FIXTURE_ROOT_ID from .env and writes the gitignored wl.config.json; the config contract is ID-only and there is deliberately no ${VAR} escape in the loader",
+    "toolchain": "TypeScript 7.0.2, tsx 4.23.12, @notionhq/client 5.25.2, Node 22. NO new dependency added in S017.",
+    "rules_implemented": [
+      "SYS001 (coverage item: resources)",
+      "REF001 (coverage item: internal references)"
+    ],
+    "known_untrustworthy": [
+      "NOTHING in the exit byte -- #49 is closed and ADR-0012 decisions 2 and 7 settled what it compares.",
+      "The LIVE fixture does not exercise the ADR-0012 divergence: SYS001 sets the minimum there and its coverage item is a resource, so the vector minimum and the funnel are the same number. Offline only, CHECK-ref001 TEST 4.",
+      "The LIVE fixture does not exercise Finding.link: only the declared root is retrieved with GET /v1/pages and on this fixture the root is evaluated, so it produces no finding to carry a link. Offline only.",
+      "A permission-filtered child list is UNDETECTABLE and yields exit 0. Not a defect in this build -- ADR-0006 decision 2, no truncation signal. It is #35, and it is OPEN."
+    ],
+    "live_run_t3": "2026-08-17: exit 3, 4 applicable, 3 evaluated, 1 internal reference, 7 requests, 1.6 s, ORACLE MATCHED on 18 comparisons. Never fired on live data: the residue path, Route A, nested block descent, database references, href-unparseable. See docs/proof/results-t3-ref001.md section 5.",
+    "live_exit_byte_table_S017": {
+      "FIXTURE_ROOT_ID floor 1.0": "3 qualified",
+      "FIXTURE_ROOT_ID floor 0.5": "1 qualified",
+      "REVOKE_PARENT_ID floor 1.0": "0 unqualified -- THE FALSE GREEN, see #35",
+      "UNSHARED_PAGE_ID floor 1.0": "2 disclaimed (pervasiveness condition (a), root miss)",
+      "config naming a non-ID": "4, no disposition",
+      "note": "Exit 2 is reached LIVE by condition (a) ONLY. Condition (b), a genuinely UNBOUNDED gap, needs an enumeration to die mid-stream on a 429 or 502 and cannot be forced against a read-only connection. Offline only, via the MIDSTREAM fake."
+    },
+    "normalization": {
+      "version": "wl-norm-1",
+      "file": "slice/normalize.ts",
+      "standard": "RFC 8785 (JCS), per ADR-0004 decision 4",
+      "platform_note": "Three of four JCS requirements are supplied by Node 22 / TS 7 and were MEASURED before the file was written: Array.sort() IS UTF-16 code unit order; JSON.stringify already emits ECMAScript Number::toString; control-character escapes match. ONE diverges -- RFC 8785 makes a lone surrogate an ERROR and JSON.stringify escapes it silently. That rejection is the only new code. docs/research/static-analysis-prior-art.md's warning that naive JSON.stringify is not JCS is correct and aimed at other languages.",
+      "volatile_fields": [
+        "wallMs",
+        "requestCount",
+        "calls"
+      ]
+    }
   }
 }

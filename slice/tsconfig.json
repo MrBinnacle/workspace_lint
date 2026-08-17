@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "target": "ES2022", "module": "ESNext", "moduleResolution": "bundler",
+    "strict": true, "noEmit": true, "skipLibCheck": true,
+    "types": ["node"], "allowJs": false
+  },
+  "//": "GLOB, NOT A HAND-MAINTAINED LIST — issue #55. This was an explicit 26-entry list, appended by hand in every feature commit. A file not on it was not typechecked, and `tsc --noEmit` exited 0 regardless of what was in it: CHECK-residuals.ts was written against five exports that did not exist and the gate reported success. The list matched the directory exactly when it was replaced, so nothing was deliberately excluded and this changes what is checked in no way other than closing the hole. The `check` script in package.json is the other half of the same shape and a glob cannot fix it; CHECK-suite-registration.ts is the control for that half.",
+  "include": ["*.ts"]
+}

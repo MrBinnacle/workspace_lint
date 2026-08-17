@@ -19,7 +19,9 @@ assertion.
    **per-slice** (`v0.1-scan-slice.md`, the executable cut of decisions already made). Read the spec
    for any rule or slice you are about to implement or change. Edited in place.
 5. **`docs/research/`** — the evidence the ADRs were built from. **Read before asserting any factual
-   claim, not after.**
+   claim, not after.** **Start at `docs/research/INDEX.md`**, which gives one line per file: the
+   question it answers and what it refutes. Twelve files; the index is what makes "read the research"
+   an action rather than a directory listing.
 6. **`docs/proof/`** — what the API actually did when asked. Outranks everything above it on any
    question of fact.
 7. **`docs/inputs/`** — external artifacts, **none canonical**. Read them; never cite one as
@@ -110,7 +112,7 @@ paragraph; **publish no URL for either.** Full list in `.claude/state/store.json
 └── docs/
     ├── adr/                ← accepted decisions, never edited
     ├── spec/               ← behavioural specs, per-rule and per-slice, edited in place
-    ├── research/           ← documented evidence (10 files, no index yet — see below)
+    ├── research/           ← documented evidence (12 files; start at INDEX.md)
     ├── proof/              ← observed evidence, outranks documentation
     ├── inputs/             ← external artifacts, none canonical
     ├── demand-test/        ← outbound instruments
@@ -171,8 +173,12 @@ the standing layer-placement rule, a discipline that must fire cannot depend on 
 day the first code lands, and a stale structure diagram is the kind of claim that calcifies because
 nobody follows it.
 
-**Known gap, stated rather than left implicit:** `docs/research/` has ten files and **no index**, so
-knowing what is in the tenth requires opening all ten. That is the second half of the mechanism this
-file exists to fix — a reading list that names the directory still does not tell you which file
-answers your question. An `INDEX.md` giving one line per file (the question it answers, its trust
-tier, what it refutes) is the fix and is not yet written.
+**That gap is now closed.** `docs/research/INDEX.md` gives one line per file — the question it answers
+and what it refutes — and step 5 above points at it. Issue #54.
+
+**The count in this file was stale when the index was written, which is the failure the index is
+supposed to end.** This paragraph said ten files; there were eleven, and twelve once the ADR-0013
+sweep landed. Issue #54 said eleven and was also wrong. A hand-maintained count drifts silently
+in exactly the way a hand-maintained list does — see issue #55 for the same shape in
+`slice/tsconfig.json`, and `INDEX.md`'s own *Revisit if*, which pre-registers the fix: at the second
+drift the index becomes generated or checked, not hand-kept.
