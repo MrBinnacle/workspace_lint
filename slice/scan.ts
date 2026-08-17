@@ -1,31 +1,32 @@
-/* The scan. One declared root, five funnel stages, one exit byte, no rules.
+/* The scan. One declared root, five funnel stages, one rule, one exit byte.
  *
- * WHY NOTHING REACHES `evaluated`, AND WHY THAT IS THE HONEST ANSWER
+ * WHAT #43 CHANGED, AND WHAT IT DID NOT
  *
- * #42 is explicit: "No rules yet." ADR-0005 decision 5's fifth stage is
- * `evaluated`, and a resource is evaluated when a RULE judged it. This slice
- * implements no rule, so this slice evaluates nothing, and the manifest says so
- * with a named cause on every resource rather than quietly redefining the stage
- * to mean "the scan finished with it."
+ * T1 (#42) implemented no rule, so nothing reached `evaluated` and every
+ * resource carried a named cause saying exactly that. SYS001 arrives here, so
+ * three things move and each was predicted on #42:
  *
- * Three consequences, stated here so no later session has to re-derive them:
+ *   1. `evaluated` IS NOW REACHABLE. A resource the funnel delivered whole is
+ *      judged by SYS001 and marked. The "this slice implements no rule" cause is
+ *      gone from every path.
+ *   2. THE COVERAGE VECTOR IS NO LONGER EMPTY. ADR-0011: one row per rule, over
+ *      that rule's own coverage item. SYS001 counts RESOURCES, so its row is the
+ *      funnel figure with a rule name and a unit attached. It is still not a
+ *      figure to be pooled with another rule's — REF001 (#44) counts references,
+ *      and counts of different things do not add.
+ *   3. `newUnsuppressedFindings` STOPS BEING ZERO. T1 passed 0 explicitly because
+ *      it produced no finding of any kind. It now carries the SYS001 findings,
+ *      and that is the single most likely place for the exit byte to go quietly
+ *      wrong: with the argument left at 0, a run whose coverage clears the
+ *      threshold exits 0 while holding unsuppressed findings, which is the exact
+ *      false-green ADR-0008 decision 2 exists to prevent. CHECK-sys001.ts TEST 4
+ *      is the control on this line.
  *
- *   1. The coverage VECTOR of ADR-0011 is EMPTY in this slice — it is one entry
- *      per rule, and there are no rules. The funnel figure printed below is
- *      resources-through-the-funnel, and its unit is named every time it is
- *      printed. It is NOT a coverage ratio and must never be quoted as one.
- *   2. EXIT 0 IS UNREACHABLE HERE, by construction. Every resource is a gap, so
- *      a clean run still exits 3. The first ticket that can return 0 is #43,
- *      which is where SYS001 — and therefore evaluation — arrives.
- *   3. The exit byte this slice CAN prove is 4 (did not run as declared), 2
- *      (root unreached or an unbounded gap) and 3 (confined gaps below the
- *      declared threshold). #46 owns proving the byte responds to the right
- *      cause rather than to any cause.
- *
- * The alternative was to let `evaluated` mean "fetched successfully", which
- * would have printed a 3/4 that looks like rule coverage and is not. That is the
- * flattering direction, and it is the exact defect class this product exists to
- * detect.
+ * WHAT STILL DOES NOT REACH `evaluated`: a resource that stalled before
+ * `fetched`, and a resource that reached `fetched` carrying a drop-out cause.
+ * Both are SYS001 findings. Letting either through would print a coverage figure
+ * over resources the scan did not actually deliver, which is the flattering
+ * direction and the defect class this product exists to detect.
  */
 
 import type { Config } from './config.js';
@@ -33,9 +34,8 @@ import type { NotionPort } from './notion-port.js';
 import { createObserver, listAllChildren, type Call } from './observed.js';
 import { Manifest, gapsFrom } from './manifest.js';
 import { deriveVerdict, type Gap, type Verdict } from './verdict.js';
-
-export const NO_RULE_CAUSE =
-  'reached the end of the funnel unevaluated — this slice implements no rule (#42); evaluation arrives with SYS001 in #43';
+import { SYS001, type Sys001Rule } from './sys001.js';
+import type { CoverageRow, Finding, Outcome } from './finding.js';
 
 const DATA_SOURCE_CAUSE =
   'data-source enumeration is not implemented in this slice — rows and schemas are REQ001/UNQ001 concerns, out of scope per spec §1.2';
@@ -44,6 +44,11 @@ export type ScanResult = {
   manifest: Manifest;
   verdict: Verdict;
   gaps: Gap[];
+  findings: Finding[];
+  /** ADR-0011: one row per rule, over that rule's own coverage item. */
+  coverage: CoverageRow[];
+  /** Per rule, the outcome PAIR. Keyed by rule ID. */
+  outcomes: Record<string, Outcome>;
   calls: Call[];
   requestCount: number;
   wallMs: number;
@@ -58,6 +63,14 @@ export type ScanOptions = {
    * disable it and confirm the exit byte goes green. Defaults to gapsFrom.
    */
   deriveGaps?: (m: Manifest) => Gap[];
+  /**
+   * The rule, injected for the same reason and at two seams rather than one.
+   * `judge` and `report` are separately replaceable because they wire into
+   * different halves of the verdict: `judge` feeds the coverage ratio and
+   * `report` feeds the finding count. A mutation check that could only remove
+   * the whole rule would leave the finding-to-exit-byte path untested.
+   */
+  rule?: Sys001Rule;
   now?: () => number;
 };
 
@@ -82,6 +95,7 @@ const titleOf = (b: ChildBlock): string =>
 export async function scan(opts: ScanOptions): Promise<ScanResult> {
   const { config, port } = opts;
   const deriveGaps = opts.deriveGaps ?? gapsFrom;
+  const rule = opts.rule ?? SYS001;
   const now = opts.now ?? (() => Date.now());
 
   const t0 = now();
@@ -91,23 +105,58 @@ export async function scan(opts: ScanOptions): Promise<ScanResult> {
   const say = (s = '') => log.push(s);
 
   const finish = (didNotRunAsDeclared = false): ScanResult => {
+    /* THE RULE RUNS HERE, NOT AT THE END OF THE TRAVERSAL, because every early
+     * return above is also a scan whose coverage has to be judged. An
+     * unreachable declared root is SYS001's headline finding, and it leaves
+     * through the second return in this function. */
+    const judged = rule.judge(manifest);
+    /* ADR-0005 decision 5 stage 5: "every applicable rule reached a judgement."
+     * WITH A SECOND RULE THIS BECOMES AN INTERSECTION. #44 must not add a
+     * parallel loop that marks the same stage — a union here would mark a
+     * resource evaluated because ONE rule judged it, which is the flattering
+     * answer and would inflate every coverage figure computed downstream. */
+    for (const key of judged) manifest.mark(key, '', 'evaluated');
+
     const gaps = deriveGaps(manifest);
+    const findings = rule.report(manifest, gaps);
+    /* `judged` is threaded through rather than recomputed. The rule's coverage
+     * row, its outcome pair and the funnel's `evaluated` stage are then three
+     * readings of ONE judgement. */
+    const row = rule.coverage(manifest, judged);
+    const coverage = row ? [row] : [];
+    const outcomes = { [rule.id]: rule.outcome(manifest, judged, findings) };
+
     const verdict = deriveVerdict({
       applicable: manifest.size,
       evaluated: manifest.reached('evaluated'),
       gaps,
+      /* Findings that are NOT coverage gaps. SYS001 produces only coverage-gap
+       * findings, so this stays 0 until a rule with a content invariant lands.
+       * It drives the disposition; the gaps already qualify the report. */
       violations: 0,
-      /* EXPLICIT ZERO, AND IT IS LOAD-BEARING. deriveVerdict defaults this to
-       * violations + gaps.length, which would exit 1 on a slice that produced no
-       * finding of any kind. This slice implements no rule, so it has no
-       * finding, so nothing here is new-and-unsuppressed. #43 is where gaps
-       * become SYS001 findings and this argument stops being zero. */
-      newUnsuppressedFindings: 0,
+      /* NO LONGER ZERO — see this file's header, consequence 3. Every finding in
+       * this slice is `new` and unsuppressed BY CONSTRUCTION, not by
+       * computation: spec §1.2 gives the slice no baseline file and no
+       * suppressions, so there is nothing a finding could be matched against.
+       * When a baseline lands, this argument stops equalling findings.length and
+       * becomes the count that survives matching — a baselined gap is still a
+       * gap, still lowers coverage, and still qualifies the report, but stops
+       * failing the build (ADR-0008 decision 3). */
+      newUnsuppressedFindings: findings.length,
+      /* ADR-0011 decision 5 makes the threshold a floor on EVERY rule, i.e. on
+       * the minimum of the vector. deriveVerdict takes one scalar, and in this
+       * slice the two are the same number: there is exactly one rule and its
+       * coverage item is the resource the funnel stages. THAT COINCIDENCE ENDS
+       * WITH #44. REF001's row counts internal references, so the minimum of the
+       * vector stops being evaluated/applicable, and feeding this scalar instead
+       * of the minimum would let a well-covered rule mask a badly covered one.
+       * verdict.ts is copied verbatim from a frozen prototype, so changing what
+       * it compares is a decision that goes in an ADR before it goes in code. */
       coverageThreshold: config.minCoverage,
       didNotRunAsDeclared,
     });
     return {
-      manifest, verdict, gaps,
+      manifest, verdict, gaps, findings, coverage, outcomes,
       calls: observer.calls,
       requestCount: observer.calls.length,
       wallMs: now() - t0,
@@ -190,9 +239,9 @@ export async function scan(opts: ScanOptions): Promise<ScanResult> {
     manifest.mark(c.id, alias, 'fetched');
   }
 
-  /* -- every resource that survived the funnel is still a gap ------------- */
-  for (const e of manifest.all())
-    if (e.stages.has('fetched') && !e.cause) manifest.note(e.key, NO_RULE_CAUSE);
-
+  /* The traversal ends here. Judgement belongs to the rule and happens in
+   * finish(), which every exit path above goes through. T1 stamped a
+   * "no rule implemented" cause on each surviving resource at this point; SYS001
+   * now judges those same resources instead. */
   return finish();
 }

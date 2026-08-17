@@ -11,6 +11,7 @@
  */
 
 import { STAGES, type Stage } from './manifest.js';
+import { formatRow, headlineCoverage } from './finding.js';
 import type { ScanResult } from './scan.js';
 
 export type RenderOptions = {
@@ -48,6 +49,26 @@ export function renderReport(r: ScanResult, opts: RenderOptions = {}): string[] 
     out.push(`  ${g.bounded ? 'bounded  ' : 'UNBOUNDED'} ${g.resource}  ${g.isRootMiss ? '[declared root never reached] ' : ''}${g.cause}`);
 
   out.push('');
+  out.push('──────── FINDINGS ────────');
+  /* Every finding here is `new` and unsuppressed BY CONSTRUCTION — this slice
+   * has no baseline file and no suppressions (spec §1.2). NO BASELINE STATE IS
+   * PRINTED. Printing `new` would look computed, and ADR-0008 decision 1's five
+   * states were never exercised: a state the slice did not compute is a false
+   * claim whichever value it carries. */
+  if (!r.findings.length) out.push('  none');
+  for (const f of r.findings) {
+    out.push(`  ${f.rule}  ${f.anchor.resource}`);
+    out.push(`      ${f.message}`);
+    out.push(
+      `      certainty: ${f.certainty} · target state: ${f.targetState} · ` +
+      `gap: ${f.bounded ? 'bounded' : 'UNBOUNDED'}${f.isRootMiss ? ' · declared root never reached' : ''}`,
+    );
+    out.push(`      evidence: expected ${f.evidence.expected}, observed ${f.evidence.observed} (${f.evidence.location})`);
+    out.push(`      link: ${f.link ?? 'not captured — this slice does not read the object\'s url field'}`);
+  }
+  out.push('  no baseline state is printed: this slice computes none (spec §1.2).');
+
+  out.push('');
   out.push('──────── DISCLOSURES ────────');
   /* ADR-0006 decision 2 establishes that the truncation signal covers one
    * endpoint family and that the scan records which endpoints ran blind;
@@ -63,12 +84,65 @@ export function renderReport(r: ScanResult, opts: RenderOptions = {}): string[] 
 
   out.push('');
   out.push('──────── REPORT ────────');
-  out.push(`  disposition:      ${r.verdict.disposition}${r.verdict.disposition === 'disclaimed' ? '   ← NO SUMMARY VERDICT RENDERED' : ''}`);
-  out.push(`  coverage vector:  EMPTY — this slice implements no rule, so no rule has a coverage item (ADR-0011)`);
+  /* A SCAN THAT DID NOT RUN HAS NO DISPOSITION, AND MUST NOT PRINT ONE.
+   * deriveVerdict computes the disposition from gaps and violations, and a run
+   * that failed its identity call has neither — so it returns `unqualified`,
+   * which reads as a clean bill of health directly under "The scan did not run
+   * as declared. No coverage claim is made." ADR-0005 decision 3's three values
+   * describe a report of a scan that ran; exit 4 says this one did not.
+   * verdict.ts is frozen (spec §5), so the suppression is here. Same rule the
+   * findings section applies to baseline state: a value the run did not compute
+   * is a false claim whichever value it carries. */
+  out.push(
+    r.verdict.exit === 4
+      ? '  disposition:      none — the scan did not run as declared, so no disposition was formed'
+      : `  disposition:      ${r.verdict.disposition}${r.verdict.disposition === 'disclaimed' ? '   ← NO SUMMARY VERDICT RENDERED' : ''}`,
+  );
+
+  /* ADR-0011 decision 4. One row per rule over that rule's OWN coverage item,
+   * every figure carrying its unit, and the headline is the MINIMUM over the
+   * vector — never a mean, never a count pooled across rules, because counts of
+   * different things do not add. The vector is printed first and the headline
+   * second, because the headline may not be published without it. */
+  out.push('  coverage vector:');
+  if (!r.coverage.length) {
+    /* ADR-0011 decision 6: a rule with an empty applicable set leaves the
+     * vector. Every rule empty means the scan judged nothing, and that must not
+     * read as coverage. */
+    out.push('    (empty — no rule had an applicable subject; no coverage figure exists)');
+  }
+  for (const row of r.coverage) out.push(`    ${row.rule.padEnd(8)} ${formatRow(row)}`);
+  const headline = headlineCoverage(r.coverage);
+  out.push(`  headline:         ${headline ? `${formatRow(headline)} — the MINIMUM of the vector, set by ${headline.rule}` : 'none — the vector is empty'}`);
+
   out.push(`  funnel:           ${r.verdict.evaluated}/${r.verdict.applicable} resources evaluated · ${r.manifest.reached('fetched')}/${r.verdict.applicable} fetched   (unit: resources)`);
-  out.push(`  conformity:       withheld — no rule ran, so no invariant was tested`);
+  for (const [rule, o] of Object.entries(r.outcomes))
+    out.push(`  outcome ${rule}:   conformity ${o.conformity ?? 'ABSENT — the evaluated set is empty, so no verdict was formed'} · evidence ${o.evidence}`);
+
+  /* ADR-0005 decision 4: the conformity ratio and the coverage figure are
+   * published TOGETHER OR NOT AT ALL. Printing conformity alone is the Great
+   * Expectations defect — a suite in which half the expectations never ran can
+   * report 100%. A rule whose conformity is absent is excluded from the
+   * denominator rather than scored as a failure. */
+  const claimed = Object.values(r.outcomes).filter(o => o.conformity !== null);
+  out.push(
+    `  conformity ratio: ${
+      claimed.length
+        ? `${claimed.filter(o => o.conformity === 'conforms').length}/${claimed.length} rules conforming (unit: rules that reached a conformity claim)`
+        : 'none — no rule formed a conformity verdict, so there is no ratio'
+    }`,
+  );
   out.push(`  requests:         ${r.requestCount} · wall ${r.wallMs} ms   (NOT a validated budget — #7 owns that)`);
-  out.push(`  exit:             ${r.verdict.exit}   (${r.verdict.why})`);
+  /* THE UNIT IS APPENDED HERE BECAUSE THE REASON STRING DOES NOT CARRY ONE.
+   * deriveVerdict builds `why` as "…coverage 3/4 is below the declared
+   * threshold", a bare ratio, and spec criterion 6 and ADR-0011 decision 4 both
+   * forbid printing a figure without naming what it counts. verdict.ts is
+   * copied verbatim from a frozen prototype (spec §5), so the reason string is
+   * not edited here; the render layer names the unit instead. The real remedy is
+   * an ADR permitting the prototype and this file to diverge — filed as the
+   * follow-up on #43, not decided in it. The figures in `why` are RESOURCES:
+   * deriveVerdict is fed the funnel counts, which stage resources. */
+  out.push(`  exit:             ${r.verdict.exit}   (${r.verdict.why})   [figures in this reason are resources]`);
 
   out.push('');
   out.push('──────── CALLS MADE (read-only) ────────');

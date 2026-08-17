@@ -2,6 +2,13 @@
  *
  *   npx tsx CHECK-scan-scaffold.ts
  *
+ * UPDATED BY T2 (#43). This file was written when the slice implemented no rule.
+ * SYS001 now judges the resources the funnel delivered whole, so three
+ * assertions here changed and each carries a note saying what it used to assert
+ * and why the new value is the honest one. Nothing was deleted to make a test
+ * pass: the funnel, the denominator, the mutation check and the exit bytes are
+ * unchanged. SYS001's OWN behaviour is tested in CHECK-sys001.ts, not here.
+ *
  * No network, no .env, no token. Deterministic: the clock is injected and the
  * whole Notion surface is a fake NotionPort.
  *
@@ -15,13 +22,18 @@
  */
 
 import { parseConfig } from './config.js';
-import { PortError, type BlockListResponse, type NotionPort } from './notion-port.js';
-import { scan, NO_RULE_CAUSE } from './scan.js';
+import { scan } from './scan.js';
 import { renderReport } from './report.js';
 import { checkAgainstOracle } from './fixture-oracle.js';
 import { gapsFrom } from './manifest.js';
 import { hyphenate } from './ids.js';
-import type { Config } from './config.js';
+/* The fake Notion surface is shared with CHECK-sys001.ts — one fixture, so the
+ * two suites cannot drift into asserting against different workspaces. */
+import {
+  ROOT, PAGE_A, PAGE_B, DATASET,
+  childPage, childDb, page, cfg, clock, fakePort,
+  THREE_CHILDREN, MIDSTREAM, type FakeResource,
+} from './CHECK-fakes.js';
 
 let fails = 0;
 const check = (name: string, got: unknown, want: unknown) => {
@@ -30,59 +42,6 @@ const check = (name: string, got: unknown, want: unknown) => {
   console.log(`${ok ? 'PASS' : 'FAIL'}  ${name}: got=${got} want=${want}`);
 };
 const head = (s: string) => console.log(`\n== ${s} ==`);
-
-/* ------------------------------------------------------------ the fake -- */
-
-const ROOT = '2d41c2631b5945f196c5688cde44cdf9';
-const PAGE_A = '3bf1351d6af481108dc5dcc8bffb9742';
-const PAGE_B = '4ca2462e7bf592219ed6edd9c00ca853';
-const DATASET = '5db3573f8cf6a332afe7fee0d11db964';
-
-const childPage = (id: string, title: string) => ({ object: 'block', id, type: 'child_page', child_page: { title } });
-const childDb = (id: string, title: string) => ({ object: 'block', id, type: 'child_database', child_database: { title } });
-const para = (id: string) => ({ object: 'block', id, type: 'paragraph', paragraph: { rich_text: [] } });
-
-const page = (results: unknown[], extra: Partial<BlockListResponse> = {}): BlockListResponse =>
-  ({ results, has_more: false, next_cursor: null, ...extra });
-
-type Step = BlockListResponse | { throwStatus: number; throwCode: string };
-
-type FakeResource = { pageFail?: { status: number; code: string }; steps?: Step[] };
-
-function fakePort(spec: Record<string, FakeResource>, meFails = false): NotionPort {
-  return {
-    async whoami() {
-      if (meFails) throw new PortError(401, 'unauthorized');
-      return { name: 'workspace-lint-proof', type: 'bot' };
-    },
-    async retrievePage(id) {
-      const r = spec[id];
-      if (!r || r.pageFail) throw new PortError(r?.pageFail?.status ?? 404, r?.pageFail?.code ?? 'object_not_found');
-      return { id };
-    },
-    async listChildren(id, cursor) {
-      const r = spec[id];
-      if (!r?.steps) throw new PortError(404, 'object_not_found');
-      const i = cursor ? Number(cursor) : 0;
-      const step = r.steps[i];
-      if (!step) throw new PortError(404, 'object_not_found');
-      if ('throwStatus' in step) throw new PortError(step.throwStatus, step.throwCode);
-      return step;
-    },
-  };
-}
-
-const cfg = (id = ROOT, minCoverage = 1.0): Config => ({ version: 1, roots: [{ id, alias: 'wl-proof-fixture' }], minCoverage });
-const clock = () => { let t = 1000; return () => (t += 7); };
-
-/* The fixture as it actually is: a declared root with three children, one of
- * which is a data source this slice does not enumerate. */
-const THREE_CHILDREN: Record<string, FakeResource> = {
-  [ROOT]: { steps: [page([para('a1b2c3d40000400080000000000000ff'), childPage(PAGE_A, 'wl-outside-grant'), childPage(PAGE_B, 'wl-revoke-parent'), childDb(DATASET, 'wl-dataset')])] },
-  [PAGE_A]: { steps: [page([])] },
-  [PAGE_B]: { steps: [page([])] },
-  [DATASET]: { steps: [page([])] },
-};
 
 /* =========================================================================
  * TEST 1 — the config rejects a root it cannot address
@@ -127,8 +86,15 @@ check('the data source is IN the denominator', entry(DATASET) !== undefined, tru
 check('  and it stalled at enumerated', entry(DATASET)!.stages.has('fetched'), false);
 check('  with a named, specific cause', /data-source enumeration is not implemented/.test(entry(DATASET)!.cause), true);
 check('the two child pages were fetched', [entry(PAGE_A)!, entry(PAGE_B)!].every(e => e.stages.has('fetched')), true);
-check('NOTHING was evaluated — this slice implements no rule', r2.verdict.evaluated, 0);
-check('  and every fetched resource says so', /implements no rule/.test(entry(PAGE_A)!.cause), true);
+/* CHANGED BY T2. This read "NOTHING was evaluated — this slice implements no
+ * rule", want 0. SYS001 exists now and judges the three resources the funnel
+ * delivered whole. The data source is not one of them, which is the point. */
+check('the three delivered resources were evaluated by SYS001', r2.verdict.evaluated, 3);
+check('  and the data source was NOT — it stalled before fetched', entry(DATASET)!.stages.has('evaluated'), false);
+/* CHANGED BY T2. This asserted the "implements no rule" cause on a fetched
+ * page. That cause is gone from every path; a delivered resource now carries no
+ * cause at all, which is what makes it judgeable. */
+check('  a delivered resource carries no drop-out cause', entry(PAGE_A)!.cause, '');
 check('every gap names a resource and a cause', r2.gaps.every(g => g.resource.length > 0 && g.cause.length > 0), true);
 check('every gap is bounded — each missing resource is named', r2.gaps.every(g => g.bounded), true);
 check('disposition is qualified, not unqualified', r2.verdict.disposition, 'qualified');
@@ -183,15 +149,6 @@ check('a positive incomplete signal becomes a cause on the root', /request_statu
 
 head('TEST 4b — an enumeration that dies mid-stream is UNBOUNDED, so the run is disclaimed');
 
-const MIDSTREAM: Record<string, FakeResource> = {
-  ...THREE_CHILDREN,
-  [ROOT]: {
-    steps: [
-      page([childPage(PAGE_A, 'wl-outside-grant')], { has_more: true, next_cursor: '1' }),
-      { throwStatus: 502, throwCode: 'internal_server_error' },
-    ],
-  },
-};
 const r4c = await scan({ config: cfg(), port: fakePort(MIDSTREAM), now: clock() });
 check('the gap is UNBOUNDED — the remainder cannot be counted or named', r4c.gaps.some(g => !g.bounded), true);
 check('so the gap set is pervasive and the report is disclaimed', r4c.verdict.disposition, 'disclaimed');
@@ -233,7 +190,13 @@ const r6 = await scan({ config: cfg(), port: fakePort(THREE_CHILDREN), now: cloc
 const redacted = renderReport(r6, {}).join('\n');
 check('the default output contains NO page title, anywhere', TITLES.some(t => redacted.includes(t)), false);
 check('  and it names each resource by full ID instead', redacted.includes('3bf1351d-6af4-8110-8dc5-dcc8bffb9742'), true);
-check('  including in the gap list', /GAPS[\s\S]*3bf1351d-6af4/.test(redacted), true);
+/* CHANGED BY T2. This matched PAGE_A's ID inside the GAPS section. PAGE_A is
+ * evaluated now and is correctly absent from that section, so the assertion
+ * moved to the resource that IS a gap — the data source — and gained the
+ * findings section, which is new output and the likeliest place for a title to
+ * leak next. */
+check('  including in the gap list', /GAPS[\s\S]*5db3573f-8cf6-a332-afe7-fee0d11db964/.test(redacted), true);
+check('  and in the findings, by full ID', /FINDINGS[\s\S]*SYS001 {2}5db3573f-8cf6-a332-afe7-fee0d11db964/.test(redacted), true);
 
 const shown = renderReport(r6, { showTitles: true }).join('\n');
 check('--show-titles opts in, and then the titles appear', TITLES.every(t => shown.includes(t)), true);
@@ -301,5 +264,5 @@ function entryCause(r: Awaited<ReturnType<typeof scan>>, id: string): string {
 
 console.log('');
 console.log(fails === 0 ? `ALL CHECKS PASS` : `${fails} CHECK(S) FAILED`);
-console.log(`NO_RULE_CAUSE in force: ${NO_RULE_CAUSE}`);
+console.log('SYS001 is implemented (#43). This file covers the FUNNEL; CHECK-sys001.ts covers the RULE.');
 process.exit(fails === 0 ? 0 : 1);
