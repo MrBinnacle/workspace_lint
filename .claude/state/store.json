@@ -1,9 +1,9 @@
 {
   "project": "workspace_lint",
-  "updated": "2026-08-16",
-  "session": "S003",
+  "updated": "2026-08-17",
+  "session": "S004",
   "phase": "pre-build",
-  "phase_detail": "Grilling closed in S001. S002 built the gate-1 demand-test instruments and ran a nine-pass cross-domain prior-art sweep with adversarial verification. S003 spent that sweep: ADR-0005 supersedes three parts of ADR-0003, the glossary carries the split outcome model, and the refuted SARIF claim is corrected in PRODUCT.md. No source code. Build gate not open.",
+  "phase_detail": "Pre-build, but the 72-hour proof has RUN in part. S003 locked the outcome model (ADR-0005). S004 built the fixture and took first live readings. Three results changed the design: ADR-0002 decision 4 is inoperable as written, ADR-0005 decision 5 survived its Revisit-if, and the 'detectable hole' the completeness claim rested on was REFUTED. No source code. Build gate not open.",
   "next_gate": {
     "name": "demand test",
     "kind": "human",
@@ -33,8 +33,10 @@
     },
     {
       "id": "ADR-0002",
-      "status": "accepted",
-      "summary": "Coverage is measured against declared roots. Workspace-level coverage is not provable by any tool."
+      "status": "accepted, DECISION 4 INVALIDATED by the 2026-08-17 proof run — superseding ADR required",
+      "summary": "Coverage is measured against declared roots. Workspace-level coverage is not provable by any tool.",
+      "invalidation": "Decision 4 makes the ABSENCE of request_status from a paginated list response a hard error. Observed live at Notion-Version 2026-03-11: the field is absent from every normal response (data_sources query has_more true; block children has_more true; block children has_more false). The primary reference documents it as CONDITIONAL, emitted at the 10,000-result cap, with the prescribed test being positive: request_status.type === 'incomplete'. As written, decision 4 hard-errors every healthy scan. Decisions 1, 2, 3, 5 stand. Do NOT edit ADR-0002.",
+      "still_standing": "Coverage is measured against declared roots. An unreachable declared root is a hard coverage failure exiting 2. Every unresolvable reference is an explicit observation. The report states start and end times."
     },
     {
       "id": "ADR-0003",
@@ -59,7 +61,24 @@
       "evidential_standing": "Decisions 1-3 rest on adversarially re-verified primary sources (ISA 705 paras 5(a) and 17, XCCDF value list, OSCAL metaschema negative, SARIF schema, PCAOB AS 3105.45, ISO 19011 6.5.1 k, Semgrep enum). Decision 5's funnel shape rests on CONSORT 13a/13b, PRISMA 16b and STROBE 13 — fetched but NOT re-verified, adopted on three-way convergence. Re-verify clause numbers before publishing them."
     }
   ],
-  "corrections_pending": [],
+  "corrections_pending": [
+    {
+      "target": "docs/adr/0002 decision 4",
+      "claim": "Absence of request_status from a paginated list response is a hard error.",
+      "status": "INVALIDATED by live observation 2026-08-17",
+      "replacement": "Test positively: request_status.type === 'incomplete' means the query was cut off. Absence is neither an error nor proof of completeness — it is uninformative, which is the state ADR-0005's `unreached` exists to express.",
+      "urgency": "BLOCKS SCAN CODE. This rule sits on the healthy path.",
+      "evidence": "docs/proof/results.md section 1"
+    },
+    {
+      "target": "PRODUCT.md",
+      "claim": "The coverage claim as currently stated.",
+      "status": "OVERSTATED — narrowed by the 2026-08-17 proof run",
+      "replacement": "The tool proves coverage of declared roots and resolves links. It CANNOT see permission removal below a declared root: a revoked child vanishes from the parent's child list entirely. Say what is provable and stop there.",
+      "urgency": "Before the claim is put in front of a buyer.",
+      "evidence": "docs/proof/results.md section 4"
+    }
+  ],
   "corrections_applied": [
     {
       "target": "PRODUCT.md",
@@ -94,6 +113,19 @@
   ],
   "open_decisions": [
     {
+      "id": "request-status-handling",
+      "detail": "Write the ADR superseding ADR-0002 decision 4. Positive test for request_status.type === 'incomplete'; absence is uninformative, not an error. Decide also how an uninformative response maps onto ADR-0005's evidence-sufficiency axis — it is not `sufficient` and it is not `unreached`.",
+      "due": "BEFORE any scan code. The current rule hard-errors the healthy path.",
+      "needs": "superseding ADR",
+      "evidence": "docs/proof/results.md section 1"
+    },
+    {
+      "id": "product-claim-narrowing",
+      "detail": "PRODUCT.md overstates coverage. Provable: declared-root coverage plus link resolution (REF001, now the load-bearing mechanism). Not provable: anything about permission removal below a declared root, which is silent. This is partial evidence for the wildcard objection in coverage-artifact-prior-art.md section 5.1 — the boundary may be smaller than claimed.",
+      "due": "before the demand test puts the claim in front of a buyer",
+      "evidence": "docs/proof/results.md section 4"
+    },
+    {
       "id": "configuration-status-accounting",
       "detail": "Is the coverage manifest a per-scan artifact or a standing record fed by each scan? MIL-HDBK-61A shows audit outputs flowing back into a standing record of what is under management. If the manifest is produced per scan and discarded, coverage claims can be asserted once but never checked over time.",
       "status": "DEFERRED by ADR-0005, deliberately. It is a storage decision, not a model decision, and its source is unverified.",
@@ -119,19 +151,21 @@
   ],
   "api_target": {
     "notion_version": "2026-03-11",
-    "requirement": "must carry request_status; its absence from a paginated list response is a hard error, never evidence of completeness",
+    "requirement": "CORRECTED 2026-08-17. request_status is CONDITIONAL, not guaranteed. It is absent from normal responses at Notion-Version 2026-03-11. Test positively for request_status.type === 'incomplete'. Never treat its absence as an error, and never as proof of completeness.",
     "rate_limit_verified": "average of 3 requests per second per connection; workspace ceiling scaled to plan, amount undisclosed",
-    "admin_content_search": "Enterprise-only, reaches private pages, exports CSV — but it is a search, not an enumeration. Kill criterion 'Notion ships first-party coverage certification' did not fire."
+    "admin_content_search": "Enterprise-only, reaches private pages, exports CSV — but it is a search, not an enumeration. Kill criterion 'Notion ships first-party coverage certification' did not fire.",
+    "notion_version_verified": "2026-03-11 returns HTTP 200 on /v1/users/me — the pin is valid.",
+    "permission_filtering": "A page disconnected under a connected parent DISAPPEARS from GET /v1/blocks/{parent}/children. It is not listed-but-unreadable. Verified 2026-08-17 with a full-access control confirming the page still exists at the same ancestor path. An unconnected page returns 404, not 403."
   },
   "unknowns_assigned_to_proof": [
-    "Does a child_page block stay visible after the child's access is revoked?",
-    "Does a property ID survive a property type change?",
-    "Is result order stable across two identical paginated calls?",
-    "Does the ~11,200-object search ceiling still hold?",
-    "Is Semgrep's `skipped` output verbose-gated? The CLI reference does not say; test empirically.",
-    "Do `unreached` and `undecidable` ever diverge in practice? Test against a workspace with a deliberately unshared subtree. If they never separate, collapse evidence sufficiency to `sufficient | insufficient` and push the cause taxonomy entirely into the manifest. This is ADR-0005's first Revisit-if.",
-    "Can enumeration and fetching be separated against the real API? ADR-0005's five-stage funnel puts `enumerated` between resolved and fetched because it is the only source of unbounded gaps. If the API does not distinguish them, the `disclaimed` disposition loses its trigger and needs a different one.",
-    "How often does `disclaimed` fire on a real workspace? If a pervasively gapped scan is the normal case rather than the exception, a tool that usually refuses to render a verdict is not usable, and ADR-0002's declared-root model needs revisiting before ADR-0005 does."
+    "ANSWERED 2026-08-17 — NO. A child_page block does NOT stay visible after the child's access is revoked; it vanishes from the parent's child list. The 'detectable hole' does not exist.",
+    "Does a property ID survive a property type change? UNTESTED — the fixture has TYPE_CHANGE_PROP=Status ready.",
+    "ANSWERED 2026-08-17 — provisionally YES. Two identical paginated queries returned the same 100 IDs in the same order. Fixture-confounded by bulk-created timestamps; re-run against real content before settling.",
+    "Does the ~11,200-object search ceiling still hold? UNTESTED — needs a workspace larger than any hand-built fixture.",
+    "Is Semgrep's `skipped` output verbose-gated? UNTESTED — a local Semgrep CLI test, nothing to do with Notion.",
+    "Do `unreached` and `undecidable` ever diverge in practice? UNTESTED. Note the fixture can no longer produce a permission-caused unreached inside a declared root — that route is closed. Rate limits and abandoned pagination are the remaining routes.",
+    "ANSWERED 2026-08-17 — YES, enumeration IS separable from fetching. A 151-block page paged 100 + 51 with has_more and next_cursor. ADR-0005's second Revisit-if does not fire; decision 5 stands.",
+    "How often does `disclaimed` fire on a real workspace? UNTESTED — needs REAL_ROOT_ID."
   ],
   "research": {
     "location": "docs/research/",
@@ -139,7 +173,8 @@
     "s002_synthesis": "docs/research/coverage-artifact-prior-art.md",
     "s002_raw_corpus": "docs/research/sweep-raw/ — 9 scout reports plus 2 verification passes, verbatim and unverified except where a verification file says otherwise",
     "s002_verification": "16 keystone claims re-verified: 6 confirmed, 9 partial, 1 misattributed, 0 fabricated",
-    "known_blind_spot": "Research agents cannot reach Reddit; community.notion.so and forum.notion.so no longer resolve. This is a limitation of the tooling, NOT of the channel — the operator reaches Reddit and has converted a buyer there. Evidence still skews toward people who publish."
+    "known_blind_spot": "Research agents cannot reach Reddit; community.notion.so and forum.notion.so no longer resolve. This is a limitation of the tooling, NOT of the channel — the operator reaches Reddit and has converted a buyer there. Evidence still skews toward people who publish.",
+    "refuted_sources": "docs/research/notion-api-practice.md section 5.2 'Detectable hole' is REFUTED by direct observation 2026-08-17. It was rated (C) and self-flagged as the highest-value item to verify. The rest of that file has not been re-verified and one of its two headline claims was false — treat the remainder as suspect until checked."
   },
   "citation_hazards": [
     "ISO 19011:2018 was read from a site hosting a complete unauthorised copy including its intact copyright page. Wording and clause numbers are genuine and verified. The URL must never appear in a published artifact. Cite the clause and link the ISO catalogue.",

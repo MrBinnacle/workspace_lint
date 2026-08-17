@@ -1,5 +1,74 @@
 # Checkpoint — workspace_lint
 
+## S004 — 2026-08-17 — The proof ran and spent three standing beliefs
+
+**PHASE:** Pre-build, but the 72-hour proof is no longer hypothetical. Four of eight proof questions now have answers. Still no source code. Build gate still closed — and one of the findings is a reason not to open it yet.
+
+**TESTS:** None. No toolchain. Not a gap.
+
+**ALL WORK MERGED TO `main`.** PR #12 (`ebdae1b`) plus eight direct commits, ending `4d80b1a`. Nothing in flight.
+
+### The three findings, in order of cost
+
+**1. ADR-0002 decision 4 is inoperable. It blocks scan code.**
+Decision 4 makes the *absence* of `request_status` from a paginated list response a hard error. Observed live at `Notion-Version: 2026-03-11`: the field is absent from **every** normal response — data-source query with `has_more: true`, block children with `has_more: true`, block children with `has_more: false`. The primary reference documents it as **conditional**, emitted at the 10,000-result cap, and prescribes a *positive* test: `request_status.type === "incomplete"`. As written, decision 4 hard-errors every healthy scan and never fires on a degraded one. The intent was right; the mechanism is inverted. ADR-0002 is **not** edited — decisions 1, 2, 3 and 5 stand.
+
+**2. The detectable hole does not exist. This is the expensive one.**
+`docs/research/notion-api-practice.md` §5.2 claimed a `child_page` block stays visible with ID and title even when the page 404s — *"a named, enumerable hole"* — and flagged itself as *"the highest-value item to verify directly in the 72-hour proof, because a completeness proof would rest on this mechanism."* **Refuted.** After disconnecting `wl-revoke-child`, the parent returns 2 blocks instead of 3 and the `child_page` block is gone; the child 404s on `/pages`, `/blocks` and `/blocks/children`. Control via the full-access connector: the page still exists at the same ancestor path, so the list is permission-filtered, not structurally changed. §5.2's "detectable" and "undetectable" holes are one case.
+
+**3. ADR-0005 decision 5 survived its Revisit-if.**
+A 151-block page paged as 100 + 51 with `has_more` and `next_cursor`, totalling exactly 151. Enumeration **is** separable from fetching, so the five-stage funnel's `enumerated` stage has an API basis and an unbounded gap is detectable. No change needed.
+
+### What the refutation does to the product claim
+
+**Survives:** ADR-0002's declared-root model. *"Everything you declared was read"* is still provable, because the operator supplies the denominator.
+
+**Promoted:** **REF001 is now the load-bearing coverage mechanism.** A *link* to an inaccessible page survives revocation, because links live in page content rather than in the permission-filtered child list. Confirmed — `wl-outside-grant` is linked from readable content and returns 404. That 404 also confirms Principle 3's premise directly: an unconnected page returns 404, not 403.
+
+**Narrows:** inside a declared root, `unreached` arises only from rate limits, budget exhaustion, or abandoned pagination — **never** from permissions. Permission removal below a declared root is silent: the scan cannot count it, name it, or report it.
+
+**The rule that came out of it:** the coverage manifest can only name what the operator declared, or what the tool successfully enumerated. Nothing else is expressible.
+
+**Strategic cost, stated plainly.** This is partial evidence for the wildcard objection in `docs/research/coverage-artifact-prior-art.md` §5.1 — *"what I could not see may reduce to everything you did not give me."* It does not carry the objection all the way. It does mean `PRODUCT.md` overstates the claim and must be corrected before a buyer sees it.
+
+### One inference was withdrawn mid-session
+
+From the operator's screenshot of Notion's disconnect dialog, it was written into `docs/proof/fixture.md`, this checkpoint and a gate event that `unreached` inside a declared root is reachable by permissions. The API refuted it the same day. The paragraph carrying that inference also carried the label *"UI capability CONFIRMED; API consequence OPEN"* — the label was right and the inference beside it was not. **A UI affordance is not an API behaviour, and the label is not the safeguard; making the request is.**
+
+### Also landed
+
+- `scripts/setup-proof-fixture.sh` — hardened three times after real failures: a TTY guard with a `/dev/tty` fallback, non-empty prompts, a y/n gate with no default, and a token that is verified against `GET /v1/users/me` before it is written. Its remaining job is small; the fixture already exists.
+- `docs/proof/fixture.md` — what exists, built how, and which measurements the build method could distort.
+- `docs/proof/results.md` — the run, with every claim traced to a call.
+
+### BLOCKERS
+
+**One is new and it is technical.** `request_status` handling must be decided before scan code, because the current rule sits on the healthy path.
+
+**Gate 1 is unchanged.** Five teams. Instruments written and waiting in `docs/demand-test/`. It advances when the operator sends. The Reddit diagnosis is the first send.
+
+### EXACT NEXT STEPS
+
+1. **ADR-0006, superseding ADR-0002 decision 4.** Positive test for `request_status.type === "incomplete"`. Decide also where an *uninformative* response sits on ADR-0005's evidence-sufficiency axis — it is neither `sufficient` nor `unreached`, and that gap is real.
+2. **Correct `PRODUCT.md`.** State what is provable — declared-root coverage plus link resolution — and stop there. Working in `store.json` → `corrections_pending`.
+3. **Re-verify the rest of `notion-api-practice.md`.** One of its two headline claims was false. The remainder is untested and should be treated as suspect.
+4. **Finish the cheap proof questions.** Property-ID survival across a type change is ready to run — `TYPE_CHANGE_PROP=Status` in `.env`. Q3 needs a re-run against real content.
+
+**NEXT-MODEL:** frontier model. Step 1 is a superseding ADR and step 2 restates the product's central claim after a refutation. Both are judgment under changed evidence. Steps 3 and 4 are mechanical and could go to the fast tier in a **separate** session — do not straddle the tiers in one.
+
+**NEXT-REPO/CWD:** `C:\Users\mlpgr\2026_Projects\workspace_lint`
+
+### Standing cautions carried forward
+
+- **`.env` holds a live read-only Notion token.** Gitignored. Eleven of twelve values filled — `REAL_ROOT_ID` is the only empty one, deliberately, and Q8 stays unmeasured until it is set.
+- **The fixture is mutable and is an instrument.** Editing rows, blocks or titles by hand changes what the proof measures. `wl-revoke-child` is currently disconnected — restoring it resets Q1.
+- **Q3's stability result is provisional**, confounded by bulk-created timestamps. Do not promote it without a re-run against organic content.
+- **Q4 and Q5 remain out of reach** of any hand-built fixture — Q4 needs a workspace over 11,200 objects; Q5 is a local Semgrep CLI test.
+- **ADRs are never edited in place.** Refuted claims standing in ADR-0002 and ADR-0003 are correct, not bugs.
+- **Citation hazard unchanged.** ISO 19011 and ISA 705 were read from unauthorised copies. Cite by clause; publish no URL.
+
+---
+
 ## S003 — 2026-08-16 — ADR-0005 locks the outcome model; the 72-hour proof is unblocked
 
 **PHASE:** Pre-build. No source code. Build gate still closed. The sweep banked in S002 was spent into one decision.
