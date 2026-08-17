@@ -61,6 +61,18 @@ read this block instead. Nothing here depends on a band still being present.
   states the axis without the conjunct and restates exit `0` as *every rule* at or above the floor.
   With the conjunct, a sub-threshold rule with an empty gap list exited `0` while the reason string
   claimed every rule cleared the threshold.
+- **ADR-0013 supersedes NO ADR and EXTENDS ADR-0006 decision 5.** It adds a component the outcome
+  model never had: survey methodology splits errors of nonobservation into sampling, **coverage** and
+  nonresponse; `unreached` and `undecidable` cover two and coverage error had no axis. **The missing
+  component may never be rendered as a number** — two independent literatures, decision 3. An
+  unattested enumeration is **not a Gap** and enters no ratio, vector or pervasiveness test. The rule
+  is **"no call, no residual", NOT "never both"**: a partial enumeration is legitimately both.
+  ADR-0006 decision 5's blind-endpoint disclosure **stands and still ships** — the register is the
+  per-resource layer beneath it, and the reason a second layer was warranted is that decision 5's
+  disclosure **was already shipping when the false green shipped**.
+- **`CONTEXT.md` now carries SEVEN settled defaults and SEVEN glossary distinctions.** The seventh
+  default is the tool-competence rule from #35; the seventh distinction is *a residual is not a gap*.
+  Both counts were stale-by-one in the file's own prose before this session and are now correct.
 - **ADR-0006 decision 2's search row is superseded by ADR-0007.** Cite ADR-0007's table.
 - **ADR-0005's evidential floor is uneven and the ADR says so.** Decision 5's funnel rests on CONSORT,
   PRISMA and STROBE clauses **fetched but never re-verified**.
@@ -68,6 +80,16 @@ read this block instead. Nothing here depends on a band still being present.
 
 **Research method.**
 
+- **`docs/research/` has an INDEX.md as of 2026-08-17 (#54). Start there, not at the directory.**
+  Twelve files, one line each: the question it answers and what it refutes. Two entries carry notes
+  rather than rows — `notion-live-probe.md` holds **observations** but is documented-tier and that is
+  **not** a misfiling (it ran through an OAuth connector and ADR-0004 says it "does not clear the REST
+  path"); and `unseen-population-sizing.md` vs `frame-completeness-prior-art.md` answer **different**
+  questions — *how big is the gap* versus *may the frame be called sufficient* — which nearly produced
+  a duplicate sweep.
+- **WebSearch is exhausted at 200/200 and has been since before the ADR-0013 sweep.** `WebFetch` and
+  the Scholar Gateway MCP still work. Scholar Gateway's corpus is **Wiley**, so ACM/VLDB/IEEE
+  literature is out of reach and must be recorded **not checked**, never absent.
 - **Citations are receipts.** A claim carries a locator a third party can follow — URL plus fetch date,
   file plus **section heading**, commit SHA, clause number. Never a line number written as a section.
 - **A negative about an endpoint requires that endpoint's own page**; **a claim about a model requires
@@ -145,8 +167,11 @@ without a triage-role label**, reading the roles from `docs/agents/triage-labels
   **#8, the npm name, is still the only thing between this branch and `main`** — `CONTEXT.md`
   requires it "before the first `package.json`", and a private unpublishable package does not
   consume it.
-  Suite: `cd slice && npm run check` — **six files, 38 + 56 + 92 + 124 + 89 + 50 = 449 assertions,
-  offline, no network, no token**. Live: `npx tsx cli.ts scan --config ../wl.config.json --oracle`,
+  Suite: `cd slice && npm run check` — **eight files, 38 + 56 + 92 + 124 + 89 + 50 + 76 + 21 = 546
+  assertions, offline, no network, no token**. **`tsconfig.json` is now a GLOB (`*.ts`), not a
+  hand-kept list** — it was an explicit 26-entry `include` and a new file was silently untypechecked
+  (#55). `CHECK-suite-registration.ts` is the control for the `check` script, which a glob cannot fix.
+  Live: `npx tsx cli.ts scan --config ../wl.config.json --oracle`,
   after `npx tsx make-fixture-config.ts [ENV_KEY]` writes the gitignored config from `.env` —
   **the key argument is how the live exit-byte table was produced.**
 - **`prototypes/verdict.ts` NO LONGER EXISTS** (ADR-0012 decision 1). There is **one** executable
@@ -205,6 +230,139 @@ of the close ritual still runs; the ritual line records `verdict=n/a`.
 ---
 
 ---
+
+## S018 — 2026-08-17 — the outcome model was one component short, and the byte now carries its own limitation
+
+**PHASE:** **BUILD, past the tracer bullets.** Three phases: **#35** (ADR-0013), **#52** (the residual
+register), and a four-issue documentation-and-instrument sweep (**#39, #53, #54, #55**).
+**Seven issues closed: #35, #39, #52, #53, #54, #55** — and **#25 deliberately left OPEN**, because it
+is the counter and closing it deletes the record.
+
+**TESTS:** `tsc --noEmit` clean on TypeScript 7.0.2. **546 offline assertions across EIGHT suites**
+(38 + 56 + 92 + 124 + 89 + 50 + 76 + 21), no network and no token. **Twelve mutation checks this
+session, each scored on the EXIT CODE** — nine on the residual register, three on the new suite
+control. **Deref: see the ritual line.**
+
+**COMMITTED:** `0934a2b` (ADR-0013 + `CONTEXT.md` + the sweep), `bdee71e` (#52), `d7095fa` (#39/#54/#55),
+`2bbcff6` (#53). **Nothing merged to `main`. Nothing pushed.**
+
+### ADR-0013 — the model was one component short, and the missing one may never be a number
+
+**#35 held two questions with different answers.** The rule as filed — *a denominator is never built
+from the subset the tool can handle* — is about **tool competence** and is a **consequence of ADR-0005
+decision 5 honestly applied**, so it became `CONTEXT.md`'s **seventh settled default**. The live
+reproduction attached to the issue **satisfies that rule and still exits `0`**; that is **frame
+fidelity**, and it got the ADR.
+
+**The §0.5 sweep had never been run for this question.** Grep over `docs/`, `CONTEXT.md` and
+`PRODUCT.md` returned **zero** hits for `coverage error`, `undercoverage`, `sampling frame`,
+`verification bias`, `STARD`, `defeater`, `Motro`, `Razniewski` — across twelve ADRs. Three of four
+domains returned, recorded at `docs/research/frame-completeness-prior-art.md`:
+
+- **Survey methodology splits errors of nonobservation into sampling, coverage and nonresponse.**
+  `unreached` is the nonresponse analogue and `undecidable` the measurement analogue. **Coverage error
+  had no axis at all.** ADR-0005 exists because ADR-0003 was "one dimension short and mixed two axes";
+  this is the same finding one level up.
+- **The missing component cannot be measured**, by two independent literatures — survey methodology by
+  definition, and the repo's own capture-recapture sweep by estimator mechanics. **So it may never be
+  rendered as a ratio, a percentage or an estimate.** That is decision 3, and it forecloses inventing a
+  coverage adjustment before an implementation invents one.
+- **The induced bias runs in the flattering direction.** Kosinski & Barnhart 2003, Crossref-verified
+  abstract: restricting to the verified subset means *"sensitivity would often be higher… than the
+  true values."*
+
+**All ten DOIs resolved against Crossref.** Quote status is tabulated **per quote**. The Groves
+*"can never be measured"* clause is **second-hand via Pont** and labelled so; the prohibition survives
+without it. **`Motro` and `Razniewski & Nutt` on query completeness over incomplete databases is the
+closest formal analogue and is recorded NOT CHECKED** — ACM/VLDB, out of a Wiley corpus, WebSearch
+exhausted at 200/200.
+
+### #52 — the register ships, and exit 0 over a filtered child list is still exit 0
+
+Live, `REVOKE_PARENT_ID`:
+
+```
+outcome SYS001:  conformity conforms · evidence sufficient · attestation unattested
+exit:            0
+byte basis:      compared 1/1 resources (100.0%) … · 1 residual(s): the enumerations
+                 behind this figure could not be verified complete
+```
+
+**The byte did not move and must not.** ADR-0013 discloses the false green; it does not close it.
+What changed is that the byte and its limitation are one line apart instead of two sections apart.
+`FIXTURE_ROOT_ID` still exits `3` with `ORACLE MATCHED` and 3 residuals; two `--deterministic` runs are
+byte-identical at **3554 bytes**.
+
+### Five findings this session cost, each earned by something a green gate could not see
+
+- **A mutation that stays GREEN names dead code, and the signal is the mutation that does not fire.**
+  M7 deleted the line deciding whether an enumeration produces a residual at all; the 515-assertion
+  suite stayed green, because the `attested` branch was **unreachable from any fixture**.
+  `attestationOf(SEARCH)` bought nothing observable. TEST 8 reaches it with a hand-built `Manifest`.
+- **The typecheck gate had a hole, and it is the same shape as the product's own defect class.**
+  `slice/tsconfig.json` listed its files explicitly, so `CHECK-residuals.ts` was **silently
+  untypechecked** — `tsc --noEmit` exited `0` over a file referencing five exports that did not exist,
+  and **the TDD red state was invisible for one command.** Both gates here are list-driven;
+  `npm run check` fails safer only because a missing suite shows in the assertion count. Closed by a
+  glob plus `CHECK-suite-registration.ts`, whose own bootstrap hole is stated in the file.
+- **The report denied a call its own log recorded.** A root whose children call 404s writes no
+  enumeration record, so the report printed *"no enumeration was performed"* four sections above
+  `404 object_not_found GET /v1/blocks/root/children`. Reworded to *"no enumeration produced a
+  listing"*, true of both cases.
+- **A count documented as one unit while computed in another.** The residual count was described as a
+  count of **calls**; it is a count of **resources**. `MIDSTREAM` makes 3 block-children calls and
+  yields 2 residuals. The value was right and the justification was wrong, across three surfaces, and
+  the test passed only by accident of a fixture that fits every listing in one page.
+- **An unamended quotation is the same defect wearing a citation.** #39's DoD asked for ADR-0008
+  decision 2's exit table to be *quoted*. Quoting it verbatim would have shipped a **superseded**
+  contract — ADR-0011 decision 5 restated its exit-`0` row and ADR-0012 decision 7 dropped the `gaps`
+  conjunct from exit `3`.
+
+### The failure worth carrying hardest: I filed a phantom issue
+
+**#53 was filed from the S016 band without opening the spec.** Both its defects had been fixed under
+ADR-0012's gate in `8dd2d36`, with the corrections *and their reasoning* written into the file. **Two
+of its three DoD items were complete before the issue existed.** One command — `git log -- <file>` —
+would have shown it.
+
+This is the project's own recorded failure mode firing again. The prior instance carried **#14** as a
+blocker for **three sessions**; this one took **one session** and wrote to the **tracker**, where a
+phantom issue looks exactly like real work. Memory updated with the variant.
+
+### BLOCKERS
+
+**None for building.** The remaining queue is decisions and research, not code.
+
+### EXACT NEXT STEPS
+
+**Ten issues open. Six are mine, four are not.**
+
+1. **#51 and #50 and #24 — decide together or say why not.** All three are v0.1 scope questions in one
+   family: whether REF001's port widens to retrieve a data source (#51), whether ADR-0005 decision 2's
+   applicability filter ships (#50), and whether v0.1 calls `POST /v1/search` at all (#24). **#24 is
+   upstream of ADR-0013's `attested` branch**, which is dead code until something calls search.
+2. **#19** then **#18** — two new specs, `docs/spec/`, both gated. Neither depends on 1.
+3. **#27** — the Developer Platform gap. **WebSearch is exhausted**, but `WebFetch` reaches
+   `developers.notion.com` directly, so the documentation half is doable; the observation half needs
+   the fixture.
+4. **#25 stays OPEN as the tripwire.** Verified this session: n is still **2**. Neither ADR-0012 nor
+   ADR-0013 contradicts a research file. **Re-check the count when the next ADR lands** — at three, its
+   own recommendation inverts and the hook gets installed.
+5. **Four are not mine.** **#8** (npm name — still the only thing between this branch and `main`),
+   **#7** (needs the integration connected to `REAL_ROOT_ID`), **#29** (buyer, needs demand evidence),
+   and **#25**'s eventual go/no-go.
+
+**NEXT-MODEL:** **fast tier.** The next head is #51/#50/#24 as one scope decision, and #19/#18 as two
+specs. All five are separable execution mechanics against decisions already made — no ADR is expected,
+and every governing decision is written. **Do not straddle:** if the session instead opens an ADR
+(most likely from #24, if search turns out to change the coverage model), that is architecture and
+belongs on frontier in its own session. Pick one before starting.
+
+**NEXT-REPO/CWD:** `C:\Users\mlpgr\2026_Projects\workspace_lint` — single repo; state, plan and resume
+ritual all at the root. The build lives on `build/t3-ref001` in this same clone.
+
+**NO SELF-ASSESS LINE, BY OPERATOR RULING 2026-08-17.** The ritual line records `verdict=n/a`.
+
 
 ## S017 — 2026-08-17 — the tracer-bullet sequence closes, and the red test found a false green the product cannot detect
 
