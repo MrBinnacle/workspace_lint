@@ -50,6 +50,8 @@ The working tagline "CI for Notion workspaces" undersells this. The product is a
 
 **Primary: whoever must prove a structural claim about a Notion workspace to someone else.** Regulated organizations, and teams whose Notion databases feed production systems. The distinguishing trait is not workspace size or tidiness; it is that a wrong answer has a named cost and an audience.
 
+*Primary is not the same as first, and this file has now been bitten once by the difference.* Gate 1 closed on framing 2, the zero-config decay report, as the **entry point**. This buyer is who the declared rules serve once someone already runs the tool — the position "The config file is the suspect, not the segment" reaches independently. A reader who treats this paragraph as naming the acquisition target reproduces the defect issue #40 recorded.
+
 **Named as likely, not established:** consultants auditing client workspaces. `docs/research/notion-user-pain.md` recommends this segment, because it is the only one where frequent testable pain and *behavioural* willingness to configure appear in the same person — one practitioner already hand-writes structural rules as Notion formulas. The counter-argument is live: a consultant billing hourly has an incentive against a tool that mechanizes billable hours, and the willingness case rests on two named individuals.
 
 **Explicitly excluded:** anyone who wants the tool to decide what the workspace should mean. The product checks declared rules. It supplies no governance judgement.
@@ -107,19 +109,29 @@ Buildability is the smaller risk. That nobody will pay for a coverage proof is t
 
 ## Gates, in order
 
-1. **Demand test.** Ask five teams holding audit-relevant data in Notion what they do today to prove that workspace is complete. If the answer is "we moved that data out of Notion," stop before writing code. This gate is cheaper than the proof and it gates the proof.
+1. **Demand test. CLOSED 2026-08-17, on owner research rather than on a five-team send.**
 
-   It must test **three** framings separately, because the research cannot distinguish them:
+   *(Corrected. The gate previously read "ask five teams holding audit-relevant data in Notion what they do today to prove that workspace is complete." That wording recruits only the buyer for framing 3 below. Every respondent would have confirmed framing 3, and the gate would have returned no information about the fork it exists to settle — while the recruiting note below records that recruitment runs through direct contacts, the configuration most likely to manufacture agreement. The defect was internal to this file. "The config file is the suspect, not the segment" already concludes that declared rules "are not the entry point," and the Gates section went on recruiting the entry point from the buyer that section had abandoned. Filed and closed as issue #40.)*
+
+   **What closed it.** `docs/inputs/decay-causal-synthesis-2026-08-16.md`, the owner's causal synthesis of workspace decay, derived from Reddit discussion no research path in this project could reach. It supplies the mechanism, the named cost — trust collapse, then routing around the workspace into Slack, Drive and personal notes — and the objection the product must answer: a config-driven linter is itself a maintenance tax, levied on people who by that account cannot pay one. `.claude/state/store.json` records that the owner reaches Reddit and has converted a buyer there. `docs/research/solo-segment-evidence.md` concedes that its own NO "may be a verdict on the config file, not on the segment."
+
+   **What it decided.** Framing 2 is the entry point. Framing 1 is not. Framing 3 is what declared rules serve once a user is already running the tool.
+
+   The three framings stand as written, because they are what the build now targets:
 
    1. **Configured** — "declare your rules, get a verdict." The framing the PRD assumes, and the one `docs/research/solo-segment-evidence.md` indicts.
    2. **Zero-config decay report** — "run one command, get what is stale, abandoned, duplicated, and over-complex, with links." Costs the user nothing before it returns something.
    3. **Coverage proof** — "run one command, get a defensible statement of what was and was not read." The wedge, and the one no competitor and no agent can supply.
 
-   A NO on 1 with a YES on 2 or 3 is a live outcome. It changes what gets built, not whether.
+   The outcome was a NO on 1 with a YES on 2. That changed what gets built, not whether — which is what this gate existed to establish.
 
-   Ask about trust and re-work, not tidiness. The question that finds the cost is "when did you last act on something in Notion that turned out to be wrong, and what did that cost" — not "is your workspace messy."
+   **The two limits, stated rather than left implicit.** First, the evidence is a synthesis carrying reasoning rather than URLs. The seven sweeps in `docs/research/` carry URLs and dates, and where the two disagree on a **fact** the sweep wins; the synthesis is the better account only of **mechanism**. Its own header says so. Second, **no willingness-to-pay figure exists for any of the three framings.** This gate established which framing is the entry point. It did not establish a price, and nothing downstream may read it as having done so — `docs/research/competitive-landscape.md` still records that deterministic linters monetize at zero.
 
-   Recruiting note: `community.notion.so` and `forum.notion.so` no longer resolve, and Reddit was unreachable from every research path attempted. The obvious venues for finding these five teams are gone or blocked. Expect to reach them through direct contacts.
+   *Revisit if:* the built slice reaches real users and framing 2 does not return the value this synthesis predicts. That is a product finding rather than a research finding, and Gate 4 is where it surfaces.
+
+   Carry forward into Gate 4: ask about trust and re-work, not tidiness. The question that finds the cost is "when did you last act on something in Notion that turned out to be wrong, and what did that cost" — not "is your workspace messy."
+
+   **The instruments are unsent, and kept as a record rather than deleted.** `docs/demand-test/outreach.md`, `screener.md` and `questionnaire-2026-08-16.md` describe how this gate was going to be tested. `community.notion.so` and `forum.notion.so` no longer resolve, and Reddit was unreachable from every agent path attempted — but not from the owner. That asymmetry is why the research exists and the send did not happen.
 2. **72-hour API proof.** Can the official API support a complete-against-declared-roots, deterministic, useful scan? Checklist in `docs/inputs/prd-2026-08-16.md`, amended by the four tests below.
 3. **Build**, at n=1 against this workspace, which is the only fixture available.
 4. **Release gate**, at n=3: three technically capable Notion owners, each finding at least one defect that changes a repair decision.
@@ -149,7 +161,8 @@ From the PRD, with two additions and one correction.
 - The baseline cannot retain stable identity after normal page moves or renames.
 - The privacy contract requires page-body persistence or unapproved third-party transmission.
 - The useful product reduces to a one-off script for this workspace.
-- **New:** the demand test finds no team that must prove a structural claim to a third party.
+- ~~**New:** the demand test finds no team that must prove a structural claim to a third party.~~ **Superseded 2026-08-17, when Gate 1 closed on framing 2.** This criterion killed the project on the failure of framing 3 — the buyer the product section had already ruled out as the entry point. It would have stopped the work on a fork the product had abandoned. Kept visible rather than deleted, per this file's convention. Replaced by the criterion below.
+- **New, replacing the criterion above:** the zero-config surface returns nothing a workspace owner recognises as a defect worth repairing. The countable signals are listed under "The config file is the suspect, not the segment." If a first run against a real decayed workspace produces a report its owner reads as noise, the entry point has failed, and no configured rule set rescues it — configuration is the cost this framing exists to avoid.
 - **New:** Notion ships first-party coverage certification. This would remove the only differentiator no competitor currently holds.
 
 ## Rule catalogue gaps

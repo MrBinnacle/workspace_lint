@@ -15,15 +15,30 @@ assertion.
 2. **`PRODUCT.md`** at the repo root — the user, the job, the gates, the kill criteria. Canonical.
 3. **`docs/adr/`** — read the ADRs touching the area you are about to work in. Accepted decisions,
    **never edited in place**; a superseding ADR is the only instrument.
-4. **`docs/spec/`** — per-rule behavioural specs. Read the spec for any rule you are about to
-   implement or change. Edited in place.
+4. **`docs/spec/`** — behavioural specs. Two kinds: **per-rule** (`REF001-link-recognition.md`) and
+   **per-slice** (`v0.1-scan-slice.md`, the executable cut of decisions already made). Read the spec
+   for any rule or slice you are about to implement or change. Edited in place.
 5. **`docs/research/`** — the evidence the ADRs were built from. **Read before asserting any factual
    claim, not after.**
 6. **`docs/proof/`** — what the API actually did when asked. Outranks everything above it on any
    question of fact.
+7. **`docs/inputs/`** — external artifacts, **none canonical**. Read them; never cite one as
+   authority. Read `docs/inputs/decay-causal-synthesis-2026-08-16.md` **before** making any claim
+   about demand, the buyer, the segment, or Gate 1. It is the owner's own market research, derived
+   from Reddit discussion no agent in this project can reach, and it carries the objection the
+   product must answer.
 
-`docs/inputs/` holds external artifacts. **None of it is canonical**, and the files carry differing
-evidentiary weight. Never cite an input as authority.
+**Not canonical is not the same as not read, and conflating the two is a live defect in this repo.**
+The decay synthesis has now been skipped three times: the Shape C incident below, a second session
+that reasoned about the buyer without opening it, and 2026-08-17, when a session built an entire
+issue-#40 plan and a literature sweep without opening `docs/inputs/` once. The mechanism each time
+was this reading list, which named the directory only in a paragraph telling the reader it had no
+authority. That paragraph is now step 7 instead.
+
+The files carry differing evidentiary weight and say so in their own headers. Where a
+`docs/inputs/` file and a `docs/research/` sweep disagree on a **fact**, the sweep wins. On a
+**mechanism**, the input may be the better account — the decay synthesis explains the sweeps'
+negative results more completely than the sweeps did.
 
 If a file does not exist, proceed silently. Don't flag its absence or propose creating it upfront.
 
@@ -36,14 +51,20 @@ This is the repo's most useful convention and it was undeclared until now.
 | `docs/proof/` | **observed** — a real response from the real API | Highest. Beats documentation. |
 | `docs/research/` | **documented** — what a primary source states | Beats an ADR's assertion. |
 | `docs/adr/` | **decided** — what this project concluded | Binding on behaviour, not on fact. |
-| `docs/spec/` | **decided** — how one rule must behave | Binding on behaviour, not on fact. |
+| `docs/spec/` | **decided** — how one rule, or one slice, must behave | Binding on behaviour, not on fact. |
 | `docs/inputs/` | **external** — seeded this project, not governed by it | None. |
 
-`docs/spec/` holds per-rule behavioural specifications. It sits at the same evidence class as
-`docs/adr/` and differs in scope, not in authority: an ADR decides something cross-cutting, a spec
-decides how one rule behaves. **A spec is not an ADR and never supersedes one** — where a spec and
-an ADR disagree, the ADR wins and the spec is the defect. Unlike an ADR, a spec **is** edited in
-place; it describes current intended behaviour rather than a dated decision.
+`docs/spec/` holds behavioural specifications. It sits at the same evidence class as `docs/adr/` and
+differs in scope, not in authority: an ADR decides something cross-cutting, a spec decides how one
+rule behaves or how one shippable slice composes decisions already made. **A spec is not an ADR and
+never supersedes one** — where a spec and an ADR disagree, the ADR wins and the spec is the defect.
+Unlike an ADR, a spec **is** edited in place; it describes current intended behaviour rather than a
+dated decision.
+
+A **slice spec** decides nothing new. If writing one surfaces a decision that does not yet exist,
+that is an ADR, and the slice spec waits for it. `v0.1-scan-slice.md` names the ADR decision behind
+every one of its acceptance criteria for exactly this reason — the mapping is what makes the "decides
+nothing new" claim checkable rather than asserted.
 
 The project already separates *documented* from *observed* in prose — ADR-0007 decision 1 labels its
 own table "documented, not observed". The directories carry the same split. Use it.
@@ -88,7 +109,7 @@ paragraph; **publish no URL for either.** Full list in `.claude/state/store.json
 ├── PRODUCT.md              ← user, job, gates, kill criteria (canonical)
 └── docs/
     ├── adr/                ← accepted decisions, never edited
-    ├── spec/               ← per-rule behavioural specs, edited in place
+    ├── spec/               ← behavioural specs, per-rule and per-slice, edited in place
     ├── research/           ← documented evidence (10 files, no index yet — see below)
     ├── proof/              ← observed evidence, outranks documentation
     ├── inputs/             ← external artifacts, none canonical
