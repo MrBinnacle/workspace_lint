@@ -149,6 +149,50 @@ const oneChildWith = (href: string, extra: Record<string, FakeResource> = {}): R
  * 403 (observed 2026-08-17). This is acceptance criterion 4. */
 export const DEAD_LINK: Record<string, FakeResource> = oneChildWith(OBSERVED_LINK);
 
+/* ------------------------------------------------- the permission filter -- */
+
+/**
+ * THE FALSE GREEN, AS A FIXTURE. #46 DoD item 2, reproduced from a live
+ * observation on 2026-08-17.
+ *
+ * `HIDDEN_CHILD` EXISTS. It is a real page under the root, and the builder
+ * identity can read it — `wl-revoke-parent` holds `wl-revoke-child`
+ * (…ce0fb949), confirmed against the workspace with full access. The read-only
+ * subject's `GET /v1/blocks/{root}/children` does not return it as unreadable.
+ * IT RETURNS NOTHING ABOUT IT AT ALL: the `child_page` block is gone with the
+ * permission.
+ *
+ * So the listing below is what the subject sees, and the fixture's truth is the
+ * constant beside it. That gap between the two IS the test.
+ *
+ * ADR-0006 decision 2 is why this cannot be detected from the response: the
+ * endpoint carries no truncation signal, and a complete enumeration and a
+ * filtered one are byte-identical in shape.
+ */
+export const HIDDEN_CHILD = '7fd5795b0ee8c554c1a900f12f33f186';
+export const HIDDEN_CHILD_ID = '7fd5795b-0ee8-c554-c1a9-00f12f33f186';
+
+/** What the subject sees: paragraphs, and no trace of HIDDEN_CHILD. */
+export const PERMISSION_FILTERED: Record<string, FakeResource> = {
+  [ROOT]: { steps: [page([para('block-prose')])] },
+};
+
+/**
+ * The SAME filtered listing, plus one surviving inline href pointing at the
+ * hidden child.
+ *
+ * This is the contrast that makes the finding precise. An inline href lives in
+ * a paragraph's rich text and the paragraph is readable, so the href survives
+ * the filtering that deleted the `child_page` block. REF001 then resolves it,
+ * gets a 404, and the run stops being clean.
+ *
+ * The difference between this fixture and the one above is the BLOCK TYPE of
+ * the trace, and nothing else.
+ */
+export const PERMISSION_FILTERED_WITH_LINK: Record<string, FakeResource> = {
+  [ROOT]: { steps: [page([para('block-prose'), linkPara('block-link', `https://app.notion.com/p/${HIDDEN_CHILD}`)])] },
+};
+
 /* Same link, target readable. REF001 conforms and produces no finding. */
 export const LIVE_LINK: Record<string, FakeResource> = oneChildWith(OBSERVED_LINK, { [LINK_TARGET]: { steps: [page([])] } });
 
