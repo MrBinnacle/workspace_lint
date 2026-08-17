@@ -188,7 +188,12 @@ official SDK's types are the `request_status` source of truth and give drift det
    nine ADRs of decisions made with no runnable feedback.
 3. **Re-read the eight rules as false-green detectors** rather than tidiness checks. P3's four named
    defect classes look uncovered by the current catalogue.
-4. **#29, #24, #25, #18, #19, #10, #8, #7** — unchanged.
+4. **Write `docs/research/INDEX.md`** — one line per file: the question it answers, its trust tier,
+   what it refutes. Ten files with no index is the second half of the mechanism the post-close
+   addendum describes; naming the directory is not the same as knowing which file to open.
+5. **#29, #24, #25, #18, #19, #10, #8, #7** — unchanged. **#25 now has its third data point and a new
+   shape**: ADR-0009's case was a *missing* file rather than a contradicted one, so grep alone cannot
+   be the whole enforcement.
 
 **NEXT-MODEL:** **frontier**. The next session writes a superseding ADR and then prototypes against a
 live API with a novel provenance type — irreversible head plus ambiguity. **#18 and #19 remain
@@ -197,7 +202,34 @@ mechanical and belong to their own fast-tier session; do not straddle.**
 **NEXT-REPO/CWD:** `C:\Users\mlpgr\2026_Projects\workspace_lint` — single repo; state, plan and
 resume ritual all at the root.
 
+**POST-CLOSE ADDENDUM (S009, after `65f6106` shipped) — the agent-facing reading list omitted the
+evidence layer, and that is the mechanism behind every incident this band records.**
+
+`docs/agents/domain.md` is what `CLAUDE.md` points every agent at. Its section *"Before exploring,
+read these"* named `CONTEXT.md`, `CONTEXT-MAP.md` and `docs/adr/` — **the decision layer only**. It
+never named `docs/research/` or `docs/proof/`. It was an unlocalised upstream template, which is also
+why S008 had to renumber its `ADR-0007 (event-sourced orders)` placeholder after it collided with a
+real ADR.
+
+Rewritten specific to this repo. It now carries the read order with **evidence outranking assertion**,
+the evidence-class-per-directory table (`proof` beats `research` beats `adr` on questions of fact),
+the three method rules, and the citation standard including *cite by section heading, not line number*.
+`CLAUDE.md`'s own two-line Domain-docs entry carried the same omission one level up and is corrected —
+per the standing rule that a refuted claim is never in one place.
+
+**A count was corrected while writing it.** The first draft said *"four ADRs have now contradicted or
+talked past evidence already in this repo"* in two files. Checked against source: **#25 is the record
+and says two**, ADR-0007 is the *corrector* rather than an offender, and ADR-0009's case is a
+different shape — the fact was **not** in the repo, so grep returns nothing and silence reads as
+agreement. The three incidents are now written as two shapes with the grep-blind one named, because
+rule 1 only catches one of them.
+
+**Not done, and deliberately parked:** `docs/research/INDEX.md` (ten files, no index — a reading list
+that names a directory still does not say which file answers your question) and the #25 hook decision.
+The forward reference is marked inline in `domain.md` rather than left to rot.
+
 **SELF-ASSESS:** VERDICT: 2 (operator-graded, solicited blind) · ATTRIB: none — task-inherent
+· **AMENDED** 2026-08-17, see addendum above and the caveats below. The verdict is **not** re-opened.
 
 **Caveat attached to the grade, not a re-opening of it.** The session shipped a defect into `main`
 (#31) and wrote a wrong locator into a merged ADR. Both were caught in-session, by the mandatory grep

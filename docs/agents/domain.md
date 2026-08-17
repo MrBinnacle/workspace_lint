@@ -1,51 +1,147 @@
 # Domain Docs
 
-How the engineering skills should consume this repo's domain documentation when exploring the codebase.
+How the engineering skills should consume this repo's domain documentation.
+
+This file was a generic template until 2026-08-17. Its reading list named the decision layer and
+omitted the evidence layer, which is the mechanism behind four separate incidents — see
+"Why this file is specific" at the bottom. It is now specific to this repo. Keep it that way.
 
 ## Before exploring, read these
 
-- **`CONTEXT.md`** at the repo root, or
-- **`CONTEXT-MAP.md`** at the repo root if it exists — it points at one `CONTEXT.md` per context. Read each one relevant to the topic.
-- **`docs/adr/`** — read ADRs that touch the area you're about to work in. In multi-context repos, also check `src/<context>/docs/adr/` for context-scoped decisions.
+Read in this order. The order is the point: **evidence outranks assertion**, and an ADR is an
+assertion.
 
-If any of these files don't exist, **proceed silently**. Don't flag their absence; don't suggest creating them upfront. The `/domain-modeling` skill (reached via `/grill-with-docs` and `/improve-codebase-architecture`) creates them lazily when terms or decisions actually get resolved.
+1. **`CONTEXT.md`** at the repo root — the glossary and the settled defaults. Canonical.
+2. **`PRODUCT.md`** at the repo root — the user, the job, the gates, the kill criteria. Canonical.
+3. **`docs/adr/`** — read the ADRs touching the area you are about to work in. Accepted decisions,
+   **never edited in place**; a superseding ADR is the only instrument.
+4. **`docs/research/`** — the evidence the ADRs were built from. **Read before asserting any factual
+   claim, not after.**
+5. **`docs/proof/`** — what the API actually did when asked. Outranks everything above it on any
+   question of fact.
+
+`docs/inputs/` holds external artifacts. **None of it is canonical**, and the files carry differing
+evidentiary weight. Never cite an input as authority.
+
+If a file does not exist, proceed silently. Don't flag its absence or propose creating it upfront.
+
+## Evidence class is encoded in the directory
+
+This is the repo's most useful convention and it was undeclared until now.
+
+| Directory | Class | Authority on a question of fact |
+| --- | --- | --- |
+| `docs/proof/` | **observed** — a real response from the real API | Highest. Beats documentation. |
+| `docs/research/` | **documented** — what a primary source states | Beats an ADR's assertion. |
+| `docs/adr/` | **decided** — what this project concluded | Binding on behaviour, not on fact. |
+| `docs/inputs/` | **external** — seeded this project, not governed by it | None. |
+
+The project already separates *documented* from *observed* in prose — ADR-0007 decision 1 labels its
+own table "documented, not observed". The directories carry the same split. Use it.
+
+## Three rules that exist because they were each learned the expensive way
+
+**1. Grep `docs/research/` before asserting a factual table in an ADR.**
+ADR-0007 decision 4 rule 3. Two ADRs asserted facts the research had already recorded correctly, and
+in one case the grep would have returned two files either of which refutes the claim. One command.
+
+**2. A negative about an endpoint requires that endpoint's own reference page.**
+ADR-0007 decision 4 rules 1 and 2. A shared envelope or overview page is not evidence about an
+endpoint it does not name. **Absence of a field from a documentation page is not absence of the
+field** — it is *not checked* until the endpoint's own page is opened, and *not observed* until a
+response shows it.
+
+**3. A claim about a model requires that model's own reference.**
+Added 2026-08-17, generalising rule 2. ADR-0009 asserted a fact about Notion's capability model
+without opening the capabilities reference. **Rule 1 would not have caught it** — the fact was not in
+this repository at all, so grep returns nothing and nothing feels wrong. Rule 1 catches
+contradictions; this rule catches absences, and they fail differently.
+
+## Citations are receipts
+
+Operator ruling, 2026-08-17. Every factual claim carries a locator a third party can follow: a URL
+with its fetch date, a file with its section, a commit SHA, a clause number. *"Paraphrase without
+pointer, 'as we discussed,' 'Notion's docs say,' 'the ADR covers this' — is commentary, not
+evidence."*
+
+Cite by **section heading**, not by line number. A line number written as `§596` sends a reader
+looking for a section that does not exist; that exact defect shipped into an accepted ADR on
+2026-08-17 and had been quoted forward three times before anyone followed it.
+
+**Citation hazard:** ISO 19011:2018 and ISA 705 were read from unauthorised copies. Cite by clause or
+paragraph; **publish no URL for either.** Full list in `.claude/state/store.json` → `citation_hazards`.
 
 ## File structure
 
-Single-context repo (most repos):
-
 ```
 /
-├── CONTEXT.md
-├── docs/adr/
-│   ├── 0001-event-sourced-orders.md
-│   └── 0002-postgres-for-write-model.md
-└── src/
+├── CONTEXT.md              ← glossary + settled defaults (canonical)
+├── PRODUCT.md              ← user, job, gates, kill criteria (canonical)
+└── docs/
+    ├── adr/                ← accepted decisions, never edited
+    ├── research/           ← documented evidence (10 files, no index yet — see below)
+    ├── proof/              ← observed evidence, outranks documentation
+    ├── inputs/             ← external artifacts, none canonical
+    ├── demand-test/        ← outbound instruments
+    └── agents/             ← this file and its siblings
 ```
 
-Multi-context repo (presence of `CONTEXT-MAP.md` at the root):
-
-```
-/
-├── CONTEXT-MAP.md
-├── docs/adr/                          ← system-wide decisions
-└── src/
-    ├── ordering/
-    │   ├── CONTEXT.md
-    │   └── docs/adr/                  ← context-specific decisions
-    └── billing/
-        ├── CONTEXT.md
-        └── docs/adr/
-```
+There is no `src/` yet. The repo is pre-build.
 
 ## Use the glossary's vocabulary
 
-When your output names a domain concept (in an issue title, a refactor proposal, a hypothesis, a test name), use the term as defined in `CONTEXT.md`. Don't drift to synonyms the glossary explicitly avoids.
+When your output names a domain concept — an issue title, a rule name, a test name, a proposal — use
+the term as defined in `CONTEXT.md`. Don't drift to synonyms the glossary avoids.
 
-If the concept you need isn't in the glossary yet, that's a signal — either you're inventing language the project doesn't use (reconsider) or there's a real gap (note it for `/domain-modeling`).
+If the concept isn't in the glossary, that's a signal: either you're inventing language the project
+doesn't use (reconsider), or there's a real gap. `Operator` was used 35 times before anyone noticed it
+had no definition, including inside other glossary entries.
+
+**A value is distinct when its remedy is distinct.** That rule decided three separate splits in this
+project and works as a deletion test too — a value whose remedy duplicates another's is not a value.
+See ADR-0009 decision 6.
 
 ## Flag ADR conflicts
 
-If your output contradicts an existing ADR, surface it explicitly rather than silently overriding:
+If your output contradicts an existing ADR, surface it rather than silently overriding:
 
 > _Contradicts ADR-00NN (its one-line title) — but worth reopening because…_
+
+**Do not edit the ADR.** A refuted claim standing in an accepted ADR is a dated record and is correct
+as a record. `CONTEXT.md` and `PRODUCT.md` are living documents and *are* corrected in place. That
+carve-out is the whole rule; without it the constraint reads as "never correct anything."
+
+## Why this file is specific
+
+Three incidents in **two distinct shapes**, and the shapes matter because rule 1 only catches one of
+them:
+
+**Shape A — the evidence was in the repo and the ADR contradicted it.** Grep-catchable.
+**Issue #25 is the record of the count: two ADRs, as of 2026-08-17.** The instance with a full
+write-up is ADR-0006's search row, whose correct value sat in `notion-api-practice.md` §4.5 and
+`competitive-landscape.md` §4 for three hours before the ADR was committed — ancestry confirmed with
+`git merge-base --is-ancestor`. ADR-0007 is the *correction*, not an offender.
+
+**Shape B — the evidence was not in the repo, so nothing felt wrong.** Grep-blind, and rule 3 exists
+for it. **ADR-0009** asserted a capability-model fact without opening the capabilities reference;
+grep returns nothing and silence reads as agreement.
+
+**Shape C — the evidence was in the repo, indexed, and simply not read.** On 2026-08-17 the session's
+largest product finding sat unopened in `docs/research/notion-user-pain.md` and
+`docs/inputs/decay-causal-synthesis-2026-08-16.md` for an entire session. **Neither directory was in
+this file's reading list.** That is the incident this rewrite addresses, and no rule catches it — only
+the reading order above does.
+
+*Revisit if:* the grep in rule 1 is installed as a PreToolUse hook (issue #25). Rule 1 then moves to
+the enforcement layer and this file should point at the hook rather than restate the discipline — per
+the standing layer-placement rule, a discipline that must fire cannot depend on being remembered.
+
+*Revisit if:* `src/` appears. The file-structure block and the "no `src/` yet" line both go stale the
+day the first code lands, and a stale structure diagram is the kind of claim that calcifies because
+nobody follows it.
+
+**Known gap, stated rather than left implicit:** `docs/research/` has ten files and **no index**, so
+knowing what is in the tenth requires opening all ten. That is the second half of the mechanism this
+file exists to fix — a reading list that names the directory still does not tell you which file
+answers your question. An `INDEX.md` giving one line per file (the question it answers, its trust
+tier, what it refutes) is the fix and is not yet written.

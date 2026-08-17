@@ -18,4 +18,13 @@ The five canonical triage roles, each label string equal to its name. See `docs/
 
 ### Domain docs
 
-Single-context: `CONTEXT.md` at the repo root plus `docs/adr/`. See `docs/agents/domain.md`.
+Canonical: `CONTEXT.md` and `PRODUCT.md` at the repo root, plus `docs/adr/`.
+
+**Evidence outranks assertion, and an ADR is an assertion.** `docs/research/` holds what primary
+sources state; `docs/proof/` holds what the API actually did and beats documentation. Read both
+*before* asserting a factual claim, not after — two ADRs have contradicted evidence already in this
+repo (issue #25), a third asserted into a silence a reference page would have filled, and on
+2026-08-17 the two files holding the session's largest finding went unread because neither directory
+was named here. `docs/inputs/` is external and never authority.
+
+Read order, the three method rules, and the citation standard: `docs/agents/domain.md`.
