@@ -1,9 +1,9 @@
 {
   "project": "workspace_lint",
   "updated": "2026-08-17",
-  "session": "S013",
-  "phase": "BUILD -- Gates 1 and 2 both closed 2026-08-17; nothing gates the build for the first time",
-  "phase_detail": "Pre-build on main -- still no src/, no package.json, no toolchain there. The toolchain and all working code remain on the throwaway branch proto/ref001-observed. S011 closed #34: docs/spec/ now exists as a directory (merged in PR #37, origin/main at 39d6d2a) and holds docs/spec/REF001-link-recognition.md. The #34 fork is answered -- an unrecognised link is ADR-0005's `undecidable`, not a new axis value, so no ADR was needed. The section 0.5 sweep established from Notion's own help pages that Notion Sites supports custom domains, so the host set is UNBOUNDED and no allow-list can be complete; the unrecognised residue path is therefore the primary detection mechanism and the host list is only an optimisation. A 34-assertion offline suite (prototypes/CHECK-link-recognition.ts) exercises link DISCOVERY and carries a mutation check that proves its own control is load-bearing. That suite refuted spec section 5 on its first run: exit 0 with an unrecognised link requires the gap to be BASELINED, because ADR-0008 fires exit 1 on a new unsuppressed SYS001 finding.",
+  "session": "S014",
+  "phase": "BUILD -- Gate 3 live, and its first tracer bullet has landed",
+  "phase_detail": "Source code exists for the first time, on branch build/t1-scan-scaffold (cut from proto/ref001-observed, origin/main merged in), in slice/ under a private:true package.json named slice-v0.1. main STILL has no src/ and no package.json, and that is now the only thing #8 gates: moving slice/ to src/ with a publishable root package.json forces the npm-name decision CONTEXT.md requires 'before the first package.json'. #42 is built, reviewed and committed (0ac7c2d, 9dcb069). 50 offline checks pass; live run exits 3 with 4 applicable resources, 3 fetched, 0 evaluated, 6 requests, 1.78 s. #43 and #44 are unblocked and can run in parallel.",
   "gate_1_demand_test": {
     "status": "CLOSED 2026-08-17 on owner research, not on a five-team send. Issue #40 closed with it.",
     "what_closed_it": "docs/inputs/decay-causal-synthesis-2026-08-16.md -- the operator's own causal synthesis of workspace decay, derived from Reddit discussion no research path in this project could reach. Plus this file's own research.known_blind_spot record that the operator reaches Reddit and HAS CONVERTED A BUYER THERE, and docs/research/solo-segment-evidence.md conceding its NO 'may be a verdict on the config file, not on the segment'.",
@@ -30,12 +30,10 @@
   },
   "next_gate": {
     "name": "Gate 3 -- build at n=1, against this workspace",
-    "kind": "runnable, and now unblocked",
-    "tracker": "#42 -> #43, #44 -> #45 -> #46",
-    "why_it_is_next": "PRODUCT.md orders the gates 1 demand test, 2 API proof, 3 build at n=1, 4 release at n=3. Gate 1 closed on owner research and Gate 2 closed as completed, both 2026-08-17. NOTHING NOW GATES THE BUILD. This is the first time that has been true in the project's history.",
-    "method": "Build on a branch from proto/ref001-observed. The prototype is kept as a PRIMARY SOURCE and the toolchain is already there. This is now a preference rather than a gate -- #10's 'nothing on main' constraint is discharged with it. Putting the slice on main forces the npm-name decision (#8), which CONTEXT.md requires 'before the first package.json'.",
-    "human_steps_still_outstanding": "Connect the integration to REAL_ROOT_ID in Notion share settings, and decide title redaction before any output naming real pages lands in the repo -- CONTEXT.md redacts titles from CI output by default. Neither blocks #42.",
-    "blocker_resolved_S006": "ADR-0002 decision 4 no longer blocks scan code. ADR-0006 replaces it."
+    "kind": "runnable, live, first tracer bullet landed",
+    "tracker": "#42 DONE (not merged to main) -> #43, #44 in parallel -> #45 -> #46",
+    "why_it_is_next": "Gates 1 and 2 both closed 2026-08-17. #42 shipped the scan scaffold on 2026-08-17 and the stop condition did not fire: the scan produced a coverage manifest against a declared root, read-only, with no LLM. #43 is the ticket that makes the coverage vector non-empty and exit 0 reachable, so it is the first result that means anything about coverage.",
+    "criterion_1_status": "OPEN, deliberately. Spec section 2 criterion 1 requires the hand-written manifest to be written BEFORE the run; none existed when #42 ran, so its applicable set of 4 was validated against the code's own output. slice/fixture-oracle.ts pre-registers the expectation and closes the criterion for #43's run, NOT retroactively for #42."
   },
   "locked_decisions": [
     {
@@ -358,5 +356,40 @@
     "closed_S011": "#34 closed by PR #37 (spec, not ADR).",
     "closed_S012": "#14 CLOSED as ALREADY COMPLETE -- finished 2026-08-16 in cc16d63, on origin/main, every DoD element present in the issue's own wording. S010 and S011 both carried it as the Gate 1 blocker anyway. #36 CLOSED by PR #38, merged as 88d401e.",
     "filed_S012": "#39 -- README.md contradicts ADR-0005 and ADR-0008 in four places, untouched since 2026-08-16. #40 -- PRODUCT.md's demand test and kill criterion name the auditor buyer; the only item marked blocks:Gate 1 and it had never been filed."
+  },
+  "build": {
+    "branch": "build/t1-scan-scaffold",
+    "commits": [
+      "aaab38f merge main",
+      "0ac7c2d T1 scan scaffold",
+      "9dcb069 report seam + fixture oracle"
+    ],
+    "directory": "slice/ -- private package, NOT src/, because src/ asserts 'this is the product tree' and that claim is due the day #8 lands",
+    "modules": [
+      "ids.ts",
+      "config.ts",
+      "notion-port.ts",
+      "observed.ts",
+      "manifest.ts",
+      "verdict.ts",
+      "scan.ts",
+      "report.ts",
+      "fixture-oracle.ts",
+      "cli.ts",
+      "CHECK-scan-scaffold.ts",
+      "make-fixture-config.ts"
+    ],
+    "suite": "npx tsx CHECK-scan-scaffold.ts -- 50 checks, offline, no network and no token",
+    "mutation_checks": [
+      "TEST 5: disable gapsFrom, exit byte must move 3 -> 0",
+      "TEST 7: remove a required child, the oracle must go red"
+    ],
+    "live_command": "cd slice && npx tsx cli.ts scan --config ../wl.config.json --oracle",
+    "config_generator": "npx tsx make-fixture-config.ts -- reads FIXTURE_ROOT_ID from .env and writes the gitignored wl.config.json; the config contract is ID-only and there is deliberately no ${VAR} escape in the loader",
+    "no_rule_consequences": [
+      "ADR-0011 coverage vector is EMPTY -- one entry per rule and there are no rules",
+      "exit 0 is UNREACHABLE in T1 by construction; a perfect run still exits 3",
+      "newUnsuppressedFindings is passed as an explicit 0 -- deriveVerdict defaults it to violations+gaps.length, which would exit 1 on a slice with no findings"
+    ]
   }
 }
