@@ -35,7 +35,7 @@ The product tests declared rules. It does not infer workspace quality, intent, o
 | Gap | An applicable resource that left the coverage funnel before evaluation, with a named cause. Bounded when the missing resources can be named, unbounded when they cannot. |
 | Pervasive | The property of a gap set that voids the summary verdict: a declared root was never reached, or any gap is unbounded. |
 | Report disposition | What the report as a whole may claim: `unqualified`, `qualified`, or `disclaimed`. A disclaimed report renders no summary verdict. |
-| Baseline | A set of accepted finding fingerprints that still appear in reports. |
+| Baseline | The accepted-debt record. Each entry holds a map of partial fingerprints, an evidence digest, and the (rule, resource) pair it anchors to. Entries still appear in reports. See ADR-0008. |
 | Suppression | A scoped exception with a reason and expiry. |
 | Snapshot | The normalized graph state used for one deterministic run. |
 | Canonical marker | An explicit property value or configured pointer. It is not prose inference. |
