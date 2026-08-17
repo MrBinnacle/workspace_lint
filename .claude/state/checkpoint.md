@@ -54,6 +54,13 @@ read this block instead. Nothing here depends on a band still being present.
 - **ADR-0008 decision 6 is superseded by ADR-0010.** Cite ADR-0010 for anything about fingerprints,
   baseline matching or finding identity. ADR-0008 decisions 1–5 and 7 stand unchanged, as do decision
   6's four SARIF constraints and its two-hazard analysis.
+- **ADR-0012 supersedes NO ADR.** It implements ADR-0011 decision 5 in code. What it supersedes is a
+  **code comment** — `slice/verdict.ts`'s S014 header — and it is an ADR at all because that header
+  demanded one. **Its decision 7 removes the `gaps.length` conjunct from the exit-`3` predicate:**
+  ADR-0008 decision 2's table row stays TRUE and is now a special case, because ADR-0011 decision 5
+  states the axis without the conjunct and restates exit `0` as *every rule* at or above the floor.
+  With the conjunct, a sub-threshold rule with an empty gap list exited `0` while the reason string
+  claimed every rule cleared the threshold.
 - **ADR-0006 decision 2's search row is superseded by ADR-0007.** Cite ADR-0007's table.
 - **ADR-0005's evidential floor is uneven and the ADR says so.** Decision 5's funnel rests on CONSORT,
   PRISMA and STROBE clauses **fetched but never re-verified**.
@@ -124,21 +131,28 @@ without a triage-role label**, reading the roles from `docs/agents/triage-labels
 - **Gate 2, the 72-hour proof (#10) — CLOSED 2026-08-17** by the operator, on the grounds its own
   triage comment gave: circular as filed, six of nine checks requiring the build it existed to gate.
   Its checks are **build-acceptance criteria**, not pre-build gates.
-- **Gate 3, build at n=1, is live. #42 and #43 have landed.** Tracked as #42 built (ticket still
-  **OPEN** — the code shipped and nobody closed it) → **#43 DONE and CLOSED** → #44 → #45 → #46.
-  #10's "no source on `main`" constraint is discharged; building on a branch from
-  `proto/ref001-observed` is now a preference.
-- **Acceptance criterion 1 is CLOSED**, on #43's live run, against an oracle committed before that
-  run existed. Ten comparisons, `ORACLE MATCHED`. It is not closed retroactively for #42.
-- **Source code exists, on `build/t2-sys001`, in `slice/`.** Commits `0ac7c2d`, `9dcb069`,
-  `0d3c723`, `95c60c5`.
+- **Gate 3, build at n=1: THE TRACER-BULLET SEQUENCE IS COMPLETE.** #42, #43, #44, #45 and #46 are
+  all built and all **CLOSED**. #10's "no source on `main`" constraint is discharged.
+- **Acceptance criterion 1 is CLOSED** (#43's live run, oracle committed before it, now 17
+  comparisons). **Criterion 4 is CLOSED** (#44, on discovery not injection). **Criterion 5 is
+  CLOSED** (#45, two live runs byte-identical at 5987 bytes — and the CONTROL is what closes it:
+  the same two runs *without* `--deterministic` differ, so the claim is about Normalization
+  removing something rather than about a report with nothing volatile in it).
+- **Source code exists, on `build/t3-ref001`, in `slice/`.** Session commits `8dd2d36` (ADR-0012),
+  `37bd9e1` (T4 reports), `6b719cf` (T5 red test).
   A **`private: true`** package named `slice-v0.1`, deliberately **not** `src/` and not on `main`:
   `src/` asserts *this is the product tree*, and that claim is due the same day **#8** lands.
-  **#8, the npm name, is now the only thing between this branch and `main`** — `CONTEXT.md` requires
-  it "before the first `package.json`", and a private unpublishable package does not consume it.
-  Suite: `cd slice && npm run check` — **two files, 53 + 92 assertions, offline, no network, no
-  token**. Live: `npx tsx cli.ts scan --config ../wl.config.json --oracle`, after
-  `npx tsx make-fixture-config.ts` writes the gitignored config from `.env`.
+  **#8, the npm name, is still the only thing between this branch and `main`** — `CONTEXT.md`
+  requires it "before the first `package.json`", and a private unpublishable package does not
+  consume it.
+  Suite: `cd slice && npm run check` — **six files, 38 + 56 + 92 + 124 + 89 + 50 = 449 assertions,
+  offline, no network, no token**. Live: `npx tsx cli.ts scan --config ../wl.config.json --oracle`,
+  after `npx tsx make-fixture-config.ts [ENV_KEY]` writes the gitignored config from `.env` —
+  **the key argument is how the live exit-byte table was produced.**
+- **`prototypes/verdict.ts` NO LONGER EXISTS** (ADR-0012 decision 1). There is **one** executable
+  implementation of the exit byte and it is `slice/verdict.ts`. `prototypes/live-ref001.ts` still
+  exists and is still the proven `.env`-reading probe, but it **renders no verdict and no exit
+  byte** — it exits `0` to mean *the probe completed*, never *the workspace conforms*.
 - **#14 is CLOSED** — finished in `cc16d63` on 2026-08-16, and three checkpoints carried it as the
   blocker anyway.
 
@@ -191,6 +205,126 @@ of the close ritual still runs; the ritual line records `verdict=n/a`.
 ---
 
 ---
+
+## S017 — 2026-08-17 — the tracer-bullet sequence closes, and the red test found a false green the product cannot detect
+
+**PHASE:** **BUILD, complete at n=1.** Three phases: **#49** (ADR-0012), **#45** (T4 reports),
+**#46** (T5 red test). **All five tracer bullets are built and CLOSED** — #42, #43, #44, #45, #46.
+
+**TESTS:** `tsc --noEmit` clean in **both** packages on TypeScript 7.0.2. **449 offline assertions**
+across six suites (38 + 56 + 92 + 124 + 89 + 50), no network and no token; `prototypes` 23, green.
+**Nine mutation checks performed this session**, each run and confirmed red. **Deref: 35 path claims
+checked / 6 flagged / all 6 hand-verified**, plus identifier, SHA and issue-state claims hand-checked
+(all six flags are the machine-local hook paths under `~/.claude/`, outside the checker's `--root`).
+
+**ALL FIVE EXIT BYTES REACHED LIVE**, each by its own seeded fault — the first time the byte contract
+has been exercised end to end against the real API:
+
+| Configuration | Byte | Disposition |
+| --- | --- | --- |
+| `FIXTURE_ROOT_ID`, floor 1.0 | `3` | `qualified` |
+| `FIXTURE_ROOT_ID`, floor 0.5 | `1` | `qualified` |
+| `REVOKE_PARENT_ID`, floor 1.0 | `0` | `unqualified` ← **the false green** |
+| `UNSHARED_PAGE_ID`, floor 1.0 | `2` | `disclaimed` (root miss) |
+| config naming a non-ID | `4` | none |
+
+**COMMITTED:** `8dd2d36`, `37bd9e1`, `6b719cf`. **Nothing merged to `main`. Nothing pushed.**
+**CLOSED:** #49, #45, #46. **COMMENTED:** #45, #46, #35.
+
+### The finding — a false green the product cannot detect, and it is not a bug in this build
+
+**A live scan of `wl-revoke-parent` returns exit `0`** — `unqualified`, `SYS001 1/1 resources
+(100.0%)`, `conforms`, `evidence sufficient` — **over a page whose child the connection cannot see.**
+
+The **builder identity** (full access, explicitly not part of the measurement) reads
+`wl-revoke-parent` and finds `wl-revoke-child` (…`ce0fb949`) inside it. The read-only subject's
+`GET /v1/blocks/{parent}/children` returns the paragraphs and **no `child_page` block at all**. The
+child is not reported unreadable. **It is absent**, so the applicable set is built as 1, the
+evaluated set is 1, and every published figure is internally consistent and true of a workspace that
+is not the one being scanned.
+
+**Not introduced by T1–T5 and not preventable by any of them.** ADR-0006 decision 2: the children
+endpoint carries no truncation signal, so a filtered listing and a complete one are indistinguishable
+in the response. ADR-0011's evidence section already names the shape.
+
+**The sharp part:** the report *already* discloses that the traversal spine is trusted blind, and
+prints exit `0` on the same page. Both true, same artifact, nothing connecting them.
+
+**The reach of the mechanism is now decidable exactly — it is the BLOCK TYPE of the surviving trace:**
+
+| Trace | Survives permission filtering | Caught by |
+| --- | --- | --- |
+| inline `href` in rich text (`wl-outside-grant`) | **yes**, the paragraph is readable | `REF001` → 404 → `confirmed`/`unreachable` |
+| `child_page` block (`wl-revoke-child`) | **no**, the block goes with the permission | **nothing** |
+
+**Filed against #35 with the reproduction and three candidate shapes. THE COVERAGE MODEL WAS NOT
+TOUCHED** — #46's own Revisit-if requires it go to `docs/proof/` and the operator before any code
+change. Pinned in `CHECK-redtest.ts` TEST 2 as a **documented limit carrying the issue number in its
+assertion text**, so it cannot drift silently in either direction. Not endorsed.
+
+### Two live-run caveats that must not be read past
+
+- **The ADR-0012 divergence is NOT exercised live.** On the fixture `SYS001` sets the minimum and its
+  coverage item is a resource, so the vector minimum and the funnel are the same number — the run
+  would have exited `3` under the old code too. Exercised offline only, `CHECK-ref001` TEST 4.
+- **`Finding.link` is NOT exercised live.** Only the declared root is retrieved with `GET /v1/pages`,
+  and on this fixture the root is *evaluated*, so it produces no finding to carry a link. Offline
+  only. Both recorded in `docs/proof/results-49-exit-byte.md` §4 and `results-t4-reports.md` §8.
+- **Exit `2` is reached live by pervasiveness condition (a) only.** Condition (b), a genuinely
+  **unbounded** gap, needs an enumeration to die mid-stream on a 429 or 502 and cannot be forced
+  against a read-only connection. Offline only, via `MIDSTREAM`.
+
+### Five rules this cost, each earned by a defect a green suite could not see
+
+- **A conjunct copied verbatim from an ADR can falsify that ADR's own invariant.** ADR-0012's first
+  implementation kept ADR-0008's *"gaps exist AND coverage below threshold"* and changed only the
+  referent. A run whose weakest rule is below the floor with an **empty gap list** then exits `0`
+  while the reason string claims every rule cleared the threshold. **The report refuting itself two
+  lines apart.** ADR-0011 decision 5 states the axis without the conjunct.
+- **A test written from the same misreading as the code confirms the misreading.** The check that
+  should have caught the above was written in the same commit and asserted the wrong value. Review
+  against the *source ADR*, not against the code you just wrote.
+- **Grepping a test run for `FAIL` cannot distinguish a passing suite from a crashed one.** A
+  mutation that removes a null-guard *crashes* the suite; the grep found no `FAIL` and it briefly
+  read as a control that failed to fire. Score mutations on the whole output or on the exit code.
+- **A reason string outlives the condition it describes, and then it is a false claim printed under
+  a true value.** `LINK_NOT_CAPTURED` read *"this slice does not read the object's url field"* after
+  the port started reading it. This product's own defect class, in its own output.
+- **A "one document, three renderers" claim is worth exactly as much as its third renderer.** T4's
+  terminal renderer still read raw scan state while the other two read the document; the manifest
+  row order genuinely differed. If a design claim is in a file header, review the file against it.
+
+### BLOCKERS
+
+**None for building — there is nothing left in the tracer-bullet sequence to build.** #35 now blocks
+any claim that a clean byte means a covered workspace, and it is a decision, not a defect.
+
+### EXACT NEXT STEPS
+
+1. **#35** — the decision this session created, with a live reproduction attached. May a scan that
+   cannot detect permission filtering report `evidence: sufficient` and exit `0`? Three candidate
+   shapes are on the issue and none is chosen. **This is an ADR and it is the largest open question
+   in the product.**
+2. **#51** — database references as a permanent coverage gap. Same port seam; #45 settled the page
+   half only.
+3. **#50**, **#39** (README contradicts ADR-0005 and ADR-0008 in four places), **#35**, **#27**,
+   **#25**, **#24**, **#19**, **#18**, **#29**, **#7** unchanged.
+4. **Two human steps, neither blocking:** **#8**, the npm name — still the only thing between the
+   branch and `main` — and connecting the integration to `REAL_ROOT_ID`, which #7 needs.
+5. **`wl-revoke-child` stays disconnected.** Restoring it resets proof question Q1 **and** removes
+   the only live instance of the condition #35 now turns on. Decided, not defaulted.
+
+**NEXT-MODEL:** **frontier.** The next head is **#35**, an ADR deciding whether a coverage figure
+built from the subset the tool can see may be published as `sufficient` — irreversible,
+cross-cutting, and it governs the meaning of every byte the product prints. **Do not straddle:** if
+the session is instead scoped to #39's README reconciliation, that is separable execution mechanics
+and belongs on the fast tier in its own session. Pick one before starting.
+
+**NEXT-REPO/CWD:** `C:\Users\mlpgr\2026_Projects\workspace_lint` — single repo; state, plan and
+resume ritual all at the root. The build lives on `build/t3-ref001` in this same clone.
+
+**NO SELF-ASSESS LINE, BY OPERATOR RULING 2026-08-17.** The ritual line records `verdict=n/a`.
+
 
 ## S016 — 2026-08-17 — REF001 ships; review found a defect that would have failed a build on a healthy workspace
 
