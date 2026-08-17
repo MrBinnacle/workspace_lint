@@ -22,28 +22,37 @@ The product tests declared rules. It does not infer workspace quality, intent, o
 | Resource | A page, database, data source, block, property, or user. |
 | Workspace graph | The normalized resources and edges from one scan. |
 | Edge | A parent, child, relation, mention, hyperlink, or configured dependency. |
-| Coverage manifest | The resources, limits, errors, and omissions that bound the verdict. |
+| Coverage manifest | The staged record of what the scan reached: declared, resolved, enumerated, fetched, evaluated. Every drop-out names a resource and a specific cause. |
 | Invariant | A structural statement that must remain true. |
 | Rule | Executable logic that tests one invariant. |
 | Observation | What the scan saw, with evidence and provenance. A 404 is an observation. |
 | Finding | A judgement a rule reached from observations, with evidence and a stable location. |
-| Outcome | What a rule concluded: `pass`, `violation`, `incomplete`, or `inapplicable`. |
+| Outcome | What a rule concluded, as a pair: a Conformity and an Evidence sufficiency. Never a single value. See ADR-0005. |
+| Conformity | Whether the invariant held across the evaluated set: `conforms` or `violates`. Absent when the evaluated set is empty. |
+| Evidence sufficiency | Whether the evaluated set covered the applicable set: `sufficient`, `unreached` (never fetched), or `undecidable` (fetched, not judgeable). |
+| Applicable set | The in-scope resources a rule's preconditions fit. The denominator of that rule's coverage. |
+| Evaluated set | The applicable resources the rule actually judged. |
+| Gap | An applicable resource that left the coverage funnel before evaluation, with a named cause. Bounded when the missing resources can be named, unbounded when they cannot. |
+| Pervasive | The property of a gap set that voids the summary verdict: a declared root was never reached, or any gap is unbounded. |
+| Report disposition | What the report as a whole may claim: `unqualified`, `qualified`, or `disclaimed`. A disclaimed report renders no summary verdict. |
 | Baseline | A set of accepted finding fingerprints that still appear in reports. |
 | Suppression | A scoped exception with a reason and expiry. |
 | Snapshot | The normalized graph state used for one deterministic run. |
 | Canonical marker | An explicit property value or configured pointer. It is not prose inference. |
+| Certainty | Whether the API proved a finding: `confirmed` or `indeterminate`. A property of the finding, not of the rule's coverage. |
 | Target state | What a scan established about a referenced object: `present`, `absent`, or `unreachable`. A property of the object, not of the finding. |
 | Normalization | The named function that strips volatile fields from an API response before hashing or comparison. Determinism is defined against its output, never against the raw response. |
 
-Two distinctions the glossary enforces, because collapsing either breaks the product contract:
+Four distinctions the glossary enforces, because collapsing any of them breaks the product contract:
 
 - **Baseline is not suppression.** A baseline records existing debt and keeps it visible. A suppression hides a finding and must carry a reason and an expiry.
 - **Confirmed is not indeterminate.** A rule reports `certainty: confirmed` only when the API proved the defect. Notion returns 404 for both "absent" and "inaccessible", so a 404 produces `indeterminate`.
 - **Certainty is not target state.** `certainty` describes the finding: did the scan prove it. `target state` describes the referenced object: `present`, `absent`, or `unreachable`. A finding can be `confirmed` about an `unreachable` target — "this link cannot be resolved" is a proved fact. Collapsing the two axes makes that finding inexpressible.
+- **Evidence sufficiency is not certainty.** `certainty` is about a finding the rule made: was this defect proved. Evidence sufficiency is about findings the rule may have failed to make: were there applicable resources it never judged. A rule can be `confirmed` on every finding it produced and still be `unreached`. Collapsing the two makes "nothing was wrong in what I read, and here is what I did not read" inexpressible — which is the product.
 
 ## Product principles
 
-1. A partial scan cannot pass. Completeness is measured against declared roots, never against the workspace — the connection cannot enumerate its own grant, so no tool can claim workspace coverage. The report states its access boundary and incomplete queries. See ADR-0002.
+1. A partial scan cannot report an unqualified verdict, and a pervasively gapped scan renders no summary verdict at all. Completeness is measured against declared roots, never against the workspace — the connection cannot enumerate its own grant, so no tool can claim workspace coverage. The report states its access boundary and its gaps. See ADR-0002 and ADR-0005.
 2. A rule must name its evidence: object, location, observed value, expected value.
 3. Unknown is not broken. Access failure and object absence share a 404 response.
 4. Policy must be explicit. The CLI infers no owner, canon, uniqueness, or peer status from labels alone.
@@ -55,7 +64,7 @@ Two distinctions the glossary enforces, because collapsing either breaks the pro
 
 | ID | Rule | Mode |
 | --- | --- | --- |
-| `SYS001` | Scan result is incomplete. | Built-in |
+| `SYS001` | A declared root or applicable resource was not evaluated. | Built-in |
 | `REF001` | Internal target is archived, in Trash, or unreachable. | Built-in |
 | `REQ001` | A selected resource lacks a required property value. | Configured |
 | `UNQ001` | A declared unique value occurs more than once. | Configured |

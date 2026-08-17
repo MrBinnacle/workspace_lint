@@ -1,5 +1,80 @@
 # Checkpoint — workspace_lint
 
+## S003 — 2026-08-16 — ADR-0005 locks the outcome model; the 72-hour proof is unblocked
+
+**PHASE:** Pre-build. No source code. Build gate still closed. The sweep banked in S002 was spent into one decision.
+
+**TESTS:** None. No toolchain. Not a gap.
+
+**ALL WORK LANDED, ON A BRANCH, UNPUSHED.** Branch `docs/adr-0005-outcome-model`, one commit `db02541`, three files:
+
+- `docs/adr/0005-outcome-splits-into-conformity-and-evidence-sufficiency.md` (new)
+- `CONTEXT.md` — glossary carries the split model
+- `PRODUCT.md` — refuted SARIF claim corrected
+
+Nothing is in flight. Nothing is half-written.
+
+### What ADR-0005 decides
+
+Six decisions. Full text in the ADR; the working is in `store.json` → `locked_decisions` → `ADR-0005`.
+
+1. **Outcome is a pair, not an enum.** Conformity (`conforms` | `violates`, **absent** when the evaluated set is empty) × evidence sufficiency (`sufficient` | `unreached` | `undecidable`). ISA 705's mandated grammar: "except for the effects" for a proved defect, "except for the **possible** effects" for an inability to obtain evidence.
+2. **`inapplicable` is deleted.** Operator exclusion → the scope declaration. Precondition mismatch → an applicability filter in the manifest. Neither is an outcome. Follows OSCAL, which keeps exclusion machinery in the assessment plan and never in results.
+3. **The report carries a disposition** — `unqualified` | `qualified` | `disclaimed` — and a disclaimed report renders **no summary verdict**. Gaps are pervasive when a declared root was never reached, or when any gap is unbounded.
+4. **No ratio is published without the coverage figure bounding it.**
+5. **The coverage manifest is a five-stage funnel:** declared → resolved → **enumerated** → fetched → evaluated. Every drop-out names a resource and a specific cause. Generic causes banned.
+6. **The SARIF claim is corrected.** Four primitives exist; the gap is the run-level aggregate only.
+
+### The five judgment calls that were not in the S002 handoff
+
+Recorded because a future reader will otherwise assume the handoff specified them.
+
+1. **Evidence sufficiency has three values, not two.** Split on the governing rule: *a value earns its place only if it changes what the operator does next.* `unreached` is fixed by sharing more or raising the request budget; `undecidable` is fixed by neither.
+2. **Conformity is absent, not a third value.** A verdict never formed is not a verdict value.
+3. **ISA 705's `adverse` was dropped.** It separates from `qualified` on materiality, which a CLI cannot compute. Three dispositions, not four.
+4. **Pervasiveness is structural, not a percentage.** A ratio threshold would be computed over a denominator the scan has just admitted it cannot establish. The structural form generalises ADR-0002 decision 2.
+5. **The funnel has five stages, not the handoff's four.** `enumerated` was inserted because it is the only source of unbounded gaps, and the `disclaimed` disposition keys on exactly those.
+
+**And one correction to the handoff's own instruction.** It said to adopt XCCDF's rule that a non-verdict never enters a scoring denominator. Applied alone, that rule **is** the Great Expectations defect — excluding never-run checks from the denominator is how a suite half of which never executed reports 100%. The shipped rule is stronger: the conformity ratio and the coverage ratio are published together or not at all.
+
+### Two S002 handoff claims were falsified at session start
+
+Both caught by the claim-verification step, both before any writing began.
+
+1. **The refuted SARIF sentence stood in three files, not one.** `PRODUCT.md`, `ADR-0002` Consequences, and `ADR-0003` Consequences — the last in its strongest form. Only `PRODUCT.md` was corrected. **The two ADRs were deliberately left standing** and are superseded by reference. Do not "fix" them.
+2. **"Delete the 10/25/50/100 req/s figures wherever they appear" was a no-op.** Those figures are in no canonical doc. Remaining instances are the instruction itself, the research file that marks them PARTIAL, and two sweep-raw files. Nothing to delete. Standing figure for every throughput model: **3 req/s per connection, ~540 requests inside the three-minute warm-scan kill criterion.**
+
+### BLOCKERS
+
+**None on the outcome model.** The 72-hour proof was waiting on it and is now unblocked.
+
+**Gate 1 is unchanged and still not technical.** Five teams that must prove a structural claim to a third party. Three channels: Reddit diagnosis, warm network, ICT Institute. The instruments are written and sitting in `docs/demand-test/`. That gate advances only when the operator sends.
+
+**One precondition on the proof:** it needs a Notion API token and a fixture workspace, and two of the four proof questions require the fixture to be **mutable**. That is not a breach of Principle 7 and should not be read as one.
+
+### EXACT NEXT STEPS
+
+1. **Push the branch and open the PR.** `git push -u origin docs/adr-0005-outcome-model`, then `gh pr create`. The work is committed but exists on one disk only.
+2. **Run the 72-hour proof as a `/prototype` on a `prototype/api-proof` branch** — not as build phase 0. ADR-0005 now defines what it must measure. `store.json` → `unknowns_assigned_to_proof` holds **eight** questions; three were added this session and all three test ADR-0005 itself:
+   - Do `unreached` and `undecidable` ever diverge against a workspace with a deliberately unshared subtree? If they never separate, collapse evidence sufficiency to two values.
+   - Can enumeration and fetching be separated against the real API? If not, the `disclaimed` disposition loses its trigger.
+   - How often does `disclaimed` fire on a real workspace? If it is the normal case, ADR-0002's declared-root model needs revisiting before ADR-0005 does.
+3. **The demand test needs no session.** The instruments are written. The Reddit diagnosis is the first send and the words are the operator's.
+4. **Do not open Configuration Status Accounting yet.** ADR-0005 deferred it deliberately; it is blocked on re-verifying MIL-HDBK-61A Fig 8-3, which no verifier has checked.
+
+**NEXT-MODEL:** fast tier. The proof is execution mechanics — write probes, measure, record what the API does. The ambiguity that justified a frontier model was the outcome model, and it is now locked. If the proof's results reopen ADR-0005 (any of its three Revisit-ifs firing), close that session and reopen on a frontier model rather than crossing the tier boundary mid-session.
+
+**NEXT-REPO/CWD:** `C:\Users\mlpgr\2026_Projects\workspace_lint` — single repo; state, ADRs, research and both session rituals all live here.
+
+### Standing cautions carried forward
+
+- **ADRs are never edited in place.** A refuted claim standing in ADR-0002 or ADR-0003 is correct, not a bug. Living docs (`PRODUCT.md`, `CONTEXT.md`) are corrected directly.
+- **ADR-0005's evidential floor is uneven, and the ADR says so.** Decisions 1–3 rest on adversarially re-verified primary sources. Decision 5's funnel shape rests on CONSORT 13a/13b, PRISMA 16b and STROBE 13 — **fetched but never re-verified**, adopted on three-way convergence. Re-verify the clause numbers before quoting them anywhere published.
+- **Citation hazard, unchanged and load-bearing.** ISO 19011:2018 and ISA 705 were read from unauthorised copies. Cite by clause and paragraph, link the ISO catalogue or IAASB, and put neither URL in a published artifact.
+- `docs/research/sweep-raw/` is raw and unverified except where a verification file says otherwise.
+
+---
+
 ## S002 — 2026-08-16 — Demand-test funnel specified; cross-domain prior-art sweep run
 
 **PHASE:** Pre-build. No source code. Build gate still closed. Two work streams advanced: the gate-1 recruiting funnel, and a seven-scout prior-art sweep on how mature assurance disciplines represent incomplete verification.
