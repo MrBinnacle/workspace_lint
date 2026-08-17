@@ -91,22 +91,51 @@ read this block instead. Nothing here depends on a band still being present.
 **Environment.** `~/.claude/settings.json` is gitignored, so the `guard-downstream-framing-gh.py`
 PreToolUse wiring exists only on this machine. **CC Safety Net failed closed once on a long
 `gh issue create` heredoc** — write the body to the scratchpad and pass `--body-file`. The
+**`guard-canonical-doc-edit.py` (added 2026-08-17) blocks `Edit`/`Write` to `CONTEXT.md`,
+`PRODUCT.md`, `docs/adr/**` and `docs/spec/**` unless an approved plan under `~/.claude/plans/`,
+modified within 24h, **names that file**.** The approved plan's Files table is the authorisation
+token. **There is deliberately no environment-variable escape** — an env var is a blanket unlock the
+model can set for itself, which is the failure the guard exists to stop. The escape is
+`EnterPlanMode` → name the file in the plan → `ExitPlanMode`. **Not guarded, deliberately:**
+`.claude/state/*` (the close ritual writes it after the plan is spent) and `docs/research/` +
+`docs/proof/` (evidence, appended not decided — and gating them would tax the activity that outranks
+an ADR on a question of fact). Suite: `~/.claude/hooks/test_guard_canonical_doc_edit.py`, 32
+assertions **including a mutation check**, plus a 6-case end-to-end run against the wired hook. It
+exists because the §5 plan gate was model-pull and failed on two consecutive sessions. The
 `guard-git-pull-rebase.py` hook **blocks bare `git pull`**; use `git fetch origin <branch>` then
 `git merge --ff-only origin/<branch>`. **`guard-gh-issue-triage-label.py` blocks `gh issue create`
 without a triage-role label**, reading the roles from `docs/agents/triage-labels.md`; escape is
 `TRIAGE_LABEL_ACK=1`. Its wiring is machine-local for the same reason the others' is.
 
-**The gate, and what actually blocks it.** Gate 1 is the demand test and it has not moved since
-2026-08-16. **#14 is CLOSED — it was finished in `cc16d63` on 2026-08-16 and three checkpoints
-carried it as the blocker anyway.** **#40 is now CLOSED too, and Gate 1 with it — closed 2026-08-17
-on owner research rather than on a five-team send.** Its statistics half was swept and **ADR-0005
-decision 3 survives** (`docs/research/unseen-population-sizing.md`); its recruitment-bias half never
-depended on that sweep and was visible inside `PRODUCT.md` all along. **The next gate is Gate 2, the
-72-hour proof, tracked as #10** — and #10's own "Proof checks" section is nine falsifiable
-end-to-end criteria, written before S005 and never run as a set. Cite `PRODUCT.md` by heading —
-"Gates, in order" and "Kill criteria" — never by line number. **Deref a NEXT-STEPS
-blocker against the artifact before adopting it** — `git log -- <file>` is usually enough — and
-confirm every `store.json` `corrections_pending` entry marked as gate-blocking exists on the board.
+**The gates. Both of them are closed, and nothing gates the build.**
+
+- **Gate 1, the demand test — CLOSED 2026-08-17** on owner research rather than on a five-team send.
+  #40 closed with it. Framing 2, the zero-config decay report, is the entry point. **It chose an
+  entry point and did not establish a price** — no willingness-to-pay figure exists for any framing.
+- **Gate 2, the 72-hour proof (#10) — CLOSED 2026-08-17** by the operator, on the grounds its own
+  triage comment gave: circular as filed, six of nine checks requiring the build it existed to gate.
+  Its checks are **build-acceptance criteria**, not pre-build gates.
+- **Gate 3, build at n=1, is live.** Tracked as #42 → #43, #44 → #45 → #46. #10's "no source on
+  `main`" constraint is discharged with it; building on a branch from `proto/ref001-observed` is now
+  a preference. `main` forces **#8**, the npm name, per `CONTEXT.md`.
+- **#14 is CLOSED** — finished in `cc16d63` on 2026-08-16, and three checkpoints carried it as the
+  blocker anyway.
+
+**What still holds about the proof:** the fixture is **narrower than #10 specified** — one data
+source rather than three, no archived target, no seeded `UNQ001`, `SCH001`, `DEP001` or `CAN001`.
+Any recorded build result must state which criteria the fixture could not exercise.
+
+**Three disciplines this cost.** Cite `PRODUCT.md` by **heading** — "Gates, in order", "Kill
+criteria" — never by line number. **Deref a NEXT-STEPS blocker against the artifact before adopting
+it**; `git log -- <file>` is usually enough. And **read an issue's COMMENTS, not only its body** —
+`gh api repos/OWNER/REPO/issues/N/comments`. A merged spec shipped two defects that #10's triage
+comment had already corrected, and `docs/inputs/` was skipped a third time the same session. **The
+artifact was opened and the discussion attached to it was not** — that is one failure shape, and it
+fired twice in one session.
+
+**No session grades. Operator ruling 2026-08-17:** *"We're not doing these grades anymore. It's a
+waste of tokens."* Do not solicit a `VERDICT`, do not write a `SELF-ASSESS` line. Every other step
+of the close ritual still runs; the ritual line records `verdict=n/a`.
 
 **Operator rulings** are in `store.json` → `operator_rulings` and in project memory.
 
@@ -114,101 +143,102 @@ confirm every `store.json` `corrections_pending` entry marked as gate-blocking e
 
 ---
 
-## S012 — 2026-08-17 — The literature settled the denominator, and the gate's blocker was finished three sessions ago
+## S013 — 2026-08-17 — Both gates closed the same day, and the decision board became a build board
 
-**PHASE:** Pre-build on `main` — still no `src/`, no `package.json`, no toolchain there. The
-prototype toolchain remains on `proto/ref001-observed`.
+**PHASE:** **BUILD.** Gate 1 closed on owner research; Gate 2 (#10) closed by the operator
+mid-session. **Nothing gates the build, for the first time in this project's history.** Still no
+`src/` or `package.json` on `main` — that is now a preference, not a constraint.
 
-**TESTS:** No toolchain on `main`, so no suite ran here. `guard-gh-issue-triage-label.py` — 11
-assertions, all passing, including a mutation check. Pair arithmetic in ADR-0011 recomputed
-independently: 4005/4950 = 80.9%, 1225/4950 = 24.7%, mean example 78.0.
+**TESTS:** No toolchain on `main`, so no suite ran. `store.json` re-validated as JSON after every
+edit. `retrospection.jsonl` 25 lines and `gate_events.jsonl` 53 lines, both valid JSONL.
+**Deref: 9 checked / 0 flagged / 9 hand-verified**, including that `live-ref001.ts` and
+`CHECK-link-recognition.ts` are on `proto/ref001-observed` and not on `main`.
 
-**MERGED:** **PR #38** — ADR-0011 plus the `CONTEXT.md` and REF001-spec corrections, commit
-`8bd6db9`. **The operator merged it during this session**, so `origin/main` is at `88d401e` and
-**#36 is CLOSED.** **FILED:** #39, #40. **CLOSED:** #14, #36. **TRIAGED:** #10 → `ready-for-human`.
-**Nothing in flight.**
+**MERGED:** **PR #41** (`944515c`) — Gate 1 close, the sweep, the slice spec. **The operator merged
+it mid-session.** **OPEN:** **PR #47** — the two spec corrections. **CLOSED:** #40 (by #41), **#10
+(by the operator, 15:21:55Z)**. **FILED:** #42, #43, #44, #45, #46.
 
-### ADR-0011 — the unit is per-rule, so the ratio is a vector
+### Gate 1 closed on his own research, and the harder half needed no literature
 
-A §0.5 sweep found a formal literature that ten ADRs had never opened. A grep of `docs/` for
-coverage-criteria terms returned **one line**, in a raw scout file.
+`PRODUCT.md` contradicted itself two sections apart. "The config file is the suspect, not the
+segment" concluded declared rules **"are not the entry point."** The Gates section went on
+recruiting *"five teams holding audit-relevant data"* — which is that entry point — and the kill
+criterion killed the project when no such team was found. The product section had absorbed
+`docs/inputs/decay-causal-synthesis-2026-08-16.md` on 2026-08-16, citing it four times. The Gates
+section never did.
 
-**Ammann and Offutt** give the model: a coverage criterion imposes *test requirements* drawn from
-the criterion's own structure, so the unit varies by criterion **by construction**. **XCCDF 1.2**
-gives the aggregation as a correction it had to make — Appendix B records that scoring moved from
-per-`rule-result` to **per-`Rule`** because rules with many instances dominated the pooled total.
-This project was one implementation away from the same defect.
+**Framing 2, the zero-config decay report, is the entry point.** Two limits are recorded in
+`PRODUCT.md` rather than left implicit: the evidence carries reasoning rather than URLs, and **no
+willingness-to-pay figure exists for any framing.** The gate chose an entry point. It did not
+establish a price. **Do not let a later session read the close as demand-proven-at-a-price.**
 
-Two findings went past what #36 asked:
+### ADR-0005 decision 3 survives, on a better reason than it had
 
-1. **#36's own table records `REQ001`'s unit as `Resource`, and that is wrong.** A property value
-   can fail independently of its page, so the unit is a `(resource, required property)` pair.
-   **Documented, not observed** — no live call has produced a partially-hydrated property.
-2. **`UNQ001` is quadratic.** Reading 90 of 100 resources evaluates **4005 of 4950 pairs — 80.9%,
-   not 90%.** At half coverage, 24.7% rather than 50%. The overstatement runs in the flattering
-   direction, which makes it the product's own false-green class arriving inside the coverage
-   machinery built to detect it.
+The unseen-population sweep is at `docs/research/unseen-population-sizing.md`. The field's general
+result is that **no upper bound is available** (Alfò et al. 2020, DOI 10.1111/biom.13265; Mao et al.
+2016, DOI 10.1111/biom.12553). Every estimator that produces a bound runs on a
+**frequency-of-frequencies distribution** and needs the same unit seen more than once. Cursor
+pagination returns each child exactly once — singletons equal *n*, doubletons are zero, **by
+construction.** The input does not exist.
 
-**ADR-0008 decision 5 had already written "the pair, not the resource, is the unit"** — for the
-baseline alone. The ADR generalises a move the repository had made once and not noticed.
+**New Revisit-if, with its hazard welded on:** two independent enumerations over identifiable IDs
+*would* supply that distribution, and the project has two paths — block children and
+`POST /v1/search` (#24). **Do not use it.** Both share one permission grant, positive dependence
+biases the estimate **down**, and a downward-biased estimate reports a **smaller gap than the true
+gap** — the flattering direction, the product's own false-green class, inside the coverage
+instrument. **No twelfth ADR was written**, because nothing was refuted.
 
-### The Gate 1 blocker was never what the last three checkpoints said it was
+### The board became a build board
 
-S010 and S011 both listed *"#14 — correct `PRODUCT.md`, still ahead of any outbound send."*
-**#14 was finished on 2026-08-16 in `cc16d63`**, on `origin/main`, every DoD element present in the
-issue's own wording, `PRODUCT.md` identical to it. Closed as complete.
+Eleven ADRs, five superseding parts of earlier ones, every supersession found by re-reading
+documents rather than by running the product. `/to-spec` had never run. It ran, seeded from **#10's
+nine proof checks** rather than invented from the ADRs, producing `docs/spec/v0.1-scan-slice.md` and
+five tracer bullets with explicit blocking edges: **#42 → #43, #44 → #45 → #46.**
 
-**The real blocker is a different `PRODUCT.md` correction that existed on no issue.**
-`store.json` → `corrections_pending` → *"PRODUCT.md demand test"*, marked `blocks: Gate 1`:
-§110's demand test and §152's kill criterion both name **the auditor buyer**, whose refutation is
-conditional on **ADR-0005 decision 3's unexamined "an unbounded gap cannot be sized" claim**. A
-demand test framed around the auditor buyer selects for auditors and confirms its own framing —
-and §122 says recruitment runs through direct contacts, which is the configuration most likely to
-manufacture agreement. **Filed as #40.**
+### Two failures, both the same shape, both in one session
 
-### The label discipline moved out of the doc layer
+**The artifact was opened and the discussion attached to it was not.** `docs/inputs/` was skipped
+for a third time — an entire #40 plan and a literature sweep were built before it was opened once.
+Then #10's **triage comment** was skipped, and the slice spec shipped **two defects verbatim into a
+merged PR**: check 4 (an unshared target *vanishes*, and the finding is `certainty: confirmed` about
+`target state: unreachable`) and check 7 (exit `2` is the `disclaimed` disposition only; `4` and `3`
+exist). Both corrected in PR #47 and by comments on #44 and #46.
 
-4 of 12 open issues carried `enhancement` and no triage role; every one was filed mid-session as a
-follow-up. `guard-gh-issue-triage-label.py` now blocks `gh issue create` without a role, reading the
-vocabulary from the project's own `docs/agents/triage-labels.md` rather than hardcoding it, and
-no-opping where that file is absent. **Wiring is machine-local** — `~/.claude/settings.json` is
-gitignored, the same constraint #25 records. It is a working precedent for #25's option 2.
+**The §5 plan gate failed for the second session running.** "Proceed per best practices" was treated
+as approval and `PRODUCT.md` was edited immediately. The operator: *"See this is what I'm saying.
+This is all ad hoc and jacked up already."* Fixed structurally — `EnterPlanMode` was called so the
+harness holds the gate instead of the model remembering it, and the plan was approved on first
+presentation. **ATTRIB, operator-answered: `skill`.**
 
 ### BLOCKERS
 
-**None on the work. One on the gate:** #40 must close before the demand test is sent.
+**None.** Both gates are closed and #42 is blocked by nothing.
 
 ### EXACT NEXT STEPS
 
-1. **#40 — the critical path, and start here.** Its first step is a literature sweep against ADR-0005 decision 3's
-   *"cannot be sized"* claim. The unseen-population literature is named in #40 as a **lead, not a
-   citation** — nothing there is verified and no source was fetched, because the session's web-search
-   budget was exhausted. **Run the sweep before quoting any of it.**
-2. **Then Gate 1: send.** #29 is answered by respondents, not by us.
-3. **#39** — `README.md` contradicts ADR-0005 and ADR-0008 in four places and has not been touched
-   since 2026-08-16.
-4. **#10** — runnable remainder only: Q2, Q3 re-run, Q8, restore `wl-revoke-child`. Two human gates
-   first — connect the integration to `REAL_ROOT_ID`, and **decide title redaction before Q8 output
-   lands in the repo.**
-5. **#35, #24, #25, #18, #19, #27, #8, #7** — unchanged, and all downstream of a gate that has not
-   moved since 2026-08-16.
+1. **Merge PR #47 first.** It corrects two defects that are live in `main` right now, and #44 and
+   #46 both carry correction comments pointing at it.
+2. **#42 — the scan-command scaffold.** Blocked by nothing; everything else is blocked by it.
+   Build on a branch from `proto/ref001-observed`, where the toolchain and the `scrub()` credential
+   discipline already are. Putting it on `main` instead forces **#8**, the npm name, which
+   `CONTEXT.md` requires "before the first `package.json`."
+3. **Then #43 and #44 in parallel, #45, then #46.** #46 is the one that decides whether the other
+   four proved anything — mutation check, the permission-filtered false-green, and an exit byte
+   reached via the whole chain rather than by another path.
+4. **Two human steps, neither blocking #42:** connect the integration to `REAL_ROOT_ID`, and decide
+   title redaction before any output naming real pages lands in the repo.
+5. **#39, #35, #27, #25, #24, #19, #18, #29, #8, #7** unchanged.
 
-**NEXT-MODEL:** **frontier**. #40's first step is a prior-art sweep whose outcome decides whether an
-accepted ADR's load-bearing claim survives, and both branches reshape the product's framing. That is
-the ambiguity-heavy irreversible head the routing rule reserves the frontier tier for. **#39, #18 and
-#19 are mechanical and belong to their own fast-tier session; do not straddle.**
+**NEXT-MODEL:** **fast tier.** #42 is separable execution mechanics against a written spec with a
+falsifiable DoD — the ambiguity was spent writing the spec, which is what the spec was for. **Do not
+straddle:** if the session would also reopen the manifest serialisation shape or the npm-name
+decision, that is a frontier head and belongs in its own session.
 
 **NEXT-REPO/CWD:** `C:\Users\mlpgr\2026_Projects\workspace_lint` — single repo; state, plan and
-resume ritual all at the root. The prototype toolchain is on `proto/ref001-observed`, not `main`.
+resume ritual all at the root. The build branches from `proto/ref001-observed`, which is in this
+same clone.
 
-**SELF-ASSESS:** VERDICT: 2 (operator-graded, solicited blind) · ATTRIB: skill — a notable save, not
-a failure. `/triage`'s step-1 **redundancy check** is what found #14 already complete in `cc16d63`;
-without it this session would have "worked on" a finished issue and left #40 unfiled for a fourth
-session. `session-end-to-state`'s **deref step** caught a second one — the checkpoint had already
-been written claiming PR #38 was unmerged when the operator had merged it mid-close.
-
-**Caveat on the grade, recorded because it is not visible in the outcome:** the operator interrupted
-mid-session — *"I don't think this is proceeding methodically. I think it's flailing and ad hoc"* —
-and he was right. §5's plan gate never fired: one `AskUserQuestion` about scope was treated as
-approval to author three files. The gate is `claude-md`-layer and it depends on model-pull, which is
-the failure mode §1 names. Recorded as project memory `a-scope-question-is-not-plan-approval`.
+**NO SELF-ASSESS LINE, BY OPERATOR RULING 2026-08-17** — *"We're not doing these grades anymore.
+It's a waste of tokens."* Recorded in `store.json` → `operator_rulings` and in project memory
+`no-session-grades`. Do not solicit a verdict at the next close. Every other step of the ritual
+still runs.

@@ -968,3 +968,105 @@ fast-tier session; do not straddle.**
 resume ritual all at the root. The prototype toolchain is on `proto/ref001-observed`, not `main`.
 
 **SELF-ASSESS:** VERDICT: 2 (operator-graded, solicited blind) · ATTRIB: none — task-inherent.
+
+
+---
+
+## S012 — 2026-08-17 — The literature settled the denominator, and the gate's blocker was finished three sessions ago
+
+**PHASE:** Pre-build on `main` — still no `src/`, no `package.json`, no toolchain there. The
+prototype toolchain remains on `proto/ref001-observed`.
+
+**TESTS:** No toolchain on `main`, so no suite ran here. `guard-gh-issue-triage-label.py` — 11
+assertions, all passing, including a mutation check. Pair arithmetic in ADR-0011 recomputed
+independently: 4005/4950 = 80.9%, 1225/4950 = 24.7%, mean example 78.0.
+
+**MERGED:** **PR #38** — ADR-0011 plus the `CONTEXT.md` and REF001-spec corrections, commit
+`8bd6db9`. **The operator merged it during this session**, so `origin/main` is at `88d401e` and
+**#36 is CLOSED.** **FILED:** #39, #40. **CLOSED:** #14, #36. **TRIAGED:** #10 → `ready-for-human`.
+**Nothing in flight.**
+
+### ADR-0011 — the unit is per-rule, so the ratio is a vector
+
+A §0.5 sweep found a formal literature that ten ADRs had never opened. A grep of `docs/` for
+coverage-criteria terms returned **one line**, in a raw scout file.
+
+**Ammann and Offutt** give the model: a coverage criterion imposes *test requirements* drawn from
+the criterion's own structure, so the unit varies by criterion **by construction**. **XCCDF 1.2**
+gives the aggregation as a correction it had to make — Appendix B records that scoring moved from
+per-`rule-result` to **per-`Rule`** because rules with many instances dominated the pooled total.
+This project was one implementation away from the same defect.
+
+Two findings went past what #36 asked:
+
+1. **#36's own table records `REQ001`'s unit as `Resource`, and that is wrong.** A property value
+   can fail independently of its page, so the unit is a `(resource, required property)` pair.
+   **Documented, not observed** — no live call has produced a partially-hydrated property.
+2. **`UNQ001` is quadratic.** Reading 90 of 100 resources evaluates **4005 of 4950 pairs — 80.9%,
+   not 90%.** At half coverage, 24.7% rather than 50%. The overstatement runs in the flattering
+   direction, which makes it the product's own false-green class arriving inside the coverage
+   machinery built to detect it.
+
+**ADR-0008 decision 5 had already written "the pair, not the resource, is the unit"** — for the
+baseline alone. The ADR generalises a move the repository had made once and not noticed.
+
+### The Gate 1 blocker was never what the last three checkpoints said it was
+
+S010 and S011 both listed *"#14 — correct `PRODUCT.md`, still ahead of any outbound send."*
+**#14 was finished on 2026-08-16 in `cc16d63`**, on `origin/main`, every DoD element present in the
+issue's own wording, `PRODUCT.md` identical to it. Closed as complete.
+
+**The real blocker is a different `PRODUCT.md` correction that existed on no issue.**
+`store.json` → `corrections_pending` → *"PRODUCT.md demand test"*, marked `blocks: Gate 1`:
+§110's demand test and §152's kill criterion both name **the auditor buyer**, whose refutation is
+conditional on **ADR-0005 decision 3's unexamined "an unbounded gap cannot be sized" claim**. A
+demand test framed around the auditor buyer selects for auditors and confirms its own framing —
+and §122 says recruitment runs through direct contacts, which is the configuration most likely to
+manufacture agreement. **Filed as #40.**
+
+### The label discipline moved out of the doc layer
+
+4 of 12 open issues carried `enhancement` and no triage role; every one was filed mid-session as a
+follow-up. `guard-gh-issue-triage-label.py` now blocks `gh issue create` without a role, reading the
+vocabulary from the project's own `docs/agents/triage-labels.md` rather than hardcoding it, and
+no-opping where that file is absent. **Wiring is machine-local** — `~/.claude/settings.json` is
+gitignored, the same constraint #25 records. It is a working precedent for #25's option 2.
+
+### BLOCKERS
+
+**None on the work. One on the gate:** #40 must close before the demand test is sent.
+
+### EXACT NEXT STEPS
+
+1. **#40 — the critical path, and start here.** Its first step is a literature sweep against ADR-0005 decision 3's
+   *"cannot be sized"* claim. The unseen-population literature is named in #40 as a **lead, not a
+   citation** — nothing there is verified and no source was fetched, because the session's web-search
+   budget was exhausted. **Run the sweep before quoting any of it.**
+2. **Then Gate 1: send.** #29 is answered by respondents, not by us.
+3. **#39** — `README.md` contradicts ADR-0005 and ADR-0008 in four places and has not been touched
+   since 2026-08-16.
+4. **#10** — runnable remainder only: Q2, Q3 re-run, Q8, restore `wl-revoke-child`. Two human gates
+   first — connect the integration to `REAL_ROOT_ID`, and **decide title redaction before Q8 output
+   lands in the repo.**
+5. **#35, #24, #25, #18, #19, #27, #8, #7** — unchanged, and all downstream of a gate that has not
+   moved since 2026-08-16.
+
+**NEXT-MODEL:** **frontier**. #40's first step is a prior-art sweep whose outcome decides whether an
+accepted ADR's load-bearing claim survives, and both branches reshape the product's framing. That is
+the ambiguity-heavy irreversible head the routing rule reserves the frontier tier for. **#39, #18 and
+#19 are mechanical and belong to their own fast-tier session; do not straddle.**
+
+**NEXT-REPO/CWD:** `C:\Users\mlpgr\2026_Projects\workspace_lint` — single repo; state, plan and
+resume ritual all at the root. The prototype toolchain is on `proto/ref001-observed`, not `main`.
+
+**SELF-ASSESS:** VERDICT: 2 (operator-graded, solicited blind) · ATTRIB: skill — a notable save, not
+a failure. `/triage`'s step-1 **redundancy check** is what found #14 already complete in `cc16d63`;
+without it this session would have "worked on" a finished issue and left #40 unfiled for a fourth
+session. `session-end-to-state`'s **deref step** caught a second one — the checkpoint had already
+been written claiming PR #38 was unmerged when the operator had merged it mid-close.
+
+**Caveat on the grade, recorded because it is not visible in the outcome:** the operator interrupted
+mid-session — *"I don't think this is proceeding methodically. I think it's flailing and ad hoc"* —
+and he was right. §5's plan gate never fired: one `AskUserQuestion` about scope was treated as
+approval to author three files. The gate is `claude-md`-layer and it depends on model-pull, which is
+the failure mode §1 names. Recorded as project memory `a-scope-question-is-not-plan-approval`.
