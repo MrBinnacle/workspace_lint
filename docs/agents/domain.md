@@ -15,9 +15,11 @@ assertion.
 2. **`PRODUCT.md`** at the repo root — the user, the job, the gates, the kill criteria. Canonical.
 3. **`docs/adr/`** — read the ADRs touching the area you are about to work in. Accepted decisions,
    **never edited in place**; a superseding ADR is the only instrument.
-4. **`docs/research/`** — the evidence the ADRs were built from. **Read before asserting any factual
+4. **`docs/spec/`** — per-rule behavioural specs. Read the spec for any rule you are about to
+   implement or change. Edited in place.
+5. **`docs/research/`** — the evidence the ADRs were built from. **Read before asserting any factual
    claim, not after.**
-5. **`docs/proof/`** — what the API actually did when asked. Outranks everything above it on any
+6. **`docs/proof/`** — what the API actually did when asked. Outranks everything above it on any
    question of fact.
 
 `docs/inputs/` holds external artifacts. **None of it is canonical**, and the files carry differing
@@ -34,7 +36,14 @@ This is the repo's most useful convention and it was undeclared until now.
 | `docs/proof/` | **observed** — a real response from the real API | Highest. Beats documentation. |
 | `docs/research/` | **documented** — what a primary source states | Beats an ADR's assertion. |
 | `docs/adr/` | **decided** — what this project concluded | Binding on behaviour, not on fact. |
+| `docs/spec/` | **decided** — how one rule must behave | Binding on behaviour, not on fact. |
 | `docs/inputs/` | **external** — seeded this project, not governed by it | None. |
+
+`docs/spec/` holds per-rule behavioural specifications. It sits at the same evidence class as
+`docs/adr/` and differs in scope, not in authority: an ADR decides something cross-cutting, a spec
+decides how one rule behaves. **A spec is not an ADR and never supersedes one** — where a spec and
+an ADR disagree, the ADR wins and the spec is the defect. Unlike an ADR, a spec **is** edited in
+place; it describes current intended behaviour rather than a dated decision.
 
 The project already separates *documented* from *observed* in prose — ADR-0007 decision 1 labels its
 own table "documented, not observed". The directories carry the same split. Use it.
@@ -79,6 +88,7 @@ paragraph; **publish no URL for either.** Full list in `.claude/state/store.json
 ├── PRODUCT.md              ← user, job, gates, kill criteria (canonical)
 └── docs/
     ├── adr/                ← accepted decisions, never edited
+    ├── spec/               ← per-rule behavioural specs, edited in place
     ├── research/           ← documented evidence (10 files, no index yet — see below)
     ├── proof/              ← observed evidence, outranks documentation
     ├── inputs/             ← external artifacts, none canonical
