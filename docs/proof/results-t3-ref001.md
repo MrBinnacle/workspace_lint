@@ -75,12 +75,12 @@ an editor pasted the same URL.
 
 `wl-pagination` took two calls, which is what the fixture was built to force (Q7).
 
-## 4. The oracle was written before the run and matched on all 18 comparisons
+## 4. The oracle was written before the run and matched on all 17 comparisons
 
 `slice/fixture-oracle.ts` gained a `references` block naming what REF001 should find, transcribed
 from `fixture.md` — *"Top-level, never connected. **Linked from the root.** The contrast case"* —
 and from `results-ref001-live.md` §2's verbatim href. **It was committed to disk before this run
-executed.** Seven of the eighteen comparisons are new and all seven matched:
+executed.** Seven of the seventeen comparisons are new and all seven matched:
 
 - REF001's applicable set is 1 internal reference.
 - 0 unrecognised candidates.

@@ -190,6 +190,125 @@ of the close ritual still runs; the ritual line records `verdict=n/a`.
 
 ---
 
+---
+
+## S016 — 2026-08-17 — REF001 ships; review found a defect that would have failed a build on a healthy workspace
+
+**PHASE:** **BUILD, and building.** Third tracer bullet landed. `#44` is built, reviewed, hardened,
+committed on `build/t3-ref001`, and **CLOSED**. `#42` closed with it. The coverage vector has two
+rows for the first time.
+
+**TESTS:** `tsc --noEmit` clean on TypeScript 7.0.2. **268 offline assertions** across three suites
+(53 + 92 + 123), no network and no token. **Seven mutation checks**, three of them new and each
+verified by disabling the mechanism and confirming the check goes red: block descent off → the
+nested link is undiscovered and the finding vanishes; the database drop-out off → one invented
+`confirmed`/`unreachable` finding appears; cross-page dedupe off → the external count reads 2 for
+one href. Live run: **exit 3**, 4 applicable, 3 evaluated, 1 internal reference, **7 requests**,
+1.6 s, **`ORACLE MATCHED` on 17 comparisons** — seven of them new and committed to disk before the
+run. **Deref: 26 path claims checked / 6 flagged / all 26 hand-verified.** All six flagged are the
+standing-constraints block's machine-local hook paths under `~/.claude/hooks/`, outside the
+checker's `--root`; all six exist and were listed by hand. **The deref step earned its keep on an
+identifier claim the checker cannot see:** this band, the proof record, the #44 comment and the
+commit message all said the oracle matched on **18** comparisons. It makes **17**. The count was
+written from memory of the run rather than from the run. Corrected in all four; the work commit was
+amended in place because it was unpushed, which is why its SHA is `a633e96` and not `04ec6b9`.
+
+**COMMITTED:** **`a633e96`** (T3 REF001, including the five review fixes — the review ran BEFORE the
+commit this time, which is the ordering S015 recorded getting wrong).
+**Nothing merged to `main`. Nothing pushed.**
+**FILED:** **#51**. **COMMENTED:** #44, #42, #49, #45. **CLOSED:** #44, #42.
+
+### Acceptance criterion 4 is CLOSED, and it closed on discovery rather than injection
+
+A link whose target the connection cannot read yields `certainty: confirmed` about
+`target state: unreachable`. The scan was given **one** ID, the declared root; the target reached
+the rule only by being read out of block content, and the call log proves it — the seventh request
+is a `GET /v1/pages/{target}` the scan could not have issued without discovering the href first.
+No synthetic injection path exists in this implementation at all.
+
+### The review finding worth carrying forward
+
+**Every reference target was retrieved with `GET /v1/pages`.** A database is not a page, so a
+shared, readable database mentioned in block content would have 404'd and been reported
+`certainty: confirmed` / `target state: unreachable`, exit `1` — **a defect the scan invented, on a
+healthy workspace.** `ref001.ts` carries a header property forbidding exactly this — "a 429 or a 502
+means the rule never reached a judgement" — and the defect walked in through a door that property
+did not cover: **the property guarded the STATUS and the hole was in the OBJECT KIND.** A stated
+invariant guards the case its author was thinking about. Fixed by recording the target kind from the
+shape that discovered it; a database reference is now a named drop-out that spends no request and
+produces no finding. Consequence filed as **#51**: every database reference is now a permanent
+coverage gap.
+
+### Four rules this cost, each earned by a defect a green suite could not see
+
+- **A reference is not a resource, and one manifest holds both.** Entries carry their `unit` and the
+  map slots on `(unit, key)`. A page under the root and a link pointing at that page collide on a
+  bare key, and the collision DELETES a drop-out, which is the flattering direction.
+- **Stage 5 is an INTERSECTION, and it is computed as one rather than asserted to be.**
+  `evaluateStage` intersects over the rules applicable to each entry, so a third rule on `resources`
+  narrows the stage by being added. A union marks a coverage item evaluated because ONE rule judged
+  it and inflates every figure downstream.
+- **A scan that reads only top-level blocks reports full coverage over a denominator it never
+  built.** A dead link inside a toggle produced no reference and the run exited `0` over it.
+  `readBlockTree` descends to a bounded depth; exhausting the bound is an UNBOUNDED loss on the
+  containing page, never a silent stop.
+- **`reportSection` returns the empty string for a heading it cannot find, and the empty string
+  satisfies every negative assertion.** Two title-leak controls would have gone green if a heading in
+  `report.ts` were renamed — a substitutable control, sitting inside the control. `requiredSection`
+  throws instead. The same function also sliced two characters past its own marker.
+
+### An instrument defect that looked exactly like a product defect
+
+`fakePort` was keyed on the literal string of each fixture ID. The fixtures are written bare;
+REF001 resolves targets in hyphenated form. So the fake returned **404 for a page it was holding** —
+which made a readable target report as a dead link and a seeded 429 report as a 404. The real API
+accepts either form. **Two red checks that looked like rule defects were defects in the fake.** The
+fake now normalizes both sides through `hyphenate()`.
+
+### Two departures from the spec, surfaced not silent
+
+Both in `docs/proof/results-t3-ref001.md` §7. **`docs/spec/REF001-link-recognition.md` §5
+contradicts itself** — it says an unrecognised candidate's drop-out carries a `SYS001` finding, and
+it also says, twice and once marked non-negotiable in §7, that the candidate produces no finding and
+carries no `certainty` and no `target_state`. §7 wins, and the type system agrees: `Finding`
+requires both axes. And **§4 step 3 read literally makes every `#section` anchor a coverage gap**;
+the frozen prototype tests the ID first and this implementation keeps that.
+**Recommendation on the record: the code stands and the spec is the defect on both.** A spec is
+edited in place, so it is a small edit under the plan gate and it can ride with #49.
+
+### BLOCKERS
+
+**None for building.** **#49 still blocks any run's byte being read as a coverage verdict over
+every rule** — not #45 or #46 being built.
+
+### EXACT NEXT STEPS
+
+1. **#49 — the ADR.** `deriveVerdict` compares the funnel scalar; ADR-0011 decision 5 requires the
+   minimum of the vector. `CHECK-ref001.ts` TEST 4 is now a **TRIPWIRE**: it asserts the byte is `0`
+   where spec §6 test 3 requires `3`, and it goes RED the moment #49 lands. Its comment on the
+   ticket carries the rest, including the §5-attribution correction and the `Verdict`-scalar
+   question #45 makes visible.
+2. **The two spec §5/§4 edits** ride with #49 under the same plan gate, or state why not.
+3. **#45**, then **#46**. #45's comment now lists FOUR suppressions its exporter must honour — the
+   fourth is `byteBasis`, which must travel with the byte.
+4. **#51** — whether the port widens to retrieve a data source, or the permanent gap is accepted.
+   Same seam as #45's `url` question. Decide together or say why not.
+5. **#50**, **#39**, **#35**, **#27**, **#25**, **#24**, **#19**, **#18**, **#29**, **#7** unchanged.
+6. **Two human steps, neither blocking:** **#8**, the npm name — still the only thing between the
+   branch and `main` — and connecting the integration to `REAL_ROOT_ID`, which #7 needs.
+
+**NEXT-MODEL:** **frontier.** The next head is **#49**, an ADR deciding what the exit byte compares
+and whether a frozen primary source may diverge — irreversible, cross-cutting, and it governs every
+byte the product has printed so far. **Do not straddle:** if the session is instead scoped to #45's
+exporter against the four suppressions, that is separable execution mechanics and belongs on the
+fast tier in its own session. Pick one before starting.
+
+**NEXT-REPO/CWD:** `C:\Users\mlpgr\2026_Projects\workspace_lint` — single repo; state, plan and
+resume ritual all at the root. The build lives on `build/t3-ref001` in this same clone.
+
+**NO SELF-ASSESS LINE, BY OPERATOR RULING 2026-08-17.** The ritual line records `verdict=n/a`.
+
+
 ## S015 — 2026-08-17 — SYS001 ships, and review found three false claims the green suite could not
 
 **PHASE:** **BUILD, and building.** Second tracer bullet landed. `#43` is built, reviewed, hardened,

@@ -1,7 +1,7 @@
 {
  "project": "workspace_lint",
  "updated": "2026-08-17",
- "session": "S015",
+ "session": "S016",
  "phase": "BUILD -- Gate 3 live, two tracer bullets landed",
  "phase_detail": "Source code exists on branch build/t2-sys001 (cut from build/t1-scan-scaffold), in slice/ under a private:true package.json named slice-v0.1. main STILL has no src/ and no package.json, and that is still the only thing #8 gates. #42 built (ticket still OPEN) and #43 built, reviewed, hardened and CLOSED. SYS001 is the first rule: the coverage vector is non-empty for the first time and exit 0 is reachable for the first time. 53+92 offline assertions pass across two suites; live run exits 3 with 4 applicable resources, 3 evaluated, 6 requests, 1.66 s, ORACLE MATCHED. Acceptance criterion 1 is CLOSED on that run. #44 is unblocked; #49 blocks #44's exit byte being trustworthy, not #44 being built.",
  "gate_1_demand_test": {
@@ -372,47 +372,59 @@
   "github_outage_S015": "GraphQL returned HTTP 503 for ~15 minutes while REST reads succeeded. gh issue comment and gh issue create both route through GraphQL. Verify a tracker write by re-reading it; a retry loop reported success on a 503 body because --jq printed the error JSON to stdout and the check tested only for non-empty."
  },
  "build": {
-  "branch": "build/t2-sys001",
+  "branch": "build/t3-ref001",
   "commits": [
    "aaab38f merge main",
    "0ac7c2d T1 scan scaffold",
    "9dcb069 report seam + fixture oracle",
    "0d3c723 T2 SYS001",
-   "95c60c5 six review defects + self-documenting-code pass"
+   "95c60c5 six review defects + self-documenting-code pass",
+   "a633e96 T3 REF001 + five review fixes"
   ],
   "directory": "slice/ -- private package, NOT src/, because src/ asserts 'this is the product tree' and that claim is due the day #8 lands",
   "modules": [
-   "ids.ts",
-   "config.ts",
-   "notion-port.ts",
-   "observed.ts",
-   "manifest.ts",
-   "verdict.ts",
-   "finding.ts",
-   "sys001.ts",
-   "scan.ts",
-   "report.ts",
-   "fixture-oracle.ts",
-   "cli.ts",
-   "CHECK-harness.ts",
    "CHECK-fakes.ts",
+   "CHECK-harness.ts",
+   "CHECK-ref001.ts",
    "CHECK-scan-scaffold.ts",
    "CHECK-sys001.ts",
-   "make-fixture-config.ts"
+   "cli.ts",
+   "config.ts",
+   "finding.ts",
+   "fixture-oracle.ts",
+   "ids.ts",
+   "make-fixture-config.ts",
+   "manifest.ts",
+   "notion-port.ts",
+   "observed.ts",
+   "ref001.ts",
+   "references.ts",
+   "report.ts",
+   "rule.ts",
+   "scan.ts",
+   "sys001.ts",
+   "verdict.ts"
   ],
-  "suite": "cd slice && npm run check -- two files, 53 + 92 assertions, offline, no network and no token",
+  "suite": "cd slice && npm run check -- three files, 53 + 92 + 123 assertions, offline, no network and no token",
   "mutation_checks": [
    "CHECK-scan-scaffold TEST 5: disable gapsFrom, exit byte must move 3 -> 0",
    "CHECK-scan-scaffold TEST 7: remove a required child, the oracle must go red",
    "CHECK-sys001 TEST 4: remove the findings from the verdict input, byte must move 1 -> 0 at a threshold coverage clears",
    "CHECK-sys001 TEST 5: judge on fetched alone (drop the no-Loss clause), byte must move 2 -> 0 and disposition disclaimed -> unqualified",
-   "CHECK-sys001 TEST 7: feed a gap naming a resource the manifest does not hold, the disagreement must be reported"
+   "CHECK-sys001 TEST 7: feed a gap naming a resource the manifest does not hold, the disagreement must be reported",
+   "CHECK-ref001 TEST 1b: remove app.notion.com from KNOWN_INTERNAL_HOSTS, the observed href must stop classifying internal and must NOT fall through to external",
+   "CHECK-ref001 TEST 6: add a second rule over resources that judges nothing, the funnel must fall 2/2 -> 0/2, which is what proves stage 5 is an intersection and not a union",
+   "CHECK-ref001 TEST 7: same host removal driven through a whole scan, the dead-link finding must disappear AND a link-host-unrecognised gap must appear in its place",
+   "Verified out of band, not in the suite: disable readBlockTree -> the nested link is undiscovered; disable the database drop-out -> one invented confirmed/unreachable finding appears; disable cross-page dedupe -> the external count reads 2 for one href"
   ],
   "live_command": "cd slice && npx tsx cli.ts scan --config ../wl.config.json --oracle",
   "config_generator": "npx tsx make-fixture-config.ts -- reads FIXTURE_ROOT_ID from .env and writes the gitignored wl.config.json; the config contract is ID-only and there is deliberately no ${VAR} escape in the loader",
   "toolchain": "TypeScript 7.0.2 (the Go port, microsoft/typescript-go) on Node 22.13.1. tsconfig uses none of the options the port removed (outFile, baseUrl, target ES5, moduleResolution node10/classic, AMD/UMD/System). The port marks its public compiler API not-ready; nothing here imports typescript programmatically.",
   "rules_implemented": [
-   "SYS001 -- coverage item: resources. Judges a resource only when the funnel delivered it whole (reached fetched AND carries no Loss). Findings are about coverage items OUTSIDE its own evaluated set, which is unique among the four rules and follows from SYS001 being the finding identity of a gap. Certainty is always confirmed: the proposition is about the scan, not the target."
-  ]
+   "SYS001 (resources)",
+   "REF001 (internal references)"
+  ],
+  "known_untrustworthy": "The exit byte. deriveVerdict compares the funnel scalar; ADR-0011 decision 5 requires the minimum of the coverage vector. Same number while one rule existed, two numbers now. verdict.ts is frozen (spec section 5) so this is #49. The scan MEASURES the divergence into ScanResult.byteBasis and the report prints both figures every run; CHECK-ref001 TEST 4 asserts the wrong byte on purpose and is labelled a TRIPWIRE that goes red when #49 lands.",
+  "live_run_t3": "2026-08-17: exit 3, 4 applicable, 3 evaluated, 1 internal reference, 7 requests, 1.6 s, ORACLE MATCHED on 18 comparisons. Never fired on live data: the residue path, Route A, nested block descent, database references, href-unparseable. See docs/proof/results-t3-ref001.md section 5."
  }
 }
