@@ -10,7 +10,8 @@
  * scan knows nothing about rendering.
  */
 
-import { STAGES, type Stage } from './manifest.js';
+import { STAGES, type Residual, type Stage } from './manifest.js';
+import type { Attestation } from './notion-port.js';
 import { anchorKey, formatRow, headlineCoverage, LINK_NOT_CAPTURED, type CoverageRow } from './finding.js';
 import { canonicalize, NORMALIZATION_VERSION, VOLATILE_FIELDS } from './normalize.js';
 import type { ScanResult } from './scan.js';
@@ -67,16 +68,47 @@ export type ReportDocument = {
   headline: Suppressible<CoverageRow>;
   conformityRatio: Suppressible<{ conforming: number; claimed: number; unit: string }>;
   funnel: { evaluated: number; applicable: number; fetched: number; unit: 'resources' };
-  outcomes: { rule: string; conformity: string | null; evidence: string | null }[];
+  /**
+   * ADR-0013 decision 5. `attestation` travels with `evidence` or neither is
+   * printed — the same instrument as ADR-0005 decision 4's ratio pair. Null when
+   * the run performed no enumeration at all, which is a state and not a blank.
+   */
+  outcomes: { rule: string; conformity: string | null; evidence: string | null; attestation: Attestation | null }[];
   exit: {
     byte: 0 | 1 | 2 | 3 | 4;
     why: string;
     cause: string | null;
-    /** ADR-0012 decision 2. The byte basis travels with the byte or neither is published. */
-    basis: { compared: CoverageRow | null; declaredThreshold: number; funnelNotCompared: number };
+    /**
+     * ADR-0012 decision 2. The byte basis travels with the byte or neither is
+     * published — and ADR-0013 decision 6 puts the RESIDUAL COUNT on the same
+     * object for the same reason. The S017 finding was not a missing
+     * disclosure: the blind-spine disclosure was already shipping. It was two
+     * true statements in different sections with nothing connecting them.
+     */
+    basis: {
+      compared: CoverageRow | null;
+      declaredThreshold: number;
+      funnelNotCompared: number;
+      /** RESOURCES whose enumeration was unattested. Not a count of calls, and not a count of missing items. */
+      residuals: number;
+      /**
+       * Carried on the basis so a zero count can say something TRUE. `0` means
+       * two different things — every enumeration was attested, or none produced
+       * a listing at all — and one template for both prints a false sentence in
+       * whichever case it was not written for.
+       */
+      attestation: Attestation | null;
+    };
   };
   manifest: { resource: string; unit: string; stages: string[]; loss: string | null; isRoot: boolean }[];
   gaps: { resource: string; cause: string; bounded: boolean; isRootMiss: boolean }[];
+  /**
+   * ADR-0013. NOT gaps. A gap is a coverage item that left the funnel; a
+   * residual is a doubt about whether the item was ever in it. They are separate
+   * fields on this document so no renderer can merge them into one table and no
+   * exporter can sum them.
+   */
+  residuals: Residual[];
   findings: {
     rule: string; resource: string; discriminator: Record<string, string>;
     certainty: string; targetState: string; bounded: boolean; isRootMiss: boolean;
@@ -146,6 +178,67 @@ function DISCLOSURES(r: ScanResult): string[] {
   ];
 }
 
+/**
+ * The attestation state behind a rule's applicable set — ADR-0013 decision 5.
+ *
+ * IT IS RUN-LEVEL, AND THAT IS A DOCUMENTED LIMIT RATHER THAN THE FULL
+ * DECISION. ADR-0013 decision 5 asks for the attestation of the enumerations
+ * that built THAT RULE's applicable set. In this slice every rule's applicable
+ * set descends from the same block-children traversal — SYS001 counts the
+ * resources it enumerated, and REF001 counts references extracted from the
+ * block content that same traversal read — so the per-rule answer and the
+ * run-level answer are the same value. They stop being the same the moment a
+ * rule's coverage item is built from a different endpoint, and at that point
+ * this function is the thing that must change rather than the callers.
+ *
+ * `unattested` DOMINATES. One blind enumeration behind a rule's set is enough
+ * to make the set's completeness unestablished, and the flattering direction
+ * would be to report the best endpoint used rather than the worst.
+ *
+ * NULL MEANS NO ENUMERATION PRODUCED A LISTING, WHICH IS NOT THE SAME AS "NONE
+ * WAS ATTEMPTED". A root whose `GET /v1/blocks/{id}/children` returned 404
+ * writes no enumeration record — the call was made and produced nothing to
+ * doubt — so it lands here too. The sentence this state prints must be true of
+ * BOTH cases: an earlier wording said "no enumeration was performed", which the
+ * report then printed four sections above a call log showing the call. That is
+ * the report contradicting its own evidence, which is this product's defect
+ * class appearing in this product's output.
+ *
+ * Null is a state with its own sentence in every renderer, never a blank cell.
+ */
+function attestationBehind(r: ScanResult): Attestation | null {
+  const enumerations = r.manifest.all().flatMap(e => (e.enumeration ? [e.enumeration] : []));
+  if (enumerations.length === 0) return null;
+  return enumerations.some(e => e.attestation === 'unattested') ? 'unattested' : 'attested';
+}
+
+/**
+ * The sentence printed where an attestation state would go when there is none.
+ *
+ * "PRODUCED A LISTING", NOT "WAS PERFORMED". A failed enumeration was performed;
+ * it just returned nothing. See attestationBehind.
+ */
+const NO_ENUMERATION = 'none — no enumeration produced a listing, so there is no attestation state';
+
+/**
+ * What the byte's basis line says about residuals — ADR-0013 decision 6.
+ *
+ * THREE CASES, BECAUSE ZERO MEANS TWO DIFFERENT THINGS. A single plural template
+ * printed `0 residual(s): the enumerations behind this figure could not be
+ * verified complete` on a run whose root enumeration 404'd — a sentence a reader
+ * parses as "nothing here is unverifiable" when in fact no listing was obtained
+ * at all and the figure rests on nothing. The zero case needed its own clause,
+ * and which clause depends on WHY it is zero.
+ *
+ * Shared by the terminal and Markdown renderers so the two cannot drift, which
+ * is the same reason the suppressions live in the document.
+ */
+function residualClause(count: number, attestation: Attestation | null): string {
+  if (count > 0) return `${count} residual(s): the enumerations behind this figure could not be verified complete`;
+  if (attestation === null) return 'no residuals — and no enumeration produced a listing, so this figure rests on none';
+  return 'no residuals — every enumeration behind this figure carried a completeness signal';
+}
+
 export function buildReportDocument(r: ScanResult, opts: DocumentOptions = {}): ReportDocument {
   const label = (e: { alias: string; safeLabel: string }) => (opts.showTitles ? e.alias : e.safeLabel);
   const entries = r.manifest.all();
@@ -169,6 +262,11 @@ export function buildReportDocument(r: ScanResult, opts: DocumentOptions = {}): 
 
   const headlineRow = headlineCoverage(r.coverage);
   const claimed = Object.values(r.outcomes).filter(o => o.conformity !== null);
+  /* COMPUTED ONCE, beside the other suppressions, and for the same reason: a
+   * value derived per row is a value that can differ per row. It cannot today —
+   * the function reads only the manifest — and computing it once means it still
+   * cannot after someone gives it a second input. */
+  const attestation = attestationBehind(r);
 
   return {
     normalization: { version: NORMALIZATION_VERSION, excluded: VOLATILE_FIELDS },
@@ -203,7 +301,12 @@ export function buildReportDocument(r: ScanResult, opts: DocumentOptions = {}): 
     },
 
     outcomes: Object.entries(r.outcomes)
-      .map(([rule, o]) => ({ rule, conformity: o.conformity, evidence: o.evidence }))
+      /* ADR-0013 decision 5. The attestation is attached to the row HERE, in the
+       * document, so no renderer has the option of printing evidence without it.
+       * Three emitters each remembering the constraint is three chances to
+       * forget it — the same reasoning that put the other four suppressions in
+       * this function. */
+      .map(([rule, o]) => ({ rule, conformity: o.conformity, evidence: o.evidence, attestation }))
       .sort((a, b) => (a.rule < b.rule ? -1 : a.rule > b.rule ? 1 : 0)),
 
     exit: {
@@ -214,6 +317,21 @@ export function buildReportDocument(r: ScanResult, opts: DocumentOptions = {}): 
         compared: r.byteBasis.compared,
         declaredThreshold: r.byteBasis.declaredThreshold,
         funnelNotCompared: r.byteBasis.funnel,
+        /* A COUNT OF RESOURCES WHOSE ENUMERATION WAS UNATTESTED, and NOT a count
+         * of missing items. That distinction is what makes the number
+         * publishable at all: ADR-0013 decision 3 forbids rendering the
+         * unattested SET as a figure because it is not estimable, and permits
+         * this one because the scan knows exactly which resources it enumerated.
+         *
+         * IT IS NOT A COUNT OF CALLS, and the earlier comment here said it was.
+         * `listAllChildren` paginates, so one resource can cost many calls, and
+         * `readBlockTree`'s nested descent issues more against the same
+         * resource. Measured on the repo's own fixtures: MIDSTREAM makes three
+         * block-children calls and yields two residuals. The per-resource
+         * granularity is what ADR-0013 decision 6's table specifies; the
+         * justification was the thing that was wrong. */
+        residuals: r.residuals.length,
+        attestation,
       },
     },
 
@@ -238,6 +356,17 @@ export function buildReportDocument(r: ScanResult, opts: DocumentOptions = {}): 
         isRootMiss: g.isRootMiss ?? false,
       }))
       .sort((a, b) => (a.resource < b.resource ? -1 : a.resource > b.resource ? 1 : 0)),
+
+    /* COPIED, like every sibling field on this document. Handing the document a
+     * live reference to the scan's own array lets a renderer or exporter that
+     * sorts or splices `doc.residuals` mutate the ScanResult — the aliasing the
+     * copy-on-build convention here exists to prevent.
+     *
+     * Already sorted by residualsFrom, and nothing needs resolving through
+     * safeName: a residual is always keyed on a resource the scan enumerated, so
+     * its identity is a hyphenated ID and cannot carry a title. A gap's identity
+     * may be a verbatim href, which is why that field does need the lookup. */
+    residuals: [...r.residuals],
 
     findings: [...r.findings]
       .map(f => ({
@@ -320,6 +449,21 @@ export function renderReport(r: ScanResult, opts: RenderOptions = {}): string[] 
   for (const g of doc.gaps)
     out.push(`  ${g.bounded ? 'bounded  ' : 'UNBOUNDED'} ${g.resource}  ${g.isRootMiss ? '[declared root never reached] ' : ''}${g.cause}`);
 
+  /* ADR-0013. A SEPARATE SECTION FROM GAPS, DELIBERATELY. Merging them would put
+   * a doubt about the frame in the same table as items that left the funnel, and
+   * a reader would reasonably add them up. The count that connects this section
+   * to the verdict is on the byte basis line, not here — a register a reader has
+   * to go looking for is the defect S017 found, restated with more words. */
+  out.push('');
+  out.push('──────── RESIDUALS ────────');
+  if (!doc.residuals.length) out.push('  none');
+  for (const x of doc.residuals) {
+    out.push(`  ${x.cause}  ${x.resource}`);
+    out.push(`      ${x.endpoint} carries no completeness signal, so a filtered listing and a complete one are identical.`);
+    out.push(`      NOT a gap and NOT counted in any ratio — this is a doubt about the frame, and its size is not estimable.`);
+    out.push(`      remedy: ${x.remedy}`);
+  }
+
   out.push('');
   out.push('──────── FINDINGS ────────');
   /* Every finding here is `new` and unsuppressed BY CONSTRUCTION — this slice
@@ -342,7 +486,11 @@ export function renderReport(r: ScanResult, opts: RenderOptions = {}): string[] 
 
   out.push('');
   out.push('──────── DISCLOSURES ────────');
-  for (const d of DISCLOSURES(r)) out.push(`  ${d}`);
+  /* READ FROM THE DOCUMENT, like every other section. This line called
+   * DISCLOSURES(r) directly, which is the same two-thirds-true shape T4's review
+   * found in three other sections: the terminal renderer was free to disagree
+   * with the Markdown and JSON about what a run disclosed. */
+  for (const d of doc.disclosures) out.push(`  ${d}`);
 
   out.push('');
   out.push('──────── REPORT ────────');
@@ -388,10 +536,18 @@ export function renderReport(r: ScanResult, opts: RenderOptions = {}): string[] 
   );
 
   out.push(`  funnel:           ${doc.funnel.evaluated}/${doc.funnel.applicable} resources evaluated · ${doc.funnel.fetched}/${doc.funnel.applicable} fetched   (unit: resources)`);
+  /* ADR-0013 decision 5: EVIDENCE SUFFICIENCY AND ITS ATTESTATION ARE PRINTED ON
+   * ONE LINE, together or not at all. `sufficient` is a claim about the
+   * evaluated set against the applicable set, and it stays exactly that — what
+   * the attestation adds is whether the applicable set was built from a listing
+   * the API could vouch for. A run can be `sufficient` and `unattested` at the
+   * same time and both words are true; separating them onto different lines is
+   * how a reader ends up believing only the first. */
   for (const o of doc.outcomes)
     out.push(
       `  outcome ${o.rule}:   conformity ${o.conformity ?? 'ABSENT — the evaluated set is empty, so no verdict was formed'}` +
-      ` · evidence ${o.evidence ?? 'ABSENT — the applicable set is empty, so there is nothing for evidence to cover'}`,
+      ` · evidence ${o.evidence ?? 'ABSENT — the applicable set is empty, so there is nothing for evidence to cover'}` +
+      ` · attestation ${o.attestation ?? NO_ENUMERATION}`,
     );
 
   /* ADR-0005 decision 4: the conformity ratio and the coverage figure are
@@ -433,7 +589,13 @@ export function renderReport(r: ScanResult, opts: RenderOptions = {}): string[] 
     `  byte basis:       compared ${
       b.compared ? `${formatRow(b.compared)} — the weakest rule, ${b.compared.rule} —` : 'nothing — the vector is empty, so the scan judged nothing —'
     } against the declared threshold ${b.declaredThreshold}` +
-    `   (funnel, not compared: ${(b.funnelNotCompared * 100).toFixed(1)}% of resources)`,
+    `   (funnel, not compared: ${(b.funnelNotCompared * 100).toFixed(1)}% of resources)` +
+    /* ADR-0013 decision 6, AND THIS IS THE OPERATIVE LINE OF THE WHOLE DECISION.
+     * The blind-spine disclosure was already shipping when the false green
+     * shipped, in its own section; what was missing was anything connecting it
+     * to the byte. A reader who reads only this line still learns that the
+     * enumeration behind the figure was unverifiable. */
+    `   · ${residualClause(b.residuals, b.attestation)}`,
   );
   if (doc.exit.cause) out.push(`  cause:            ${doc.exit.cause}`);
 
@@ -482,8 +644,11 @@ export function renderMarkdown(doc: ReportDocument): string {
   /* ADR-0012 decision 2: the byte basis travels with the byte, or neither is
    * published. A byte without the figure it compared is a coverage claim the
    * reader cannot check. */
+  /* ADR-0013 decision 6: the residual count is on the byte's own line here too.
+   * A count that appears in the Markdown register but not beside the byte would
+   * leave the two artifacts disagreeing about how connected the facts are. */
   L.push(
-    `- **Byte basis:** compared ${doc.exit.basis.compared ? `${md(formatRow(doc.exit.basis.compared))} — the weakest rule, \`${doc.exit.basis.compared.rule}\` —` : 'nothing; the vector is empty, so the scan judged nothing —'} against the declared threshold ${doc.exit.basis.declaredThreshold}. The resource funnel was ${(doc.exit.basis.funnelNotCompared * 100).toFixed(1)}% and was **not** the comparison.`,
+    `- **Byte basis:** compared ${doc.exit.basis.compared ? `${md(formatRow(doc.exit.basis.compared))} — the weakest rule, \`${doc.exit.basis.compared.rule}\` —` : 'nothing; the vector is empty, so the scan judged nothing —'} against the declared threshold ${doc.exit.basis.declaredThreshold}. The resource funnel was ${(doc.exit.basis.funnelNotCompared * 100).toFixed(1)}% and was **not** the comparison. **${md(residualClause(doc.exit.basis.residuals, doc.exit.basis.attestation))}**.`,
   );
   L.push('');
 
@@ -509,10 +674,12 @@ export function renderMarkdown(doc: ReportDocument): string {
 
   L.push('### Outcomes');
   L.push('');
-  L.push('| Rule | Conformity | Evidence sufficiency |');
-  L.push('| --- | --- | --- |');
+  /* ADR-0013 decision 5. The Attestation column is not decoration: evidence
+   * sufficiency and its attestation are published together or not at all. */
+  L.push('| Rule | Conformity | Evidence sufficiency | Attestation |');
+  L.push('| --- | --- | --- | --- |');
   for (const o of doc.outcomes)
-    L.push(`| \`${o.rule}\` | ${o.conformity ?? '_absent — the evaluated set is empty_'} | ${o.evidence ?? '_absent — the applicable set is empty_'} |`);
+    L.push(`| \`${o.rule}\` | ${o.conformity ?? '_absent — the evaluated set is empty_'} | ${o.evidence ?? '_absent — the applicable set is empty_'} | ${o.attestation ?? `_${NO_ENUMERATION}_`} |`);
   L.push('');
 
   L.push('## Coverage manifest');
@@ -531,6 +698,21 @@ export function renderMarkdown(doc: ReportDocument): string {
     L.push('| --- | --- | --- |');
     for (const g of doc.gaps)
       L.push(`| \`${md(g.resource)}\` | ${g.bounded ? 'bounded' : '**UNBOUNDED**'} | ${g.isRootMiss ? '**declared root never reached** — ' : ''}${md(g.cause)} |`);
+  }
+  L.push('');
+
+  /* ADR-0013. Its own section, below Gaps and separate from it. A residual is
+   * not an item that left the funnel and must never be summed with one. */
+  L.push('## Residuals');
+  L.push('');
+  L.push('_A residual is a doubt about the evidence base, **not** a gap. It enters no numerator, no denominator and no ratio: the size of what an unattested enumeration may have omitted is not estimable, so no figure for it is published (ADR-0013 decision 3)._');
+  L.push('');
+  if (!doc.residuals.length) L.push('_None._');
+  else {
+    L.push('| Cause | Resource | Endpoint | Remedy |');
+    L.push('| --- | --- | --- | --- |');
+    for (const x of doc.residuals)
+      L.push(`| \`${md(x.cause)}\` | \`${md(x.resource)}\` | \`${md(x.endpoint)}\` | ${md(x.remedy)} |`);
   }
   L.push('');
 

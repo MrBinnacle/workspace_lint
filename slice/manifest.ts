@@ -20,6 +20,7 @@
 import { hyphenate } from './ids.js';
 import type { Gap } from './verdict.js';
 import type { CoverageUnit } from './finding.js';
+import type { Attestation } from './notion-port.js';
 
 export type Stage = 'declared' | 'resolved' | 'enumerated' | 'fetched' | 'evaluated';
 export const STAGES: readonly Stage[] = ['declared', 'resolved', 'enumerated', 'fetched', 'evaluated'] as const;
@@ -71,6 +72,34 @@ export type Loss = {
    * absence and the API does not say which (Principle 3).
    */
   target: 'present' | 'unreachable';
+};
+
+/**
+ * The enumeration that listed this resource's children — ADR-0013 decision 2.
+ *
+ * PRESENT ONLY WHEN A CALL WAS ACTUALLY MADE. A resource that reaches the
+ * `enumerated` stage without one — the child_database, which is marked
+ * enumerated carrying a drop-out cause and spends no request — has no
+ * enumeration and produces no residual. It is a GAP and only a gap.
+ *
+ * THE RULE IS "NO CALL, NO RESIDUAL". IT IS NOT "NEVER BOTH", and the difference
+ * matters because the weaker reading is the one that feels right. A PARTIAL
+ * enumeration is both: the scan knows it stopped, which is an unbounded gap, and
+ * it also cannot verify that what it did receive was unfiltered, which is a
+ * residual. Two different facts about one resource, and suppressing either to
+ * keep them mutually exclusive would delete information. What must never happen
+ * is the residual entering the gap's arithmetic — that is residualsFrom's
+ * concern, not this record's.
+ *
+ * Recorded as STRUCTURE by the site that made the call, for the same reason
+ * `Loss` is. The endpoint is stored rather than the attestation alone so a
+ * reader can check the classification instead of trusting it.
+ */
+export type Enumeration = {
+  /** The endpoint family called, e.g. `GET /v1/blocks/{id}/children`. */
+  endpoint: string;
+  /** Read off the endpoint by attestationOf(). Never inferred from a response. */
+  attestation: Attestation;
 };
 
 /**
@@ -135,6 +164,8 @@ export type Entry = {
   isRoot: boolean;
   /** Present on reference entries only. */
   ref: RefFacts | null;
+  /** Null unless an enumeration call was made for this resource. ADR-0013 decision 2. */
+  enumeration: Enumeration | null;
 };
 
 /**
@@ -153,6 +184,8 @@ export type MarkArgs = {
   ref?: RefFacts;
   /** ALREADY REDACTED by the caller. See Entry.link. */
   link?: string | null;
+  /** Recorded by the site that made the enumeration call. See Entry.enumeration. */
+  enumeration?: Enumeration;
 };
 
 export class Manifest {
@@ -179,12 +212,13 @@ export class Manifest {
     const slot = Manifest.slot(unit, key);
     const e =
       this.entries.get(slot) ??
-      { key, unit, alias: args.alias || key, safeLabel: args.safeLabel || key, stages: new Set<Stage>(), loss: null, link: null, isRoot: false, ref: null };
+      { key, unit, alias: args.alias || key, safeLabel: args.safeLabel || key, stages: new Set<Stage>(), loss: null, link: null, isRoot: false, ref: null, enumeration: null };
     if (args.alias) e.alias = args.alias;
     if (args.safeLabel) e.safeLabel = args.safeLabel;
     if (args.link) e.link = args.link;
     if (args.isRoot) e.isRoot = true;
     if (args.ref) e.ref = args.ref;
+    if (args.enumeration) e.enumeration = args.enumeration;
     e.stages.add(args.stage);
     if (args.loss) e.loss = args.loss;
     this.entries.set(slot, e);
@@ -250,6 +284,82 @@ export function gapsFrom(manifest: Manifest): Gap[] {
     });
   }
   return gaps;
+}
+
+/* --------------------------------------------------------------- residuals --
+ *
+ * ADR-0013. A residual is a named, structured doubt about the EVIDENCE BASE
+ * that no in-band mechanism can resolve. It is not a Gap and it is not a
+ * finding.
+ *
+ * WHY THIS IS NOT A GAP, STATED HERE BECAUSE THE COLLAPSE IS ONE EDIT AWAY.
+ * CONTEXT.md defines a Gap as an applicable coverage item that LEFT the funnel
+ * before evaluation. Under an unattested enumeration nothing left the funnel —
+ * the doubt is whether the item was ever IN it. Appending residuals to the gap
+ * set puts a doubt into a denominator, and ADR-0013 decision 3 forbids that
+ * because two independent literatures say the quantity is not estimable: survey
+ * methodology holds that coverage error "can never be measured", and the
+ * capture-recapture sweep found that no upper bound exists for an access
+ * pattern that returns each child exactly once. A number derived from it would
+ * be invented, and invented in the flattering direction.
+ *
+ * `CHECK-residuals.ts` TEST 2b performs that collapse and asserts the run
+ * changes, so the prohibition is executable rather than merely written down.
+ * -------------------------------------------------------------------------- */
+
+/** The fixed machine-readable cause. Generic causes are banned — ADR-0005 decision 5 constraint 2. */
+export const RESIDUAL_CAUSE = 'enumeration_unattested';
+
+/**
+ * The remedy, and it is what earns the value its place.
+ *
+ * ADR-0009 decision 6's deletion test: a value is distinct when its remedy is
+ * distinct. `unreached` is remedied by widening access or raising the budget;
+ * `undecidable` by fixing the rule, the config or the data. Neither helps here —
+ * sharing more pages does not give the endpoint a truncation signal, and
+ * re-running does not either. The only remedy leaves the tool.
+ */
+export const RESIDUAL_REMEDY =
+  'verify out of band, with a full-access identity, that the declared tree is the tree the scan saw';
+
+export type Residual = {
+  cause: typeof RESIDUAL_CAUSE;
+  /** The FULL hyphenated ID. Never a prefix: Notion IDs are time-ordered and share leading hex. */
+  resource: string;
+  endpoint: string;
+  remedy: string;
+};
+
+/**
+ * Derive the residual register from the manifest.
+ *
+ * Exported as a named function for the same reason `gapsFrom` is: the mutation
+ * check must be able to bypass it and watch a control go red. One source of
+ * truth — the register is DERIVED from the enumeration records the calling
+ * sites wrote, never accumulated beside them, because a second copy drifts and
+ * drifts toward the flattering answer (results-ref001-live.md §4).
+ */
+export function residualsFrom(manifest: Manifest): Residual[] {
+  const residuals: Residual[] = [];
+  for (const e of manifest.all()) {
+    /* No call, no residual. An entry without an enumeration record either made
+     * no enumeration call or is not a resource at all. */
+    if (!e.enumeration) continue;
+    if (e.enumeration.attestation === 'attested') continue;
+    residuals.push({
+      cause: RESIDUAL_CAUSE,
+      /* THE KEY, WHICH IS THE HYPHENATED ID — never the alias. An alias is a page
+       * title, and this register is printed on stdout under a default that
+       * redacts titles. */
+      resource: e.key,
+      endpoint: e.enumeration.endpoint,
+      remedy: RESIDUAL_REMEDY,
+    });
+  }
+  /* Sorted, not insertion-ordered. Insertion order is call order, which is a
+   * property of the traversal and the network rather than of the workspace —
+   * SARIF Appendix F.3, the same rule the manifest and findings follow. */
+  return residuals.sort((a, b) => (a.resource < b.resource ? -1 : a.resource > b.resource ? 1 : 0));
 }
 
 /**

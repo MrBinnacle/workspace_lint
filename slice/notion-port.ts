@@ -17,6 +17,46 @@
 
 import { Client, APIResponseError } from '@notionhq/client';
 
+/* ------------------------------------------------------------ attestation --
+ *
+ * ADR-0013 decision 2. Whether an enumeration's endpoint carries a completeness
+ * signal the scan can check.
+ *
+ * IT LIVES HERE, WITH THE API SURFACE, ON PURPOSE. Attestation is a property of
+ * the ENDPOINT, not of a response and not of a result — the whole reason the
+ * component exists is that `GET /v1/blocks/{id}/children` returns the same
+ * `has_more: false` whether its listing was complete or permission-filtered, so
+ * no response body can ever carry this fact. Putting the table beside the
+ * endpoint declarations means adding a call forces the classification at the
+ * same moment.
+ * -------------------------------------------------------------------------- */
+
+export type Attestation = 'attested' | 'unattested';
+
+/** The traversal spine. No truncation signal — ADR-0006 decision 2. */
+export const BLOCK_CHILDREN = 'GET /v1/blocks/{id}/children';
+/** Carries a truncation signal — ADR-0007. Not called by this slice; classified so the table is not a one-row special case. */
+export const SEARCH = 'POST /v1/search';
+
+const ATTESTED_ENDPOINTS: readonly string[] = [SEARCH];
+
+/**
+ * Classify an endpoint.
+ *
+ * THE DEFAULT IS `unattested`, AND THAT DIRECTION IS THE POINT. An endpoint
+ * nobody has classified must not inherit the flattering answer. Defaulting to
+ * `attested` would let a future call silently widen the trusted set merely by
+ * being added — which is the shape of the defect that shipped a `2/2 — 100%`
+ * figure over a root with three children, where the denominator quietly grew to
+ * fit what the code could name.
+ *
+ * It is a function rather than a bare lookup so that the default is executable
+ * and can be asserted against. `CHECK-residuals.ts` TEST 1 asserts it.
+ */
+export function attestationOf(endpoint: string): Attestation {
+  return ATTESTED_ENDPOINTS.includes(endpoint) ? 'attested' : 'unattested';
+}
+
 export type BlockListResponse = {
   results: unknown[];
   has_more: boolean;

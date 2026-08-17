@@ -36,9 +36,9 @@
  */
 
 import type { Config } from './config.js';
-import type { NotionPort } from './notion-port.js';
+import { attestationOf, BLOCK_CHILDREN, type NotionPort } from './notion-port.js';
 import { createObserver, listAllChildren, readBlockTree, type Call } from './observed.js';
-import { Manifest, gapsFrom, RESOURCES, type Loss } from './manifest.js';
+import { Manifest, gapsFrom, residualsFrom, RESOURCES, type Enumeration, type Loss, type Residual } from './manifest.js';
 import { deriveVerdict, type Gap, type Verdict } from './verdict.js';
 import { SYS001 } from './sys001.js';
 import { REF001, REF001_UNIT, refKey } from './ref001.js';
@@ -74,10 +74,30 @@ export type ByteBasis = {
   declaredThreshold: number;
 };
 
+/**
+ * The enumeration record every block-children call writes — ADR-0013 decision 2.
+ *
+ * One constant, so no call site can classify the same endpoint differently from
+ * another. `attestationOf` is called rather than the value written literally,
+ * which keeps the classification in one place and lets TEST 1 assert it.
+ *
+ * FROZEN, because every entry that records an enumeration holds a REFERENCE to
+ * this one object and all three renderers read it. An in-place edit anywhere
+ * would silently reclassify every enumeration in the run — and the flattering
+ * direction of that edit is the one that empties the register. Freezing makes
+ * the immutability a property of the value rather than a habit of its callers.
+ */
+const BLOCK_ENUMERATION: Enumeration = Object.freeze({ endpoint: BLOCK_CHILDREN, attestation: attestationOf(BLOCK_CHILDREN) });
+
 export type ScanResult = {
   manifest: Manifest;
   verdict: Verdict;
   gaps: Gap[];
+  /**
+   * ADR-0013. Doubts about the evidence base, NOT gaps and NOT findings. They
+   * enter no ratio, no vector and no pervasiveness test — see residualsFrom.
+   */
+  residuals: Residual[];
   findings: Finding[];
   /** ADR-0011: one row per rule, over that rule's own coverage item. */
   coverage: CoverageRow[];
@@ -100,6 +120,11 @@ export type ScanOptions = {
    * disable it and confirm the exit byte goes green. Defaults to gapsFrom.
    */
   deriveGaps?: (m: Manifest) => Gap[];
+  /**
+   * The residual-register mechanism, injected at the same seam and for the same
+   * reason: a control that passes with its mechanism disabled tested nothing.
+   */
+  deriveResiduals?: (m: Manifest) => Residual[];
   /**
    * The rules, injected at the same seam and for the same reason. A list rather
    * than a pair, so a check can add a rule on an existing coverage item and
@@ -151,6 +176,7 @@ function evaluateStage(manifest: Manifest, rules: Rule[]): void {
 export async function scan(opts: ScanOptions): Promise<ScanResult> {
   const { config, port } = opts;
   const deriveGaps = opts.deriveGaps ?? gapsFrom;
+  const deriveResiduals = opts.deriveResiduals ?? residualsFrom;
   const rules = opts.rules ?? [SYS001, REF001];
   const now = opts.now ?? (() => Date.now());
 
@@ -227,7 +253,13 @@ export async function scan(opts: ScanOptions): Promise<ScanResult> {
     };
 
     return {
-      manifest, verdict, gaps, findings, coverage, outcomes, byteBasis, externalReferences,
+      manifest, verdict, gaps,
+      /* DERIVED AFTER the verdict and fed into NOTHING above it. That ordering is
+       * the decision-3 prohibition expressed as control flow: there is no line
+       * between here and deriveVerdict where a residual could reach a
+       * denominator. */
+      residuals: deriveResiduals(manifest),
+      findings, coverage, outcomes, byteBasis, externalReferences,
       calls: observer.calls,
       requestCount: observer.calls.length,
       wallMs: now() - t0,
@@ -299,6 +331,11 @@ export async function scan(opts: ScanOptions): Promise<ScanResult> {
      * error, an exhausted page budget, or a positive `request_status:
      * incomplete`. In every case the remainder is unknown. */
     loss: rootBlocks.state === 'partial' ? { cause: rootBlocks.cause, bounded: false, target: 'present' } : null,
+    /* THE CALL WAS MADE, SO THE ENUMERATION IS RECORDED — ADR-0013 decision 2.
+     * This is orthogonal to the loss above. A complete-looking enumeration and a
+     * permission-filtered one are identical in the response, so a clean `loss:
+     * null` here says nothing about whether the listing was whole. */
+    enumeration: BLOCK_ENUMERATION,
   });
   manifest.mark({ id: root.id, alias: rootAlias, stage: 'fetched' });
 
@@ -371,6 +408,10 @@ export async function scan(opts: ScanOptions): Promise<ScanResult> {
     manifest.mark({
       id: c.id, alias, stage: 'enumerated',
       loss: kids.state === 'partial' ? { cause: kids.cause, bounded: false, target: 'present' } : null,
+      /* Same call, same classification. The child_database branch above returns
+       * before reaching this line and therefore records NO enumeration: it spends
+       * no request, so there is no blind listing to doubt. It is a gap. */
+      enumeration: BLOCK_ENUMERATION,
     });
     manifest.mark({ id: c.id, alias, stage: 'fetched' });
     await readTree(c.id, alias, kids.value);
