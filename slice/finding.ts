@@ -132,7 +132,18 @@ export type Finding = {
  * (docs/research/notion-live-probe.md, search results carrying the API's own
  * `url` field) and is unevidenced for a data source.
  */
-export const LINK_NOT_CAPTURED = "not captured — this slice does not read the object's url field";
+/* CORRECTED BY #45, AND THE OLD TEXT HAD BECOME FALSE. It read "this slice does
+ * not read the object's url field", which stopped being true the moment
+ * NotionPort.retrievePage stopped discarding `url`. A reason string that
+ * survives the condition it describes is a false claim printed under a true
+ * value — the defect class this product exists to detect, in its own output.
+ *
+ * What is actually true: the slice issues GET /v1/pages for the DECLARED ROOT
+ * and for REF001's reference targets, and for nothing else. A child is staged
+ * from its parent's block listing and is never retrieved, so it has no url to
+ * capture. A data source is not retrieved at all — issue #51. */
+export const LINK_NOT_CAPTURED =
+  'not captured — GET /v1/pages runs for the declared root and for reference targets only, so no url exists for this resource';
 
 /* --------------------------------------------------------------- coverage -- */
 

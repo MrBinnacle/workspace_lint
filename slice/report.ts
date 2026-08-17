@@ -11,7 +11,8 @@
  */
 
 import { STAGES, type Stage } from './manifest.js';
-import { formatRow, headlineCoverage, LINK_NOT_CAPTURED } from './finding.js';
+import { anchorKey, formatRow, headlineCoverage, LINK_NOT_CAPTURED, type CoverageRow } from './finding.js';
+import { canonicalize, NORMALIZATION_VERSION, VOLATILE_FIELDS } from './normalize.js';
 import type { ScanResult } from './scan.js';
 
 export type RenderOptions = {
@@ -23,6 +24,256 @@ export type RenderOptions = {
    */
   showTitles?: boolean;
 };
+
+/* ================================================================ document ==
+ *
+ * ONE DOCUMENT, THREE RENDERERS. The terminal report, the Markdown report and
+ * the JSON report all read the structure below and none of them decides
+ * anything. #45's ticket states the hazard this closes: "a JSON exporter that
+ * serialises the raw `verdict` object rather than the rendered decisions will
+ * reintroduce every one of them" — four suppressions, each earned by a shipped
+ * defect. Three emitters each remembering four rules is three chances to forget
+ * one, and it is the drift hazard ADR-0012 decision 6 closed at the module
+ * layer arriving at the render layer.
+ * ========================================================================== */
+
+/**
+ * A value the report may refuse to publish.
+ *
+ * THE REFUSAL IS STRUCTURAL, NOT REMEMBERED. `value` does not exist on the
+ * unpublished branch, so no renderer can emit a withheld figure — `tsc` rejects
+ * the access. A nullable field would have left every emitter free to print
+ * `null`, and "printed a zero where the report refused to judge" is precisely
+ * what ADR-0005 decision 3 forbids.
+ *
+ * `because` is machine-readable, and it separates two states a single `null`
+ * would collapse: the report DECLINED to publish (disclaimed), versus there was
+ * nothing to publish (no subject, or the scan never ran).
+ */
+export type Suppressible<T> =
+  | { published: true; value: T }
+  | { published: false; reason: string; because: 'withheld-disclaimed' | 'absent-no-subject' | 'absent-did-not-run' };
+
+const published = <T>(value: T): Suppressible<T> => ({ published: true, value });
+const withheld = <T>(reason: string, because: 'withheld-disclaimed' | 'absent-no-subject' | 'absent-did-not-run'): Suppressible<T> =>
+  ({ published: false, reason, because });
+
+export type ReportDocument = {
+  /** ADR-0004. Which normaliser produced these bytes, and what it removed. */
+  normalization: { version: string; excluded: readonly string[] };
+  disposition: Suppressible<'unqualified' | 'qualified' | 'disclaimed'>;
+  /** ADR-0011 decision 4. Always present: per-rule evidence, not a summary. */
+  coverageVector: CoverageRow[];
+  headline: Suppressible<CoverageRow>;
+  conformityRatio: Suppressible<{ conforming: number; claimed: number; unit: string }>;
+  funnel: { evaluated: number; applicable: number; fetched: number; unit: 'resources' };
+  outcomes: { rule: string; conformity: string | null; evidence: string | null }[];
+  exit: {
+    byte: 0 | 1 | 2 | 3 | 4;
+    why: string;
+    cause: string | null;
+    /** ADR-0012 decision 2. The byte basis travels with the byte or neither is published. */
+    basis: { compared: CoverageRow | null; declaredThreshold: number; funnelNotCompared: number };
+  };
+  manifest: { resource: string; unit: string; stages: string[]; loss: string | null; isRoot: boolean }[];
+  gaps: { resource: string; cause: string; bounded: boolean; isRootMiss: boolean }[];
+  findings: {
+    rule: string; resource: string; discriminator: Record<string, string>;
+    certainty: string; targetState: string; bounded: boolean; isRootMiss: boolean;
+    evidence: { object: string; location: string; observed: string; expected: string };
+    link: string | null; linkAbsentReason: string | null; message: string;
+  }[];
+  disclosures: string[];
+  /** ADR-0004. Omitted entirely under `deterministic`; never merely emptied. */
+  volatile?: { wallMs: number; requestCount: number; calls: { endpoint: string; status: string; code: string | null }[] };
+};
+
+export type DocumentOptions = RenderOptions & {
+  /**
+   * ADR-0004 decision 5 — SARIF Appendix F.1 names this flag. Drops every field
+   * in VOLATILE_FIELDS, which is what makes two runs over an unchanged
+   * workspace byte-identical (acceptance criterion 5).
+   */
+  deterministic?: boolean;
+};
+
+/**
+ * The per-run disclosures, in one place so all three renderers carry the same
+ * ones. Every line states a limit that is NOT visible in any figure — a reader
+ * cannot infer them from a clean-looking ratio, which is why they are printed
+ * rather than filed.
+ */
+function DISCLOSURES(r: ScanResult): string[] {
+  return [
+    /* ADR-0006 decision 2 establishes that the truncation signal covers one
+     * endpoint family and that the scan records which endpoints ran blind;
+     * decision 5 makes the standing statement a per-run disclosure. Cited
+     * separately because the slice spec §3.1 attributes the fact to decision 5,
+     * which is the disclosure requirement, not the finding. */
+    'GET /v1/blocks/{id}/children carries NO truncation signal (ADR-0006 decision 2).',
+    'A complete enumeration and a silently truncated one both return has_more: false.',
+    'The traversal spine of this scan is trusted blind, and this run discloses it',
+    'rather than hiding it (ADR-0006 decision 5).',
+    'request_status is tested positively only; its absence proves nothing either way',
+    'and maps to `sufficient` (ADR-0006 decision 3).',
+    /* The host set is unbounded — Notion documents custom domains for Sites — so
+     * no allow-list can be complete and the residue path is the mechanism. Stated
+     * per run so that a future reader cannot re-frame the host list as the
+     * soundness mechanism, which is DoD item 2 on #44. */
+    'REF001 recognises internal links by a residue path, NOT by an allow-list: the host',
+    'set is unbounded (Notion Sites supports custom domains), so a link carrying a',
+    'Notion-shaped ID on an unknown host is reported, never dropped. The host list is an',
+    'optimisation and can never be complete.',
+    `${r.externalReferences} external reference(s) were discovered and excluded from every`,
+    'denominator as non-defect exclusions (ADR-0005 decision 2).',
+    /* Two limits REF001 has that are NOT visible in any figure, so they are stated
+     * rather than left for a reader to infer from a clean-looking ratio. */
+    'Nested block content IS read, to a bounded depth and request budget. Exhausting',
+    'either is recorded as an UNBOUNDED loss on the containing page, never as a',
+    'silent stop: a link the scan did not open cannot be counted or named.',
+    'A reference naming a DATABASE is not retrieved — this slice has GET /v1/pages only.',
+    'It is a named drop-out in REF001\'s coverage, never a finding. A reference found by',
+    'URL carries no object kind, so a 404 on it means "not retrievable as a page", which',
+    'covers a readable database as well as a dead link. That is a PRECISION limit and it',
+    'is the reason the finding names the route that discovered it.',
+    /* #51. Named in the report because the operator scoped the port widening to
+     * pages, so the database half of the same seam is still open and a reader
+     * must not read a clean REF001 row as covering databases. */
+    'The page url IS now captured, so a SYS001 finding names its resource by ID and link',
+    '(CONTEXT.md settled defaults). The link is REDACTED — a Notion URL copied from the UI',
+    'carries the page title inside its path. A DATA SOURCE url is still not retrieved: that',
+    'is issue #51 and it is open.',
+  ];
+}
+
+export function buildReportDocument(r: ScanResult, opts: DocumentOptions = {}): ReportDocument {
+  const label = (e: { alias: string; safeLabel: string }) => (opts.showTitles ? e.alias : e.safeLabel);
+  const entries = r.manifest.all();
+  const safeName = new Map(entries.map(e => [e.key, label(e)]));
+
+  /* THE FOUR SUPPRESSIONS, COMPUTED ONCE.
+   *
+   * 1. A DISCLAIMED report renders no summary verdict (ADR-0005 decision 3). It
+   *    keeps the manifest, the findings and the per-rule vector; the headline
+   *    and the conformity ratio are the summary verdict and they are withheld.
+   *    The arithmetic is worse than a formatting slip: a disclaimed run is
+   *    disclaimed because a gap is unbounded, so its denominator is a number the
+   *    run has just declared unestablishable.
+   * 2. A scan that DID NOT RUN has no disposition. deriveVerdict returns
+   *    `unqualified` on exit 4, which reads as a clean bill of health.
+   * 3. An EMPTY applicable set has no evidence sufficiency; `null` is absent,
+   *    never false.
+   * 4. The BYTE BASIS travels with the byte (ADR-0012 decision 2). */
+  const didNotRun = r.verdict.exit === 4;
+  const disclaimed = r.verdict.disposition === 'disclaimed';
+
+  const headlineRow = headlineCoverage(r.coverage);
+  const claimed = Object.values(r.outcomes).filter(o => o.conformity !== null);
+
+  return {
+    normalization: { version: NORMALIZATION_VERSION, excluded: VOLATILE_FIELDS },
+
+    disposition: didNotRun
+      ? withheld('none — the scan did not run as declared, so no disposition was formed', 'absent-did-not-run')
+      : published(r.verdict.disposition),
+
+    coverageVector: [...r.coverage].sort((a, b) => (a.rule < b.rule ? -1 : a.rule > b.rule ? 1 : 0)),
+
+    headline: disclaimed
+      ? withheld('WITHHELD — the disposition is disclaimed, so no summary verdict is rendered (ADR-0005 decision 3)', 'withheld-disclaimed')
+      : headlineRow
+        ? published(headlineRow)
+        : withheld('none — the vector is empty', 'absent-no-subject'),
+
+    conformityRatio: disclaimed
+      ? withheld('WITHHELD — the disposition is disclaimed (ADR-0005 decision 3)', 'withheld-disclaimed')
+      : claimed.length
+        ? published({
+            conforming: claimed.filter(o => o.conformity === 'conforms').length,
+            claimed: claimed.length,
+            unit: 'rules that reached a conformity claim',
+          })
+        : withheld('none — no rule formed a conformity verdict, so there is no ratio', 'absent-no-subject'),
+
+    funnel: {
+      evaluated: r.verdict.evaluated,
+      applicable: r.verdict.applicable,
+      fetched: r.manifest.reached('fetched'),
+      unit: 'resources',
+    },
+
+    outcomes: Object.entries(r.outcomes)
+      .map(([rule, o]) => ({ rule, conformity: o.conformity, evidence: o.evidence }))
+      .sort((a, b) => (a.rule < b.rule ? -1 : a.rule > b.rule ? 1 : 0)),
+
+    exit: {
+      byte: r.verdict.exit,
+      why: r.verdict.why,
+      cause: r.verdict.cause,
+      basis: {
+        compared: r.byteBasis.compared,
+        declaredThreshold: r.byteBasis.declaredThreshold,
+        funnelNotCompared: r.byteBasis.funnel,
+      },
+    },
+
+    /* SORTED, NOT INSERTION-ORDERED — SARIF Appendix F.3. Insertion order is
+     * call order, which is a property of the traversal and of the network, not
+     * of the workspace. */
+    manifest: entries
+      .map(e => ({
+        resource: label(e),
+        unit: e.unit,
+        stages: STAGES.filter((s: Stage) => e.stages.has(s)),
+        loss: e.loss?.cause ?? null,
+        isRoot: e.isRoot,
+      }))
+      .sort((a, b) => (a.unit + a.resource < b.unit + b.resource ? -1 : 1)),
+
+    gaps: [...r.gaps]
+      .map(g => ({
+        resource: safeName.get(g.resource) ?? g.resource,
+        cause: g.cause,
+        bounded: g.bounded,
+        isRootMiss: g.isRootMiss ?? false,
+      }))
+      .sort((a, b) => (a.resource < b.resource ? -1 : a.resource > b.resource ? 1 : 0)),
+
+    findings: [...r.findings]
+      .map(f => ({
+        rule: f.rule,
+        resource: f.anchor.resource,
+        discriminator: f.discriminator,
+        certainty: f.certainty,
+        targetState: f.targetState,
+        bounded: f.bounded,
+        isRootMiss: f.isRootMiss,
+        evidence: f.evidence,
+        link: f.link,
+        /* The REASON travels with the null, because "no link" and "we did not
+         * look" are different facts about the same field. */
+        linkAbsentReason: f.link === null ? LINK_NOT_CAPTURED : null,
+        message: f.message,
+      }))
+      .sort((a, b) => {
+        const ka = `${anchorKey({ rule: a.rule, resource: a.resource })}|${canonicalize(a.discriminator)}`;
+        const kb = `${anchorKey({ rule: b.rule, resource: b.resource })}|${canonicalize(b.discriminator)}`;
+        return ka < kb ? -1 : ka > kb ? 1 : 0;
+      }),
+
+    disclosures: DISCLOSURES(r),
+
+    ...(opts.deterministic
+      ? {}
+      : {
+          volatile: {
+            wallMs: r.wallMs,
+            requestCount: r.requestCount,
+            calls: r.calls.map(c => ({ endpoint: c.endpoint, status: String(c.status), code: c.code ?? null })),
+          },
+        }),
+  };
+}
 
 export function renderReport(r: ScanResult, opts: RenderOptions = {}): string[] {
   const out: string[] = [...r.log];
@@ -38,14 +289,19 @@ export function renderReport(r: ScanResult, opts: RenderOptions = {}): string[] 
    * may carry one INSIDE THE URL, because a Notion link copied from the UI reads
    * `.../My-Private-Roadmap-3bf1351d…`. That is the same hole #42 shipped
    * through an endpoint label, arriving through a different door. */
-  const label = (e: { alias: string; safeLabel: string }) => (opts.showTitles ? e.alias : e.safeLabel);
-  const entries = r.manifest.all();
-  const width = Math.max(20, ...entries.map(e => label(e).length));
+  /* EVERY SECTION BELOW READS THE DOCUMENT. Three sections used to read
+   * `r.manifest`, `r.gaps` and `r.findings` directly while the Markdown and JSON
+   * read the document, which made "one document, three renderers" two-thirds
+   * true — and left the terminal free to disagree with the artifacts about
+   * order, about names, and about which reason travels with a null. Caught by
+   * reviewing this change against its own claim, not by a failing test. */
+  const doc = buildReportDocument(r, opts);
+  const width = Math.max(20, ...doc.manifest.map(e => e.resource.length));
 
   out.push('');
   out.push('──────── COVERAGE MANIFEST ────────');
-  for (const e of entries)
-    out.push(`  ${label(e).padEnd(width)} ${STAGES.map((s: Stage) => (e.stages.has(s) ? '●' : '○')).join(' ')}  ${e.unit.padEnd(20)}${e.loss?.cause ?? ''}`);
+  for (const e of doc.manifest)
+    out.push(`  ${e.resource.padEnd(width)} ${STAGES.map((st: Stage) => (e.stages.includes(st) ? '●' : '○')).join(' ')}  ${e.unit.padEnd(20)}${e.loss ?? ''}`);
   out.push(`  ${''.padEnd(width)} ${STAGES.map(s => s[0]).join(' ')}   (declared resolved enumerated fetched evaluated)`);
   /* ADR-0011 decision 4 and spec criterion 6: no figure without its unit. The
    * manifest is where the figures come from, so the unit is on every row —
@@ -56,13 +312,13 @@ export function renderReport(r: ScanResult, opts: RenderOptions = {}): string[] 
 
   out.push('');
   out.push('──────── GAPS ────────');
-  if (!r.gaps.length) out.push('  none');
-  /* Rendered through the manifest, never from `g.resource` directly: a gap over
-   * an unrecognised link carries the VERBATIM href as its identity, and the
-   * verbatim href is the thing that may carry a title. */
-  const safeName = new Map(entries.map(e => [e.key, label(e)]));
-  for (const g of r.gaps)
-    out.push(`  ${g.bounded ? 'bounded  ' : 'UNBOUNDED'} ${safeName.get(g.resource) ?? g.resource}  ${g.isRootMiss ? '[declared root never reached] ' : ''}${g.cause}`);
+  if (!doc.gaps.length) out.push('  none');
+  /* The document already resolved each gap's name THROUGH the manifest, never
+   * from `g.resource` directly: a gap over an unrecognised link carries the
+   * VERBATIM href as its identity, and the verbatim href is the thing that may
+   * carry a title. */
+  for (const g of doc.gaps)
+    out.push(`  ${g.bounded ? 'bounded  ' : 'UNBOUNDED'} ${g.resource}  ${g.isRootMiss ? '[declared root never reached] ' : ''}${g.cause}`);
 
   out.push('');
   out.push('──────── FINDINGS ────────');
@@ -71,113 +327,70 @@ export function renderReport(r: ScanResult, opts: RenderOptions = {}): string[] 
    * PRINTED. Printing `new` would look computed, and ADR-0008 decision 1's five
    * states were never exercised: a state the slice did not compute is a false
    * claim whichever value it carries. */
-  if (!r.findings.length) out.push('  none');
-  for (const f of r.findings) {
-    out.push(`  ${f.rule}  ${f.anchor.resource}`);
+  if (!doc.findings.length) out.push('  none');
+  for (const f of doc.findings) {
+    out.push(`  ${f.rule}  ${f.resource}`);
     out.push(`      ${f.message}`);
     out.push(
       `      certainty: ${f.certainty} · target state: ${f.targetState} · ` +
       `gap: ${f.bounded ? 'bounded' : 'UNBOUNDED'}${f.isRootMiss ? ' · declared root never reached' : ''}`,
     );
     out.push(`      evidence: expected ${f.evidence.expected}, observed ${f.evidence.observed} (${f.evidence.location})`);
-    out.push(`      link: ${f.link ?? LINK_NOT_CAPTURED}`);
+    out.push(`      link: ${f.link ?? f.linkAbsentReason ?? LINK_NOT_CAPTURED}`);
   }
   out.push('  no baseline state is printed: this slice computes none (spec §1.2).');
 
   out.push('');
   out.push('──────── DISCLOSURES ────────');
-  /* ADR-0006 decision 2 establishes that the truncation signal covers one
-   * endpoint family and that the scan records which endpoints ran blind;
-   * decision 5 makes the standing statement a per-run disclosure. Cited
-   * separately because the slice spec §3.1 attributes the fact to decision 5,
-   * which is the disclosure requirement, not the finding. */
-  out.push('  GET /v1/blocks/{id}/children carries NO truncation signal (ADR-0006 decision 2).');
-  out.push('  A complete enumeration and a silently truncated one both return has_more: false.');
-  out.push('  The traversal spine of this scan is trusted blind, and this run discloses it');
-  out.push('  rather than hiding it (ADR-0006 decision 5).');
-  out.push('  request_status is tested positively only; its absence proves nothing either way');
-  out.push('  and maps to `sufficient` (ADR-0006 decision 3).');
-  /* The host set is unbounded — Notion documents custom domains for Sites — so
-   * no allow-list can be complete and the residue path is the mechanism. Stated
-   * per run so that a future reader cannot re-frame the host list as the
-   * soundness mechanism, which is DoD item 2 on #44. */
-  out.push('  REF001 recognises internal links by a residue path, NOT by an allow-list: the host');
-  out.push('  set is unbounded (Notion Sites supports custom domains), so a link carrying a');
-  out.push('  Notion-shaped ID on an unknown host is reported, never dropped. The host list is an');
-  out.push('  optimisation and can never be complete.');
-  out.push(`  ${r.externalReferences} external reference(s) were discovered and excluded from every`);
-  out.push('  denominator as non-defect exclusions (ADR-0005 decision 2).');
-  /* Two limits REF001 has that are NOT visible in any figure, so they are stated
-   * rather than left for a reader to infer from a clean-looking ratio. */
-  out.push('  Nested block content IS read, to a bounded depth and request budget. Exhausting');
-  out.push('  either is recorded as an UNBOUNDED loss on the containing page, never as a');
-  out.push('  silent stop: a link the scan did not open cannot be counted or named.');
-  out.push('  A reference naming a DATABASE is not retrieved — this slice has GET /v1/pages only.');
-  out.push('  It is a named drop-out in REF001\'s coverage, never a finding. A reference found by');
-  out.push('  URL carries no object kind, so a 404 on it means "not retrievable as a page", which');
-  out.push('  covers a readable database as well as a dead link. That is a PRECISION limit and it');
-  out.push('  is the reason the finding names the route that discovered it.');
+  for (const d of DISCLOSURES(r)) out.push(`  ${d}`);
 
   out.push('');
   out.push('──────── REPORT ────────');
+  /* EVERY DECISION BELOW IS READ FROM THE DOCUMENT, NOT RECOMPUTED HERE. The
+   * four suppressions live in buildReportDocument() and this renderer only
+   * formats them — same reason ADR-0012 deleted the second copy of the verdict.
+   * The line formats are unchanged, so the assertions over them still hold. */
   /* A SCAN THAT DID NOT RUN HAS NO DISPOSITION, AND MUST NOT PRINT ONE.
    * deriveVerdict computes the disposition from gaps and violations, and a run
    * that failed its identity call has neither — so it returns `unqualified`,
    * which reads as a clean bill of health directly under "The scan did not run
-   * as declared. No coverage claim is made." ADR-0005 decision 3's three values
-   * describe a report of a scan that ran; exit 4 says this one did not.
-   * verdict.ts is frozen (spec §5), so the suppression is here. Same rule the
-   * findings section applies to baseline state: a value the run did not compute
-   * is a false claim whichever value it carries. */
+   * as declared." A value the run did not compute is a false claim whichever
+   * value it carries. */
   out.push(
-    r.verdict.exit === 4
-      ? '  disposition:      none — the scan did not run as declared, so no disposition was formed'
-      : `  disposition:      ${r.verdict.disposition}${r.verdict.disposition === 'disclaimed' ? '   ← NO SUMMARY VERDICT RENDERED' : ''}`,
+    doc.disposition.published
+      ? `  disposition:      ${doc.disposition.value}${doc.disposition.value === 'disclaimed' ? '   ← NO SUMMARY VERDICT RENDERED' : ''}`
+      : `  disposition:      ${doc.disposition.reason}`,
   );
-
-  /* A DISCLAIMED REPORT RENDERS NO SUMMARY VERDICT. ADR-0005 decision 3 gives
-   * `disclaimed` exactly one behaviour — "No summary verdict is rendered. The
-   * manifest and the findings are still printed" — and the headline coverage
-   * figure and the conformity ratio are the summary verdict. Printing them under
-   * "← NO SUMMARY VERDICT RENDERED" contradicted the line above them.
-   *
-   * The arithmetic makes it worse than a formatting slip. A disclaimed run is
-   * disclaimed because a gap is unbounded, so its applicable set is a number the
-   * run has just declared unestablishable — and decision 3 rejects a percentage
-   * threshold on exactly that ground: it would be "computed over a denominator
-   * the scan has just admitted it cannot establish."
-   *
-   * The VECTOR still prints. It is per-rule evidence, not a summary. */
-  const summaryVerdictWithheld = r.verdict.disposition === 'disclaimed';
 
   /* ADR-0011 decision 4. One row per rule over that rule's OWN coverage item,
    * every figure carrying its unit, and the headline is the MINIMUM over the
    * vector — never a mean, never a count pooled across rules, because counts of
    * different things do not add. The vector is printed first and the headline
-   * second, because the headline may not be published without it. */
+   * second, because the headline may not be published without it.
+   *
+   * A DISCLAIMED REPORT RENDERS NO SUMMARY VERDICT (ADR-0005 decision 3), and
+   * the headline and the conformity ratio ARE the summary verdict. The vector
+   * still prints — it is per-rule evidence, not a summary. */
   out.push('  coverage vector:');
-  if (!r.coverage.length) {
+  if (!doc.coverageVector.length) {
     /* ADR-0011 decision 6: a rule with an empty applicable set leaves the
      * vector. Every rule empty means the scan judged nothing, and that must not
      * read as coverage. */
     out.push('    (empty — no rule had an applicable subject; no coverage figure exists)');
   }
-  for (const row of r.coverage) out.push(`    ${row.rule.padEnd(8)} ${formatRow(row)}`);
-  const headline = headlineCoverage(r.coverage);
+  for (const row of doc.coverageVector) out.push(`    ${row.rule.padEnd(8)} ${formatRow(row)}`);
   out.push(
     `  headline:         ${
-      summaryVerdictWithheld
-        ? 'WITHHELD — the disposition is disclaimed, so no summary verdict is rendered (ADR-0005 decision 3)'
-        : headline
-          ? `${formatRow(headline)} — the MINIMUM of the vector, set by ${headline.rule}`
-          : 'none — the vector is empty'
+      doc.headline.published
+        ? `${formatRow(doc.headline.value)} — the MINIMUM of the vector, set by ${doc.headline.value.rule}`
+        : doc.headline.reason
     }`,
   );
 
-  out.push(`  funnel:           ${r.verdict.evaluated}/${r.verdict.applicable} resources evaluated · ${r.manifest.reached('fetched')}/${r.verdict.applicable} fetched   (unit: resources)`);
-  for (const [rule, o] of Object.entries(r.outcomes))
+  out.push(`  funnel:           ${doc.funnel.evaluated}/${doc.funnel.applicable} resources evaluated · ${doc.funnel.fetched}/${doc.funnel.applicable} fetched   (unit: resources)`);
+  for (const o of doc.outcomes)
     out.push(
-      `  outcome ${rule}:   conformity ${o.conformity ?? 'ABSENT — the evaluated set is empty, so no verdict was formed'}` +
+      `  outcome ${o.rule}:   conformity ${o.conformity ?? 'ABSENT — the evaluated set is empty, so no verdict was formed'}` +
       ` · evidence ${o.evidence ?? 'ABSENT — the applicable set is empty, so there is nothing for evidence to cover'}`,
     );
 
@@ -186,14 +399,11 @@ export function renderReport(r: ScanResult, opts: RenderOptions = {}): string[] 
    * Expectations defect — a suite in which half the expectations never ran can
    * report 100%. A rule whose conformity is absent is excluded from the
    * denominator rather than scored as a failure. */
-  const claimed = Object.values(r.outcomes).filter(o => o.conformity !== null);
   out.push(
     `  conformity ratio: ${
-      summaryVerdictWithheld
-        ? 'WITHHELD — the disposition is disclaimed (ADR-0005 decision 3)'
-        : claimed.length
-          ? `${claimed.filter(o => o.conformity === 'conforms').length}/${claimed.length} rules conforming (unit: rules that reached a conformity claim)`
-          : 'none — no rule formed a conformity verdict, so there is no ratio'
+      doc.conformityRatio.published
+        ? `${doc.conformityRatio.value.conforming}/${doc.conformityRatio.value.claimed} rules conforming (unit: ${doc.conformityRatio.value.unit})`
+        : doc.conformityRatio.reason
     }`,
   );
   out.push(`  requests:         ${r.requestCount} · wall ${r.wallMs} ms   (NOT a validated budget — #7 owns that)`);
@@ -218,18 +428,146 @@ export function renderReport(r: ScanResult, opts: RenderOptions = {}): string[] 
    * coverage claim the reader cannot check, and #45's exporter carries the same
    * obligation. The funnel is printed beside it as a different noun, not as an
    * alternative. */
-  const b = r.byteBasis;
+  const b = doc.exit.basis;
   out.push(
     `  byte basis:       compared ${
       b.compared ? `${formatRow(b.compared)} — the weakest rule, ${b.compared.rule} —` : 'nothing — the vector is empty, so the scan judged nothing —'
     } against the declared threshold ${b.declaredThreshold}` +
-    `   (funnel, not compared: ${(b.funnel * 100).toFixed(1)}% of resources)`,
+    `   (funnel, not compared: ${(b.funnelNotCompared * 100).toFixed(1)}% of resources)`,
   );
-  if (r.verdict.cause) out.push(`  cause:            ${r.verdict.cause}`);
+  if (doc.exit.cause) out.push(`  cause:            ${doc.exit.cause}`);
 
   out.push('');
   out.push('──────── CALLS MADE (read-only) ────────');
   for (const c of r.calls) out.push(`  ${String(c.status).padEnd(4)} ${c.code ?? ''} ${c.endpoint}`);
 
   return out;
+}
+
+/* ================================================================ emitters ==
+ * Acceptance criterion 5: one readable Markdown report, one stable JSON report.
+ * Both read the document; neither decides anything.
+ * ========================================================================== */
+
+/** RFC 8785 bytes. Byte-identical across two runs when `deterministic` is set. */
+export function renderJson(doc: ReportDocument): string {
+  return canonicalize(doc);
+}
+
+/**
+ * Escape only what would change the STRUCTURE of the document.
+ *
+ * `|` ends a table cell and `` ` `` opens a code span; both would corrupt the
+ * layout. `*` can start emphasis. Underscores and brackets are deliberately NOT
+ * escaped: CommonMark does not treat an intraword `_` as emphasis, so
+ * `has_more`, `request_status` and `child_page` render literally — and escaping
+ * them puts a visible backslash into every API identifier this report prints,
+ * which is worse than the problem. The report's text is full of identifiers.
+ */
+const md = (s: string) => s.replace(/([|`*\\])/g, '\\$1');
+
+export function renderMarkdown(doc: ReportDocument): string {
+  const L: string[] = [];
+
+  L.push('# workspace_lint — scan report');
+  L.push('');
+  L.push(`Normalization \`${doc.normalization.version}\`. ${doc.volatile ? 'Volatile fields INCLUDED — this report is not byte-stable; re-run with `--deterministic`.' : 'Volatile fields excluded, so two runs over an unchanged workspace are byte-identical.'}`);
+  L.push('');
+
+  L.push('## Verdict');
+  L.push('');
+  L.push(`- **Exit byte:** \`${doc.exit.byte}\` — ${md(doc.exit.why)}`);
+  if (doc.exit.cause) L.push(`- **Cause:** \`${doc.exit.cause}\``);
+  L.push(`- **Disposition:** ${doc.disposition.published ? `\`${doc.disposition.value}\`` : md(doc.disposition.reason)}`);
+  /* ADR-0012 decision 2: the byte basis travels with the byte, or neither is
+   * published. A byte without the figure it compared is a coverage claim the
+   * reader cannot check. */
+  L.push(
+    `- **Byte basis:** compared ${doc.exit.basis.compared ? `${md(formatRow(doc.exit.basis.compared))} — the weakest rule, \`${doc.exit.basis.compared.rule}\` —` : 'nothing; the vector is empty, so the scan judged nothing —'} against the declared threshold ${doc.exit.basis.declaredThreshold}. The resource funnel was ${(doc.exit.basis.funnelNotCompared * 100).toFixed(1)}% and was **not** the comparison.`,
+  );
+  L.push('');
+
+  /* The vector prints before the headline, and prints even when the headline is
+   * withheld: it is per-rule evidence, not a summary (ADR-0005 decision 3). */
+  L.push('## Coverage');
+  L.push('');
+  if (!doc.coverageVector.length) {
+    L.push('_The vector is empty — no rule had an applicable subject, so no coverage figure exists._');
+  } else {
+    L.push('| Rule | Evaluated | Applicable | Coverage | Unit |');
+    L.push('| --- | ---: | ---: | ---: | --- |');
+    for (const r of doc.coverageVector)
+      L.push(`| \`${r.rule}\` | ${r.evaluated} | ${r.applicable} | ${(r.ratio * 100).toFixed(1)}% | ${r.unit} |`);
+  }
+  L.push('');
+  L.push(`**Headline:** ${doc.headline.published ? `${md(formatRow(doc.headline.value))} — the **minimum** of the vector, set by \`${doc.headline.value.rule}\`` : md(doc.headline.reason)}`);
+  L.push('');
+  L.push(`**Conformity ratio:** ${doc.conformityRatio.published ? `${doc.conformityRatio.value.conforming}/${doc.conformityRatio.value.claimed} (unit: ${doc.conformityRatio.value.unit})` : md(doc.conformityRatio.reason)}`);
+  L.push('');
+  L.push(`**Funnel:** ${doc.funnel.evaluated}/${doc.funnel.applicable} ${doc.funnel.unit} evaluated, ${doc.funnel.fetched}/${doc.funnel.applicable} fetched. This is the resource funnel and it is **not** a rule's coverage figure.`);
+  L.push('');
+
+  L.push('### Outcomes');
+  L.push('');
+  L.push('| Rule | Conformity | Evidence sufficiency |');
+  L.push('| --- | --- | --- |');
+  for (const o of doc.outcomes)
+    L.push(`| \`${o.rule}\` | ${o.conformity ?? '_absent — the evaluated set is empty_'} | ${o.evidence ?? '_absent — the applicable set is empty_'} |`);
+  L.push('');
+
+  L.push('## Coverage manifest');
+  L.push('');
+  L.push(`| Resource | Unit | ${STAGES.join(' | ')} | Drop-out cause |`);
+  L.push(`| --- | --- |${STAGES.map(() => ' :-: |').join('')} --- |`);
+  for (const e of doc.manifest)
+    L.push(`| \`${md(e.resource)}\`${e.isRoot ? ' **(declared root)**' : ''} | ${e.unit} | ${STAGES.map(s => (e.stages.includes(s) ? '●' : '○')).join(' | ')} | ${e.loss ? md(e.loss) : ''} |`);
+  L.push('');
+
+  L.push('## Gaps');
+  L.push('');
+  if (!doc.gaps.length) L.push('_None._');
+  else {
+    L.push('| Resource | Bounded | Cause |');
+    L.push('| --- | --- | --- |');
+    for (const g of doc.gaps)
+      L.push(`| \`${md(g.resource)}\` | ${g.bounded ? 'bounded' : '**UNBOUNDED**'} | ${g.isRootMiss ? '**declared root never reached** — ' : ''}${md(g.cause)} |`);
+  }
+  L.push('');
+
+  L.push('## Findings');
+  L.push('');
+  if (!doc.findings.length) L.push('_None._');
+  for (const f of doc.findings) {
+    L.push(`### \`${f.rule}\` — \`${md(f.resource)}\``);
+    L.push('');
+    L.push(md(f.message));
+    L.push('');
+    L.push(`- Certainty: \`${f.certainty}\` · target state: \`${f.targetState}\` · gap: ${f.bounded ? 'bounded' : '**UNBOUNDED**'}${f.isRootMiss ? ' · **declared root never reached**' : ''}`);
+    L.push(`- Evidence: expected ${md(f.evidence.expected)}, observed ${md(f.evidence.observed)} (${md(f.evidence.location)})`);
+    L.push(`- Link: ${f.link ? `\`${md(f.link)}\`` : `_${md(f.linkAbsentReason ?? 'none')}_`}`);
+    L.push('');
+  }
+  /* Spec §1.2: this slice computes no baseline state. Printing one would look
+   * computed, and a value the run did not compute is a false claim whichever
+   * value it carries. */
+  L.push('_No baseline state is printed: this slice computes none (spec §1.2)._');
+  L.push('');
+
+  L.push('## Disclosures');
+  L.push('');
+  for (const d of doc.disclosures) L.push(`- ${md(d)}`);
+  L.push('');
+
+  if (doc.volatile) {
+    L.push('## Volatile (excluded from the determinism claim)');
+    L.push('');
+    L.push(`${doc.volatile.requestCount} request(s), ${doc.volatile.wallMs} ms wall. **Not a validated budget — #7 owns that.**`);
+    L.push('');
+    L.push('| Status | Code | Endpoint |');
+    L.push('| --- | --- | --- |');
+    for (const c of doc.volatile.calls) L.push(`| ${c.status} | ${c.code ?? ''} | \`${md(c.endpoint)}\` |`);
+    L.push('');
+  }
+
+  return L.join('\n');
 }

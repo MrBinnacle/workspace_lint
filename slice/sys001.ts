@@ -125,6 +125,8 @@ function sys001Finding(args: {
   isRootMiss: boolean;
   location: string;
   message: string;
+  /** ALREADY REDACTED. Null when the port returned no url for this resource. */
+  link?: string | null;
 }): Finding {
   const anchor = anchorFor(SYS001_ID, args.resource);
   const discriminator: Discriminator = { [DROPOUT_STAGE_KEY]: args.stage };
@@ -145,7 +147,13 @@ function sys001Finding(args: {
     bounded: args.bounded,
     isRootMiss: args.isRootMiss,
     evidence,
-    link: null,
+    /* CONTEXT.md settled defaults: a finding names its resource "by ID and
+     * link". This was hardcoded null while NotionPort.retrievePage discarded
+     * `url`. It is REDACTED UPSTREAM, in scan.ts, because a Notion url carries
+     * the page title inside its path. Still null for a resource the scan never
+     * retrieved, and report.ts prints LINK_NOT_CAPTURED as the reason — "no
+     * link" and "we did not look" are different facts about the same field. */
+    link: args.link ?? null,
     message: args.message,
   };
 }
@@ -225,6 +233,7 @@ export const SYS001: Rule = {
         bounded: g.bounded,
         isRootMiss,
         location: `coverage funnel, after ${stage ?? 'no stage'}`,
+        link: e.link,
         /* No alias. The alias is a page title and CONTEXT.md redacts titles by
          * default; a message built from one would carry workspace content into
          * every consumer of this finding, redaction flag or not. */

@@ -12,14 +12,14 @@
  * bypasses application redaction entirely.
  */
 
-import { readFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
 
 import { loadConfig } from './config.js';
 import { liveNotionPort } from './notion-port.js';
 import { scan } from './scan.js';
-import { renderReport } from './report.js';
+import { buildReportDocument, renderJson, renderMarkdown, renderReport } from './report.js';
 import { checkAgainstOracle } from './fixture-oracle.js';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -62,7 +62,9 @@ const value = (name: string): string | undefined => {
   return i >= 0 ? argv[i + 1] : undefined;
 };
 
-const USAGE = 'usage: tsx cli.ts scan --config <path.json> [--show-titles] [--oracle]';
+const USAGE =
+  'usage: tsx cli.ts scan --config <path.json> [--show-titles] [--oracle]' +
+  ' [--json <path>] [--markdown <path>] [--deterministic]';
 
 async function main(): Promise<never> {
   if (argv[0] !== 'scan') {
@@ -100,7 +102,36 @@ async function main(): Promise<never> {
     port: liveNotionPort(TOKEN, env.NOTION_VERSION || '2026-03-11'),
   });
 
-  for (const line of renderReport(result, { showTitles: flag('show-titles') })) say(line);
+  const renderOpts = { showTitles: flag('show-titles') };
+  for (const line of renderReport(result, renderOpts)) say(line);
+
+  /* ACCEPTANCE CRITERION 5 — one readable Markdown report and one stable JSON
+   * report, from one run. Both are built from the SAME document the terminal
+   * render above used, so the four suppressions are applied once rather than
+   * three times.
+   *
+   * --deterministic drops the volatile fields (ADR-0004 decision 5, and SARIF
+   * Appendix F.1 names the flag). It is what makes two runs over an unchanged
+   * workspace byte-identical; without it the report carries wall time, the
+   * request count and the call log, none of which are properties of the
+   * workspace.
+   *
+   * Written through scrub(), like every other byte this process emits. A file
+   * is not a safer destination than stdout — it is a more durable one. */
+  const deterministic = flag('deterministic');
+  const doc = buildReportDocument(result, { ...renderOpts, deterministic });
+
+  const jsonPath = value('json');
+  if (jsonPath) {
+    writeFileSync(resolve(process.cwd(), jsonPath), scrub(renderJson(doc)), 'utf8');
+    say(`wrote JSON report to ${jsonPath}${deterministic ? '' : '   (NOT byte-stable — volatile fields included; add --deterministic)'}`);
+  }
+
+  const mdPath = value('markdown');
+  if (mdPath) {
+    writeFileSync(resolve(process.cwd(), mdPath), scrub(renderMarkdown(doc)), 'utf8');
+    say(`wrote Markdown report to ${mdPath}`);
+  }
 
   /* Acceptance criterion 1. The oracle is hand-written from docs/proof/fixture.md
    * and is compared to, never derived from, this run. A mismatch does NOT change

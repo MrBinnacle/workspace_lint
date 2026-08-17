@@ -264,7 +264,16 @@ export async function scan(opts: ScanOptions): Promise<ScanResult> {
     say(`declared root UNREACHABLE — ${page.cause}`);
     return finish();
   }
-  manifest.mark({ id: root.id, alias: rootAlias, stage: 'resolved' });
+  /* THE URL IS REDACTED HERE, AT THE POINT OF ENTRY. `page.value.url` is the raw
+   * Notion URL and it carries the page title inside its path. Redacting at the
+   * point of RENDER would mean three renderers plus a JSON artifact each had to
+   * remember, and #42 shipped a title through exactly one such forgotten site. */
+  manifest.mark({
+    id: root.id,
+    alias: rootAlias,
+    stage: 'resolved',
+    link: page.value.url ? redactHref(page.value.url) : null,
+  });
   say('declared root resolved.');
 
   /* -- enumerate the root ------------------------------------------------- */

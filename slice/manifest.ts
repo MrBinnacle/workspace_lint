@@ -120,6 +120,17 @@ export type Entry = {
   stages: Set<Stage>;
   /** Null when the funnel delivered this entry whole. */
   loss: Loss | null;
+  /**
+   * The resource's own url, ALREADY REDACTED, or null when the port did not
+   * return one. `Finding.link` reads this — CONTEXT.md's settled default names
+   * a resource "by ID and link".
+   *
+   * REDACTED AT THE POINT OF ENTRY, not at the point of render. A Notion URL
+   * carries the page title inside its path, and this field is read by three
+   * renderers plus a JSON artifact that outlives the terminal. Storing the raw
+   * url here and trusting every reader to redact is the shape of the #42 leak.
+   */
+  link: string | null;
   /** A declared root, which carries ADR-0005's pervasiveness condition (a). */
   isRoot: boolean;
   /** Present on reference entries only. */
@@ -140,6 +151,8 @@ export type MarkArgs = {
   loss?: Loss | null;
   isRoot?: boolean;
   ref?: RefFacts;
+  /** ALREADY REDACTED by the caller. See Entry.link. */
+  link?: string | null;
 };
 
 export class Manifest {
@@ -166,9 +179,10 @@ export class Manifest {
     const slot = Manifest.slot(unit, key);
     const e =
       this.entries.get(slot) ??
-      { key, unit, alias: args.alias || key, safeLabel: args.safeLabel || key, stages: new Set<Stage>(), loss: null, isRoot: false, ref: null };
+      { key, unit, alias: args.alias || key, safeLabel: args.safeLabel || key, stages: new Set<Stage>(), loss: null, link: null, isRoot: false, ref: null };
     if (args.alias) e.alias = args.alias;
     if (args.safeLabel) e.safeLabel = args.safeLabel;
+    if (args.link) e.link = args.link;
     if (args.isRoot) e.isRoot = true;
     if (args.ref) e.ref = args.ref;
     e.stages.add(args.stage);

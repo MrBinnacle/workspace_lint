@@ -31,7 +31,21 @@ export const page = (results: unknown[], extra: Partial<BlockListResponse> = {})
   ({ results, has_more: false, next_cursor: null, ...extra });
 
 export type Step = BlockListResponse | { throwStatus: number; throwCode: string };
-export type FakeResource = { pageFail?: { status: number; code: string }; steps?: Step[] };
+export type FakeResource = {
+  pageFail?: { status: number; code: string };
+  steps?: Step[];
+  /** What GET /v1/pages returns as `url`. See TITLED_URL. */
+  url?: string;
+};
+
+/**
+ * A page url of the shape Notion actually serves — THE TITLE IS INSIDE THE PATH.
+ * The fake returns this so the redaction assertions have something real to
+ * catch: a test whose fixture url carries no title cannot tell a working
+ * redactor from a missing one.
+ */
+export const TITLED_URL = (id: string) => `https://www.notion.so/My-Private-Roadmap-${id}`;
+export const TITLE_IN_URL = 'My-Private-Roadmap';
 
 export function fakePort(spec: Record<string, FakeResource>, meFails = false): NotionPort {
   /* THE FAKE RESOLVES AN ID IN EITHER FORM, BECAUSE THE API DOES. Notion accepts
@@ -52,7 +66,7 @@ export function fakePort(spec: Record<string, FakeResource>, meFails = false): N
     async retrievePage(id) {
       const r = lookup(id);
       if (!r || r.pageFail) throw new PortError(r?.pageFail?.status ?? 404, r?.pageFail?.code ?? 'object_not_found');
-      return { id };
+      return r.url === undefined ? { id } : { id, url: r.url };
     },
     async listChildren(id, cursor) {
       const r = lookup(id);

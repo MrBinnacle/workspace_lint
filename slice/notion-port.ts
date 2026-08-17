@@ -27,7 +27,18 @@ export type BlockListResponse = {
 
 export interface NotionPort {
   whoami(): Promise<{ name?: string; type?: string }>;
-  retrievePage(id: string): Promise<{ id: string }>;
+  /**
+   * `url` is OPTIONAL because the API may omit it and because a fake need not
+   * supply one — but it is no longer discarded. CONTEXT.md's settled default
+   * says a finding names its resource "by ID and link", and every SYS001
+   * finding carried `link: null` while this returned `{ id }` alone.
+   *
+   * THE CALLER MUST REDACT IT. A Notion URL copied from the UI reads
+   * `.../My-Private-Roadmap-3bf1351d…`, so the page title is inside the path.
+   * Writing this value into a report unredacted is the #42 title leak through a
+   * new door. `redactHref()` in references.ts is the only safe renderer of it.
+   */
+  retrievePage(id: string): Promise<{ id: string; url?: string }>;
   listChildren(id: string, cursor?: string): Promise<BlockListResponse>;
 }
 
@@ -60,7 +71,7 @@ export function liveNotionPort(auth: string, notionVersion: string): NotionPort 
 
   return {
     whoami: () => translate(() => client.users.me({})) as Promise<{ name?: string; type?: string }>,
-    retrievePage: id => translate(() => client.pages.retrieve({ page_id: id })) as Promise<{ id: string }>,
+    retrievePage: id => translate(() => client.pages.retrieve({ page_id: id })) as Promise<{ id: string; url?: string }>,
     listChildren: (id, cursor) =>
       translate(() => client.blocks.children.list({ block_id: id, page_size: 100, start_cursor: cursor })) as Promise<BlockListResponse>,
   };
