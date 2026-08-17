@@ -1,0 +1,571 @@
+<title>PROTOTYPE — REF001 over Observed&lt;T&gt;</title>
+<style>
+  :root {
+    --bg: #0d1117; --panel: #161b22; --line: #30363d; --ink: #e6edf3;
+    --dim: #8b949e; --acc: #58a6ff; --ok: #3fb950; --warn: #d29922;
+    --bad: #f85149; --unk: #bc8cff;
+    --mono: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 14px/1.55 var(--mono); padding: 20px;
+  }
+  h1 { font-size: 17px; margin: 0 0 4px; }
+  h2 { font-size: 13px; margin: 0 0 10px; color: var(--acc); text-transform: uppercase; letter-spacing: .06em; }
+  h3 { font-size: 13px; margin: 16px 0 6px; color: var(--ink); }
+  a { color: var(--acc); }
+  .warn-banner {
+    border: 1px solid var(--warn); border-left-width: 4px; background: #1c1710;
+    padding: 10px 14px; margin-bottom: 16px; color: #f0d58c; font-size: 13px;
+  }
+  .grid { display: grid; grid-template-columns: 330px 1fr; gap: 16px; align-items: start; }
+  @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+  .panel { border: 1px solid var(--line); background: var(--panel); padding: 14px; }
+  .ctl { display: flex; align-items: flex-start; gap: 8px; padding: 7px 0; border-bottom: 1px dotted #21262d; }
+  .ctl:last-child { border-bottom: 0; }
+  .ctl label { cursor: pointer; flex: 1; font-size: 13px; }
+  .ctl .note { display: block; color: var(--dim); font-size: 11px; margin-top: 2px; }
+  input[type=checkbox] { margin-top: 4px; accent-color: var(--acc); }
+  button {
+    font: inherit; font-size: 12px; background: #21262d; color: var(--ink);
+    border: 1px solid var(--line); padding: 6px 11px; cursor: pointer; margin: 0 6px 6px 0;
+  }
+  button:hover { border-color: var(--acc); }
+  button.primary { background: #1f6feb; border-color: #1f6feb; }
+  button.active { border-color: var(--acc); color: var(--acc); }
+  pre { margin: 0; white-space: pre-wrap; word-break: break-word; font-size: 12.5px; }
+  .tabs { border-bottom: 1px solid var(--line); margin-bottom: 12px; padding-bottom: 8px; }
+  .kv { color: var(--dim); }
+  .complete { color: var(--ok); } .partial { color: var(--warn); }
+  .unreachable { color: var(--bad); } .undec { color: var(--unk); }
+  .verdict { border: 1px solid var(--line); border-left-width: 4px; padding: 10px 12px; margin: 10px 0; }
+  .verdict.pass { border-left-color: var(--ok); background: #0d1a10; }
+  .verdict.fail { border-left-color: var(--bad); background: #1a0f0f; }
+  .verdict.hold { border-left-color: var(--warn); background: #1a160d; }
+  table { border-collapse: collapse; width: 100%; font-size: 12.5px; margin: 8px 0; }
+  th, td { border: 1px solid var(--line); padding: 5px 8px; text-align: left; vertical-align: top; }
+  th { color: var(--dim); font-weight: normal; }
+  .step { color: var(--dim); font-size: 12px; margin: 4px 0; }
+  code { background: #21262d; padding: 1px 4px; }
+</style>
+
+<h1>PROTOTYPE — <code>REF001</code> end to end over <code>Observed&lt;T&gt;</code></h1>
+<p class="step">Throwaway. Not production code, not a spec, not an ADR. Answers one question and is then evidence.</p>
+
+<div class="warn-banner">
+  <b>The question this answers:</b> does the <code>Observed&lt;T&gt;</code> provenance type — with
+  <b>no function <code>Observed&lt;T&gt; → T</code></b> and combinators that propagate partiality —
+  produce the right verdicts on the cases the 72-hour proof actually recorded?
+  <br><br>
+  <b>Where the data comes from:</b> the fixture in <code>docs/proof/fixture.md</code> and the responses in
+  <code>docs/proof/results.md</code>, both dated 2026-08-17. <b>No live API call is made.</b> The recorded
+  observation outranks a fresh one (<code>docs/agents/domain.md</code>), and this file therefore needs no
+  token, no <code>REAL_ROOT_ID</code>, and no npm dependency.
+</div>
+
+<div class="grid">
+  <div>
+    <div class="panel">
+      <h2>World state — free play</h2>
+      <div id="controls"></div>
+      <div style="margin-top:12px">
+        <button class="primary" onclick="run()">Re-run scan</button>
+        <button onclick="resetWorld()">Reset to fixture</button>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-top:16px">
+      <h2>Guided walkthroughs</h2>
+      <div id="walks"></div>
+      <div id="walkbody" style="margin-top:10px"></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="tabs">
+      <button id="t-report" class="active" onclick="showTab('report')">Report</button>
+      <button id="t-observed" onclick="showTab('observed')">Observed values</button>
+      <button id="t-manifest" onclick="showTab('manifest')">Coverage manifest</button>
+      <button id="t-baseline" onclick="showTab('baseline')">ADR-0010 matcher</button>
+      <button id="t-trace" onclick="showTab('trace')">Trace</button>
+    </div>
+    <div id="out"></div>
+  </div>
+</div>
+
+<script>
+/* ============================================================================
+   1. Observed<T>  —  the type under test
+   There is deliberately NO unwrap, no getOrThrow, no `.value!`, no
+   Observed<T> -> T anywhere in this file. Every consumer is a combinator that
+   must decide what partiality means for its own question.
+   ========================================================================== */
+
+const complete    = (value)        => ({ state: 'complete',    value });
+const partial     = (value, cause) => ({ state: 'partial',     value, cause });
+const unreachable = (cause)        => ({ state: 'unreachable', cause });
+
+/* map: shape-preserving. An unreachable stays unreachable; a partial stays partial. */
+function omap(o, f) {
+  if (o.state === 'unreachable') return o;
+  return o.state === 'partial' ? partial(f(o.value), o.cause) : complete(f(o.value));
+}
+
+/* all: Observed<T>[] -> Observed<T[]>.  Partiality is contagious upward. */
+function oall(list) {
+  const causes = [], vals = [];
+  for (const o of list) {
+    if (o.state === 'unreachable') { causes.push(o.cause); continue; }
+    if (o.state === 'partial')     { causes.push(o.cause); }
+    vals.push(o.value);
+  }
+  return causes.length ? partial(vals, causes.join(' · ')) : complete(vals);
+}
+
+/* unique: the asymmetry that motivates the whole type.
+   A duplicate FOUND in a partial list is proved.  Uniqueness HOLDING over a
+   partial list is not, and must never come back as `true`. */
+function ounique(o, keyOf) {
+  if (o.state === 'unreachable') return o;
+  const seen = new Set(); let dupe = null;
+  for (const x of o.value) { const k = keyOf(x); if (seen.has(k)) { dupe = k; break; } seen.add(k); }
+  if (dupe !== null) return complete({ unique: false, witness: dupe });     // provable from partial data
+  if (o.state === 'partial') return partial({ unique: null }, o.cause);      // NOT `true`
+  return complete({ unique: true });
+}
+
+const cls = o => o.state;
+
+/* ============================================================================
+   2. The world  —  docs/proof/fixture.md, 2026-08-17
+   ========================================================================== */
+
+const FIXTURE = {
+  rootReachable:          true,   // wl-proof-fixture …2a3bee7c
+  outsideGrantConnected:  false,  // wl-outside-grant …bffb9742 — never connected, by design
+  revokeChildConnected:   false,  // wl-revoke-child …ce0fb949 — disconnected 2026-08-17
+  paginationCompletes:    true,   // wl-pagination …fef57e44 — 151 blocks over 2 pages
+  budgetExhausted:        false,
+  authFailure:            false,
+  coverageThreshold:      1.0
+};
+let W = { ...FIXTURE };
+
+const CONTROLS = [
+  ['rootReachable',         'Declared root is reachable',        'Off = ADR-0005 pervasiveness condition (a).'],
+  ['outsideGrantConnected', 'wl-outside-grant is connected',     'Off = the fixture as built. Retrieve returns 404; the link to it stays readable.'],
+  ['revokeChildConnected',  'wl-revoke-child is connected',      'Off = disconnected. Proof §4: the child_page block VANISHES from the parent list.'],
+  ['paginationCompletes',   'Pagination over wl-pagination completes', 'Off = abandoned mid-enumeration → an UNBOUNDED gap.'],
+  ['budgetExhausted',       'Request budget exhausted',          'A bounded gap: the scan can name what it skipped.'],
+  ['authFailure',           'Authentication / config failure',   'Exit 4. The scan did not run as declared.']
+];
+
+/* ============================================================================
+   3. The scan  —  every API result enters as an Observed<T>, and only here
+   ========================================================================== */
+
+let TRACE = [];
+const log = (s) => TRACE.push(s);
+
+/* The single adapter seam. Nothing else in this file constructs an Observed. */
+function retrieve(id, name, reachable, why) {
+  if (!reachable) { log(`GET /v1/pages/${id}  →  404 object_not_found   (${name})`); return unreachable(`404 on ${name} — absent or inaccessible, indistinguishable`); }
+  log(`GET /v1/pages/${id}  →  200   (${name})`);
+  return complete({ id, name });
+}
+
+function enumerateChildren(name, kids, truncated) {
+  if (truncated) {
+    log(`GET /v1/blocks/${name}/children  →  100 of ?, has_more:true, pagination abandoned`);
+    return partial(kids, `enumeration of ${name} abandoned mid-pagination — remaining count unknown`);
+  }
+  log(`GET /v1/blocks/${name}/children  →  ${kids.length} blocks, has_more:false`);
+  return complete(kids);
+}
+
+function scan(w) {
+  TRACE = [];
+  const manifest = [];   // {resource, stage, cause}
+  const findings = [];
+  const stage = (resource, stage, cause) => manifest.push({ resource, stage, cause: cause || '' });
+
+  log('— Notion-Version: 2026-03-11 · integration workspace-lint-proof (read-only) —');
+  log('NOTE: request_status is absent from every response. Proof §1. Absence is uninformative,');
+  log('      not an error and not proof of completeness. Nothing below blocks on its arrival.');
+  log('');
+
+  if (w.authFailure) { log('AUTH FAILURE — the scan did not run as declared.'); return { manifest, findings, aborted: true }; }
+
+  /* --- declared root ------------------------------------------------------ */
+  stage('wl-proof-fixture', 'declared');
+  const root = retrieve('…2a3bee7c', 'wl-proof-fixture', w.rootReachable);
+  if (root.state === 'unreachable') {
+    stage('wl-proof-fixture', 'declared', root.cause);
+    findings.push({ rule: 'SYS001', resource: 'wl-proof-fixture', certainty: 'confirmed',
+      detail: 'A declared root was never reached.', bounded: true, isRootMiss: true });
+    log('Declared root unreachable — nothing below it can be enumerated.');
+    return { manifest, findings, aborted: false };
+  }
+  stage('wl-proof-fixture', 'resolved');
+
+  /* --- enumerate under the root ------------------------------------------ */
+  const kids = ['wl-pagination', 'wl-dataset', 'wl-revoke-parent'];
+  const rootKids = enumerateChildren('wl-proof-fixture', kids, false);
+  stage('wl-proof-fixture', 'enumerated');
+  for (const k of kids) { stage(k, 'declared'); stage(k, 'resolved'); }
+
+  /* --- the vanishing child_page (proof §4) -------------------------------- */
+  const revokeKids = w.revokeChildConnected ? ['wl-revoke-child'] : [];
+  enumerateChildren('wl-revoke-parent', revokeKids, false);
+  stage('wl-revoke-parent', 'enumerated');
+  if (!w.revokeChildConnected) {
+    log('!! wl-revoke-child is NOT in the child list. Not named-but-unreadable — INVISIBLE.');
+    log('   The scan has no resource to put in the applicable set, so there is nothing to count.');
+    log('   This is the silent case, and it is silent BY CONSTRUCTION. Proof §4.');
+  } else {
+    stage('wl-revoke-child', 'declared'); stage('wl-revoke-child', 'resolved');
+    stage('wl-revoke-child', 'enumerated'); stage('wl-revoke-child', 'fetched');
+    stage('wl-revoke-child', 'evaluated');
+  }
+
+  /* --- pagination --------------------------------------------------------- */
+  const pagBlocks = w.paginationCompletes ? Array.from({length:151}, (_,i)=>`b${i}`) : Array.from({length:100},(_,i)=>`b${i}`);
+  const pagination = enumerateChildren('wl-pagination', pagBlocks, !w.paginationCompletes);
+  stage('wl-pagination', 'enumerated', pagination.state === 'partial' ? pagination.cause : '');
+  if (pagination.state === 'complete') { stage('wl-pagination','fetched'); stage('wl-pagination','evaluated'); }
+
+  /* --- budget ------------------------------------------------------------- */
+  if (w.budgetExhausted) {
+    log('Request budget exhausted before wl-dataset was fetched. The resource is NAMED, so the gap is bounded.');
+    stage('wl-dataset', 'enumerated', 'request budget exhausted before fetch');
+  } else {
+    stage('wl-dataset','enumerated'); stage('wl-dataset','fetched'); stage('wl-dataset','evaluated');
+  }
+
+  /* --- REF001: resolve every link found in readable content --------------- */
+  log('');
+  log('REF001 — resolving links found inside readable block content.');
+  stage('wl-proof-fixture', 'fetched');
+  const linkTarget = retrieve('…bffb9742', 'wl-outside-grant', w.outsideGrantConnected);
+  const ref001 = judgeRef001(linkTarget, 'wl-proof-fixture', 'wl-outside-grant');
+  stage('wl-proof-fixture', 'evaluated');
+  if (ref001) findings.push(ref001);
+
+  /* --- SYS001 for anything that stalled in the funnel --------------------- */
+  for (const r of ['wl-pagination','wl-dataset']) {
+    const reached = manifest.filter(m => m.resource === r).map(m => m.stage);
+    if (!reached.includes('evaluated')) {
+      const cause = manifest.filter(m => m.resource === r && m.cause).map(m => m.cause)[0] || 'unknown';
+      const unbounded = /abandoned mid-pagination/.test(cause);
+      findings.push({ rule: 'SYS001', resource: r, certainty: 'confirmed',
+        detail: `Applicable resource was not evaluated — ${cause}`, bounded: !unbounded });
+    }
+  }
+
+  return { manifest, findings, aborted: false, observed: { root, rootKids, pagination, linkTarget } };
+}
+
+/* The judgement. Note what it does NOT do: it never asks for the target's value. */
+function judgeRef001(target, source, targetName) {
+  if (target.state === 'unreachable') {
+    log(`REF001 FIRES — link ${source} → ${targetName}`);
+    log('   certainty:    confirmed      ("this link cannot be resolved" is a PROVED fact)');
+    log('   target_state: unreachable    (404 is absent OR inaccessible — never collapse to absent)');
+    return { rule:'REF001', resource: source, certainty:'confirmed', target_state:'unreachable',
+             detail:`Internal link to ${targetName} cannot be resolved.`, bounded:true };
+  }
+  log(`REF001 clean — link ${source} → ${targetName} resolves (target_state: present).`);
+  return null;
+}
+
+/* ============================================================================
+   4. Outcome pair → disposition → exit byte   (ADR-0005, ADR-0008)
+   ========================================================================== */
+
+function assess(res, w) {
+  const gaps = res.findings.filter(f => f.rule === 'SYS001');
+  const unbounded = gaps.filter(g => !g.bounded);
+  const rootMiss  = gaps.filter(g => g.isRootMiss);
+  const violations = res.findings.filter(f => f.rule !== 'SYS001');
+
+  const pervasive = rootMiss.length > 0 || unbounded.length > 0;
+  const disposition = pervasive ? 'disclaimed'
+                    : (violations.length || gaps.length) ? 'qualified'
+                    : 'unqualified';
+
+  const applicable = 5, evaluated = new Set(res.manifest.filter(m=>m.stage==='evaluated').map(m=>m.resource)).size;
+  const coverage = evaluated / applicable;
+
+  let exit, why;
+  if (res.aborted)                       { exit = 4; why = 'The scan did not run as declared.'; }
+  else if (disposition === 'disclaimed') { exit = 2; why = 'Disposition is disclaimed — no summary verdict is rendered.'; }
+  else if (gaps.length && coverage < w.coverageThreshold) { exit = 3; why = 'Gaps exist and are confined, and coverage is below threshold.'; }
+  else if (res.findings.length)          { exit = 1; why = 'At least one finding is new and unsuppressed. Evidence is complete.'; }
+  else                                   { exit = 0; why = 'No new unsuppressed finding, coverage at or above threshold.'; }
+
+  return { disposition, pervasive, coverage, evaluated, applicable, exit, why, gaps, unbounded, violations };
+}
+
+/* ============================================================================
+   5. Render
+   ========================================================================== */
+
+let TAB = 'report', LAST = null;
+
+function run() {
+  const res = scan(W);
+  const a = assess(res, W);
+  LAST = { res, a };
+  draw();
+  return LAST;
+}
+
+function draw() {
+  const { res, a } = LAST;
+  const out = document.getElementById('out');
+  if (TAB === 'report')   out.innerHTML = renderReport(res, a);
+  if (TAB === 'observed') out.innerHTML = renderObserved(res);
+  if (TAB === 'manifest') out.innerHTML = renderManifest(res);
+  if (TAB === 'trace')    out.innerHTML = `<pre>${TRACE.join('\n')}</pre>`;
+  if (TAB === 'baseline') out.innerHTML = renderBaseline();
+}
+
+function renderReport(res, a) {
+  const rows = res.findings.map(f => `<tr>
+      <td>${f.rule}</td><td>${f.resource}</td>
+      <td>${f.certainty || '—'}</td><td>${f.target_state || '—'}</td>
+      <td>${f.bounded === false ? '<span class="unreachable">unbounded</span>' : 'bounded'}</td>
+      <td>${f.detail}</td></tr>`).join('') || '<tr><td colspan="6" class="kv">no findings</td></tr>';
+
+  const summary = a.disposition === 'disclaimed'
+    ? `<div class="verdict fail"><b>NO SUMMARY VERDICT IS RENDERED.</b><br>
+       The gaps are pervasive${a.unbounded.length ? ' — at least one gap is unbounded, so the scan cannot state how much it missed' : ' — a declared root was never reached'}.
+       The manifest and the findings are still printed.</div>`
+    : `<div class="verdict ${a.violations.length ? 'hold' : 'pass'}">
+       <b>Summary verdict rendered.</b> Disposition <code>${a.disposition}</code>.</div>`;
+
+  return `
+    <h3>Report disposition</h3>${summary}
+    <table><tr><th>Disposition</th><th>Coverage ratio</th><th>Conformity</th><th>Exit</th></tr>
+      <tr><td><code>${a.disposition}</code></td>
+          <td>${a.evaluated}/${a.applicable} = ${(a.coverage*100).toFixed(0)}%</td>
+          <td>${a.violations.length ? `<span class="unreachable">violates</span>` : (a.disposition==='disclaimed' ? '<span class="undec">withheld</span>' : '<span class="complete">conforms</span>')}</td>
+          <td><b>${a.exit}</b></td></tr></table>
+    <p class="step">Neither ratio is ever published without the other (ADR-0005 decision 4). Exit reason: ${a.why}</p>
+    <h3>Findings</h3>
+    <table><tr><th>Rule</th><th>Resource</th><th>Certainty</th><th>Target state</th><th>Gap</th><th>Detail</th></tr>${rows}</table>
+    <p class="step"><b>What is not in this table, and cannot be:</b> anything below a declared root whose
+    share was revoked. The child vanishes from enumeration, so it never enters the applicable set.
+    Proof §4. The tool cannot count it, name it, or report it.</p>`;
+}
+
+function renderObserved(res) {
+  if (!res.observed) return '<p class="kv">Scan aborted before any Observed was constructed.</p>';
+  const o = res.observed;
+  const show = (label, ov, note) => `
+    <h3>${label}</h3>
+    <pre class="${cls(ov)}">${JSON.stringify(ov, null, 2)}</pre>
+    <p class="step">${note}</p>`;
+
+  const uniq = ounique(omap(o.pagination, v => v.map(x => ({ k: x }))), x => x.k);
+  return `
+    <p class="step">There is no <code>Observed&lt;T&gt; → T</code> in this file. Every value below is consumed
+    by a combinator that had to decide for itself what partiality means.</p>
+    ${show('Declared root', o.root, 'Constructed at the single adapter seam. Nothing else builds an Observed.')}
+    ${show('Link target — wl-outside-grant', o.linkTarget,
+       o.linkTarget.state === 'unreachable'
+         ? 'A 404 is <b>one</b> observation covering two worlds. It becomes <code>unreachable</code>, never <code>absent</code>. CONTEXT.md Principle 3.'
+         : 'Resolves. REF001 does not fire.')}
+    ${show('Block enumeration — wl-pagination', o.pagination,
+       o.pagination.state === 'partial'
+         ? 'Partial. The cause travels <i>with</i> the value; it is not logged and dropped.'
+         : 'Complete — 151 blocks over two pages. Proof §2: enumeration is separable from fetching.')}
+    <h3>The asymmetry that motivates the type</h3>
+    <pre class="${cls(uniq)}">ounique(pagination) → ${JSON.stringify(uniq)}</pre>
+    <p class="step">${o.pagination.state === 'partial'
+      ? '<b>Uniqueness over a partial list did not return <code>true</code>.</b> It returned <code>partial</code> with <code>unique: null</code>. A duplicate <i>found</i> in a partial list would be proved and would return <code>false</code> — violations are provable from partial data, conformity is not. Turn pagination back on to see it settle.'
+      : 'Complete input, so <code>unique</code> may answer. Switch pagination off and watch it refuse to say <code>true</code>.'}</p>`;
+}
+
+function renderManifest(res) {
+  const STAGES = ['declared','resolved','enumerated','fetched','evaluated'];
+  const byRes = {};
+  for (const m of res.manifest) { (byRes[m.resource] ||= { stages:new Set(), cause:'' }); byRes[m.resource].stages.add(m.stage); if (m.cause) byRes[m.resource].cause = m.cause; }
+  const rows = Object.entries(byRes).map(([r, v]) => `<tr><td>${r}</td>` +
+    STAGES.map(s => `<td>${v.stages.has(s) ? '<span class="complete">●</span>' : '<span class="kv">○</span>'}</td>`).join('') +
+    `<td>${v.cause ? `<span class="partial">${v.cause}</span>` : ''}</td></tr>`).join('');
+  return `<h3>Coverage manifest — the five-stage funnel</h3>
+    <table><tr><th>Resource</th>${STAGES.map(s=>`<th>${s}</th>`).join('')}<th>Drop-out cause</th></tr>${rows}</table>
+    <p class="step">Every drop-out names a resource and a specific cause (ADR-0005 decision 5).
+    <code>wl-revoke-child</code> appears here only when it is connected — when it is not, it is absent from the
+    table entirely, which is the honest rendering of a gap the tool cannot see.</p>`;
+}
+
+/* ============================================================================
+   6. ADR-0010 matcher — the fix for #31, given something to run against
+   ========================================================================== */
+
+function matchBaseline(findings, baseline, hierarchy) {
+  const steps = [];
+  const pool = baseline.map((b,i) => ({ ...b, i, taken: false }));
+  const raw  = findings.map((f,i) => ({ ...f, i, matched: null }));
+
+  // bucket by anchor: (rule, resource)
+  const anchor = x => `${x.rule}|${x.resource}`;
+  steps.push('Layer 1 — partition by anchor (rule ID, resource ID). Matching never crosses a bucket.');
+
+  hierarchy.forEach((key, ki) => {
+    steps.push(`\nPass ${ki+1} — key "${key}" (set join, no visiting order)`);
+    let hits = 0;
+    for (const f of raw) {
+      if (f.matched !== null) continue;
+      const cand = pool.filter(b => !b.taken && anchor(b) === anchor(f) && b.keys[key] !== undefined && b.keys[key] === f.keys[key]);
+      if (cand.length) {
+        const b = cand[0];               // ties: ascending occurrence index
+        b.taken = true; f.matched = b.i; hits++;
+        steps.push(`  finding#${f.i} ↔ baseline#${b.i}   on ${key}=${f.keys[key]}   → both LEAVE THE POOL`);
+      }
+    }
+    if (!hits) steps.push('  (no matches)');
+  });
+
+  steps.push('\nTerminal states');
+  for (const f of raw)  if (f.matched === null) steps.push(`  finding#${f.i}  → new`);
+  for (const b of pool) if (!b.taken)           steps.push(`  baseline#${b.i} → unverified / resolved, per ADR-0008 decision 5`);
+  return steps.join('\n');
+}
+
+function renderBaseline() {
+  // Issue #31's counterexample, verbatim.
+  const baseline = [
+    { rule:'REQ001', resource:'page-1', keys:{ 'propertyId/v1':'x', 'propertyName/v1':'y' } },   // A
+    { rule:'REQ001', resource:'page-1', keys:{ 'propertyId/v1':'w', 'propertyName/v1':'z' } }    // C
+  ];
+  const findings = [
+    { rule:'REQ001', resource:'page-1', keys:{ 'propertyId/v1':'x', 'propertyName/v1':'z' } }    // B
+  ];
+  const trace = matchBaseline(findings, baseline, ['propertyId/v1','propertyName/v1']);
+  return `
+    <h3>Issue #31's counterexample, run</h3>
+    <p class="step">A = (x, y) is in the baseline. C = (w, z) is in the baseline. B = (x, z) is produced.
+    B shares <code>propertyId</code> with A and <code>propertyName</code> with C. Under ADR-0008 decision 6's
+    <i>"identical when any one key matches"</i>, A ~ B and B ~ C but not A ~ C — a non-transitive relation.</p>
+    <pre>${trace}</pre>
+    <div class="verdict pass"><b>No merge, and no order-dependence.</b> B is claimed by the highest-precision
+    pass and A leaves the pool with it. C is never reachable from B, because the closure is never taken —
+    ADR-0010 decision 4. Under the transitive-closure branch, A, B and C would have become one entry and
+    accepting B would have silently accepted unrelated debt on the same page.</div>
+    <p class="step">This is the whole of ADR-0010 decisions 1–4 in about thirty lines. It is here because nine
+    ADRs of decisions have been made against no runnable feedback, and this one shipped a defect into
+    <code>main</code> before anyone ran it.</p>`;
+}
+
+/* ============================================================================
+   7. Guided walkthroughs
+   ========================================================================== */
+
+const WALKS = {
+  'red-test': {
+    label: 'The red test',
+    setup: { rootReachable:true, outsideGrantConnected:false, revokeChildConnected:false, paginationCompletes:true, budgetExhausted:false, authFailure:false },
+    body: (a, res) => {
+      const ref = res.findings.find(f => f.rule === 'REF001');
+      const c1 = ref && ref.certainty === 'confirmed';
+      const c2 = ref && ref.target_state === 'unreachable';
+      const c3 = a.disposition !== 'unqualified';
+      const pass = c1 && c2 && c3;
+      return `<p class="step">The criterion recorded in the S009 checkpoint, run against the fixture as it stands today.</p>
+      <table><tr><th>Required</th><th>Observed</th><th></th></tr>
+        <tr><td>link to <code>wl-outside-grant</code> → <code>certainty: confirmed</code></td><td>${ref ? ref.certainty : '— no REF001 finding —'}</td><td>${c1?'<span class="complete">PASS</span>':'<span class="unreachable">FAIL</span>'}</td></tr>
+        <tr><td>… → <code>target_state: unreachable</code></td><td>${ref ? ref.target_state : '—'}</td><td>${c2?'<span class="complete">PASS</span>':'<span class="unreachable">FAIL</span>'}</td></tr>
+        <tr><td>with <code>wl-revoke-child</code> disconnected, the run must <b>not</b> emit an unqualified verdict</td><td><code>${a.disposition}</code></td><td>${c3?'<span class="complete">PASS</span>':'<span class="unreachable">FAIL</span>'}</td></tr>
+      </table>
+      <div class="verdict ${pass?'pass':'fail'}"><b>${pass ? 'RED TEST PASSES.' : 'RED TEST FAILS.'}</b>
+      ${pass ? 'The third row is the one that matters and it does not pass for the expected reason — see walkthrough 2.' : ''}</div>`;
+    }
+  },
+  'vanishing': {
+    label: 'The vanishing child_page',
+    setup: { rootReachable:true, outsideGrantConnected:false, revokeChildConnected:false, paginationCompletes:true, budgetExhausted:false, authFailure:false },
+    body: (a, res) => `
+      <p class="step">Proof §4. The disconnect was applied to <code>wl-revoke-child</code>, and the parent's block
+      list went from 3 blocks to 2. The <code>child_page</code> block is <b>gone</b>, not named-but-unreadable.</p>
+      <div class="verdict hold"><b>The model cannot express this, and that is the correct result rather than a bug.</b>
+      The disposition above is <code>${a.disposition}</code>, and it is not <code>unqualified</code> because of the
+      <b>REF001 link finding</b> — not because anything detected the revoked child. Disconnect the link target too
+      (tick <i>wl-outside-grant is connected</i>) and the scan reports a clean <code>unqualified</code> run over a
+      workspace with a revoked page in it.</div>
+      <p class="step">That is the honest boundary the proof established: inside a declared root, an
+      <code>unreached</code> gap arises only from rate limits, budget exhaustion, or abandoned pagination —
+      <b>never from permissions</b>. The coverage manifest can only name what the operator declared or what the
+      tool enumerated. Nothing else is expressible.</p>`
+  },
+  'unbounded': {
+    label: 'Unbounded gap → disclaimed',
+    setup: { rootReachable:true, outsideGrantConnected:true, revokeChildConnected:true, paginationCompletes:false, budgetExhausted:false, authFailure:false },
+    body: (a) => `
+      <p class="step">Pagination over <code>wl-pagination</code> is abandoned mid-enumeration. The scan knows it
+      stopped and does not know how much remains.</p>
+      <div class="verdict fail"><b>Disposition <code>${a.disposition}</code>, exit <b>${a.exit}</b>, no summary verdict.</b>
+      An unbounded gap cannot be sized, and a gap that cannot be sized cannot be shown to be confined
+      (ADR-0005 decision 3 condition b).</div>
+      <p class="step">Every other switch is set to the clean case. One unsized gap is enough to withhold the verdict —
+      which is the product.</p>`
+  },
+  'bounded': {
+    label: 'Bounded gap → qualified',
+    setup: { rootReachable:true, outsideGrantConnected:true, revokeChildConnected:true, paginationCompletes:true, budgetExhausted:true, authFailure:false },
+    body: (a) => `
+      <p class="step">The request budget runs out before <code>wl-dataset</code> is fetched. The scan can <i>name</i>
+      the resource it skipped.</p>
+      <div class="verdict hold"><b>Disposition <code>${a.disposition}</code>, exit <b>${a.exit}</b>, verdict still rendered.</b>
+      A named gap is bounded, so the report qualifies rather than disclaims. Exit ${a.exit} fires ahead of exit 1
+      on the priority order — coverage outranks findings.</div>`
+  },
+  'rootmiss': {
+    label: 'Unreachable declared root',
+    setup: { rootReachable:false, outsideGrantConnected:true, revokeChildConnected:true, paginationCompletes:true, budgetExhausted:false, authFailure:false },
+    body: (a) => `
+      <div class="verdict fail"><b>Exit ${a.exit}, disposition <code>${a.disposition}</code>.</b>
+      Pervasiveness condition (a). ADR-0002 decision 2 fixed this byte before ADR-0005 named the principle under it.</div>
+      <p class="step">Note what makes this detectable at all: <b>the operator declared it.</b> The declaration is
+      what makes the gap nameable. An identical permission failure one level lower is invisible.</p>`
+  }
+};
+
+let ACTIVE_WALK = null;
+
+function runWalk(k) {
+  ACTIVE_WALK = k;
+  W = { ...W, ...WALKS[k].setup };
+  drawControls();
+  const { res, a } = run();
+  document.getElementById('walkbody').innerHTML =
+    `<h3>${WALKS[k].label}</h3>` + WALKS[k].body(a, res);
+  drawWalkButtons();
+}
+
+function drawWalkButtons() {
+  document.getElementById('walks').innerHTML = Object.entries(WALKS)
+    .map(([k,v]) => `<button class="${ACTIVE_WALK===k?'active':''}" onclick="runWalk('${k}')">${v.label}</button>`).join('');
+}
+
+function drawControls() {
+  document.getElementById('controls').innerHTML = CONTROLS.map(([k,label,note]) => `
+    <div class="ctl">
+      <input type="checkbox" id="c-${k}" ${W[k]?'checked':''} onchange="W['${k}']=this.checked; ACTIVE_WALK=null; drawWalkButtons(); run();">
+      <label for="c-${k}">${label}<span class="note">${note}</span></label>
+    </div>`).join('');
+}
+
+function resetWorld() { W = { ...FIXTURE }; ACTIVE_WALK = null; drawControls(); drawWalkButtons(); document.getElementById('walkbody').innerHTML=''; run(); }
+function showTab(t) {
+  TAB = t;
+  for (const id of ['report','observed','manifest','baseline','trace'])
+    document.getElementById('t-'+id).className = (id===t?'active':'');
+  draw();
+}
+
+drawControls(); drawWalkButtons(); run();
+</script>
