@@ -116,12 +116,6 @@
     }
   ],
   "asserted_without_adr": [
-    "First release scope: selective block crawl. REF001 reads hyperlinks inside blocks, so metadata-only cannot implement a built-in rule.",
-    "Resource identity in config: stable IDs with readable aliases.",
-    "Baseline policy: report old debt, fail new only.",
-    "CI timing: after local core release.",
-    "Page titles in CI output: redact by default.",
-    "Minimum rule set: SYS001, REF001, REQ001, UNQ001.",
     "Validation shape: build at n=1 against this workspace, release at n=3."
   ],
   "open_decisions": [
@@ -215,7 +209,7 @@
       "10": "needs-triage -- was blocked by #13, which is now resolved pending the PR #17 merge. Its checklist still has an item that cannot be run as written."
     },
     "closed_S005": "#2 #3 #4 #5 #6 #9 consolidated into #16 — they were undocumented decisions, not open questions.",
-    "note": "asserted_without_adr entries 1-6 are tracked by #16. Remove them from store.json when #16 lands, or the two surfaces disagree again. #13 is NOT closed until PR #17 merges -- do not report it closed from this file alone.",
+    "note": "#16 landed: the six defaults are transcribed into CONTEXT.md 'Settled defaults' and removed from asserted_without_adr. The one remaining entry (validation shape, n=1 build / n=3 release) was never part of #16 and is already stated in PRODUCT.md. #13 is CLOSED and ADR-0006 is on main.",
     "closed_S006": "#13 closes on the PR #17 merge (Closes #13 in commit f8917fa)."
   }
 }

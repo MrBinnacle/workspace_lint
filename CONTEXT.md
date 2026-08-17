@@ -60,18 +60,36 @@ Four distinctions the glossary enforces, because collapsing any of them breaks t
 6. Content is data, not code. Page text, links, and YAML values never execute.
 7. Read-only means read-only. The process requests no insert or update capability.
 
+## Settled defaults
+
+Six defaults that govern v0.1. Each was asserted with stated reasoning and no ADR, because none is hard to reverse in the ADR sense. They are recorded here so the tracker and the state file stop disagreeing about what is settled. Reversing one costs a paragraph in this file, not a superseding ADR.
+
+**The block crawl is selective, not metadata-only.** The scan fetches block content for the resources a rule needs, rather than reading page and database metadata alone. `REF001` reads hyperlinks inside blocks, so a metadata-only scan cannot implement a built-in rule. The 2026-08-17 proof run makes this over-determined: a link is the only surviving trace of an inaccessible resource, which makes `REF001` the load-bearing coverage mechanism. Metadata-only would ship a product whose central claim it cannot support.
+
+**Identity is the stable ID. Names are report-only aliases.** Configuration addresses a resource by its Notion identifier. A readable alias may accompany the ID and appears in reports. A configuration that identifies a resource by name alone is rejected, never guessed at — a guess would make the scan's subject depend on a title that an editor can change.
+
+**The minimum rule set for v0.1 is `SYS001`, `REF001`, `REQ001` and `UNQ001`.** The other four in the catalog below are deferred, not cut. `SYS001` is the finding identity for a coverage gap — *a declared root or applicable resource was not evaluated* — and it does not carry the run-failure decision; ADR-0005 decision 4 does. Do not re-widen it to "scan result is incomplete."
+
+**A baseline reports old debt and fails only on new findings.** Accepted fingerprints stay visible in the report and do not fail the run. A finding absent from the baseline does. This governs the contribution of *findings* to exit status only: ADR-0005 decision 4 makes the run's exit status a function of the report disposition and the coverage ratio as well, so a scan can fail on coverage while every finding it produced is baselined. The two inputs are independent and both are published.
+
+**CI mode ships after the local core.** The local CLI is the first release surface. CI integration follows it, and the gates filed with that decision stand as its acceptance criteria.
+
+**Page titles are redacted from CI output by default.** A finding in CI names its resource by ID and link, never by title. A title carries workspace content into logs that are frequently readable by more people than the workspace is. An operator can opt in; the default does not.
+
 ## Rule catalog for v0.1
 
-| ID | Rule | Mode |
-| --- | --- | --- |
-| `SYS001` | A declared root or applicable resource was not evaluated. | Built-in |
-| `REF001` | Internal target is archived, in Trash, or unreachable. | Built-in |
-| `REQ001` | A selected resource lacks a required property value. | Configured |
-| `UNQ001` | A declared unique value occurs more than once. | Configured |
-| `SCH001` | Configured peer data sources have incompatible schemas. | Configured |
-| `REL001` | A relation violates its allowed target contract. | Configured |
-| `DEP001` | An active resource points to an inactive dependency. | Configured |
-| `CAN001` | A boundary contains more than one explicit canonical marker. | Configured |
+Four rules ship in v0.1. Four are deferred — specified, not cut, and not built until the shipping four are in a released local core.
+
+| ID | Rule | Mode | v0.1 |
+| --- | --- | --- | --- |
+| `SYS001` | A declared root or applicable resource was not evaluated. | Built-in | **Ships** |
+| `REF001` | Internal target is archived, in Trash, or unreachable. | Built-in | **Ships** |
+| `REQ001` | A selected resource lacks a required property value. | Configured | **Ships** |
+| `UNQ001` | A declared unique value occurs more than once. | Configured | **Ships** |
+| `SCH001` | Configured peer data sources have incompatible schemas. | Configured | Deferred |
+| `REL001` | A relation violates its allowed target contract. | Configured | Deferred |
+| `DEP001` | An active resource points to an inactive dependency. | Configured | Deferred |
+| `CAN001` | A boundary contains more than one explicit canonical marker. | Configured | Deferred |
 
 Orphan detection stays out of v0.1 until the product defines valid roots.
 
@@ -98,9 +116,9 @@ The next gate is no longer the 72-hour proof. It is a demand test — five teams
 
 The public repository `MrBinnacle/workspace_lint` exists as of 2026-08-16, created on the owner's instruction. This supersedes the PRD's "no repository has changed" rollback line and its "public release not approved" field. Rollback is now a repository action, not a Notion row action.
 
-The gate before any build is the 72-hour proof: can the official API support a complete, deterministic, useful scan of a declared scope?
+The 72-hour proof ran on 2026-08-17. Four of its eight questions are answered; the run is recorded in `docs/proof/results.md`. It did not stop the project and it spent three standing beliefs: ADR-0002 decision 4 was inoperable and is superseded by ADR-0006, the "detectable hole" a completeness proof would have rested on does not exist, and `PRODUCT.md`'s coverage claim was narrowed to what the API proves.
 
-Stop condition: stop the project if the proof cannot produce a complete coverage manifest and stable findings without write access or an LLM.
+Stop condition, unchanged and not triggered: stop the project if the scan cannot produce a coverage manifest **against declared roots** and stable findings without write access or an LLM. *(Corrected 2026-08-17. The earlier wording said "a complete coverage manifest" without the declared-root qualifier. Completeness against the workspace was ruled impossible by ADR-0002, so that wording would stop the project on a settled fact. `PRODUCT.md` carried the same defect and was corrected first; this is the second copy.)*
 
 ### Name constraint
 
