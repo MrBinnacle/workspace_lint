@@ -1,9 +1,9 @@
 {
   "project": "workspace_lint",
   "updated": "2026-08-17",
-  "session": "S007",
+  "session": "S008",
   "phase": "pre-build",
-  "phase_detail": "Pre-build. S006 locked ADR-0006 and narrowed the PRODUCT.md coverage claim. S007 landed #16 and #15, and the #15 pass REFUTED ADR-0006 decision 2 one day after it was accepted. No source code. Build gate not open. Everything is merged to main at 3fe815f; nothing in flight.",
+  "phase_detail": "Pre-build. S008 landed #21 as ADR-0007, correcting ONE ROW of ADR-0006 decision 2: POST /v1/search DOES carry a truncation signal. ADR-0006 is not edited. Three findings beyond the correction -- the error was inert under decision 1's positive test, the coverage benefit does not reach v0.1 because search has no declared role (filed #24), and the fact stood in TWO research files three hours before ADR-0006 (enforcement question filed #25). ADR-0006's block-children finding is STRENGTHENED, now resting on an enumerated SDK omission rather than documentation silence. No source code. Build gate not open. ALL WORK MERGED: PR #23 merged as 280524e during the close, so ADR-0007 is on main and nothing is in flight.",
   "next_gate": {
     "name": "demand test",
     "kind": "human",
@@ -63,32 +63,32 @@
     },
     {
       "id": "ADR-0006",
-      "status": "accepted, and decision 2 is PARTLY REFUTED (see corrections_pending / #21)",
+      "status": "accepted. Decision 2's POST /v1/search row is SUPERSEDED by ADR-0007. Decisions 1, 3, 4, 5 and 6 stand; the other two rows of decision 2's table stand. Not edited.",
       "supersedes": "ADR-0002 decision 4 in full. ADR-0002 decisions 1, 2, 3 and 5 stand; ADR-0002 is not edited.",
       "corrects": "The closing sentence of docs/proof/results.md section 1, which mapped an absent request_status to ADR-0005's `unreached`. Corrected by reference; the evidence record is not edited.",
       "summary": "Truncation is detected by a positive test -- request_status.type === 'incomplete' -- and that test covers ONE endpoint family. The signal is documented on POST /v1/data_sources/{id}/query only. It is absent from /reference/intro#pagination, the normative shared-envelope description, and from GET /v1/blocks/{id}/children. Absence of the field is neither an error nor proof of completeness.",
-      "the_larger_finding": "GET /v1/blocks/{id}/children is the traversal spine of the scan and carries NO truncation signal. A complete enumeration and a silently truncated one return the same has_more: false -- the value that lied at the data-source cap before 2026-04-20. Every completeness claim the product makes over page content rests on it. The scan cannot close this; ADR-0006 decision 5 discloses it per-run instead.",
+      "the_larger_finding": "GET /v1/blocks/{id}/children is the traversal spine of the scan and carries NO truncation signal. A complete enumeration and a silently truncated one return the same has_more: false -- the value that lied at the data-source cap before 2026-04-20. Every completeness claim the product makes over page content rests on it. The scan cannot close this; ADR-0006 decision 5 discloses it per-run instead. STRENGTHENED by ADR-0007: this finding rested on documentation silence when written -- the same inference that failed on the search row -- and now rests on notion-sdk-js PR #711 threading request_status through seven named response types and OMITTING ListBlockChildrenResponse. An enumerated omission, not an unchecked silence.",
       "evidence_sufficiency_ruling": "No fourth value. An absent request_status maps to `sufficient`. Rejected on ADR-0005's governing rule -- a value earns its place only if it changes what the operator does next. The absent case has no remedy, fires on 100% of runs, and a permanent universal qualifier is the mechanism ADR-0005's fourth Revisit-if predicts will train readers to skip the limitations half.",
       "cap_trip": "Where a documented cap exists, a terminal count AT the cap makes the enumerated count a lower bound, not an equality: cause suspected_result_limit, marked unbounded, remedy 'partition the declared root'. Transplanted from Elasticsearch hits.total.relation 'gte', the OSIsoft PI Web API documented silent-truncation case, and fetch n+1. Applies to dataSources.query only -- block children and search have no documented cap constant, and building one from the observed ~11,200 search wall is rejected.",
       "unobserved": "request_status.type === 'complete' has never been seen emitted on either branch. No decision depends on it and no code path may block on it.",
       "unverified": "The 10,000 cap constant is vendor-documented and has never been confirmed by a real capped response. Vendor documentation has already been wrong once in this project (notion-api-practice.md section 5.2). The Elasticsearch field path was read from a search summary, not the reference.",
       "artifact": "docs/adr/0006-truncation-is-detected-by-a-positive-test-on-one-endpoint-family.md",
       "refuted_2026_08_17": "Decision 2's endpoint table is wrong on the POST /v1/search row. Search DOES carry request_status. The block-children row is CONFIRMED and now independently corroborated by notion-sdk-js PR #711, which omits ListBlockChildrenResponse. ADR-0006 is not edited; #21 carries the superseding ADR."
-    }
-  ],
-  "corrections_pending": [
+    },
     {
-      "target": "docs/adr/0006 decision 2, the POST /v1/search row",
-      "claim": "POST /v1/search carries no documented truncation signal.",
-      "status": "REFUTED 2026-08-17 by the #15 verification pass, one day after the ADR was accepted.",
-      "replacement": "Search DOES carry request_status. Notion's post-search reference documents type complete|incomplete with incomplete_reason query_result_limit_reached, and notion-sdk-js PR #711 adds the field to SearchResponse. A truncated search is therefore detectable and the ~11,200 wall is a reportable gap, not a silent one.",
-      "method_failure": "A negative was asserted across three endpoints having opened two references. Silence on the shared pagination page was read as absence rather than as not-checked. docs/research/notion-api-practice.md section 4.5 had the correct list since 2026-08-16 and was never consulted.",
-      "unaffected": "ADR-0006 decisions 1, 3, 4, 5 and 6 stand. The block-children finding is now corroborated by PR #711 omitting ListBlockChildrenResponse.",
-      "urgency": "Before #10 ratifies the proof. Do not ratify against a known-wrong table.",
-      "tracked_as": "#21 (ready-for-agent, frontier tier)",
-      "evidence": "docs/research/notion-api-practice.md, Verification pass 2026-08-17"
+      "id": "ADR-0007",
+      "status": "accepted and MERGED to main as 280524e (5e22750)",
+      "supersedes": "ONE ROW of ADR-0006 decision 2 -- POST /v1/search. ADR-0006 decisions 1, 3, 4, 5, 6 and the other two table rows stand. ADR-0006 is not edited.",
+      "corrects": "Nothing in docs/research/. Both research files carried the correct fact before ADR-0006 was written. This ADR corrects the ADR, not the evidence.",
+      "summary": "POST /v1/search carries request_status: type complete|incomplete, incomplete_reason query_result_limit_reached. No documented cap, so ADR-0006 decision 4's exclusion of search from the cap-proximity trip SURVIVES on its stated reason -- a signal is not a cap. The ~11,200 figure is moved out of the signal column and marked NOT re-confirmed on refetch.",
+      "finding_inert": "The error gated no behaviour. Decision 1's positive test means the scan looks for the field on every response page regardless of the table. If search never emits it, behaviour equals the old table. No downside branch, and no code path needs revision.",
+      "finding_conditional": "The coverage benefit does not reach v0.1. Search has no declared role in a scan across five opened design surfaces. ADR-0007 states their silence and does NOT assert the negative, since misreading silence as absence is the error it corrects. Filed as #24.",
+      "finding_method": "Second ADR to contradict a file already in the tree, and the fact stood in TWO research files three hours earlier. Method rules adopted: a per-endpoint claim needs the per-endpoint page; absence from a doc page is not-checked, not absent; grep docs/research/ before asserting a factual table. Rule 3 is UNENFORCED -- enforcement filed as #25.",
+      "evidence_class": "WEAK, and stated in the ADR rather than buried. Both sources are statements of intent -- a doc page and an SDK type. No capped search has been observed and neither branch of request_status has been seen on ANY endpoint. This is the class that produced ADR-0002 decision 4, a field documented as present and absent from every real response.",
+      "evidence": "https://developers.notion.com/reference/post-search and makenotion/notion-sdk-js PR #711, both re-fetched while drafting; docs/research/notion-api-practice.md section 4.5; docs/research/competitive-landscape.md section 4"
     }
   ],
+  "corrections_pending": [],
   "corrections_applied": [
     {
       "target": "PRODUCT.md",
@@ -126,6 +126,20 @@
       "replacement": "Provable: declared-root coverage, link resolution, and the ambiguity of 404. Not provable: anything about permission removal below a declared root, and that a child list was complete. REF001 is the load-bearing coverage mechanism.",
       "second_location": "The refuted claim stood in a SECOND place in the same file -- proof test 1 under 'Four proof tests the PRD does not list'. Marked ANSWERED and refuted rather than deleted.",
       "evidence": "docs/proof/results.md section 4; docs/adr/0006 decision 2"
+    },
+    {
+      "target": "docs/adr/0006 decision 2, the POST /v1/search row",
+      "claim": "POST /v1/search carries no documented truncation signal.",
+      "status": "REFUTED 2026-08-17 by the #15 verification pass, one day after the ADR was accepted.",
+      "replacement": "Search DOES carry request_status. Notion's post-search reference documents type complete|incomplete with incomplete_reason query_result_limit_reached, and notion-sdk-js PR #711 adds the field to SearchResponse. A truncated search is therefore detectable and the ~11,200 wall is a reportable gap, not a silent one.",
+      "method_failure": "A negative was asserted across three endpoints having opened two references. Silence on the shared pagination page was read as absence rather than as not-checked. docs/research/notion-api-practice.md section 4.5 had the correct list since 2026-08-16 and was never consulted. CORRECTED AND SHARPENED by ADR-0007: the fact stood in TWO research files, not one. docs/research/competitive-landscape.md section 4 stated it independently with the post-search URL. Both landed in 12106c5 at 18:51; ADR-0006 is f8917fa at 21:42, ancestry confirmed with git merge-base --is-ancestor. The grep would have returned two files.",
+      "unaffected": "ADR-0006 decisions 1, 3, 4, 5 and 6 stand. The block-children finding is now corroborated by PR #711 omitting ListBlockChildrenResponse.",
+      "urgency": "Before #10 ratifies the proof. Do not ratify against a known-wrong table.",
+      "tracked_as": "#21 CLOSED by PR #23 (open). Follow-ups: #24 (search's role), #25 (grep enforcement).",
+      "evidence": "docs/research/notion-api-practice.md, Verification pass 2026-08-17",
+      "resolution": "RESOLVED by ADR-0007, commit 5e22750 on branch docs/adr-0007-search-truncation-signal, MERGED to main as 280524e during the close. Both primary sources were re-fetched directly for the ADR rather than inherited from #21, because the error being corrected was caused by trusting an unopened page.",
+      "containment": "The error was INERT. ADR-0006 decision 1 makes the truncation test positive, so the scan never consults the table to decide whether to look for request_status. A wrong 'None' in a descriptive column gated nothing, and if search never emits the field the behaviour is identical to the old table. This is containment by a decision made for another reason, NOT a defence -- a negative in a table that DID gate behaviour would have shipped. Do not let this argue the grep rule down.",
+      "scope_limit": "The coverage benefit is CONDITIONAL and does not reach v0.1. No document gives POST /v1/search a role in a scan. Five surfaces opened and silent: ADR-0002, CONTEXT.md, PRODUCT.md, #18's hydration map, and the 2026-08-17 proof run. ADR-0007 states the silence and REFUSES to assert the negative. Filed as #24."
     }
   ],
   "asserted_without_adr": [
@@ -185,7 +199,11 @@
     "Is Semgrep's `skipped` output verbose-gated? UNTESTED — a local Semgrep CLI test, nothing to do with Notion.",
     "Do `unreached` and `undecidable` ever diverge in practice? UNTESTED. Note the fixture can no longer produce a permission-caused unreached inside a declared root — that route is closed. Rate limits and abandoned pagination are the remaining routes.",
     "ANSWERED 2026-08-17 — YES, enumeration IS separable from fetching. A 151-block page paged 100 + 51 with has_more and next_cursor. ADR-0005's second Revisit-if does not fire; decision 5 stands.",
-    "How often does `disclaimed` fire on a real workspace? UNTESTED — needs REAL_ROOT_ID."
+    "How often does `disclaimed` fire on a real workspace? UNTESTED — needs REAL_ROOT_ID.",
+    {
+      "id": "_S008_real_root_id",
+      "note": "REAL_ROOT_ID reported set by the operator 2026-08-17, UNVERIFIED -- .env cannot be read. If good, it unblocks Q8 (disclaimed-frequency), the Q3 re-run against organic timestamps, and #7. Two gates before any run: the integration must be CONNECTED to that page (human step in Notion share settings), and Q8 output is a manifest of REAL page titles and IDs -- CONTEXT.md already redacts titles from CI output by default, so decide redaction before results land in the repo."
+    }
   ],
   "research": {
     "location": "docs/research/",
@@ -213,19 +231,21 @@
   "tracker": {
     "host": "GitHub issues, gh CLI",
     "open": {
-      "21": "ready-for-agent, FRONTIER -- ADR-0007 correcting ADR-0006 decision 2. Do before #10 ratifies.",
-      "20": "ready-for-agent -- baseline state machine + exit-code contract. The one with real design content.",
-      "18": "ready-for-agent -- rule-to-hydration map. Budget: ~540 requests inside the 3-minute warm-scan criterion.",
-      "19": "ready-for-agent -- config-schema rule rejecting name-only resource identity.",
+      "25": "enhancement -- two ADRs have now contradicted docs/research/. Decide whether the grep becomes a hook. RECOMMENDATION IN THE ISSUE: wait for a third instance; a permanent tax on every ADR write wants more than n=2.",
+      "24": "enhancement -- declare whether v0.1 calls POST /v1/search, and for what. Five design surfaces are SILENT, which is not a negative finding. Root-discovery affordance is the live candidate; ADR-0002 is NOT reopened by it.",
+      "20": "ready-for-agent, FRONTIER -- baseline state machine + exit-code contract. The one with real design content. Now the top agent item.",
+      "18": "ready-for-agent, FAST TIER -- rule-to-hydration map. Budget: ~540 requests inside the 3-minute warm-scan criterion.",
+      "19": "ready-for-agent, FAST TIER -- config-schema rule rejecting name-only resource identity.",
       "14": "ready-for-human -- PRODUCT.md positioning. Draft landed on main; the wording is the operator's call.",
-      "10": "needs-triage -- #13 cleared. Blocked on its un-runnable checklist item, and recommend #21 lands first.",
+      "10": "needs-triage -- UNBLOCKED. ADR-0007 has landed, so main no longer carries the known-wrong table and ratification may proceed. Still blocked on its own un-runnable checklist item.",
       "8": "ready-for-human -- npm name, a brand choice with three costed options.",
       "1": "needs-info -- blocked on the demand test.",
-      "7": "needs-info -- blocked on a named reference workspace (REAL_ROOT_ID empty)."
+      "7": "needs-info -- REAL_ROOT_ID reported SET by the operator 2026-08-17. UNVERIFIED: .env is unreadable (CC Safety Net, secret.basename.env). The integration must ALSO be connected to that page in Notion share settings, which is a human step; a missing share returns 404 and looks like a coverage failure, not a setup gap."
     },
     "closed_S005": "#2 #3 #4 #5 #6 #9 consolidated into #16 — they were undocumented decisions, not open questions.",
-    "note": "asserted_without_adr is down to 1 entry and the two surfaces now agree. #18-#21 were filed this session and all carry ready-for-agent. GATE 1 IS UNCHANGED AND IS NOT ON THIS BOARD: it advances when the operator sends.",
+    "note": "ALL WORK MERGED. main carries ADR-0007 at 280524e; nothing in flight. GATE 1 IS UNCHANGED AND IS NOT ON THIS BOARD: it advances when the operator sends. asserted_without_adr remains at 1 entry.",
     "closed_S006": "#13 closes on the PR #17 merge (Closes #13 in commit f8917fa).",
-    "closed_S007": "#15 and #16 closed by PR #22. #13 closed by PR #17."
+    "closed_S007": "#15 and #16 closed by PR #22. #13 closed by PR #17.",
+    "closed_S008": "#21 closed by PR #23, MERGED as 280524e. #24 and #25 filed as its follow-ups."
   }
 }

@@ -1,6 +1,6 @@
 # Checkpoint — workspace_lint
 
-Bands S001–S006 are archived verbatim at `.claude/state/checkpoint-archive.md`. This file holds
+Bands S001–S007 are archived verbatim at `.claude/state/checkpoint-archive.md`. This file holds
 the standing constraints and the current band only.
 
 ## Standing constraints — always current, not session-scoped
@@ -12,8 +12,16 @@ read this block instead. Nothing here depends on a band still being present.
 
 **Fixture and credentials.**
 
-- `.env` holds a **live read-only Notion token**. Gitignored. Eleven of twelve values filled.
-  `REAL_ROOT_ID` is the only empty one, deliberately, and Q8 stays unmeasured until it is set.
+- `.env` holds a **live read-only Notion token**. Gitignored. **It cannot be read by any tool** —
+  CC Safety Net blocks it on `secret.basename.env`, and the block forbids workarounds. Every claim
+  in this file about `.env` contents is therefore **structurally unverifiable**. Do not spend a
+  session-start step attempting it; report the claims as unverified and move on.
+- **`REAL_ROOT_ID` was reported set by the operator on 2026-08-17. Unconfirmed, per the above.**
+  If good it unblocks Q8, the Q3 re-run against organic timestamps, and **#7**. Two gates sit in
+  front of any run: the integration must **also be connected to that page** in Notion's share
+  settings, which is a human step — a missing share returns 404 and reads as a coverage failure
+  rather than a setup gap — and Q8's output is a manifest of **real** page titles and IDs, so the
+  redaction question is decided before results land in the repo.
 - **The fixture is mutable and it is an instrument.** Editing rows, blocks or titles by hand
   changes what the proof measures. **`wl-revoke-child` is currently disconnected** — restoring it
   resets Q1.
@@ -57,12 +65,19 @@ read this block instead. Nothing here depends on a band still being present.
 - **`request_status: {"type": "complete"}` has never been seen on either branch.** No decision
   depends on it. No code path may block on its arrival.
 
-**ADR-0006 decision 2 is partly refuted. Do not cite its endpoint table.** The `POST /v1/search`
-row says the endpoint carries no truncation signal. **It does** — Notion's `post-search` reference
-documents `request_status`, and `notion-sdk-js` PR #711 adds it to `SearchResponse`. The
-block-children row is correct and is now corroborated by that same PR, which omits
-`ListBlockChildrenResponse`. ADR-0006 is not edited; **#21** carries the superseding ADR and should
-land before **#10** ratifies the proof.
+**ADR-0006 decision 2's search row is superseded by ADR-0007. Cite ADR-0007's table, not
+ADR-0006's.** `POST /v1/search` **does** carry `request_status`, and it has **no documented cap** —
+so ADR-0006 decision 4's exclusion of search from the cap-proximity trip survives on its stated
+reason. **A signal is not a cap.** ADR-0006's other two rows stand, and its block-children finding
+is now *stronger*: PR #711 threads the field through seven response types and omits
+`ListBlockChildrenResponse`, so that claim rests on an enumerated omission rather than on
+documentation silence. **ADR-0007's search row is documented, not observed** — no capped search has
+been seen, and neither branch of `request_status` has been seen on any endpoint. That is the
+evidence class that produced ADR-0002 decision 4.
+
+**The corrected row changes nothing the product does, and v0.1 may not call search at all.** Five
+design surfaces are silent on whether a scan uses `POST /v1/search`; that silence is **not** a
+finding, and ADR-0007 refuses to convert it into one. Open as **#24**.
 
 **Environment.** `~/.claude/settings.json` is gitignored, so the `guard-downstream-framing-gh.py`
 PreToolUse wiring exists only on this machine. The hook file itself is committed.
@@ -72,87 +87,82 @@ restated here.
 
 ---
 
-## S007 — 2026-08-17 — The audit refuted the ADR the previous session shipped
+## S008 — 2026-08-17 — The correction held, and two of its three findings were not in the issue
 
-**PHASE:** Pre-build. No source code. Build gate closed. The board is now decisions and chores only.
+**PHASE:** Pre-build. No source code. Build gate closed. Board is decisions and chores only.
 
 **TESTS:** None. No toolchain. Not a gap.
 
-**ALL WORK MERGED.** `main` at `3fe815f`. PR #22 merged (#15, #16); `6968110` merged the checkpoint
-trim that PR #17 had left stranded. Nothing in flight. Issues **#18–#21** filed, all
-`ready-for-agent`.
+**ALL WORK MERGED.** PR #23 merged as `280524e` (`5e22750`) during the close — the operator merged
+it while this band was being written, so ADR-0007 is on `main` and nothing is in flight. Issues
+**#24** and **#25** filed as its follow-ups. **#10 is unblocked**: `main` no longer carries the
+known-wrong table, so ratification is free to proceed.
 
-### #15 refuted ADR-0006 decision 2, one day after it was accepted
+### #21 shipped as ADR-0007, and the issue's own framing was one of the things audited
 
-ADR-0006 lists `POST /v1/search` as carrying no truncation signal. **It carries one.** Notion's
-`post-search` reference documents `request_status`, and `notion-sdk-js` PR #711 adds the field to
-`SearchResponse`. `docs/research/notion-api-practice.md` §4.5 had listed it correctly since
-2026-08-16 — **the ADR contradicted a file already in the repository.**
+#21 was well drafted — it named the wrong row, both primary sources, and four things the ADR had to
+do. **Both sources were re-fetched anyway**, because the error being corrected was caused by trusting
+a page nobody had opened, and inheriting the correction's evidence repeats the method while fixing
+the instance. Both confirmed. One fact came back that #21 had not mentioned: **the search reference
+documents no cap**, so ADR-0006 decision 4's exclusion of search from the cap-proximity trip survives
+on exactly its stated reason. *A signal is not a cap.*
 
-**The method failure is the reusable part.** A negative was asserted across three endpoints having
-opened two references, and silence on the shared pagination page was read as absence rather than as
-not-checked.
+**The error was inert, and that is not a defence.** ADR-0006 decision 1 makes the test positive, so
+the scan looks for `request_status` on every response page and never consults the table to decide
+whether to look. A wrong **None** in a descriptive column gated nothing, and if search never emits
+the field the behaviour is identical to the old table. Containment came from a decision made for
+another reason. **A negative in a table that *did* gate behaviour would have shipped.**
 
-Two consequences, and the second is larger than the error:
+**The coverage benefit does not reach v0.1, which contradicts #21.** The issue says the correction
+makes the ~11,200 wall reportable. True of the endpoint, not of the product: five design surfaces —
+ADR-0002, `CONTEXT.md`, `PRODUCT.md`, #18's hydration map, and the proof run — are **silent** on
+whether a scan calls search. ADR-0007 states the silence and **refuses to assert the negative**,
+because misreading silence as absence is the error it exists to correct. Filed as **#24**.
 
-1. **The coverage story improves.** A truncated search is detectable, so the ~11,200 wall is a
-   reportable gap rather than a silent one.
-2. **ADR-0006's central finding survives, better evidenced.** PR #711 threads the field through
-   seven response types and omits `ListBlockChildrenResponse`. The traversal spine's missing signal
-   now rests on two independent sources instead of on the inference that just failed.
+### The grep would have returned two files, not one
 
-ADR-0006 is not edited. **#21** carries the superseding ADR, frontier tier.
+`notion-api-practice.md` §4.5 and `competitive-landscape.md` §4 both carried the correct fact, both
+landed in `12106c5` at 18:51, and ADR-0006 is `f8917fa` at 21:42 — ancestry confirmed with
+`git merge-base --is-ancestor`. So the standing method rule was not a coin flip against thin
+evidence. **Second ADR to contradict a file already in the tree.** Enforcement filed as **#25** with
+a recommendation to *wait for a third instance*: two occurrences justify writing the rule down, and a
+permanent tax on every ADR write wants more than n=2.
 
-### #16 found the interaction its own Revisit-if asked about
+**ADR-0006's central finding came out stronger.** Block-children carrying no signal rested on
+documentation silence — the same inference that failed on the search row — and now rests on PR #711
+naming seven response types and omitting `ListBlockChildrenResponse`.
 
-Six settled defaults are in `CONTEXT.md`; `asserted_without_adr` drops 7 entries to 1 and the two
-surfaces finally agree. The rule catalogue gains a v0.1 column — four ship, four deferred.
+### Two small ones
 
-None of the six conflicts with a locked ADR. **One interacts, and the interaction was unstated:**
-ADR-0005 decision 4 makes exit status a function of report disposition *and* coverage ratio, so
-"baseline fails new only" governs the **findings** contribution alone. A scan can fail on coverage
-while every finding it produced is baselined. Composition filed as **#20**.
-
-**Third instance of the three-places pattern.** `CONTEXT.md`'s stop condition still read "a complete
-coverage manifest" with no declared-root qualifier — the wording that stops the project on a fact
-ADR-0002 settled. `PRODUCT.md` was corrected earlier; this was the surviving copy.
-
-### A new hygiene failure mode, and it fired on its own fix
-
-`checkpoint.md` 445 → 140 lines. Each band ended with a pointer at the band before it, so archiving
-older bands broke every reference above the cut **while losing zero normative claims** — the
-superset check goes green over a file that can no longer reach its own constraints.
-
-**Hoisting from the oldest source recovered two constraints the newest band had already dropped**:
-the living-docs carve-out on "ADRs are never edited in place," and the scouts rule. The chain was
-lossy *before* the archive. Written into `context-hygiene` as step 2; the recognizer then fired on
-that same file, because inserting the step renumbered a list.
+`docs/agents/domain.md` used "ADR-0007 (event-sourced orders)" as a placeholder example, which now
+collides with a real ADR; renumbered to `ADR-00NN`. And **the PreToolUse hook caught the PR body
+shipping without a Revisit-if** — the ADR had a full one, the PR did not, and a reviewer reads the
+PR first. Appended rather than argued with.
 
 ### BLOCKERS
 
-**None technical.** Every remaining item is a decision, a chore, or Gate 1.
-
-**Gate 1 is unchanged and is not on the board.** Five teams, 329 lines of instruments in
-`docs/demand-test/`, and it advances when the operator sends. The Reddit diagnosis is the first send.
+**None technical.** `.env` is unreadable by any tool, so its claims are permanently unverifiable —
+this is a stated hole in the session-start verification pass, not a blocker. **Gate 1 is unchanged
+and is not on the board**; it advances when the operator sends, and the Reddit diagnosis is the first
+send.
 
 ### EXACT NEXT STEPS
 
-1. **#21 — ADR-0007**, correcting ADR-0006 decision 2. Do this before #10 ratifies anything.
-2. **#20 — baseline state machine.** The one item with real design content.
-3. **#18, #19** — hydration map and identity rule. Mechanical.
-4. **#8, #14** — operator decisions. Not agent work.
+1. **#20 — baseline state machine + exit-code contract.** The top agent item and the one with real
+   design content: exit status composes report disposition *and* coverage ratio, two independent
+   inputs.
+2. **#24** — whether v0.1 calls search. A scope decision with a product surface, not a lookup.
+3. **#18, #19** — mechanical, and they belong to their own fast-tier session.
+4. **#10** — now unblocked by ADR-0007 landing. Still `needs-triage` on its own un-runnable
+   checklist item.
+5. **#8, #14, #25** — operator decisions. Not agent work.
 
-**NEXT-MODEL:** frontier for **#21** and **#20** — a superseding ADR and a state machine composing
-two independent exit inputs, both judgement. **#18** and **#19** are mechanical and belong to their
-own fast-tier session. Do not straddle.
+**NEXT-MODEL:** frontier for **#20** — a state machine composing two independent exit inputs is
+judgement, and **#24** is a scope call with an onboarding surface. **#18** and **#19** are mechanical
+and get their own fast-tier session. **Do not straddle**; shrink the next session's scope rather than
+cross the tier boundary inside it.
 
 **NEXT-REPO/CWD:** `C:\Users\mlpgr\2026_Projects\workspace_lint` — single repo; state, plan and
 resume ritual all at the root.
 
-**SELF-ASSESS:** VERDICT: 2 (#15 and #16 landed; the ADR-0006 error was caught by the audit the project had scheduled, and tracked rather than patched) · ATTRIB: skill
-
-### Note on `~/.claude`
-
-Untouched by operator instruction. The `context-hygiene` SKILL.md edit from this session is
-**uncommitted there and stays that way**. That repo has no remote and no backup; the operator has
-seen the analysis and ruled the pile probably superseded. Do not re-raise it.
+**SELF-ASSESS:** VERDICT: 2 (ADR-0007 landed with two findings the issue had not specified, and the correction's own evidence was re-fetched rather than inherited) · ATTRIB: skill
