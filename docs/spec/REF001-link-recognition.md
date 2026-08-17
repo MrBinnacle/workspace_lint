@@ -282,16 +282,24 @@ still rendered, with the gap stated.
 | Situation | Exit |
 | --- | --- |
 | Unrecognised candidates exist and coverage is below the declared threshold | `3` |
-| Unrecognised candidates exist, coverage is at or above the declared threshold, a new unsuppressed finding exists | `1` |
-| Unrecognised candidates exist, coverage is at or above the declared threshold, no new unsuppressed finding | `0` |
+| Unrecognised candidates exist, coverage is at or above the declared threshold, and their `SYS001` findings are new and unsuppressed | `1` |
+| Unrecognised candidates exist, coverage is at or above the declared threshold, and their `SYS001` findings are **baselined** | `0` |
 
-**The third row looks wrong and is correct.** Exit `0` is permitted while unrecognised links exist,
-but only when the operator declared a coverage threshold below 1.0. ADR-0008's invariant is
-preserved exactly — exit `0` asserts no new unsuppressed finding and coverage at or above the
-declared threshold, and nothing else. This is not a false green: the manifest names every dropped
-href and both ratios are published. The operator chose the tolerance and the report states what it
-bought. Documenting exit `0` as "clean" anywhere in the CLI would be the defect; ADR-0008 already
-forbids equating the exit code with the disposition.
+**The third row is the only route to exit `0` with an unrecognised link, and it is narrower than it
+first looks.** An earlier draft of this section claimed exit `0` followed from raising the coverage
+threshold alone. That was wrong and the check in §6 caught it on its first run. A coverage gap
+carries a `SYS001` finding — `CONTEXT.md` makes `SYS001` the finding identity for a gap — and
+ADR-0008 decision 2 fires exit `1` on any finding that is new and unsuppressed. Raising the
+threshold removes the exit `3` condition and lands on exit `1`, not on exit `0`.
+
+So an unrecognised link reaches exit `0` only when the operator has **baselined** it. That is an
+explicit recorded decision, not a configuration tweak, and it is the correct bar. The report is
+still `qualified`, the manifest still names every dropped href, and both ratios are still published.
+ADR-0008's invariant holds exactly: exit `0` asserts no new unsuppressed finding and coverage at or
+above the declared threshold, and nothing else.
+
+**The ADR outranks this spec.** Where the two disagree the ADR wins and the spec is the defect,
+which is what happened here.
 
 ## 6. The red test
 
@@ -327,6 +335,21 @@ qualified.
 
 Tests 1 and 4 constrain each other. That is intended: one fails if the recogniser is too narrow, the
 other if it is too wide.
+
+**These exist.** `prototypes/CHECK-link-recognition.ts` on branch `proto/ref001-observed` — 34
+assertions, offline, no network and no `.env`, against `prototypes/link-recognition.ts` and
+`prototypes/verdict.ts`. `npx tsc --noEmit` is clean under `strict`.
+
+Two results worth recording, because both were found by running the checks rather than by re-reading
+the reasoning:
+
+- **Test 1b demonstrates its own sensitivity.** Removing `app.notion.com` from the host list turns
+  the discovery red, so the entry is shown to be load-bearing rather than asserted to be. Test 1c
+  executes the regex the first implementation actually shipped and confirms that under this spec the
+  same defect degrades to a reported gap instead of a clean verdict.
+- **The suite corrected §5's exit table on its first run.** See the note there. The version of this
+  document that was reasoned about and the version that survived execution differ, which is the
+  whole argument for writing the checks before trusting the spec.
 
 ## 7. Decision status
 
