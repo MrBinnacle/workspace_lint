@@ -91,8 +91,8 @@ async function main(): Promise<never> {
     process.exit(4);
   }
 
-  say('workspace_lint — v0.1 scan slice (T2, issue #43)');
-  say(`Notion-Version: ${env.NOTION_VERSION || '2026-03-11'} · read-only · rules implemented: 1 (SYS001)`);
+  say('workspace_lint — v0.1 scan slice (T3, issue #44)');
+  say(`Notion-Version: ${env.NOTION_VERSION || '2026-03-11'} · read-only · rules implemented: 2 (SYS001, REF001)`);
   say('');
 
   const result = await scan({

@@ -225,9 +225,15 @@ const O_ROOT = '3bf1351d-6af4-8057-8496-ee302a3bee7c';
 const O_PAGINATION = '3bf1351d-6af4-81ee-990b-f7c5fef57e44';
 const O_REVOKE_PARENT = '3bf1351d-6af4-8108-8ff3-c2d170a06142';
 const O_DATABASE = 'f937580c-0964-4ea7-a781-b9119887ee5b';
+/* wl-outside-grant, the link TARGET. fixture.md: "Top-level, never connected.
+ * Linked from the root." It has no entry in the fake below, so retrieving it
+ * 404s — which is what the oracle now pre-registers for #44. */
+const O_OUTSIDE_GRANT = '3bf1351d-6af4-8110-8dc5-dcc8bffb9742';
+const O_LINK = { object: 'block', id: 'block-outside-link', type: 'paragraph',
+  paragraph: { rich_text: [{ type: 'text', text: { content: 'wl-outside-grant' }, href: `https://app.notion.com/p/${O_OUTSIDE_GRANT.replace(/-/g, '')}` }] } };
 
 const ORACLE_SHAPED: Record<string, FakeResource> = {
-  [O_ROOT]: { steps: [page([childPage(O_PAGINATION, 'wl-pagination'), childPage(O_REVOKE_PARENT, 'wl-revoke-parent'), childDb(O_DATABASE, 'wl-dataset')])] },
+  [O_ROOT]: { steps: [page([O_LINK, childPage(O_PAGINATION, 'wl-pagination'), childPage(O_REVOKE_PARENT, 'wl-revoke-parent'), childDb(O_DATABASE, 'wl-dataset')])] },
   [O_PAGINATION]: { steps: [page([], { has_more: true, next_cursor: '1' }), page([])] },
   [O_REVOKE_PARENT]: { steps: [page([])] },
   [O_DATABASE]: { steps: [page([])] },
@@ -237,14 +243,14 @@ const r7 = await scan({ config: cfg(O_ROOT), port: fakePort(ORACLE_SHAPED), now:
 const o7 = checkAgainstOracle(r7);
 check('the oracle MATCHES a fixture-shaped run', o7.ok, true);
 check('  and it names its own source', /fixture\.md/.test(o7.lines.join('\n')), true);
-check('  wl-outside-grant and wl-revoke-child are absent, as required', /absent, as the oracle requires/.test(o7.lines.join('\n')), true);
+check('  wl-outside-grant and wl-revoke-child are absent, as required', /absent from the RESOURCE manifest, as the oracle requires/.test(o7.lines.join('\n')), true);
 
 /* MUTATION: delete one child the oracle requires. If the oracle stays green
  * here it is checking nothing — the same failure the exit byte's mutation check
  * exists to catch, one layer up. */
 const MISSING_CHILD: Record<string, FakeResource> = {
   ...ORACLE_SHAPED,
-  [O_ROOT]: { steps: [page([childPage(O_PAGINATION, 'wl-pagination'), childDb(O_DATABASE, 'wl-dataset')])] },
+  [O_ROOT]: { steps: [page([O_LINK, childPage(O_PAGINATION, 'wl-pagination'), childDb(O_DATABASE, 'wl-dataset')])] },
 };
 const r7b = await scan({ config: cfg(O_ROOT), port: fakePort(MISSING_CHILD), now: clock() });
 const o7b = checkAgainstOracle(r7b);

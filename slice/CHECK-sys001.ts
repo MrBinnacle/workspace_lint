@@ -26,6 +26,7 @@ import { renderReport } from './report.js';
 import { hyphenate } from './ids.js';
 import { anchorFor, anchorKey, headlineCoverage } from './finding.js';
 import { SYS001, SYS001_ID, SYS001_UNIT, DROPOUT_STAGE_KEY, lastStage, type Sys001Rule } from './sys001.js';
+import { REF001 } from './ref001.js';
 import type { Entry, Manifest } from './manifest.js';
 import type { Finding } from './finding.js';
 import {
@@ -145,7 +146,7 @@ check('gaps still exist and the report is qualified', control4.verdict.dispositi
 check('EXIT 1 — a finding is new and unsuppressed', control4.verdict.exit, 1);
 
 const noFindings: Sys001Rule = { ...SYS001, findingsFrom: () => [] };
-const mutated4 = await scan({ config: lenient, port: fakePort(THREE_CHILDREN), now: clock(), rule: noFindings });
+const mutated4 = await scan({ config: lenient, port: fakePort(THREE_CHILDREN), now: clock(), rules: [noFindings, REF001] });
 check('with the findings removed the byte is 0', mutated4.verdict.exit, 0);
 check('the mutation moved the byte', control4.verdict.exit !== mutated4.verdict.exit, true);
 check('  and the coverage figure is unchanged by it', mutated4.coverage[0]!.ratio, control4.coverage[0]!.ratio);
@@ -178,7 +179,7 @@ const fetchedOnly: Sys001Rule = {
     return judged;
   },
 };
-const mutated5 = await scan({ config: cfg(), port: fakePort(MIDSTREAM), now: clock(), rule: fetchedOnly });
+const mutated5 = await scan({ config: cfg(), port: fakePort(MIDSTREAM), now: clock(), rules: [fetchedOnly, REF001] });
 /* THE MUTATION IS WORSE THAN PREDICTED, AND THE MEASURED VALUES ARE KEPT.
  * This was written expecting the gap to survive as bounded and the byte to fall
  * from 2 to 3. It does not: gapsFrom() keys on the `evaluated` stage, so marking

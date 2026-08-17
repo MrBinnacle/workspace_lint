@@ -67,6 +67,36 @@ export const FIXTURE_ORACLE = {
 
   /** Root + three children. The number criterion 1 is really about. */
   applicable: 4,
+
+  /**
+   * REF001's applicable set, pre-registered for #44's live run — acceptance
+   * criterion 4.
+   *
+   * TRANSCRIBED FROM TWO REPOSITORY FILES, BOTH OLDER THAN THE RULE. fixture.md
+   * "What exists" records `wl-outside-grant` as *"Top-level, never connected.
+   * LINKED FROM THE ROOT. The contrast case."* results-ref001-live.md §2 records
+   * the href verbatim, read out of the root's block content on 2026-08-17:
+   * `href=https://app.notion.com/p/3bf1351d6af481108dc5dcc8bffb9742`.
+   *
+   * The count is asserted rather than merely reported, and the risk is stated:
+   * `wl-pagination` holds 151 Markdown-converted paragraphs, and if any of them
+   * carries a link this number is wrong. A mismatch is then a FACT ABOUT THE
+   * FIXTURE that neither file recorded — which is what an oracle is for. It is
+   * not a defect in the rule, and it must not be corrected by editing this
+   * constant after reading a run.
+   */
+  references: {
+    source: 'docs/proof/fixture.md "What exists" + results-ref001-live.md §2',
+    /** Internal references REF001 should discover across all readable blocks. */
+    applicable: 1,
+    /** The one target, by ID suffix. Same suffix discipline as the children above. */
+    targetSuffix: 'bffb9742',
+    alias: 'wl-outside-grant',
+    /** The connection is not connected to it, so retrieval 404s. */
+    expectUnreachable: true,
+    /** No unrecognised candidate is expected: the only observed host is in the allow-list. */
+    unrecognised: 0,
+  },
 } as const;
 
 export type OracleVerdict = { ok: boolean; lines: string[] };
@@ -87,8 +117,14 @@ export function checkAgainstOracle(r: ScanResult): OracleVerdict {
     lines.push(`  ${pass ? 'MATCH   ' : 'MISMATCH'} ${msg}`);
   };
 
-  const keys = r.manifest.all().map(e => e.key);
-  const find = (suffix: string) => r.manifest.all().find(e => e.key.endsWith(suffix));
+  /* RESOURCES ONLY, AND THE FILTER IS LOAD-BEARING. The manifest now holds
+   * REF001's references as well, keyed `ref:<target id>` — so `wl-outside-grant`
+   * IS in the manifest, as the target of a link, while still not being a child
+   * of the declared root. Matching on the suffix alone would make the `absent`
+   * assertion below fail on the very fact the fixture was built to produce. */
+  const resources = r.manifest.of('resources');
+  const keys = resources.map(e => e.key);
+  const find = (suffix: string) => resources.find(e => e.key.endsWith(suffix));
 
   lines.push(`  oracle source: ${FIXTURE_ORACLE.source}`);
 
@@ -104,7 +140,7 @@ export function checkAgainstOracle(r: ScanResult): OracleVerdict {
     if (c.kind === 'data-source') {
       /* The documented non-match. Assert the SHAPE — one resource that stalls at
        * enumerated — rather than the suffix, and state why. */
-      const stalled = r.manifest.all().filter(x => x.stages.has('enumerated') && !x.stages.has('fetched'));
+      const stalled = resources.filter(x => x.stages.has('enumerated') && !x.stages.has('fetched'));
       say(stalled.length === 1,
         `exactly one resource stalls at enumerated (the data source); found ${stalled.length}`);
       lines.push(`  NOTE     ${c.alias}: ${c.note}`);
@@ -118,8 +154,44 @@ export function checkAgainstOracle(r: ScanResult): OracleVerdict {
 
   for (const a of FIXTURE_ORACLE.absent) {
     const present = keys.some(k => k.endsWith(a.suffix));
-    say(!present, `${a.alias} (…${a.suffix}) is absent, as the oracle requires`);
+    say(!present, `${a.alias} (…${a.suffix}) is absent from the RESOURCE manifest, as the oracle requires`);
     if (present) lines.push(`           ${a.why}`);
+  }
+
+  /* -- REF001, pre-registered for #44's run ------------------------------- */
+  const refs = r.manifest.of('internal references');
+  const expected = FIXTURE_ORACLE.references;
+  lines.push(`  reference oracle source: ${expected.source}`);
+
+  say(refs.length === expected.applicable,
+    `REF001's applicable set is ${refs.length} internal reference(s), oracle says ${expected.applicable}`);
+
+  const unrecognised = refs.filter(e => !e.stages.has('resolved'));
+  say(unrecognised.length === expected.unrecognised,
+    `${unrecognised.length} unrecognised candidate(s), oracle says ${expected.unrecognised}`);
+  if (unrecognised.length !== expected.unrecognised)
+    lines.push('           An unrecognised candidate is a FACT ABOUT THE FIXTURE that no repository ' +
+               'file records — a host outside the allow-list. Record it in docs/proof/ and move the ' +
+               'host row with its locator; do not edit this constant to match a run.');
+
+  const target = refs.find(e => (e.ref?.targetId ?? '').endsWith(expected.targetSuffix));
+  say(target !== undefined, `the link target ${expected.alias} (…${expected.targetSuffix}) was DISCOVERED in block content`);
+  if (target) {
+    say(target.stages.has('resolved'), `${expected.alias} was recognised as an internal reference`);
+    say(target.stages.has('fetched') !== expected.expectUnreachable,
+      `${expected.alias} is ${expected.expectUnreachable ? 'unreachable' : 'retrievable'}, as the oracle requires`);
+  }
+
+  const ref001 = r.findings.filter(f => f.rule === 'REF001');
+  say(ref001.length === (expected.expectUnreachable ? 1 : 0),
+    `REF001 produced ${ref001.length} finding(s), oracle says ${expected.expectUnreachable ? 1 : 0}`);
+  for (const f of ref001) {
+    /* Acceptance criterion 4, and the pair is asserted TOGETHER because
+     * collapsing the two axes is the defect #10's triage comment corrected
+     * twice. A finding can be confirmed about an unreachable target. */
+    say(f.certainty === 'confirmed' && f.targetState === 'unreachable',
+      `the finding is certainty=${f.certainty} about target state=${f.targetState}` +
+      ' (criterion 4 requires confirmed / unreachable)');
   }
 
   lines.push(`  ${ok ? 'ORACLE MATCHED' : 'ORACLE MISMATCH — the run and the hand-written manifest disagree'}`);

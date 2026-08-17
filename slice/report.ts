@@ -32,21 +32,37 @@ export function renderReport(r: ScanResult, opts: RenderOptions = {}): string[] 
    * it was in fact correct. Truncation is not redaction, and here it was not
    * even disambiguation. The ID is the right thing to print — CONTEXT.md's
    * settled default names a resource "by ID and link, never by title". */
-  const label = (alias: string, key: string) => (opts.showTitles ? alias : key);
-  const width = Math.max(20, ...r.manifest.all().map(e => label(e.alias, e.key).length));
+  /* ONE LABELLING RULE FOR EVERY ENTRY, WHATEVER IT COUNTS. `safeLabel` is the
+   * form that is safe on any line: a resource's ID, or a reference's href with
+   * its path redacted. `alias` may carry a page title — and for a reference it
+   * may carry one INSIDE THE URL, because a Notion link copied from the UI reads
+   * `.../My-Private-Roadmap-3bf1351d…`. That is the same hole #42 shipped
+   * through an endpoint label, arriving through a different door. */
+  const label = (e: { alias: string; safeLabel: string }) => (opts.showTitles ? e.alias : e.safeLabel);
+  const entries = r.manifest.all();
+  const width = Math.max(20, ...entries.map(e => label(e).length));
 
   out.push('');
   out.push('──────── COVERAGE MANIFEST ────────');
-  for (const e of r.manifest.all())
-    out.push(`  ${label(e.alias, e.key).padEnd(width)} ${STAGES.map((s: Stage) => (e.stages.has(s) ? '●' : '○')).join(' ')}  ${e.loss?.cause ?? ''}`);
+  for (const e of entries)
+    out.push(`  ${label(e).padEnd(width)} ${STAGES.map((s: Stage) => (e.stages.has(s) ? '●' : '○')).join(' ')}  ${e.unit.padEnd(20)}${e.loss?.cause ?? ''}`);
   out.push(`  ${''.padEnd(width)} ${STAGES.map(s => s[0]).join(' ')}   (declared resolved enumerated fetched evaluated)`);
-  if (!opts.showTitles) out.push('  page titles redacted by default; --show-titles opts in');
+  /* ADR-0011 decision 4 and spec criterion 6: no figure without its unit. The
+   * manifest is where the figures come from, so the unit is on every row —
+   * `enumerated` means nothing for a reference and the column says which rows it
+   * applies to. */
+  out.push('  the unit column names which rule\'s coverage item each row belongs to; counts are never pooled across them');
+  if (!opts.showTitles) out.push('  page titles redacted by default, in aliases AND inside link paths; --show-titles opts in');
 
   out.push('');
   out.push('──────── GAPS ────────');
   if (!r.gaps.length) out.push('  none');
+  /* Rendered through the manifest, never from `g.resource` directly: a gap over
+   * an unrecognised link carries the VERBATIM href as its identity, and the
+   * verbatim href is the thing that may carry a title. */
+  const safeName = new Map(entries.map(e => [e.key, label(e)]));
   for (const g of r.gaps)
-    out.push(`  ${g.bounded ? 'bounded  ' : 'UNBOUNDED'} ${g.resource}  ${g.isRootMiss ? '[declared root never reached] ' : ''}${g.cause}`);
+    out.push(`  ${g.bounded ? 'bounded  ' : 'UNBOUNDED'} ${safeName.get(g.resource) ?? g.resource}  ${g.isRootMiss ? '[declared root never reached] ' : ''}${g.cause}`);
 
   out.push('');
   out.push('──────── FINDINGS ────────');
@@ -81,6 +97,26 @@ export function renderReport(r: ScanResult, opts: RenderOptions = {}): string[] 
   out.push('  rather than hiding it (ADR-0006 decision 5).');
   out.push('  request_status is tested positively only; its absence proves nothing either way');
   out.push('  and maps to `sufficient` (ADR-0006 decision 3).');
+  /* The host set is unbounded — Notion documents custom domains for Sites — so
+   * no allow-list can be complete and the residue path is the mechanism. Stated
+   * per run so that a future reader cannot re-frame the host list as the
+   * soundness mechanism, which is DoD item 2 on #44. */
+  out.push('  REF001 recognises internal links by a residue path, NOT by an allow-list: the host');
+  out.push('  set is unbounded (Notion Sites supports custom domains), so a link carrying a');
+  out.push('  Notion-shaped ID on an unknown host is reported, never dropped. The host list is an');
+  out.push('  optimisation and can never be complete.');
+  out.push(`  ${r.externalReferences} external reference(s) were discovered and excluded from every`);
+  out.push('  denominator as non-defect exclusions (ADR-0005 decision 2).');
+  /* Two limits REF001 has that are NOT visible in any figure, so they are stated
+   * rather than left for a reader to infer from a clean-looking ratio. */
+  out.push('  Nested block content IS read, to a bounded depth and request budget. Exhausting');
+  out.push('  either is recorded as an UNBOUNDED loss on the containing page, never as a');
+  out.push('  silent stop: a link the scan did not open cannot be counted or named.');
+  out.push('  A reference naming a DATABASE is not retrieved — this slice has GET /v1/pages only.');
+  out.push('  It is a named drop-out in REF001\'s coverage, never a finding. A reference found by');
+  out.push('  URL carries no object kind, so a 404 on it means "not retrievable as a page", which');
+  out.push('  covers a readable database as well as a dead link. That is a PRECISION limit and it');
+  out.push('  is the reason the finding names the route that discovered it.');
 
   out.push('');
   out.push('──────── REPORT ────────');
@@ -171,6 +207,33 @@ export function renderReport(r: ScanResult, opts: RenderOptions = {}): string[] 
    * follow-up on #43, not decided in it. The figures in `why` are RESOURCES:
    * deriveVerdict is fed the funnel counts, which stage resources. */
   out.push(`  exit:             ${r.verdict.exit}   (${r.verdict.why})   [figures in this reason are resources]`);
+
+  /* WHAT THE EXIT BYTE ACTUALLY COMPARED, PRINTED EVERY RUN.
+   *
+   * ADR-0011 decision 5 makes `--min-coverage` a floor on EVERY rule, i.e. on
+   * the minimum of the coverage vector. deriveVerdict compares the FUNNEL scalar
+   * — evaluated resources over applicable resources — and verdict.ts is copied
+   * verbatim from a frozen prototype (spec §5), so changing what it compares is
+   * an ADR (#49) and not an edit. The two figures were the same number while one
+   * rule existed. They are two numbers now.
+   *
+   * This is disclosed rather than quietly correct because the alternative is a
+   * report whose byte asserts a comparison the run did not make. When the two
+   * fall on opposite sides of the threshold the byte is WRONG in the flattering
+   * direction, and the line below says so in those words. */
+  const b = r.byteBasis;
+  out.push(
+    `  byte basis:       compared ${(b.funnel * 100).toFixed(1)}% (funnel, unit: resources) against the declared ` +
+    `threshold ${b.declaredThreshold}; ADR-0011 decision 5 requires ${
+      b.vectorMinimum ? `${(b.vectorMinimum.ratio * 100).toFixed(1)}% (${b.vectorMinimum.rule}, unit: ${b.vectorMinimum.unit})` : 'the vector minimum, and the vector is empty'
+    }`,
+  );
+  if (b.byteWouldDiffer) {
+    out.push('  ⚠ THE EXIT BYTE IS NOT THE ONE ADR-0011 DECISION 5 REQUIRES. The vector minimum is');
+    out.push('    below the declared threshold and the funnel figure is not, so a rule below the');
+    out.push('    floor is masked by a rule above it. #49 decides what verdict.ts compares; until');
+    out.push('    it lands this byte must not be read as a coverage verdict over every rule.');
+  }
 
   out.push('');
   out.push('──────── CALLS MADE (read-only) ────────');

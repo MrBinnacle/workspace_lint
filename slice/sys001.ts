@@ -48,17 +48,15 @@
  *    non-evaluation stops being a proved fact and certainty stops being constant.
  */
 
-import { STAGES, type Entry, type Manifest, type ResourceKey, type Stage } from './manifest.js';
-import type { Gap } from './verdict.js';
+import { RESOURCES, STAGES, type Entry, type ResourceKey, type Stage } from './manifest.js';
+import type { Rule } from './rule.js';
 import {
   anchorFor,
   coverageRow,
-  LINK_NOT_CAPTURED,
-  type CoverageRow,
+  type CoverageUnit,
   type Discriminator,
   type Evidence,
   type Finding,
-  type Outcome,
   type TargetState,
 } from './finding.js';
 
@@ -69,7 +67,7 @@ export const SYS001_ID = 'SYS001';
  * Exported because the unit is printed with every figure computed over it and
  * no caller may supply its own noun.
  */
-export const SYS001_UNIT = 'resources';
+export const SYS001_UNIT: CoverageUnit = 'resources';
 
 /** The discriminator key family, named and versioned per ADR-0010 decision 1. */
 export const DROPOUT_STAGE_KEY = 'sys001/dropout-stage@1';
@@ -99,36 +97,19 @@ export function lastStage(e: Entry): Stage | null {
   return last;
 }
 
-export type Sys001Rule = {
-  id: string;
-  unit: string;
-  /**
-   * Stage 5 of the funnel. Returns the resources this rule judged; the CALLER
-   * marks them `evaluated`, because ADR-0005 decision 5 defines the stage as
-   * "every applicable rule reached a judgement" and only the caller knows how
-   * many rules there are.
-   */
-  judge(m: Manifest): Set<ResourceKey>;
-  /**
-   * One finding per gap. The gap set is the input, never recomputed here.
-   *
-   * Named `findingsFrom` and not `report` because `Report` is taken: CONTEXT.md
-   * gives it one meaning — the artifact carrying a disposition, a coverage
-   * vector and a conformity ratio — and renderReport builds that. One term, one
-   * concept.
-   */
-  findingsFrom(m: Manifest, gaps: Gap[]): Finding[];
-  /**
-   * This rule's row of the coverage vector, or null when its applicable set is
-   * empty. `judged` is the SAME SET judge() returned and is not re-derived —
-   * an earlier draft recomputed it here, and a mutation check caught the vector
-   * and the funnel disagreeing by one resource. Two code paths for one number is
-   * the defect recorded in docs/proof/results-ref001-live.md §4.
-   */
-  coverage(m: Manifest, judged: Set<ResourceKey>): CoverageRow | null;
-  /** The outcome PAIR — ADR-0005 decision 1. Never one value. */
-  outcome(m: Manifest, judged: Set<ResourceKey>, findings: Finding[]): Outcome;
-};
+/**
+ * The rule interface moved to rule.ts when REF001 (#44) arrived and needed the
+ * same one. This alias is kept because it names the seam CHECK-sys001.ts injects
+ * at, and because the contract is unchanged.
+ *
+ * Two properties of it were written here and still hold. `findingsFrom` renders
+ * ONE FINDING PER GAP from the gap set it is given and never recomputes it — two
+ * code paths for one number is the defect in results-ref001-live.md §4. And it
+ * is named `findingsFrom` rather than `report` because CONTEXT.md gives *Report*
+ * one meaning, the artifact carrying a disposition, a coverage vector and a
+ * conformity ratio, which renderReport builds. One term, one concept.
+ */
+export type Sys001Rule = Rule;
 
 /**
  * Build one SYS001 finding. Both call sites go through here, so a field added to
@@ -169,13 +150,21 @@ function sys001Finding(args: {
   };
 }
 
-export const SYS001: Sys001Rule = {
+export const SYS001: Rule = {
   id: SYS001_ID,
   unit: SYS001_UNIT,
+  /* Every SYS001 finding reports a gap. The gaps already qualify the report, so
+   * deriveVerdict must not also count them as violations. */
+  findingKind: 'coverage-gap',
 
   judge(m) {
     const judged = new Set<string>();
-    for (const e of m.all()) if (judgeable(e)) judged.add(e.key);
+    /* RESOURCES ONLY. m.all() now spans two coverage items — REF001 (#44) keeps
+     * its references in the same manifest — and judging one of those here would
+     * mark a reference `evaluated` on the strength of a rule that never looked
+     * at it, and put it in a denominator ADR-0011 decision 2 says counts
+     * resources. */
+    for (const e of m.of(RESOURCES)) if (judgeable(e)) judged.add(e.key);
     return judged;
   },
 
@@ -184,14 +173,26 @@ export const SYS001: Sys001Rule = {
      * manifest does not hold is REPORTED as a disagreement rather than smoothed
      * over with a default. The two structures drifting apart is the recorded
      * failure this rule is built around. */
-    const byKey = new Map(m.all().map(e => [e.key, e]));
+    const byKey = new Map(m.of(RESOURCES).map(e => [e.key, e]));
+    /* Which keys belong to somebody else's coverage item. A gap over one of
+     * those is not this rule's to render and must not fall through to the
+     * disagreement branch below, which would report a healthy REF001 drop-out as
+     * the manifest and the gap set contradicting each other. */
+    const otherUnits = new Set(m.all().filter(e => e.unit !== RESOURCES).map(e => e.key));
 
-    return gaps.map((g): Finding => {
+    return gaps.flatMap((g): Finding[] => {
       const e = byKey.get(g.resource);
       const isRootMiss = g.isRootMiss ?? false;
 
+      /* Another rule's coverage gap. It still qualifies the report and still
+       * lowers that rule's ratio; the finding, if any, is that rule's to make.
+       * REF001 makes none for an unrecognised candidate — spec §7, and a Finding
+       * would have to assert a `certainty` and a `target_state` the scan did not
+       * establish. */
+      if (!e && otherUnits.has(g.resource)) return [];
+
       if (!e) {
-        return sys001Finding({
+        return [sys001Finding({
           resource: g.resource,
           stage: 'unrecorded',
           /* The disagreement is proved, but nothing is established about the
@@ -204,11 +205,11 @@ export const SYS001: Sys001Rule = {
           message:
             'the gap set names a resource the coverage manifest does not hold — ' +
             'the two disagree, and neither may be believed until they are reconciled',
-        });
+        })];
       }
 
       const stage = lastStage(e);
-      return sys001Finding({
+      return [sys001Finding({
         resource: e.key,
         /* One finding per resource in this slice, so the bucket holds at most
          * one element and the ordering ADR-0010 decision 5 requires is total by
@@ -228,7 +229,7 @@ export const SYS001: Sys001Rule = {
          * default; a message built from one would carry workspace content into
          * every consumer of this finding, redaction flag or not. */
         message: `${e.isRoot ? 'declared root' : 'resource'} was not evaluated — ${g.cause}`,
-      });
+      })];
     });
   },
 
@@ -237,12 +238,15 @@ export const SYS001: Sys001Rule = {
      * that dropped out. A denominator built from what the scan managed to read
      * reports its highest confidence exactly where the tool is weakest — it
      * shipped "2/2 — 100%" over a root with three children
-     * (docs/proof/results-ref001-live.md §3, and ADR-0011's opening evidence). */
-    return coverageRow(SYS001_ID, SYS001_UNIT, judged.size, m.size);
+     * (docs/proof/results-ref001-live.md §3, and ADR-0011's opening evidence).
+     *
+     * RESOURCES ONLY, for the same reason judge() is. m.count() defaults to this
+     * rule's unit and there is deliberately no unit-free size to reach for. */
+    return coverageRow(SYS001_ID, SYS001_UNIT, judged.size, m.count(RESOURCES));
   },
 
   outcome(m, judged, findings) {
-    const entries = m.all();
+    const entries = m.of(RESOURCES);
 
     /* ADR-0005 decision 1: conformity is ABSENT when the evaluated set is empty.
      * Not a third enum value — a verdict that was never formed is not a verdict. */

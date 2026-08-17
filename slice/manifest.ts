@@ -19,9 +19,16 @@
 
 import { hyphenate } from './ids.js';
 import type { Gap } from './verdict.js';
+import type { CoverageUnit } from './finding.js';
 
 export type Stage = 'declared' | 'resolved' | 'enumerated' | 'fetched' | 'evaluated';
 export const STAGES: readonly Stage[] = ['declared', 'resolved', 'enumerated', 'fetched', 'evaluated'] as const;
+
+/**
+ * The default coverage item. Everything the traversal stages is a resource;
+ * REF001 (#44) is the first entrant with a different one.
+ */
+export const RESOURCES: CoverageUnit = 'resources';
 
 /**
  * A resource's identity inside the manifest: the hyphenated Notion ID, or the
@@ -66,52 +73,131 @@ export type Loss = {
   target: 'present' | 'unreachable';
 };
 
-/** Passed as the alias when a call must not overwrite the one already recorded. */
-export const KEEP_ALIAS = '';
+/**
+ * What a reference entry knows about itself, so no later reader recovers it by
+ * parsing a key. Same rule as `Loss`: the site that discovered the fact records
+ * it as structure.
+ */
+export type RefFacts = {
+  /** Hyphenated, or null when the candidate was never classified. */
+  targetId: string | null;
+  /**
+   * What KIND of object the discovering shape said the target is. Recorded
+   * because the scan can retrieve a page and cannot retrieve a database, and a
+   * rule that does not know the difference reports a readable database as a
+   * proved dead link.
+   */
+  targetKind: 'page' | 'database' | 'unknown';
+  /** The verbatim href. May carry a page title; never rendered directly. */
+  href: string | null;
+  /** Which detection route found it. Carries no title. */
+  via: string;
+  sourcePage: string;
+  sourceBlock: string;
+  /**
+   * The cause the port produced when the target was retrieved, written by the
+   * site that made the call. Null when no call was made or the call succeeded.
+   * Recorded rather than re-derived: this repository has twice recovered
+   * structure from prose and been wrong both times.
+   */
+  resolveCause: string | null;
+};
 
 export type Entry = {
   key: ResourceKey;
-  /** Report-only. Never addresses anything. */
+  /**
+   * WHICH RULE'S COVERAGE ITEM THIS ENTRY IS — ADR-0011 decision 2. A rule
+   * counts only the entries whose unit is its own, because ADR-0011 decision 4
+   * forbids pooling counts of different nouns. Without this field SYS001's
+   * denominator would silently absorb REF001's references and report a
+   * resource-coverage ratio over things that are not resources.
+   */
+  unit: CoverageUnit;
+  /** Report-only. MAY CARRY A PAGE TITLE. Printed only under --show-titles. */
   alias: string;
+  /** Report-only, and safe on every line. Never carries a title. */
+  safeLabel: string;
   stages: Set<Stage>;
-  /** Null when the funnel delivered this resource whole. */
+  /** Null when the funnel delivered this entry whole. */
   loss: Loss | null;
   /** A declared root, which carries ADR-0005's pervasiveness condition (a). */
   isRoot: boolean;
+  /** Present on reference entries only. */
+  ref: RefFacts | null;
+};
+
+/**
+ * One record in the funnel. `alias` omitted keeps the alias already recorded,
+ * because the callers that advance a later stage do not carry the title.
+ */
+export type MarkArgs = {
+  id: string;
+  stage: Stage;
+  /** Defaults to resources. */
+  unit?: CoverageUnit;
+  alias?: string;
+  safeLabel?: string;
+  loss?: Loss | null;
+  isRoot?: boolean;
+  ref?: RefFacts;
 };
 
 export class Manifest {
+  /**
+   * KEYED ON (unit, key), NOT ON key ALONE. A page under the declared root and
+   * an internal reference pointing at that same page are two entries in two
+   * different coverage items, and they collide on a bare key — one silently
+   * overwriting the other, which is the flattering direction because it deletes
+   * a drop-out. Entry.key keeps the natural identity for reporting and anchors.
+   */
   private readonly entries = new Map<string, Entry>();
 
+  private static slot(unit: CoverageUnit, key: string): string { return `${unit}|${key}`; }
+
   /**
-   * Record a resource at a stage. The key is derived from the ID; a value that
-   * is not an ID keys on itself, which is how non-resource drop-outs (an
-   * unclassifiable link, say) enter the manifest without pretending to be
+   * Record an entry at a stage. The key is derived from the ID; a value that is
+   * not an ID keys on itself, which is how non-resource drop-outs — an
+   * unclassifiable link, say — enter the manifest without pretending to be
    * resources.
    */
-  mark(id: string, alias: string, stage: Stage, loss: Loss | null = null, isRoot = false): void {
-    const key = hyphenate(id) ?? id;
-    const e = this.entries.get(key) ?? { key, alias: alias || key, stages: new Set<Stage>(), loss: null, isRoot: false };
-    /* KEEP_ALIAS reaches here as the empty string. An empty alias keeps the one
-     * already recorded rather than clearing it, because the callers that advance
-     * a stage later in the funnel do not carry the title. */
-    if (alias) e.alias = alias;
-    if (isRoot) e.isRoot = true;
-    e.stages.add(stage);
-    if (loss) e.loss = loss;
-    this.entries.set(key, e);
+  mark(args: MarkArgs): void {
+    const unit = args.unit ?? RESOURCES;
+    const key = hyphenate(args.id) ?? args.id;
+    const slot = Manifest.slot(unit, key);
+    const e =
+      this.entries.get(slot) ??
+      { key, unit, alias: args.alias || key, safeLabel: args.safeLabel || key, stages: new Set<Stage>(), loss: null, isRoot: false, ref: null };
+    if (args.alias) e.alias = args.alias;
+    if (args.safeLabel) e.safeLabel = args.safeLabel;
+    if (args.isRoot) e.isRoot = true;
+    if (args.ref) e.ref = args.ref;
+    e.stages.add(args.stage);
+    if (args.loss) e.loss = args.loss;
+    this.entries.set(slot, e);
   }
 
   /** Record a loss without advancing a stage. */
-  note(id: string, loss: Loss): void {
-    const key = hyphenate(id) ?? id;
-    const e = this.entries.get(key);
+  note(id: string, loss: Loss, unit: CoverageUnit = RESOURCES): void {
+    const e = this.entries.get(Manifest.slot(unit, hyphenate(id) ?? id));
     if (e) e.loss = loss;
   }
 
+  /** Every entry, of every coverage item. The report and gapsFrom read this. */
   all(): Entry[] { return [...this.entries.values()]; }
-  get size(): number { return this.entries.size; }
-  reached(stage: Stage): number { return this.all().filter(e => e.stages.has(stage)).length; }
+
+  /** The entries belonging to one rule's coverage item. */
+  of(unit: CoverageUnit): Entry[] { return this.all().filter(e => e.unit === unit); }
+
+  /**
+   * How many entries one coverage item holds. THERE IS NO UNIT-FREE `size`, and
+   * the omission is deliberate: a bare count over a manifest holding two units
+   * is a pooled figure, which ADR-0011 decision 4 forbids.
+   */
+  count(unit: CoverageUnit = RESOURCES): number { return this.of(unit).length; }
+
+  reached(stage: Stage, unit: CoverageUnit = RESOURCES): number {
+    return this.of(unit).filter(e => e.stages.has(stage)).length;
+  }
 }
 
 /**
@@ -122,6 +208,13 @@ export class Manifest {
  * check in CHECK-scan-scaffold.ts must be able to bypass it and watch the exit
  * byte go green. A control that passes with its mechanism disabled tested
  * nothing (docs/spec/v0.1-scan-slice.md §4.1).
+ *
+ * IT SPANS EVERY COVERAGE ITEM, NOT ONLY RESOURCES. CONTEXT.md's Gap entry says
+ * a drop-out "produces a gap in every rule whose coverage items depended on it",
+ * so an unrecognised link is a gap exactly as a stalled page is. The gap set is
+ * therefore MIXED, and a consumer that renders findings must select the entries
+ * belonging to its own unit — see sys001.ts findingsFrom. Two units in one gap
+ * list is still one source of truth; two gap lists would not be.
  */
 export function gapsFrom(manifest: Manifest): Gap[] {
   const gaps: Gap[] = [];

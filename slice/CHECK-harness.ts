@@ -37,11 +37,32 @@ const show = (v: unknown): string => (typeof v === 'string' ? v : String(v));
  * time inside the assertion itself.
  */
 export function reportSection(rendered: string, heading: string): string {
-  const start = rendered.indexOf(`──────── ${heading} ────────`);
+  const marker = `──────── ${heading} ────────`;
+  const start = rendered.indexOf(marker);
   if (start === -1) return '';
-  const rest = rendered.slice(start + heading.length + 20);
+  /* The offset is the MARKER'S OWN LENGTH, computed rather than written as a
+   * constant. It was `heading.length + 20` where the marker is
+   * `heading.length + 18`, so the slice began two characters into the section
+   * and dropped the newline plus one space. Harmless while every report line
+   * happens to be indented; not harmless as a rule. */
+  const rest = rendered.slice(start + marker.length);
   const end = rest.indexOf('────────');
   return end === -1 ? rest : rest.slice(0, end);
+}
+
+/**
+ * A section that must exist, for use in NEGATIVE assertions.
+ *
+ * reportSection returns '' for a heading it cannot find, and `''` satisfies
+ * every "this string does not appear here" test. Renaming a heading in
+ * report.ts would therefore turn a redaction control green while it tested
+ * nothing — a control that can substitute for the mechanism under test is not a
+ * control. This throws instead, so the rename fails loudly.
+ */
+export function requiredSection(rendered: string, heading: string): string {
+  const section = reportSection(rendered, heading);
+  if (section === '') throw new Error(`report has no section "${heading}" — a negative assertion over it would pass vacuously`);
+  return section;
 }
 
 export function createHarness(): Harness {
