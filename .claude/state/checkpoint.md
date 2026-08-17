@@ -46,6 +46,11 @@ read this block instead. Nothing here depends on a band still being present.
   spec decides how one rule behaves. **A spec never supersedes an ADR** — where they disagree the
   ADR wins and the spec is the defect, which has already happened once (spec §5, exit byte).
   Unlike an ADR a spec **is** edited in place. Registered in `docs/agents/domain.md`.
+- **ADR-0005 decision 4, ADR-0008 decision 4 and ADR-0008 decision 2's coverage clause are
+  superseded by ADR-0011**, merged to `main` in PR #38. The coverage ratio is **per rule, over that rule's own
+  coverage item**, and the report publishes the **vector**; the headline is the **minimum**, never a
+  mean. `--min-coverage` is a floor on **every** rule. Everything else in both ADRs stands, including
+  ADR-0005 decision 4's prohibition on publishing a ratio alone, which ADR-0011 strengthens.
 - **ADR-0008 decision 6 is superseded by ADR-0010.** Cite ADR-0010 for anything about fingerprints,
   baseline matching or finding identity. ADR-0008 decisions 1–5 and 7 stand unchanged, as do decision
   6's four SARIF constraints and its two-hazard analysis.
@@ -87,93 +92,119 @@ read this block instead. Nothing here depends on a band still being present.
 PreToolUse wiring exists only on this machine. **CC Safety Net failed closed once on a long
 `gh issue create` heredoc** — write the body to the scratchpad and pass `--body-file`. The
 `guard-git-pull-rebase.py` hook **blocks bare `git pull`**; use `git fetch origin <branch>` then
-`git merge --ff-only origin/<branch>`.
+`git merge --ff-only origin/<branch>`. **`guard-gh-issue-triage-label.py` blocks `gh issue create`
+without a triage-role label**, reading the roles from `docs/agents/triage-labels.md`; escape is
+`TRIAGE_LABEL_ACK=1`. Its wiring is machine-local for the same reason the others' is.
+
+**The gate, and what actually blocks it.** Gate 1 is the demand test and it has not moved since
+2026-08-16. **#14 is CLOSED — it was finished in `cc16d63` on 2026-08-16 and three checkpoints
+carried it as the blocker anyway.** The real blocker is **#40**: `PRODUCT.md` §110 and §152 both
+name the auditor buyer, and that refutation is conditional on **ADR-0005 decision 3's unexamined
+"an unbounded gap cannot be sized" claim**. Do not send before #40 closes. **Deref a NEXT-STEPS
+blocker against the artifact before adopting it** — `git log -- <file>` is usually enough — and
+confirm every `store.json` `corrections_pending` entry marked as gate-blocking exists on the board.
 
 **Operator rulings** are in `store.json` → `operator_rulings` and in project memory.
 
 ---
 
-## S011 — 2026-08-17 — The sweep changed the design, and the test refuted the spec
+---
 
-**PHASE:** Pre-build on `main` — still no `src/`, no `package.json`, no toolchain. The toolchain and
-all working code remain on the throwaway branch `proto/ref001-observed`.
+## S012 — 2026-08-17 — The literature settled the denominator, and the gate's blocker was finished three sessions ago
 
-**TESTS:** `node prototypes/PROTOTYPE-check.js` — 26 assertions, all passing.
-**`npx tsx prototypes/CHECK-link-recognition.ts` — 34 assertions, all passing, offline, no network
-and no `.env`.** `npx tsc --noEmit` clean under `strict`. All on the throwaway branch.
+**PHASE:** Pre-build on `main` — still no `src/`, no `package.json`, no toolchain there. The
+prototype toolchain remains on `proto/ref001-observed`.
 
-**MERGED:** PR #37 — `docs/spec/REF001-link-recognition.md` and the `docs/agents/domain.md`
-registration, commits `844778e` and `c9eb5d0`. **The operator merged it during this session**, so the
-spec is on `main` and `origin/main` is at `39d6d2a`. **#34 is CLOSED.**
-**PUSHED:** `e064a89` on `proto/ref001-observed`. **FILED:** #35, #36. **Nothing in flight.**
+**TESTS:** No toolchain on `main`, so no suite ran here. `guard-gh-issue-triage-label.py` — 11
+assertions, all passing, including a mutation check. Pair arithmetic in ADR-0011 recomputed
+independently: 4005/4950 = 80.9%, 1225/4950 = 24.7%, mean example 78.0.
 
-### #34's fork, answered on four lines rather than by assertion
+**MERGED:** **PR #38** — ADR-0011 plus the `CONTEXT.md` and REF001-spec corrections, commit
+`8bd6db9`. **The operator merged it during this session**, so `origin/main` is at `88d401e` and
+**#36 is CLOSED.** **FILED:** #39, #40. **CLOSED:** #14, #36. **TRIAGED:** #10 → `ready-for-human`.
+**Nothing in flight.**
 
-**An unrecognised link is ADR-0005's `undecidable`. No new axis value, and no ADR.**
+### ADR-0011 — the unit is per-rule, so the ratio is a vector
 
-1. **The project's own deletion test.** `undecidable`'s stated remedy — *"neither sharing more nor
-   re-running helps. Fix the rule, the configuration, or the data"* — is **verbatim** the remedy for
-   an unrecognised link. A value whose remedy duplicates another's is not a value.
-2. **#34's counter-argument relocated, not dismissed.** *"The tool does not know whether there is a
-   resource at all"* is a real epistemic difference that changes **no operator action**, so it is a
-   manifest **cause** — which ADR-0005 decision 5 constraint 2 already demands.
-3. **XCCDF 1.1.4** splits `notchecked` (*"did not cause any evaluation"*) from `unknown` (*"could not
-   tell what happened"*). REF001 **ran** on the page. That is `unknown`.
-4. **LinkChecker's shipping handler** gives an unhandled URL `"ignored"` or `"URL is unrecognized"`,
-   and **neither outcome is silence.**
+A §0.5 sweep found a formal literature that ten ADRs had never opened. A grep of `docs/` for
+coverage-criteria terms returned **one line**, in a raw scout file.
 
-### The §0.5 sweep changed the design before the instrument was built
+**Ammann and Offutt** give the model: a coverage criterion imposes *test requirements* drawn from
+the criterion's own structure, so the unit varies by criterion **by construction**. **XCCDF 1.2**
+gives the aggregation as a correction it had to make — Appendix B records that scoring moved from
+per-`rule-result` to **per-`Rule`** because rules with many instances dominated the pooled total.
+This project was one implementation away from the same defect.
 
-**The host set is unbounded, and that is documented rather than suspected.** Notion Help,
-*Manage your Notion Sites*: *"Workspace owners on paid plans can connect their existing custom
-domains with Notion Sites."* A page can be served from a domain **Notion does not own**, so no
-allow-list is completable. **#34's own first Revisit-if fired before the spec was written**, and its
-named consequence is adopted: the residue path is primary, the host list is an optimisation, and
-classification keys on a Notion-shaped ID so the residue is **non-empty by construction**.
+Two findings went past what #36 asked:
 
-The sweep's decisive hit was the **soundiness manifesto** (Livshits et al., CACM 58(2), February
-2015, DOI `10.1145/2644805`), which names this exact false-green eleven years early — unsoundness
-that *"lurks in the shadows"* lets a reader *"erroneously conclude that the analysis is sound"* — and
-prescribes **disclosure of the unhandled set, not a new verdict value.**
+1. **#36's own table records `REQ001`'s unit as `Resource`, and that is wrong.** A property value
+   can fail independently of its page, so the unit is a `(resource, required property)` pair.
+   **Documented, not observed** — no live call has produced a partially-hydrated property.
+2. **`UNQ001` is quadratic.** Reading 90 of 100 resources evaluates **4005 of 4950 pairs — 80.9%,
+   not 90%.** At half coverage, 24.7% rather than 50%. The overstatement runs in the flattering
+   direction, which makes it the product's own false-green class arriving inside the coverage
+   machinery built to detect it.
 
-A second documented find: page and database mentions are *"returned with just the ID"* when the
-connection cannot see the target. **That reference survives the permission failure it reports**, needs
-no host parsing, and is now the first detection route.
+**ADR-0008 decision 5 had already written "the pair, not the resource, is the unit"** — for the
+baseline alone. The ADR generalises a move the repository had made once and not noticed.
 
-### The spec was refuted by the test written to satisfy it
+### The Gate 1 blocker was never what the last three checkpoints said it was
 
-Spec §5 claimed an unrecognised reference could exit `0` once coverage clears the declared threshold.
-**It cannot.** A coverage gap carries a `SYS001` finding and ADR-0008 decision 2 fires exit `1` on any
-finding that is new and unsuppressed. **Exit `0` requires the gap to be BASELINED** — an explicit
-operator decision, not a threshold tweak. Fixed in `c9eb5d0`. The ADR outranks the spec.
+S010 and S011 both listed *"#14 — correct `PRODUCT.md`, still ahead of any outbound send."*
+**#14 was finished on 2026-08-16 in `cc16d63`**, on `origin/main`, every DoD element present in the
+issue's own wording, `PRODUCT.md` identical to it. Closed as complete.
 
-**S010 said to watch for "the artifacts are correct and the instruments built to serve them are not."
-This session is the third instance and the first where the instrument caught the artifact.** Test 1b
-is why: it removes `app.notion.com` from the host list and asserts the discovery goes red, so the
-control **demonstrates its own sensitivity** instead of asserting it. That requires the host list to
-be a parameter rather than a module constant, which is the entire design cost.
+**The real blocker is a different `PRODUCT.md` correction that existed on no issue.**
+`store.json` → `corrections_pending` → *"PRODUCT.md demand test"*, marked `blocks: Gate 1`:
+§110's demand test and §152's kill criterion both name **the auditor buyer**, whose refutation is
+conditional on **ADR-0005 decision 3's unexamined "an unbounded gap cannot be sized" claim**. A
+demand test framed around the auditor buyer selects for auditors and confirms its own framing —
+and §122 says recruitment runs through direct contacts, which is the configuration most likely to
+manufacture agreement. **Filed as #40.**
+
+### The label discipline moved out of the doc layer
+
+4 of 12 open issues carried `enhancement` and no triage role; every one was filed mid-session as a
+follow-up. `guard-gh-issue-triage-label.py` now blocks `gh issue create` without a role, reading the
+vocabulary from the project's own `docs/agents/triage-labels.md` rather than hardcoding it, and
+no-opping where that file is absent. **Wiring is machine-local** — `~/.claude/settings.json` is
+gitignored, the same constraint #25 records. It is a working precedent for #25's option 2.
 
 ### BLOCKERS
 
-**None.**
+**None on the work. One on the gate:** #40 must close before the demand test is sent.
 
 ### EXACT NEXT STEPS
 
-1. **#36 first, then #35.** #36 is the narrower one and #35's answer partly depends on it: whether a
-   denominator rule binds every rule is easier to settle once the *unit* of the denominator is
-   settled. Both were surfaced by writing the spec, and neither was decided in it on purpose.
-2. **#14 — correct `PRODUCT.md`.** Unchanged from S010 and still ahead of any outbound send.
-3. **Observe the remaining link hosts**, and test whether Route A alone covers every internal
-   reference — #34's second Revisit-if, still open and testable against the fixture.
-4. **Write `docs/research/INDEX.md`** — ten files, no index. **Parked for a fourth session running.**
-5. **#29, #27, #25, #24, #18, #19, #10, #8, #7** — unchanged.
+1. **#40 — the critical path, and start here.** Its first step is a literature sweep against ADR-0005 decision 3's
+   *"cannot be sized"* claim. The unseen-population literature is named in #40 as a **lead, not a
+   citation** — nothing there is verified and no source was fetched, because the session's web-search
+   budget was exhausted. **Run the sweep before quoting any of it.**
+2. **Then Gate 1: send.** #29 is answered by respondents, not by us.
+3. **#39** — `README.md` contradicts ADR-0005 and ADR-0008 in four places and has not been touched
+   since 2026-08-16.
+4. **#10** — runnable remainder only: Q2, Q3 re-run, Q8, restore `wl-revoke-child`. Two human gates
+   first — connect the integration to `REAL_ROOT_ID`, and **decide title redaction before Q8 output
+   lands in the repo.**
+5. **#35, #24, #25, #18, #19, #27, #8, #7** — unchanged, and all downstream of a gate that has not
+   moved since 2026-08-16.
 
-**NEXT-MODEL:** **frontier**. #36 is a canonical-glossary change whose scope question — `UNQ001`'s
-denominator is neither a resource nor an edge — is the same collapse-two-axes-into-one shape this
-project has now got wrong three times. **#18 and #19 remain mechanical and belong to their own
-fast-tier session; do not straddle.**
+**NEXT-MODEL:** **frontier**. #40's first step is a prior-art sweep whose outcome decides whether an
+accepted ADR's load-bearing claim survives, and both branches reshape the product's framing. That is
+the ambiguity-heavy irreversible head the routing rule reserves the frontier tier for. **#39, #18 and
+#19 are mechanical and belong to their own fast-tier session; do not straddle.**
 
 **NEXT-REPO/CWD:** `C:\Users\mlpgr\2026_Projects\workspace_lint` — single repo; state, plan and
 resume ritual all at the root. The prototype toolchain is on `proto/ref001-observed`, not `main`.
 
-**SELF-ASSESS:** VERDICT: 2 (operator-graded, solicited blind) · ATTRIB: none — task-inherent.
+**SELF-ASSESS:** VERDICT: 2 (operator-graded, solicited blind) · ATTRIB: skill — a notable save, not
+a failure. `/triage`'s step-1 **redundancy check** is what found #14 already complete in `cc16d63`;
+without it this session would have "worked on" a finished issue and left #40 unfiled for a fourth
+session. `session-end-to-state`'s **deref step** caught a second one — the checkpoint had already
+been written claiming PR #38 was unmerged when the operator had merged it mid-close.
+
+**Caveat on the grade, recorded because it is not visible in the outcome:** the operator interrupted
+mid-session — *"I don't think this is proceeding methodically. I think it's flailing and ad hoc"* —
+and he was right. §5's plan gate never fired: one `AskUserQuestion` about scope was treated as
+approval to author three files. The gate is `claude-md`-layer and it depends on model-pull, which is
+the failure mode §1 names. Recorded as project memory `a-scope-question-is-not-plan-approval`.
