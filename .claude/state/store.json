@@ -1,9 +1,9 @@
 {
   "project": "workspace_lint",
   "updated": "2026-08-17",
-  "session": "S005",
+  "session": "S006",
   "phase": "pre-build",
-  "phase_detail": "Pre-build. S003 locked the outcome model; S004 built the fixture and ran the proof, refuting the detectable-hole mechanism and invalidating ADR-0002 decision 4; S005 reconciled the tracker with state, closed an enforcement gap on tracker writes, and extracted three skills. No source code. Build gate not open.",
+  "phase_detail": "Pre-build. S003 locked the outcome model; S004 built the fixture and ran the proof, refuting the detectable-hole mechanism and invalidating ADR-0002 decision 4; S005 reconciled the tracker with state and closed an enforcement gap on tracker writes; S006 locked ADR-0006, which unblocks scan code, and narrowed the PRODUCT.md coverage claim. No source code. Build gate not open. PR #17 is OPEN and carries both S006 artifacts.",
   "next_gate": {
     "name": "demand test",
     "kind": "human",
@@ -23,7 +23,8 @@
       "LinkedIn — ruled out by the operator on 2026-08-16, permanently, for any project",
       "SewerAI / Sepehr Sobhani — not a contact, not a reference, not a case study"
     ],
-    "risk": "Cold outreach is closed. Three channels remain and the five-team target now depends on inbound from the Reddit post. If the funnel stalls below five, lower the gate or accept a longer calendar. Do not substitute weaker contacts."
+    "risk": "Cold outreach is closed. Three channels remain and the five-team target now depends on inbound from the Reddit post. If the funnel stalls below five, lower the gate or accept a longer calendar. Do not substitute weaker contacts.",
+    "blocker_resolved_S006": "ADR-0002 decision 4 no longer blocks scan code. ADR-0006 replaces it. Gate 1 (the demand test) is unchanged and still advances only when the operator sends."
   },
   "locked_decisions": [
     {
@@ -59,26 +60,22 @@
       "pervasiveness_predicate": "Gaps are pervasive when a declared root was never reached, or any gap is unbounded. Structural, not a percentage: a ratio threshold would be computed over a denominator the scan has just admitted it cannot establish. Generalises ADR-0002 decision 2.",
       "deviations_from_checkpoint_plan": "Five funnel stages, not four — `enumerated` was added between resolved and fetched because it is the only source of unbounded gaps, and the disclaimed disposition keys on those.",
       "evidential_standing": "Decisions 1-3 rest on adversarially re-verified primary sources (ISA 705 paras 5(a) and 17, XCCDF value list, OSCAL metaschema negative, SARIF schema, PCAOB AS 3105.45, ISO 19011 6.5.1 k, Semgrep enum). Decision 5's funnel shape rests on CONSORT 13a/13b, PRISMA 16b and STROBE 13 — fetched but NOT re-verified, adopted on three-way convergence. Re-verify clause numbers before publishing them."
-    }
-  ],
-  "corrections_pending": [
-    {
-      "target": "docs/adr/0002 decision 4",
-      "claim": "Absence of request_status from a paginated list response is a hard error.",
-      "status": "INVALIDATED by live observation 2026-08-17",
-      "replacement": "Test positively: request_status.type === 'incomplete' means the query was cut off. Absence is neither an error nor proof of completeness — it is uninformative, which is the state ADR-0005's `unreached` exists to express.",
-      "urgency": "BLOCKS SCAN CODE. This rule sits on the healthy path.",
-      "evidence": "docs/proof/results.md section 1"
     },
     {
-      "target": "PRODUCT.md",
-      "claim": "The coverage claim as currently stated.",
-      "status": "OVERSTATED — narrowed by the 2026-08-17 proof run",
-      "replacement": "The tool proves coverage of declared roots and resolves links. It CANNOT see permission removal below a declared root: a revoked child vanishes from the parent's child list entirely. Say what is provable and stop there.",
-      "urgency": "Before the claim is put in front of a buyer.",
-      "evidence": "docs/proof/results.md section 4"
+      "id": "ADR-0006",
+      "status": "accepted (PR #17 open, not merged)",
+      "supersedes": "ADR-0002 decision 4 in full. ADR-0002 decisions 1, 2, 3 and 5 stand; ADR-0002 is not edited.",
+      "corrects": "The closing sentence of docs/proof/results.md section 1, which mapped an absent request_status to ADR-0005's `unreached`. Corrected by reference; the evidence record is not edited.",
+      "summary": "Truncation is detected by a positive test -- request_status.type === 'incomplete' -- and that test covers ONE endpoint family. The signal is documented on POST /v1/data_sources/{id}/query only. It is absent from /reference/intro#pagination, the normative shared-envelope description, and from GET /v1/blocks/{id}/children. Absence of the field is neither an error nor proof of completeness.",
+      "the_larger_finding": "GET /v1/blocks/{id}/children is the traversal spine of the scan and carries NO truncation signal. A complete enumeration and a silently truncated one return the same has_more: false -- the value that lied at the data-source cap before 2026-04-20. Every completeness claim the product makes over page content rests on it. The scan cannot close this; ADR-0006 decision 5 discloses it per-run instead.",
+      "evidence_sufficiency_ruling": "No fourth value. An absent request_status maps to `sufficient`. Rejected on ADR-0005's governing rule -- a value earns its place only if it changes what the operator does next. The absent case has no remedy, fires on 100% of runs, and a permanent universal qualifier is the mechanism ADR-0005's fourth Revisit-if predicts will train readers to skip the limitations half.",
+      "cap_trip": "Where a documented cap exists, a terminal count AT the cap makes the enumerated count a lower bound, not an equality: cause suspected_result_limit, marked unbounded, remedy 'partition the declared root'. Transplanted from Elasticsearch hits.total.relation 'gte', the OSIsoft PI Web API documented silent-truncation case, and fetch n+1. Applies to dataSources.query only -- block children and search have no documented cap constant, and building one from the observed ~11,200 search wall is rejected.",
+      "unobserved": "request_status.type === 'complete' has never been seen emitted on either branch. No decision depends on it and no code path may block on it.",
+      "unverified": "The 10,000 cap constant is vendor-documented and has never been confirmed by a real capped response. Vendor documentation has already been wrong once in this project (notion-api-practice.md section 5.2). The Elasticsearch field path was read from a search summary, not the reference.",
+      "artifact": "docs/adr/0006-truncation-is-detected-by-a-positive-test-on-one-endpoint-family.md"
     }
   ],
+  "corrections_pending": [],
   "corrections_applied": [
     {
       "target": "PRODUCT.md",
@@ -100,6 +97,22 @@
       "claim": "OSCAL supplies the observation/finding split including an incomplete outcome.",
       "status": "RESOLVED by ADR-0005",
       "replacement": "The observation/finding split remains adopted. `incomplete` is not inherited from OSCAL — it is defined in ADR-0005 from XCCDF."
+    },
+    {
+      "target": "docs/adr/0002 decision 4",
+      "claim": "Absence of request_status from a paginated list response is a hard error.",
+      "resolution": "SUPERSEDED IN FULL by ADR-0006 decision 1 (commit f8917fa, PR #17 open). ADR-0002 is not edited; decisions 1, 2, 3 and 5 stand.",
+      "replacement": "Test positively: request_status.type === 'incomplete' means the query was cut off. Absence is neither an error nor proof of completeness.",
+      "correction_to_the_correction": "The replacement text previously held in corrections_pending said absence 'is uninformative, which is the state ADR-0005's unreached exists to express'. That was WRONG and is removed. Absence is NOT unreached: unreached carries the remedy 'widen access or raise the request budget', and no operator action produces a field the server declined to send. ADR-0006 decision 3 rules that absence maps to `sufficient`, with the residual doubt carried by the sampling-risk statement rather than by the outcome axis. The wrong sentence also stands in docs/proof/results.md section 1 and is corrected there by reference, not by edit.",
+      "evidence": "docs/proof/results.md section 1; docs/adr/0006"
+    },
+    {
+      "target": "PRODUCT.md",
+      "claim": "The report states 'exactly what the scan could not see'.",
+      "resolution": "NARROWED in commit cc16d63 (PR #17 open). Issue #14 left OPEN deliberately: it is labelled ready-for-human and the wording of a product claim is the operator's call. The draft is a proposal, not a close.",
+      "replacement": "Provable: declared-root coverage, link resolution, and the ambiguity of 404. Not provable: anything about permission removal below a declared root, and that a child list was complete. REF001 is the load-bearing coverage mechanism.",
+      "second_location": "The refuted claim stood in a SECOND place in the same file -- proof test 1 under 'Four proof tests the PRD does not list'. Marked ANSWERED and refuted rather than deleted.",
+      "evidence": "docs/proof/results.md section 4; docs/adr/0006 decision 2"
     }
   ],
   "asserted_without_adr": [
@@ -193,16 +206,16 @@
   "tracker": {
     "host": "GitHub issues, gh CLI",
     "open": {
-      "13": "ready-for-agent — supersede ADR-0002 d4. BLOCKS SCAN CODE.",
-      "14": "ready-for-human — correct PRODUCT.md before a buyer sees the claim.",
-      "15": "ready-for-agent — re-verify notion-api-practice.md.",
-      "16": "ready-for-agent — transcribe six settled decisions into CONTEXT.md.",
-      "1": "needs-info — blocked on the demand test, not on a decision.",
-      "7": "needs-info — blocked on a named reference workspace (REAL_ROOT_ID empty).",
-      "8": "ready-for-human — npm name, a brand choice.",
-      "10": "needs-triage — blocked by #13; its checklist has an item that cannot be run as written."
+      "14": "ready-for-human -- draft landed on the S006 branch (cc16d63, PR #17). Left OPEN: the wording of a product claim is the operator's call.",
+      "15": "ready-for-agent -- re-verify notion-api-practice.md. Mechanical; fast tier.",
+      "16": "ready-for-agent -- transcribe six settled decisions into CONTEXT.md. Mechanical; fast tier.",
+      "1": "needs-info -- blocked on the demand test, not on a decision.",
+      "7": "needs-info -- blocked on a named reference workspace (REAL_ROOT_ID empty).",
+      "8": "ready-for-human -- npm name, a brand choice.",
+      "10": "needs-triage -- was blocked by #13, which is now resolved pending the PR #17 merge. Its checklist still has an item that cannot be run as written."
     },
     "closed_S005": "#2 #3 #4 #5 #6 #9 consolidated into #16 — they were undocumented decisions, not open questions.",
-    "note": "asserted_without_adr entries 1-6 are now tracked by #16. Remove them from store.json when #16 lands, or the two surfaces disagree again."
+    "note": "asserted_without_adr entries 1-6 are tracked by #16. Remove them from store.json when #16 lands, or the two surfaces disagree again. #13 is NOT closed until PR #17 merges -- do not report it closed from this file alone.",
+    "closed_S006": "#13 closes on the PR #17 merge (Closes #13 in commit f8917fa)."
   }
 }
