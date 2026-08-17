@@ -223,13 +223,48 @@ need() {
   done
 }
 
-# need_secret KEY "Prompt" — like ask_secret, but will not accept empty.
-need_secret() {
-  local key="$1" prompt="$2"
+# need_token KEY "Prompt" — read the Notion token, then prove it works before
+# accepting it.
+#
+# Hidden input is not used. On Git Bash for Windows a Ctrl-V into a `read -rs`
+# prompt inserts a literal \x16 and the terminal's bracketed-paste escapes land
+# inside the value. Observed 2026-08-17: a 161-character value holding \x16,
+# \x1b, '[', ';' and '~', with the real token corrupted inside it. It failed
+# with an empty-bodied HTTP 400 that looked like a server fault.
+#
+# So: visible input (you can see what arrived), control characters stripped,
+# shape checked, and a live read-only GET /v1/users/me before the value is
+# allowed into .env. A token that cannot authenticate is not a token.
+need_token() {
+  local key="$1" prompt="$2" raw clean code
   while :; do
-    ask_secret "$key" "$prompt"
-    [[ -n "${!key}" ]] && return 0
-    warn "required — without it nothing can call the API."
+    ask "$key" "$prompt"
+    raw="${!key}"
+    clean=$(printf '%s' "$raw" | tr -d '[:cntrl:]' | grep -oE 'ntn_[A-Za-z0-9]+' | head -n1 || true)
+    if [[ -z "$clean" ]]; then
+      warn "that does not contain an ntn_ token — paste the Internal Integration Secret."
+      continue
+    fi
+    if [[ "$clean" != "$raw" ]]; then
+      note "stripped ${#raw} chars of paste artefacts down to ${#clean}."
+    fi
+    printf '  checking the token against Notion (read-only)... '
+    code=$(curl -s -o /dev/null -w '%{http_code}' \
+      https://api.notion.com/v1/users/me \
+      -H "Authorization: Bearer $clean" \
+      -H "Notion-Version: 2022-06-28" || echo 000)
+    case "$code" in
+      200) printf '%sOK%s\n' "$GREEN" "$RESET"; printf -v "$key" '%s' "$clean"; return 0 ;;
+      401) printf '%srejected%s\n' "$RED" "$RESET"
+           warn "Notion says the token is invalid. Re-copy it from the integration's"
+           warn "Configuration tab. Use right-click paste, not Ctrl-V." ;;
+      000) printf '%sno network%s\n' "$YELLOW" "$RESET"
+           if must_answer "Cannot reach Notion. Accept the token unverified?"; then
+             printf -v "$key" '%s' "$clean"; return 0
+           fi ;;
+      *)   printf '%sHTTP %s%s\n' "$RED" "$code" "$RESET"
+           warn "unexpected response — try pasting again." ;;
+    esac
   done
 }
 
@@ -267,7 +302,7 @@ note "  Insert content and Update content must both be OFF."
 say ""
 say "Then open the integration's Configuration tab and reveal the Internal"
 say "Integration Secret."
-need_secret NOTION_TOKEN "Paste the integration secret (starts ntn_):"
+need_token NOTION_TOKEN "Paste the integration secret (starts ntn_ — use right-click paste):"
 write_env NOTION_TOKEN "$NOTION_TOKEN"
 write_env NOTION_VERSION "2026-03-11"
 note "NOTION_VERSION is pinned by ADR-0002 decision 4 — it must carry request_status."
