@@ -1,9 +1,9 @@
 {
   "project": "workspace_lint",
   "updated": "2026-08-17",
-  "session": "S009",
+  "session": "S010",
   "phase": "pre-build",
-  "phase_detail": "Pre-build. S008 landed #21 as ADR-0007, correcting ONE ROW of ADR-0006 decision 2: POST /v1/search DOES carry a truncation signal. ADR-0006 is not edited. Three findings beyond the correction -- the error was inert under decision 1's positive test, the coverage benefit does not reach v0.1 because search has no declared role (filed #24), and the fact stood in TWO research files three hours before ADR-0006 (enforcement question filed #25). ADR-0006's block-children finding is STRENGTHENED, now resting on an enumerated SDK omission rather than documentation silence. No source code. Build gate not open. ALL WORK MERGED: PR #23 merged as 280524e during the close, so ADR-0007 is on main and nothing is in flight.",
+  "phase_detail": "Pre-build on main -- still no src/, no package.json, no toolchain there. A TypeScript toolchain and the first working code exist ONLY on the throwaway branch proto/ref001-observed (@notionhq/client 5.25.2, typescript 7.0.2, tsx 4.23.12; node_modules gitignored). S010 landed ADR-0010, superseding ADR-0008 decision 6, and made the project's first API call. REF001 is confirmed working end to end against the live fixture on a DISCOVERED link: certainty confirmed, target_state unreachable, disposition qualified, coverage 3/4, exit 3. Exit 3 outranking exit 1 is ADR-0008 decision 2's priority order observed firing for the first time. Observed<T> never misbehaved on any case tested; all four defects found were in the code around it.",
   "next_gate": {
     "name": "demand test",
     "kind": "human",
@@ -103,6 +103,26 @@
       "closes": "#1, narrowly -- the accountable role only. The buyer half was untracked by the auto-close and is refiled as #29.",
       "key": "Operator / Executor / Consumer split; roles distinct, people may coincide. Principal added as a term rather than dual mode-labelled definitions of Connection. A coverage threshold may never relax a disclaimed disposition.",
       "caveat": "Decision 1's claim that the integration grant does not move with employment is asserted into a DOCUMENTED SILENCE. The capabilities reference covers loss of EDIT access only. See docs/research/notion-developer-platform.md section 7. Comparative ranking survives; the independence claim does not."
+    },
+    {
+      "id": "ADR-0010",
+      "status": "accepted and MERGED to main as 612875a (7e318ba, PR #32)",
+      "title": "Baseline matching is a hierarchy of matchkeys over a resource anchor, not an equivalence relation over fingerprints",
+      "supersedes": "ADR-0008 decision 6 -- its matching rule and its key-composition table. ADR-0008 decisions 1-5 and 7 stand, as do decision 6's four SARIF constraints and its two-hazard analysis. ADR-0008 not edited.",
+      "restores": "ADR-0003 decision 1, which ADR-0008 decision 6 drifted from without citing it",
+      "closes": "#31, including its third Revisit-if (entity-resolution literature)",
+      "decisions": [
+        "1. Identity is two layers: anchor = (rule ID, resource ID) on the native object ID, normalized to hyphenated UUIDv4 on ingest; discriminator = matchkey hierarchy scoped inside one anchor",
+        "2. The hierarchy runs as ordered passes over sets, not as a probe per finding -- a pass is a set join and has no visiting order",
+        "3. Matching is one-to-one; a matched pair leaves the pool (Wray 2024)",
+        "4. Transitive closure is prohibited -- the failure it forbids is over-merging",
+        "5. Ties inside a pass are broken by a published total order; a rule without one does not ship",
+        "6. The observed value is evidence, never identity -- this is what makes `updated` reachable",
+        "7. Key list v1 for all four shipping rules; n=0 and n=1 are valid hierarchies",
+        "8. Keys are appended, never inserted"
+      ],
+      "evidence_note": "Three record-linkage sources fetched while drafting, quoted from the fetched text, NOT adversarially re-verified. Wray 2024 DOI 10.23889/ijpds.v9i5.2656; Binette & Steorts 2022 DOI 10.1126/sciadv.abi8021 (quote confirmed on a second independent fetch); NCBI Bookshelf NBK253312. Stated negative: the NCBI overview contains NO statement about link-once/pool removal -- that constraint rests on Wray alone.",
+      "incomplete": "decision 8 says how to ADD a key and nothing about REMOVING a defective one. Named in the ADR as missing, not as unnecessary."
     }
   ],
   "corrections_pending": [
@@ -262,7 +282,8 @@
     "s002_raw_corpus": "docs/research/sweep-raw/ — 9 scout reports plus 2 verification passes, verbatim and unverified except where a verification file says otherwise",
     "s002_verification": "16 keystone claims re-verified: 6 confirmed, 9 partial, 1 misattributed, 0 fabricated",
     "known_blind_spot": "Research agents cannot reach Reddit; community.notion.so and forum.notion.so no longer resolve. This is a limitation of the tooling, NOT of the channel — the operator reaches Reddit and has converted a buyer there. Evidence still skews toward people who publish.",
-    "refuted_sources": "docs/research/notion-api-practice.md section 5.2 'Detectable hole' is REFUTED by direct observation 2026-08-17. It was rated (C) and self-flagged as the highest-value item to verify. The rest of that file has not been re-verified and one of its two headline claims was false — treat the remainder as suspect until checked."
+    "refuted_sources": "docs/research/notion-api-practice.md section 5.2 'Detectable hole' is REFUTED by direct observation 2026-08-17. It was rated (C) and self-flagged as the highest-value item to verify. The rest of that file has not been re-verified and one of its two headline claims was false — treat the remainder as suspect until checked.",
+    "link_hosts_evidence": "ONLY app.notion.com is observed as an internal-link host (docs/proof/results-ref001-live.md section 2, 2026-08-17). notion.so, www.notion.so, notion.com and *.notion.site are in the prototype's regex and are NOT claimed by the proof record. Do not let them into a spec on S010's authority."
   },
   "citation_hazards": [
     "ISO 19011:2018 was read from a site hosting a complete unauthorised copy including its intact copyright page. Wording and clause numbers are genuine and verified. The URL must never appear in a published artifact. Cite the clause and link the ISO catalogue.",
@@ -283,12 +304,14 @@
   ],
   "tracker": {
     "host": "GitHub issues, gh CLI",
-    "open": "#29 buyer question (needs-info) - #31 ADR-0008 decision 6 transitivity defect, BLOCKS the prototype - #27 observation half only, PAT test to be DROPPED - #24 does v0.1 call search - #25 ADR-vs-research enforcement, now has a THIRD data point in a new shape - #18, #19 mechanical, fast-tier session - #10 ratify proof - #8 npm name - #7 perf budgets",
+    "open": "#34 REF001 link recognition, carries an ADR-or-not fork - #29 buyer question (needs-info) - #27 observation half only, PAT test to be DROPPED - #25 ADR-vs-research enforcement, now has a FOURTH SHAPE (ADR-vs-ADR, which rule 1's grep cannot catch) - #24 does v0.1 call search - #19, #18 mechanical, fast-tier session - #14 correct PRODUCT.md, now has a runnable demonstration attached - #10 ratify proof - #8 npm name - #7 perf budgets",
     "closed_S005": "#2 #3 #4 #5 #6 #9 consolidated into #16 — they were undocumented decisions, not open questions.",
     "note": "ALL WORK MERGED. main carries ADR-0007 at 280524e; nothing in flight. GATE 1 IS UNCHANGED AND IS NOT ON THIS BOARD: it advances when the operator sends. asserted_without_adr remains at 1 entry.",
     "closed_S006": "#13 closes on the PR #17 merge (Closes #13 in commit f8917fa).",
     "closed_S007": "#15 and #16 closed by PR #22. #13 closed by PR #17.",
     "closed_S008": "#21 closed by PR #23, MERGED as 280524e. #24 and #25 filed as its follow-ups.",
-    "closed_S009": "#20 (ADR-0008), #1 (ADR-0009, narrowly -- buyer half refiled as #29)"
+    "closed_S009": "#20 (ADR-0008), #1 (ADR-0009, narrowly -- buyer half refiled as #29)",
+    "closed_S010": "#31 (closed by ADR-0010 via PR #32)",
+    "filed_S010": "#34 -- specify REF001 link recognition: the host set, and the unrecognised outcome"
   }
 }

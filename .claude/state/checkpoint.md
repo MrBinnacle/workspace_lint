@@ -1,6 +1,6 @@
 # Checkpoint — workspace_lint
 
-Bands S001–S008 are archived verbatim at `.claude/state/checkpoint-archive.md`. This file holds
+Bands S001–S009 are archived verbatim at `.claude/state/checkpoint-archive.md`. This file holds
 the standing constraints and the current band only.
 
 ## Standing constraints — always current, not session-scoped
@@ -13,226 +13,169 @@ read this block instead. Nothing here depends on a band still being present.
 **Credentials and fixture.**
 
 - `.env` holds a **live read-only Notion token**. Gitignored. **It cannot be read by any tool** —
-  CC Safety Net blocks it on `secret.basename.env`, and the block forbids workarounds. Every claim
-  in this file about `.env` contents is therefore **structurally unverifiable**. Do not spend a
-  session-start step attempting it; report the claims as unverified and move on.
-- **`REAL_ROOT_ID` was reported set by the operator on 2026-08-17. Unconfirmed, per the above.**
-  If good it unblocks Q8, the Q3 re-run against organic timestamps, and **#7**. The integration must
-  **also be connected to that page** in Notion's share settings — a human step, and a missing share
-  returns 404 that reads as a coverage failure rather than a setup gap.
-- **The PAT is ruled out and no longer needs testing.** ADR-0009 gated it on observation; the #27
-  sweep closed it on documentation instead. A PAT offers exactly two capability options and the API
-  one is a single bundle — *"Read, create, update, and search content"* — with no read-only variant,
-  so it violates **Principle 7** at the credential layer regardless of which endpoints the code
-  calls. **Do not run the PAT fixture test in #27's DoD.** It would measure reach for a credential
-  the product cannot use.
-- **The fixture is mutable and it is an instrument.** Editing rows, blocks or titles by hand
-  changes what the proof measures. **`wl-revoke-child` is currently disconnected** — restoring it
-  resets Q1. `wl-outside-grant` is the working REF001 control: 404 on retrieve, link readable.
+  CC Safety Net blocks it on `secret.basename.env`, and the block forbids workarounds. Do not spend
+  a session-start step attempting it.
+- **A process may read `.env` even though you may not.** Proven 2026-08-17: `prototypes/live-ref001.ts`
+  — **on branch `proto/ref001-observed`, not on `main`** — parses it with `fs` and calls the API. That is normal operation, not a workaround — the discipline
+  is that **the token never reaches stdout**. That file routes every line through a `scrub()` and sets
+  the SDK's `logLevel: 'error'`, because the SDK's own warn logger bypasses application redaction.
+- **`NOTION_TOKEN` and `FIXTURE_ROOT_ID` are now CONFIRMED GOOD** — eight live calls succeeded on
+  2026-08-17. `UNSHARED_PAGE_ID`, `REVOKE_PARENT_ID` and `PAGINATION_PAGE_ID` are confirmed by use.
+- **`REAL_ROOT_ID` is still unexercised.** Nothing has called it. Q8 and the Q3 re-run against organic
+  timestamps remain open, and **#7** with them.
+- **The PAT is ruled out and no longer needs testing.** A PAT's API capability is a single bundle —
+  *"Read, create, update, and search content"* — with no read-only variant, so it violates **Principle 7**
+  at the credential layer. **Do not run the PAT fixture test in #27's DoD.**
+- **The fixture is mutable and it is an instrument.** **`wl-revoke-child` is still disconnected**,
+  re-confirmed live 2026-08-17 — restoring it resets Q1. `wl-outside-grant` is the working REF001
+  control: 404 on retrieve, link readable.
 
 **Proof questions.** Full status in `store.json` → `unknowns_assigned_to_proof`.
 
-- **Q3's stability result is provisional**, confounded by bulk-created timestamps. Do not promote
-  it without a re-run against organic content.
-- **Q4 and Q5 are out of reach of any hand-built fixture.** Q4 needs a workspace over 11,200
-  objects; Q5 is a local Semgrep CLI test with nothing to do with Notion.
+- **Q3's stability result is provisional**, confounded by bulk-created timestamps, and the live run did
+  **not** touch it — no repeated identical query was made.
+- **Q4 and Q5 are out of reach of any hand-built fixture.**
 
 **Documents.**
 
 - **ADRs are never edited in place.** A refuted claim standing in ADR-0002, ADR-0003 or ADR-0008 is
   correct, not a bug. **Living docs — `PRODUCT.md`, `CONTEXT.md` — are corrected directly.** That
   carve-out is the whole rule; without it the constraint reads as "never correct anything."
-- **ADR-0005's evidential floor is uneven and the ADR says so.** Decisions 1–3 rest on
-  adversarially re-verified primary sources. Decision 5's funnel rests on CONSORT 13a/13b, PRISMA
-  16b and STROBE 13 — **fetched but never re-verified**, adopted on three-way convergence.
-- **A refuted claim is never in one place.** Three times now it has been three surfaces. Grep before
-  asserting a correction is scoped.
+- **ADR-0008 decision 6 is superseded by ADR-0010.** Cite ADR-0010 for anything about fingerprints,
+  baseline matching or finding identity. ADR-0008 decisions 1–5 and 7 stand unchanged, as do decision
+  6's four SARIF constraints and its two-hazard analysis.
 - **ADR-0006 decision 2's search row is superseded by ADR-0007.** Cite ADR-0007's table.
-  `POST /v1/search` **does** carry `request_status` and has **no documented cap**. A signal is not a
-  cap. ADR-0006's block-children finding is *stronger* than when written: PR #711 threads the field
-  through seven response types and omits `ListBlockChildrenResponse`.
+- **ADR-0005's evidential floor is uneven and the ADR says so.** Decision 5's funnel rests on CONSORT,
+  PRISMA and STROBE clauses **fetched but never re-verified**.
+- **A refuted claim is never in one place.** Four times now. Grep before asserting a correction is scoped.
 
 **Research method.**
 
-- **Citations are receipts.** Operator ruling, 2026-08-17: a claim carries a locator a third party
-  can follow — URL plus fetch date, file plus section, commit SHA, clause number. *"Anything short
-  of that — paraphrase without pointer, 'as we discussed,' 'Notion's docs say' — is commentary, not
-  evidence."*
-- **A negative about an endpoint requires that endpoint's own page** (ADR-0007 decision 4). **Now
-  generalised: a claim about a model requires that model's own reference.** ADR-0009 asserted a
-  capability-model fact without opening the capabilities page. Grep of `docs/research/` would not
-  have caught it — the fact was not in the repository at all.
-- **Scouts self-nominate their softest claims.** Use those to prioritise verification, never to
-  bound it.
-- **Citation hazards** — full list in `store.json`. ISO 19011:2018 and ISA 705 were read from
-  unauthorised copies: cite by clause, publish no URL.
-- **Research agents cannot reach Reddit.** `notion-user-pain.md`'s own next action — re-run with a
-  Reddit-capable fetch path — is **permanently blocked**. The solo and small-team
-  willingness-to-configure verdicts stay "NO EVIDENCE FOUND" and "WEAK", produced by a blocked
-  crawler rather than by an absence in the world.
+- **Citations are receipts.** A claim carries a locator a third party can follow — URL plus fetch date,
+  file plus **section heading**, commit SHA, clause number. Never a line number written as a section.
+- **A negative about an endpoint requires that endpoint's own page**; **a claim about a model requires
+  that model's own reference**. And now a fourth shape, recorded on **#25**: **an ADR that contradicts an
+  earlier ADR is caught by none of the three method rules**, because rule 1's grep targets
+  `docs/research/`. If the grep becomes a hook it covers one shape of four as specified.
+- **Citation hazards** — ISO 19011:2018 and ISA 705 were read from unauthorised copies: cite by clause,
+  publish no URL.
+- **Research agents cannot reach Reddit.** The solo and small-team willingness-to-configure verdicts
+  are produced by a blocked crawler, not by an absence in the world.
 
-**Numbers in a locked ADR, both unverified.**
+**Numbers and facts that are unverified, and stay labelled so.**
 
-- **The `10,000` cap constant is vendor-documented and unobserved.** When it reaches code it needs a
-  named constant, a comment pointing at ADR-0006, and a test that fails loudly on disagreement.
-- **`request_status: {"type": "complete"}` has never been seen on either branch.** No code path may
-  block on its arrival.
+- **The `10,000` cap constant is vendor-documented and unobserved.**
+- **`request_status` has never been seen on either branch.** Re-confirmed absent from all eight live
+  responses. No code path may block on its arrival; the test is positive only.
+- **Only `app.notion.com` is evidenced as an internal-link host.** `notion.so`, `www.notion.so`,
+  `notion.com` and `*.notion.site` are in the prototype's regex and are **not** in the proof record.
+  Do not let them into a spec on this session's authority. See **#34**.
 
 **Environment.** `~/.claude/settings.json` is gitignored, so the `guard-downstream-framing-gh.py`
-PreToolUse wiring exists only on this machine. The hook file itself is committed. **CC Safety Net
-failed closed once on 2026-08-17** — a long `gh issue create` heredoc returned *"command analysis
-failed unexpectedly. This is not caused by your command."* The fix that worked: write the body to
-the scratchpad, pass `--body-file`. Do not brute-force variants.
+PreToolUse wiring exists only on this machine. **CC Safety Net failed closed once on a long
+`gh issue create` heredoc** — write the body to the scratchpad and pass `--body-file`. The
+`guard-git-pull-rebase.py` hook **blocks bare `git pull`**; use `git fetch origin <branch>` then
+`git merge --ff-only origin/<branch>`.
 
 **Operator rulings** are in `store.json` → `operator_rulings` and in project memory.
 
 ---
 
-## S009 — 2026-08-17 — Four phases, and the one that produced no commit produced the most
+## S010 — 2026-08-17 — The first code ran, and it was false-green three ways
 
-**PHASE:** Pre-build. No source code, no toolchain. Build gate closed.
+**PHASE:** Pre-build on `main` — still no `src/`, no `package.json`, no toolchain. **A toolchain now
+exists on the throwaway branch `proto/ref001-observed` only.**
 
-**TESTS:** None. No toolchain. Not a gap — and it is now the problem, see the verdict.
+**TESTS:** `node prototypes/PROTOTYPE-check.js` — **26** assertions, all passing, no dependencies.
+`npx tsc --noEmit` clean under `strict` in `prototypes/`. Both live on the throwaway branch.
 
-**MERGED:** ADR-0008 (`33017b8`, PR #26 → `f6f8c5c`), ADR-0009 (`40062cd`, PR #28 → `6faf04c`), and the
-Developer Platform sweep (`d8cebd7`, PR #30 → `d189f18`). `origin/main` is at **`d189f18`**.
-**FILED:** #29, #31. **Nothing in flight.**
+**MERGED:** ADR-0010 (`7e318ba`, PR #32 → `e41261a`), the domain.md count fix (`8352b73`, same PR),
+and the live proof record (`ba25b7a`, PR #33 → `612875a`). `origin/main` is at **`612875a`**.
+**FILED:** #34. **CLOSED:** #31. **Nothing in flight.**
 
-### The three shipped decisions, in one paragraph each
+### ADR-0010 — one issue, four defects, one root cause
 
-**ADR-0008** specifies the exit contract and the baseline state machine. Two of #20's premises broke
-under drafting: `suppressed` is not a baseline state (SARIF separates it), and keying exit status on
-the report disposition would have made the baseline permanently inert, because ADR-0005 decision 3's
-`unqualified` carries a conformity clause. Two findings the issue did not contain: **`resolved` is a
-coverage claim** — it requires the (rule, resource) pair to have reached `evaluated`, or the baseline
-shrinks because access shrank, which is a bug ESLint ships today. And **the fingerprint kill
-criterion is not cleared**: drafting asserted page-ID stability as an obvious property of UUIDs, and
-ADR-0007's mandatory grep returned `notion-api-documented.md` **§3, "Object identity has no documented
-guarantee"** (line 596), recording it as documented-silent with only a negative search result behind
-it. That rule has now paid for itself once, which is the third data point **#25** was waiting on.
-**Locator defect:** ADR-0008 line 175 and PR #26 cite this as "§596", which is the *line number*
-written as a section number and would send a reader looking for a section that does not exist. ADR-0008
-is merged and not edited; the superseding ADR for **#31** carries the correction.
+#31 reported that *"identical when any one key matches"* is not transitive. Drafting found three more,
+all inside decision 6:
 
-**ADR-0009** defines `Operator` — used 35 times across the canonical docs with no definition, inside
-other glossary entries. Split into **Operator / Executor / Consumer**; roles distinct, people may
-coincide. Integration primary, PAT secondary-and-now-dead. The operator supplied the verdict and it
-was adopted with **one substantive amendment**: the requirement that any membership change surface as
-a coverage-boundary change is unimplementable, because no endpoint returns a user's accessible set.
-Split into **detected** (principal change) versus **disclosed** (drift under a fixed principal), with
-a falling coverage ratio explicitly barred as a detector.
+1. It **contradicts ADR-0003 decision 1** without citing it. ADR-0003 chose SARIF's `correlationGuid`
+   path; decision 6 used the `fingerprints` path ADR-0003 had examined and rejected.
+2. It makes ADR-0008's **own `updated` state unreachable**. Both keys carry the normalized observed
+   value, which is evidence, so a value change breaks both at once — in exactly the case whose remedy
+   column reads *"the debt you accepted is not the debt you have."*
+3. Its key table **covers two of four shipping rules**. Both keys are property-composed; `REF001`
+   names no property.
 
-**The #27 sweep** answered all six questions from primary sources and none by observation. **ADR-0002's
-Revisit-if was checked and has NOT fired.** Workers can be read-only via an integration token but have
-no exit byte, both output shapes reopen a stated boundary, and they have been billed since
-**2026-08-11** on credits consumed per run and scaled by run duration — a meter that charges more the
-more completely the scan reads.
+**Root cause:** decision 6 loaded whole identity into the fingerprint map. Return the map to the
+discriminator role ADR-0003 assigned it and all four close together.
 
-### The findings that are not in any ADR
+**The §0.5 sweep ran before the instrument was specified and paid.** The problem is deterministic
+record linkage; the technique is **hierarchical matchkeys**. Wray 2024 (ONS, IJPDS 9(5), DOI
+`10.23889/ijpds.v9i5.2656`) supplied what #31's fix lacked — *"records can only be linked once"*,
+*"removing linked records from the matching pool"*. **#31 had independently reconstructed the field's
+standard answer and was missing one-to-one.** Adopted **pass-ordered** matching over per-finding
+probing, because a pass is a set join and has no visiting order to depend on at all.
 
-**1. ADR-0008 decision 6 is defective. Filed as #31.** *"Two entries are logically identical when any
-one key matches"* is not transitive. Take the closure and unrelated findings merge; don't and matching
-is order-dependent, violating **ADR-0004**. Fix: **priority-ordered probing** — a deterministic total
-function, not a relation. Needs a superseding ADR. **The prototype will build identity on this, so fix
-it first.**
+### The live run — the pass is not the result
 
-**2. The false-green synthesis — the session's largest finding.** `notion-user-pain.md` §4: structural
-rot is *"a chronic irritation, not an acute incident"* with no published damage account, while broken
-integrations produce panic and quantified loss. Sundararajan names the mechanism verbatim: *"The
-execution log still shows green. That's the part that makes it hard to catch."* Every high-intensity
-item in this repository is **one defect class — a system reporting success over an unverified state**:
-`has_more` lying at 10,000 rows, permission-filtered child lists, block-children with no truncation
-signal, relations truncating at 25, formulas returning `unsupported`, `grep -q` exiting 0 after an
-error, and the proof's own vanishing `child_page`. **The product is an anti-false-green instrument,
-not a tidiness linter.** This dissolves the engineer-versus-auditor fork the session had forced an
-hour earlier: both buyers have the same defect, on different surfaces.
+Eight read-only calls, `Notion-Version: 2026-03-11`. `REF001` fires on a **discovered** link with
+`certainty: confirmed`, `target_state: unreachable`; disposition `qualified`, coverage 3/4, **exit 3**.
+Exit 3 outranking exit 1 is **ADR-0008 decision 2's priority order observed firing for the first time**.
 
-**3. The session's own zero-config argument was wrong.** It claimed the rule catalogue is backwards on
-a configured-versus-not axis. `notion-user-pain.md` §2 says the inversion is **loudness versus
-testability** — the two loudest pains (P1 staleness, P9 clutter) are the two the tool cannot honestly
-claim to solve, and willingness-to-configure is **strongest** exactly where the testable pains are
-voiced. Ranking by *intensity* rather than volume inverts it again and dissolves §2's "central
-tension" — the furious pains are the silent-failure pains, and those are the most testable.
+**Three false-green defects in my own implementation**, each the class the product exists to catch:
 
-**4. `PRODUCT.md`'s demand test targets a branch this session argued is refuted.** *"Five teams that
-must prove a structural claim to a third party"* is the auditor. Both the demand test and its kill
-criterion name that buyer. **Rewrite before sending anything.**
+1. **The host allow-list was `/notion\.(so|site)/` and the fixture's own link is served from
+   `app.notion.com`.** Zero links discovered, no error, clean `unqualified` verdict over a root with a
+   dead link. It appeared to pass only because a synthetic control injected the known-bad ID — **a
+   control that can substitute for the mechanism under test is not a control.** Filed as **#34**.
+2. **The applicable set was built from `child_page` only**, so a `child_database` was invisible and
+   coverage read **2/2 — 100%** over a root with three children. The denominator shrank to fit the
+   blind spot.
+3. **The exit byte read the findings list while the gap lived only in the manifest** — returned `1`
+   where the contract requires `3`. Two copies of the coverage data drift, toward the flattering answer.
 
-**5. That refutation is conditional and was overstated when made.** It rests on ADR-0005 decision 3's
-claim that an unbounded gap *"cannot be sized"* — which is itself unexamined against the field that
-sizes unobserved populations. Do not treat the auditor branch as settled-dead.
+Plus one already forbidden: the manifest was keyed on **titles** and double-counted `wl-revoke-parent`,
+against `CONTEXT.md`'s settled default *"Identity is the stable ID."*
 
-**6. Four unasked rigour questions**, recorded in memory as `bannister-goes-to-the-problem-domain`:
-certain-vs-possible answers (incomplete-information databases), transaction isolation and phantoms
-(**`UNQ001` is phantom-prone by construction and may return `conforms` over a workspace holding a
-duplicate**), unseen-population estimation, and entity resolution.
+**`Observed<T>` itself never misbehaved on any case tested.** Every defect was in the code around it.
+That is the actual answer to the prototype's question.
 
-**7. Architecture calls, made and not yet ADR'd.** The core type is provenance, not `Page`:
-`Observed<T> = complete | partial+cause | unreachable`, with **no function `Observed<T> → T`** and
-combinators that propagate partiality — so `unique` over a `partial` list *cannot* return true. One
-adapter seam is the only code permitted to construct an `Observed`. **TypeScript**, because the
-official SDK's types are the `request_status` source of truth and give drift detection at `tsc` time.
+### The finding neither prototype's red test covers
+
+Reconnect the link target, leave `wl-revoke-child` revoked, and the scan reports **`unqualified`,
+exit 0, verdict rendered** — a clean run over a workspace containing a page it cannot see. Not a model
+defect; proof §4 rendered honestly. **The red test passes today only because the `REF001` link finding
+happens to be firing**, not because anything detected the revocation. Recorded on **#14**.
 
 ### BLOCKERS
 
-**None technical.** `.env` stays unreadable. Gate 1 is unchanged and advances when the operator sends
-— **but the send target is now wrong**, per finding 4.
+**None.** `.env` stays unreadable to tools and that no longer blocks anything — a process reads it.
 
 ### EXACT NEXT STEPS
 
-1. **#31 — supersede ADR-0008 decision 6.** Twenty minutes, and the prototype depends on it.
-2. **Prototype REF001 end to end** against the live fixture with `Observed<T>` in place. Red test
-   already exists: the link to `wl-outside-grant` must produce `certainty: confirmed`,
-   `target_state: unreachable`, and with `wl-revoke-child` disconnected the run must **not** emit an
-   unqualified verdict. `/prototype`, not `/wayfinder` — the fog is not in the decisions, there are
-   nine ADRs of decisions made with no runnable feedback.
-3. **Re-read the eight rules as false-green detectors** rather than tidiness checks. P3's four named
-   defect classes look uncovered by the current catalogue.
-4. **Write `docs/research/INDEX.md`** — one line per file: the question it answers, its trust tier,
-   what it refutes. Ten files with no index is the second half of the mechanism the post-close
-   addendum describes; naming the directory is not the same as knowing which file to open.
-5. **#29, #24, #25, #18, #19, #10, #8, #7** — unchanged. **#25 now has its third data point and a new
-   shape**: ADR-0009's case was a *missing* file rather than a contradicted one, so grep alone cannot
-   be the whole enforcement.
+1. **#34 — specify `REF001` link recognition.** It carries a real fork that must not be settled by
+   assertion: **is an unrecognised *link* the same thing as an unjudgeable *resource*?** If yes it is a
+   rule spec; if no, ADR-0005's evidence-sufficiency axis is missing a value and it needs an ADR first.
+   Same shape as the `certainty`/`target state` split ADR-0005 got right by keeping two axes apart.
+2. **#14 — correct `PRODUCT.md`.** It now has a runnable demonstration attached, and the demand test
+   still targets the auditor branch that S009 argued is refuted. Rewrite before sending anything.
+3. **Observe the remaining link hosts** before any spec claims them.
+4. **Write `docs/research/INDEX.md`** — ten files, no index. Parked for a third session running; the
+   reading order in `domain.md` names the directory but not which file answers your question.
+5. **#29, #25, #24, #18, #19, #10, #8, #7** — unchanged. #25 now has a **fourth shape** on it.
 
-**NEXT-MODEL:** **frontier**. The next session writes a superseding ADR and then prototypes against a
-live API with a novel provenance type — irreversible head plus ambiguity. **#18 and #19 remain
-mechanical and belong to their own fast-tier session; do not straddle.**
+**NEXT-MODEL:** **frontier**. #34's fork is an ADR-or-not judgement on an axis the project has already
+got wrong once by collapsing two axes into one enum. **#18 and #19 remain mechanical and belong to
+their own fast-tier session; do not straddle.**
 
-**NEXT-REPO/CWD:** `C:\Users\mlpgr\2026_Projects\workspace_lint` — single repo; state, plan and
-resume ritual all at the root.
+**NEXT-REPO/CWD:** `C:\Users\mlpgr\2026_Projects\workspace_lint` — single repo; state, plan and resume
+ritual all at the root. The prototype toolchain is on branch `proto/ref001-observed`, not on `main`.
 
-**POST-CLOSE ADDENDUM (S009, after `65f6106` shipped) — the agent-facing reading list omitted the
-evidence layer, and that is the mechanism behind every incident this band records.**
+**SELF-ASSESS:** VERDICT: 2 (operator-graded, solicited blind) · ATTRIB: none — task-inherent.
 
-`docs/agents/domain.md` is what `CLAUDE.md` points every agent at. Its section *"Before exploring,
-read these"* named `CONTEXT.md`, `CONTEXT-MAP.md` and `docs/adr/` — **the decision layer only**. It
-never named `docs/research/` or `docs/proof/`. It was an unlocalised upstream template, which is also
-why S008 had to renumber its `ADR-0007 (event-sourced orders)` placeholder after it collided with a
-real ADR.
-
-Rewritten specific to this repo. It now carries the read order with **evidence outranking assertion**,
-the evidence-class-per-directory table (`proof` beats `research` beats `adr` on questions of fact),
-the three method rules, and the citation standard including *cite by section heading, not line number*.
-`CLAUDE.md`'s own two-line Domain-docs entry carried the same omission one level up and is corrected —
-per the standing rule that a refuted claim is never in one place.
-
-**A count was corrected while writing it.** The first draft said *"four ADRs have now contradicted or
-talked past evidence already in this repo"* in two files. Checked against source: **#25 is the record
-and says two**, ADR-0007 is the *corrector* rather than an offender, and ADR-0009's case is a
-different shape — the fact was **not** in the repo, so grep returns nothing and silence reads as
-agreement. The three incidents are now written as two shapes with the grep-blind one named, because
-rule 1 only catches one of them.
-
-**Not done, and deliberately parked:** `docs/research/INDEX.md` (ten files, no index — a reading list
-that names a directory still does not say which file answers your question) and the #25 hook decision.
-The forward reference is marked inline in `domain.md` rather than left to rot.
-
-**SELF-ASSESS:** VERDICT: 2 (operator-graded, solicited blind) · ATTRIB: none — task-inherent
-· **AMENDED** 2026-08-17, see addendum above and the caveats below. The verdict is **not** re-opened.
-
-**Caveat attached to the grade, not a re-opening of it.** The session shipped a defect into `main`
-(#31) and wrote a wrong locator into a merged ADR. Both were caught in-session, by the mandatory grep
-and by the close's dereference pass respectively. The operator's own read is that the gap is rigour
-rather than triage, and the largest finding of the session came from the operator's product intuition,
-not from the agent.
+**Recorded against the grade, not as a qualification of it.** The session shipped a defect into an
+accepted ADR's supersession chain once already (#31, S009) and this session's own first implementation
+was false-green three separate ways. Both were caught in-session — the first by the mandatory grep, the
+others by running the code instead of reading it. **The pattern across S009 and S010 is that the
+artifacts are correct and the instruments built to serve them are not**, which is the thing to watch
+next session rather than a reason to re-open this grade.

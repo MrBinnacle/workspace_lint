@@ -627,3 +627,155 @@ cross the tier boundary inside it.
 resume ritual all at the root.
 
 **SELF-ASSESS:** VERDICT: 2 (ADR-0007 landed with two findings the issue had not specified, and the correction's own evidence was re-fetched rather than inherited) · ATTRIB: skill
+
+
+---
+
+## S009 — 2026-08-17 — Four phases, and the one that produced no commit produced the most
+
+**PHASE:** Pre-build. No source code, no toolchain. Build gate closed.
+
+**TESTS:** None. No toolchain. Not a gap — and it is now the problem, see the verdict.
+
+**MERGED:** ADR-0008 (`33017b8`, PR #26 → `f6f8c5c`), ADR-0009 (`40062cd`, PR #28 → `6faf04c`), and the
+Developer Platform sweep (`d8cebd7`, PR #30 → `d189f18`). `origin/main` is at **`d189f18`**.
+**FILED:** #29, #31. **Nothing in flight.**
+
+### The three shipped decisions, in one paragraph each
+
+**ADR-0008** specifies the exit contract and the baseline state machine. Two of #20's premises broke
+under drafting: `suppressed` is not a baseline state (SARIF separates it), and keying exit status on
+the report disposition would have made the baseline permanently inert, because ADR-0005 decision 3's
+`unqualified` carries a conformity clause. Two findings the issue did not contain: **`resolved` is a
+coverage claim** — it requires the (rule, resource) pair to have reached `evaluated`, or the baseline
+shrinks because access shrank, which is a bug ESLint ships today. And **the fingerprint kill
+criterion is not cleared**: drafting asserted page-ID stability as an obvious property of UUIDs, and
+ADR-0007's mandatory grep returned `notion-api-documented.md` **§3, "Object identity has no documented
+guarantee"** (line 596), recording it as documented-silent with only a negative search result behind
+it. That rule has now paid for itself once, which is the third data point **#25** was waiting on.
+**Locator defect:** ADR-0008 line 175 and PR #26 cite this as "§596", which is the *line number*
+written as a section number and would send a reader looking for a section that does not exist. ADR-0008
+is merged and not edited; the superseding ADR for **#31** carries the correction.
+
+**ADR-0009** defines `Operator` — used 35 times across the canonical docs with no definition, inside
+other glossary entries. Split into **Operator / Executor / Consumer**; roles distinct, people may
+coincide. Integration primary, PAT secondary-and-now-dead. The operator supplied the verdict and it
+was adopted with **one substantive amendment**: the requirement that any membership change surface as
+a coverage-boundary change is unimplementable, because no endpoint returns a user's accessible set.
+Split into **detected** (principal change) versus **disclosed** (drift under a fixed principal), with
+a falling coverage ratio explicitly barred as a detector.
+
+**The #27 sweep** answered all six questions from primary sources and none by observation. **ADR-0002's
+Revisit-if was checked and has NOT fired.** Workers can be read-only via an integration token but have
+no exit byte, both output shapes reopen a stated boundary, and they have been billed since
+**2026-08-11** on credits consumed per run and scaled by run duration — a meter that charges more the
+more completely the scan reads.
+
+### The findings that are not in any ADR
+
+**1. ADR-0008 decision 6 is defective. Filed as #31.** *"Two entries are logically identical when any
+one key matches"* is not transitive. Take the closure and unrelated findings merge; don't and matching
+is order-dependent, violating **ADR-0004**. Fix: **priority-ordered probing** — a deterministic total
+function, not a relation. Needs a superseding ADR. **The prototype will build identity on this, so fix
+it first.**
+
+**2. The false-green synthesis — the session's largest finding.** `notion-user-pain.md` §4: structural
+rot is *"a chronic irritation, not an acute incident"* with no published damage account, while broken
+integrations produce panic and quantified loss. Sundararajan names the mechanism verbatim: *"The
+execution log still shows green. That's the part that makes it hard to catch."* Every high-intensity
+item in this repository is **one defect class — a system reporting success over an unverified state**:
+`has_more` lying at 10,000 rows, permission-filtered child lists, block-children with no truncation
+signal, relations truncating at 25, formulas returning `unsupported`, `grep -q` exiting 0 after an
+error, and the proof's own vanishing `child_page`. **The product is an anti-false-green instrument,
+not a tidiness linter.** This dissolves the engineer-versus-auditor fork the session had forced an
+hour earlier: both buyers have the same defect, on different surfaces.
+
+**3. The session's own zero-config argument was wrong.** It claimed the rule catalogue is backwards on
+a configured-versus-not axis. `notion-user-pain.md` §2 says the inversion is **loudness versus
+testability** — the two loudest pains (P1 staleness, P9 clutter) are the two the tool cannot honestly
+claim to solve, and willingness-to-configure is **strongest** exactly where the testable pains are
+voiced. Ranking by *intensity* rather than volume inverts it again and dissolves §2's "central
+tension" — the furious pains are the silent-failure pains, and those are the most testable.
+
+**4. `PRODUCT.md`'s demand test targets a branch this session argued is refuted.** *"Five teams that
+must prove a structural claim to a third party"* is the auditor. Both the demand test and its kill
+criterion name that buyer. **Rewrite before sending anything.**
+
+**5. That refutation is conditional and was overstated when made.** It rests on ADR-0005 decision 3's
+claim that an unbounded gap *"cannot be sized"* — which is itself unexamined against the field that
+sizes unobserved populations. Do not treat the auditor branch as settled-dead.
+
+**6. Four unasked rigour questions**, recorded in memory as `bannister-goes-to-the-problem-domain`:
+certain-vs-possible answers (incomplete-information databases), transaction isolation and phantoms
+(**`UNQ001` is phantom-prone by construction and may return `conforms` over a workspace holding a
+duplicate**), unseen-population estimation, and entity resolution.
+
+**7. Architecture calls, made and not yet ADR'd.** The core type is provenance, not `Page`:
+`Observed<T> = complete | partial+cause | unreachable`, with **no function `Observed<T> → T`** and
+combinators that propagate partiality — so `unique` over a `partial` list *cannot* return true. One
+adapter seam is the only code permitted to construct an `Observed`. **TypeScript**, because the
+official SDK's types are the `request_status` source of truth and give drift detection at `tsc` time.
+
+### BLOCKERS
+
+**None technical.** `.env` stays unreadable. Gate 1 is unchanged and advances when the operator sends
+— **but the send target is now wrong**, per finding 4.
+
+### EXACT NEXT STEPS
+
+1. **#31 — supersede ADR-0008 decision 6.** Twenty minutes, and the prototype depends on it.
+2. **Prototype REF001 end to end** against the live fixture with `Observed<T>` in place. Red test
+   already exists: the link to `wl-outside-grant` must produce `certainty: confirmed`,
+   `target_state: unreachable`, and with `wl-revoke-child` disconnected the run must **not** emit an
+   unqualified verdict. `/prototype`, not `/wayfinder` — the fog is not in the decisions, there are
+   nine ADRs of decisions made with no runnable feedback.
+3. **Re-read the eight rules as false-green detectors** rather than tidiness checks. P3's four named
+   defect classes look uncovered by the current catalogue.
+4. **Write `docs/research/INDEX.md`** — one line per file: the question it answers, its trust tier,
+   what it refutes. Ten files with no index is the second half of the mechanism the post-close
+   addendum describes; naming the directory is not the same as knowing which file to open.
+5. **#29, #24, #25, #18, #19, #10, #8, #7** — unchanged. **#25 now has its third data point and a new
+   shape**: ADR-0009's case was a *missing* file rather than a contradicted one, so grep alone cannot
+   be the whole enforcement.
+
+**NEXT-MODEL:** **frontier**. The next session writes a superseding ADR and then prototypes against a
+live API with a novel provenance type — irreversible head plus ambiguity. **#18 and #19 remain
+mechanical and belong to their own fast-tier session; do not straddle.**
+
+**NEXT-REPO/CWD:** `C:\Users\mlpgr\2026_Projects\workspace_lint` — single repo; state, plan and
+resume ritual all at the root.
+
+**POST-CLOSE ADDENDUM (S009, after `65f6106` shipped) — the agent-facing reading list omitted the
+evidence layer, and that is the mechanism behind every incident this band records.**
+
+`docs/agents/domain.md` is what `CLAUDE.md` points every agent at. Its section *"Before exploring,
+read these"* named `CONTEXT.md`, `CONTEXT-MAP.md` and `docs/adr/` — **the decision layer only**. It
+never named `docs/research/` or `docs/proof/`. It was an unlocalised upstream template, which is also
+why S008 had to renumber its `ADR-0007 (event-sourced orders)` placeholder after it collided with a
+real ADR.
+
+Rewritten specific to this repo. It now carries the read order with **evidence outranking assertion**,
+the evidence-class-per-directory table (`proof` beats `research` beats `adr` on questions of fact),
+the three method rules, and the citation standard including *cite by section heading, not line number*.
+`CLAUDE.md`'s own two-line Domain-docs entry carried the same omission one level up and is corrected —
+per the standing rule that a refuted claim is never in one place.
+
+**A count was corrected while writing it.** The first draft said *"four ADRs have now contradicted or
+talked past evidence already in this repo"* in two files. Checked against source: **#25 is the record
+and says two**, ADR-0007 is the *corrector* rather than an offender, and ADR-0009's case is a
+different shape — the fact was **not** in the repo, so grep returns nothing and silence reads as
+agreement. The three incidents are now written as two shapes with the grep-blind one named, because
+rule 1 only catches one of them.
+
+**Not done, and deliberately parked:** `docs/research/INDEX.md` (ten files, no index — a reading list
+that names a directory still does not say which file answers your question) and the #25 hook decision.
+The forward reference is marked inline in `domain.md` rather than left to rot.
+
+**SELF-ASSESS:** VERDICT: 2 (operator-graded, solicited blind) · ATTRIB: none — task-inherent
+· **AMENDED** 2026-08-17, see addendum above and the caveats below. The verdict is **not** re-opened.
+
+**Caveat attached to the grade, not a re-opening of it.** The session shipped a defect into `main`
+(#31) and wrote a wrong locator into a merged ADR. Both were caught in-session, by the mandatory grep
+and by the close's dereference pass respectively. The operator's own read is that the gap is rigour
+rather than triage, and the largest finding of the session came from the operator's product intuition,
+not from the agent.
