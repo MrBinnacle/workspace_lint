@@ -113,8 +113,8 @@ carve-out is the whole rule; without it the constraint reads as "never correct a
 
 ## Why this file is specific
 
-Three incidents in **two distinct shapes**, and the shapes matter because rule 1 only catches one of
-them:
+Four incidents in **three distinct shapes**, and the shapes matter because rule 1 only catches the
+first:
 
 **Shape A — the evidence was in the repo and the ADR contradicted it.** Grep-catchable.
 **Issue #25 is the record of the count: two ADRs, as of 2026-08-17.** The instance with a full
