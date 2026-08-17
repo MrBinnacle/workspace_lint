@@ -54,7 +54,7 @@ Both caught by the claim-verification step, both before any writing began.
 
 ### EXACT NEXT STEPS
 
-1. **Run `bash scripts/setup-proof-fixture.sh`.** Written in S003; eight stages, ~15 minutes, operator-only. It provisions a read-only Notion integration, captures the token into a gitignored `.env`, and walks the build of a mutable fixture: a >100-block page, a 150-row data source with a type-changeable property, a revoke-probe parent/child pair, and a second top-level page deliberately left outside the grant. **Stage 5 is itself a proof result** — see below.
+1. **The fixture page tree already exists.** Built 2026-08-17 via the claude.ai Notion connector; IDs are in the gitignored `.env`; the full record, including the confound analysis, is `docs/proof/fixture.md`. Nine of twelve `.env` values are filled. **Two human steps remain and neither can be delegated:** create the `workspace-lint-proof` integration (Read content only), connect it to `wl-proof-fixture`, and paste the token; then attempt the revocation on `wl-revoke-child` and record `REVOCATION_SUPPORTED`. `scripts/setup-proof-fixture.sh` still walks both. **Step 2 is itself a proof result** — see below.
 2. **Run the 72-hour proof as a `/prototype` on a `prototype/api-proof` branch** — not as build phase 0. ADR-0005 now defines what it must measure. `store.json` → `unknowns_assigned_to_proof` holds **eight** questions; three were added this session and all three test ADR-0005 itself:
    - Do `unreached` and `undecidable` ever diverge against a workspace with a deliberately unshared subtree? If they never separate, collapse evidence sufficiency to two values.
    - Can enumeration and fetching be separated against the real API? If not, the `disclaimed` disposition loses its trigger.
