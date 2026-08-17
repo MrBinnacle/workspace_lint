@@ -1,9 +1,9 @@
 {
   "project": "workspace_lint",
   "updated": "2026-08-17",
-  "session": "S004",
+  "session": "S005",
   "phase": "pre-build",
-  "phase_detail": "Pre-build, but the 72-hour proof has RUN in part. S003 locked the outcome model (ADR-0005). S004 built the fixture and took first live readings. Three results changed the design: ADR-0002 decision 4 is inoperable as written, ADR-0005 decision 5 survived its Revisit-if, and the 'detectable hole' the completeness claim rested on was REFUTED. No source code. Build gate not open.",
+  "phase_detail": "Pre-build. S003 locked the outcome model; S004 built the fixture and ran the proof, refuting the detectable-hole mechanism and invalidating ADR-0002 decision 4; S005 reconciled the tracker with state, closed an enforcement gap on tracker writes, and extracted three skills. No source code. Build gate not open.",
   "next_gate": {
     "name": "demand test",
     "kind": "human",
@@ -189,5 +189,20 @@
     "No ghostwriting. Produce content specifications for anything he will send as himself, never drafted first-person copy. The literal-humanist-voice register governs how the agent writes; it does not license writing as him.",
     "LinkedIn is excluded from every project.",
     "SewerAI and Sepehr Sobhani are not contacts. The engagement never closed and was never paid. The artifacts are design input only."
-  ]
+  ],
+  "tracker": {
+    "host": "GitHub issues, gh CLI",
+    "open": {
+      "13": "ready-for-agent — supersede ADR-0002 d4. BLOCKS SCAN CODE.",
+      "14": "ready-for-human — correct PRODUCT.md before a buyer sees the claim.",
+      "15": "ready-for-agent — re-verify notion-api-practice.md.",
+      "16": "ready-for-agent — transcribe six settled decisions into CONTEXT.md.",
+      "1": "needs-info — blocked on the demand test, not on a decision.",
+      "7": "needs-info — blocked on a named reference workspace (REAL_ROOT_ID empty).",
+      "8": "ready-for-human — npm name, a brand choice.",
+      "10": "needs-triage — blocked by #13; its checklist has an item that cannot be run as written."
+    },
+    "closed_S005": "#2 #3 #4 #5 #6 #9 consolidated into #16 — they were undocumented decisions, not open questions.",
+    "note": "asserted_without_adr entries 1-6 are now tracked by #16. Remove them from store.json when #16 lands, or the two surfaces disagree again."
+  }
 }

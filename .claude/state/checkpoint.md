@@ -1,5 +1,74 @@
 # Checkpoint — workspace_lint
 
+## S005 — 2026-08-17 — Tracker reconciled, enforcement gap closed, three skills extracted
+
+**PHASE:** Pre-build. No source code. Build gate closed. No product artifact this session — process and tracker only.
+
+**TESTS:** None. No toolchain. Not a gap.
+
+**ALL WORK LANDED.** Repo: this checkpoint. Tracker: issues #13–#16 open, six closed. `~/.claude`: commits `9f332bb` (hook) and `0824c86` (skills).
+
+### The tracker and the state file had been disagreeing about what was settled
+
+Ten issues had sat in `needs-triage` since 2026-08-16 with no category role. **Six of them were not open questions.** `store.json` → `asserted_without_adr` already held an answer for #2, #3, #4, #5, #6 and #9, and in every case it matched the issue's own stated Default word for word.
+
+Consolidated into **#16** (`ready-for-agent`) — transcribe the six decisions into `CONTEXT.md`, which is what each issue's own "What closes this" asked for. The six are closed as duplicates with their problem statements intact and reopenable.
+
+Remaining open, all now carrying a category role:
+
+| # | State | Blocked on |
+| --- | --- | --- |
+| #1 primary user | `needs-info` | the demand test — five teams, not a decision |
+| #7 performance budgets | `needs-info` | a named reference workspace; `REAL_ROOT_ID` is deliberately empty |
+| #8 npm name | `ready-for-human` | a brand choice with three costed options |
+| #10 ratify the proof | `needs-triage` | #13, plus a checklist item that cannot be run as written |
+| #13 supersede ADR-0002 d4 | `ready-for-agent` | nothing — **this blocks scan code** |
+| #14 correct `PRODUCT.md` | `ready-for-human` | nothing — do before a buyer sees the claim |
+| #15 re-verify research | `ready-for-agent` | nothing |
+| #16 record six decisions | `ready-for-agent` | nothing |
+
+### An enforcement gap, and two wrong claims corrected on the way to it
+
+`downstream-instruction-framing` is marked mandatory. Issues #13–#15 instruct a downstream reader on architectural decisions, were created through Bash heredocs, and **were seen by no guard**: the `UserPromptSubmit` nudge keys on prompt text (the prompt was "complete all github work"), and the file guard keys on tool surface (never `Edit`/`Write`). That is §1's loop-survival test failing in the field.
+
+Closed with `guard-downstream-framing-gh.py` on the PreToolUse Bash matcher. Validated against the three real bodies — all had zero `Revisit if` clauses and would have drawn the tier-2 reminder. Revisit-if sections were then written into all three by hand.
+
+**Two claims made during the sweep were wrong and were corrected by checking, not arguing.** The skill-rules file was at `~/.claude/hooks/skill-rules.json`, not missing. And the existing file guard *had* fired on ADR-0005 and passed it, because the ADR carries a `Revisit if` section — the earlier statement that enforcement never reached the ADR was false.
+
+**The new guard blocked the commit that installed it.** Its command regex was unanchored, so it matched prose inside a heredoc that merely mentioned the CLI, and it scanned the whole command rather than the artifact body — so a message quoting the anti-pattern in order to forbid it read as committing it. Fixed by anchoring to shell command positions and splitting heredoc body from shell.
+
+### Three skills extracted
+
+Two to `~/.claude/skills/_quarantine/` — promotion needs manual §1.5 review:
+
+- **`interactive-script-phantom-answers`** — the TTY/EOF failure that fabricated `REVOCATION_SUPPORTED=no`.
+- **`pretooluse-bash-guard-prose-false-positive`** — command-position anchoring and heredoc splitting for Bash guards.
+
+One update: **`windows-claude-code-env` 1.5.0 → 1.6.0**, new Problem 11 — Git Bash hidden-input Ctrl-V paste corruption and the empty-bodied HTTP 400 it produces.
+
+### BLOCKERS
+
+Unchanged from S004. **#13 blocks scan code.** Gate 1 still needs the operator to send.
+
+### EXACT NEXT STEPS
+
+1. **#13 — ADR-0006**, superseding ADR-0002 decision 4. Also place "uninformative" on ADR-0005's evidence-sufficiency axis; it is none of the three existing values.
+2. **#14 — correct `PRODUCT.md`.** Say what is provable and stop.
+3. **#16 — transcribe six decisions** into `CONTEXT.md`, folding in the two corrections named in that issue.
+4. **#15 — re-verify `notion-api-practice.md`.** One headline claim was false; the rest is untested.
+
+**NEXT-MODEL:** frontier for #13 and #14 — a superseding ADR and a restated product claim, both judgment under changed evidence. #15 and #16 are mechanical and belong in their own fast-tier session. Do not straddle tiers in one session.
+
+**NEXT-REPO/CWD:** `C:\Users\mlpgr\2026_Projects\workspace_lint`
+
+### Standing cautions carried forward
+
+All S004 cautions still hold — live token in `.env` (11 of 12 values filled), the fixture is a mutable instrument with `wl-revoke-child` currently disconnected, Q3's stability is provisional, Q4 and Q5 are out of fixture reach, ADRs are never edited in place, and the ISO 19011 / ISA 705 citation hazard stands.
+
+New: **`~/.claude/settings.json` is gitignored.** The `guard-downstream-framing-gh.py` wiring exists only on this machine; the hook file is committed but the PreToolUse entry is not.
+
+---
+
 ## S004 — 2026-08-17 — The proof ran and spent three standing beliefs
 
 **PHASE:** Pre-build, but the 72-hour proof is no longer hypothetical. Four of eight proof questions now have answers. Still no source code. Build gate still closed — and one of the findings is a reason not to open it yet.
