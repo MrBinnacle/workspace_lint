@@ -199,11 +199,18 @@ TOTAL_STAGES=8
 
 die() { printf '\n  %s✗ %s%s\n\n' "$RED" "$1" "$RESET" >&2; exit 1; }
 
+# If stdin is not a terminal but a terminal is reachable, attach to it. This
+# covers editor terminals and wrappers that redirect stdin while a real human
+# is still watching. Only refuse when no terminal exists at all.
+if [[ ! -t 0 && -r /dev/tty ]]; then
+  exec < /dev/tty || true
+fi
+
 if [[ ! -t 0 ]]; then
-  die "stdin is not a terminal — refusing to run.
-  Every prompt would read EOF and silently record an empty value.
-  Run this in a real terminal:  bash scripts/setup-proof-fixture.sh
-  Not through a harness, a pipe, or an editor's run button."
+  die "stdin is not a terminal, and /dev/tty is not reachable — refusing to run.
+  Every prompt would read EOF and record an empty value silently.
+  Open a terminal and run:  bash scripts/setup-proof-fixture.sh
+  Do not run it through an AI harness, a pipe, or a run button."
 fi
 
 # need KEY "Prompt" — like ask, but will not accept an empty value.
