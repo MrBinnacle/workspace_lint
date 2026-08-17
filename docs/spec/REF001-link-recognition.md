@@ -215,12 +215,24 @@ Classify each candidate in this order. **First match wins.**
 ```
 1. Route A structural reference           → internal(target_id)
 2. href / link.url absent                 → not a reference; ignore
-3. URL fails to parse                     → UNRECOGNISED(cause: href-unparseable)
+3. URL fails to parse AND carries a       → UNRECOGNISED(cause: href-unparseable)
+   Notion-shaped ID
 4. host ∈ KNOWN_INTERNAL_HOSTS            → internal(target_id extracted from path)
 5. URL carries a Notion-shaped ID         → UNRECOGNISED(cause: link-host-unrecognised)
 6. otherwise                              → external; recorded as a non-defect exclusion
                                             per ADR-0005 decision 2
 ```
+
+**Step 3 carries the ID condition, and it did not in the first version of this document.** Written
+as a bare *"URL fails to parse → UNRECOGNISED"*, step 3 classifies every `#section` anchor as a
+coverage gap, because a bare fragment is not a parseable absolute URL. That is the failure mode §7
+already names for step 5 — every real scan qualified and the disclosure stopped being read — reached
+by a different route. The implementation tests the ID first and always has: an unparseable href
+carrying no Notion-shaped ID is `external`; one carrying an ID is `unrecognised`. The deviation was
+surfaced rather than silent, in `slice/references.ts` and in `docs/proof/results-t3-ref001.md` §7,
+and **the code was right and this document was the defect.** Corrected here under ADR-0012's plan
+gate. The residue rule is untouched: it keys on the ID shape, so every href that could name a Notion
+resource still reaches the residue.
 
 Step 5 is the whole design. A Notion-shaped ID is a 32-character hexadecimal string or an
 8-4-4-4-12 UUID, matched anywhere in the URL path or query. It is what makes the residue non-empty:
@@ -265,11 +277,21 @@ decision 5's funnel, satisfying its three constraints:
 non-empty, per §1. If applicable references were also never fetched, `unreached` takes precedence,
 per ADR-0005 decision 1.
 
-**Conformity is unaffected.** An `unrecognised` candidate produces **no finding**. It is not a
-`REF001` violation, it carries no `certainty`, and it carries no `target_state` — nothing about the
+**Conformity is unaffected.** An `unrecognised` candidate produces **no `REF001` finding**. It is not
+a `REF001` violation, it carries no `certainty`, and it carries no `target_state` — nothing about the
 target was established, which is exactly what the record says. Conformity is computed over the
-evaluated set only. Collapsing this into a finding would assert a defect the scan did not prove and
-would break `CONTEXT.md`'s certainty distinction.
+evaluated set only. Collapsing this into a `REF001` finding would assert a defect the scan did not
+prove and would break `CONTEXT.md`'s certainty distinction. The type system enforces it: `Finding`
+requires both a `certainty` and a `target_state`, and an unrecognised candidate can supply neither.
+
+**The drop-out it creates is a `SYS001` finding, and that is not a contradiction of the paragraph
+above.** This document previously said "produces **no finding**" without a rule name while also
+saying, below, that a coverage gap carries a `SYS001` finding — two statements that read as a
+contradiction and were reported as one in `docs/proof/results-t3-ref001.md` §7. They are about
+different rules. `REF001` asserts something about the **target**, which an unrecognised href does not
+establish. `SYS001` asserts something about **the scan** — *this coverage item was not evaluated* —
+which the manifest proves outright. §7's non-negotiable bullet is scoped the same way and now says
+so. Corrected under ADR-0012's plan gate; the code was right on this too.
 
 **Coverage ratio.** REF001's coverage ratio is resolved references over discovered references.
 Every `unrecognised` candidate lowers it. Per ADR-0005 decision 4 it is published together with the
@@ -343,9 +365,18 @@ qualified.
 Tests 1 and 4 constrain each other. That is intended: one fails if the recogniser is too narrow, the
 other if it is too wide.
 
-**These exist.** `prototypes/CHECK-link-recognition.ts` on branch `proto/ref001-observed` — 34
-assertions, offline, no network and no `.env`, against `prototypes/link-recognition.ts` and
-`prototypes/verdict.ts`. `npx tsc --noEmit` is clean under `strict`.
+**These exist, and the count changed under ADR-0012.** `prototypes/CHECK-link-recognition.ts` now
+holds **23** assertions against `prototypes/link-recognition.ts` alone — offline, no network, no
+`.env`, `npx tsc --noEmit` clean under `strict`. It held 34 against
+`prototypes/link-recognition.ts` and `prototypes/verdict.ts`. **`prototypes/verdict.ts` is deleted**
+(ADR-0012 decision 1: one executable implementation of the exit byte) and the eleven exit-byte
+assertions moved to `slice/CHECK-verdict.ts`, which calls `deriveVerdict` directly. No assertion was
+dropped; test 3 below is the one that moved.
+
+**The tests that matter now run in the slice.** `slice/CHECK-ref001.ts` carries 124 assertions
+including tests 1, 2, 3 and 4 of this section against the shipped implementation, and
+`slice/CHECK-verdict.ts` carries 34 over the exit byte. Test 3's assertion read exit `0` until
+ADR-0012 and now reads `3`, which is what this section always required.
 
 Two results worth recording, because both were found by running the checks rather than by re-reading
 the reasoning:
@@ -365,7 +396,9 @@ the reasoning:
 - The recogniser has a reachable `unrecognised` outcome and it is reported. Dropping an
   unclassifiable candidate is `CONTEXT.md` Non-goal 4.
 - An `unrecognised` candidate stays in the coverage denominator.
-- An `unrecognised` candidate produces no finding and asserts no `target_state`.
+- An `unrecognised` candidate produces no **`REF001`** finding and asserts no `target_state`. The
+  `SYS001` finding over its manifest drop-out is a different rule making a different claim, and it
+  is required — see §5. The rule name was absent from this bullet until ADR-0012.
 - No host enters `KNOWN_INTERNAL_HOSTS` without a locator. The `CANDIDATE_HOSTS` table is not an
   allow-list.
 

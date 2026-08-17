@@ -259,42 +259,48 @@ check('  and its conformity is ABSENT — nothing was judged', rResidue.outcomes
 check('the report is still qualified, not disclaimed', rResidue.verdict.disposition, 'qualified');
 
 /* =========================================================================
- * TEST 4 — spec §6 test 3: the residue and the exit byte. BLOCKED ON #49.
+ * TEST 4 — spec §6 test 3: the residue reaches the exit byte. #49 CLOSED.
  * ========================================================================= */
 
-head('TEST 4 — the residue does NOT yet reach the exit byte, and the report says so');
+head('TEST 4 — the residue reaches the exit byte (spec §6 test 3)');
 
-/* This is the check spec §6 test 3 asks for, and it does not pass. It asserts
- * what the run actually does and what the run discloses about it, because a
- * check written to the byte the spec wants would be red and a check written to
- * the byte the code produces without the disclosure would be a false green.
+/* THE TRIPWIRE FIRED AND THIS IS WHAT IT LOOKS LIKE AFTERWARDS. Read the reason
+ * it was ever 0 before trusting the 3.
  *
- * WHY IT CANNOT PASS HERE. deriveVerdict compares the FUNNEL scalar — evaluated
- * resources over applicable resources — against the declared threshold.
- * ADR-0011 decision 5 makes the threshold a floor on EVERY rule, i.e. on the
- * MINIMUM of the coverage vector. Those were one number while SYS001 was the
- * only rule. On this run the funnel reads 2/2 resources and REF001 reads 0/1
- * references, so a rule sitting at zero is masked by a rule sitting at one.
- * verdict.ts is copied verbatim from a frozen prototype (spec §5), so what it
- * compares is #49's decision and not an edit this ticket may make.
+ * Until ADR-0012, deriveVerdict compared the FUNNEL scalar — evaluated resources
+ * over applicable resources — against the declared threshold, while ADR-0011
+ * decision 5 requires a floor on EVERY rule, i.e. on the MINIMUM of the coverage
+ * vector. Those were one number while SYS001 was the only rule. On this run they
+ * are not: the funnel reads 2/2 resources and REF001 reads 0/1 references, so a
+ * rule sitting at zero was masked by a rule sitting at one, and this check
+ * asserted `exit === 0` on purpose — the false green, written down rather than
+ * hidden, with the report disclosing it on every run.
  *
- * THIS CHECK IS A TRIPWIRE. When #49 lands and the byte compares the vector
- * minimum, the three assertions below go RED and force this file to be updated
- * to the spec's expectation of exit 3. */
-check('the funnel figure clears the declared threshold', rResidue.byteBasis.funnel >= 1.0, true);
-check('  while the vector minimum does not', rResidue.byteBasis.vectorMinimum!.ratio, 0);
-check('  the vector minimum is set by REF001', rResidue.byteBasis.vectorMinimum!.rule, REF001_ID);
-check('the scan MEASURES the divergence rather than assuming it away', rResidue.byteBasis.byteWouldDiffer, true);
+ * ADR-0012 decision 2 made the byte compare the vector minimum. The disclosure
+ * is gone from report.ts because the divergence it disclosed is now
+ * unrepresentable, and this check asserts the byte the spec always required.
+ *
+ * THE MUTATION THAT KEEPS THIS HONEST is in CHECK-verdict.ts TEST 2: feeding
+ * deriveVerdict the funnel figure in place of the vector drops the byte from 3
+ * to 1. If that check ever goes green at 3, the byte has stopped depending on
+ * the vector and the assertion below is passing for the wrong reason. */
+check('the funnel figure clears the declared threshold on its own', rResidue.byteBasis.funnel >= 1.0, true);
+check('  while the figure the byte COMPARED does not', rResidue.byteBasis.compared!.ratio, 0);
+check('  and it is REF001 that set it', rResidue.byteBasis.compared!.rule, REF001_ID);
+check('  carrying its own unit, so it cannot be read as resources', rResidue.byteBasis.compared!.unit, 'internal references');
+check('the byte basis is the verdict\'s own figure, not a second derivation',
+  rResidue.byteBasis.compared, rResidue.verdict.coverageMinimum);
 
 const residueReport = renderReport(rResidue, {}).join('\n');
-check('  and the report discloses it on the run', /THE EXIT BYTE IS NOT THE ONE ADR-0011 DECISION 5 REQUIRES/.test(residueReport), true);
-check('  naming the issue that decides it', /#49/.test(residueReport), true);
-check('  and printing both figures with their units', /byte basis:.*unit: resources.*unit: internal references/.test(residueReport), true);
+check('  the report prints what the byte compared', /byte basis:.*internal references/.test(residueReport), true);
+check('  naming the funnel beside it as NOT compared', /funnel, not compared/.test(residueReport), true);
+check('  and the divergence warning is GONE, because it cannot occur',
+  /THE EXIT BYTE IS NOT THE ONE ADR-0011 DECISION 5 REQUIRES/.test(residueReport), false);
 
-check('TRIPWIRE — the byte is 0 today; spec §6 test 3 requires 3 and #49 is what changes it', rResidue.verdict.exit, 0);
-console.log('  ^ THIS IS THE FALSE GREEN #49 EXISTS TO CLOSE, and it is disclosed rather than hidden.');
-console.log('    A run holding an unresolvable reference exits 0 because the coverage floor was');
-console.log('    applied to the wrong figure. Do not close #44\'s DoD on the exit byte.');
+check('spec §6 test 3 — the residue forces exit 3', rResidue.verdict.exit, 3);
+console.log('  ^ this assertion read 0 until ADR-0012, and the 0 was asserted deliberately.');
+console.log('    A run holding an unresolvable reference now exits 3 because the coverage');
+console.log('    floor is applied to the weakest rule instead of to the funnel.');
 
 /* =========================================================================
  * TEST 5 — spec §6 test 4: an external link enters no denominator

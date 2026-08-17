@@ -162,13 +162,37 @@ head('TEST 5 — MUTATION CHECK: disable coverage-gap detection and the byte MUS
 const control = await scan({ config: cfg(), port: fakePort(THREE_CHILDREN), now: clock(), deriveGaps: gapsFrom });
 const mutated = await scan({ config: cfg(), port: fakePort(THREE_CHILDREN), now: clock(), deriveGaps: () => [] });
 
+/* THE BYTE NO LONGER MOVES HERE, AND THAT IS THE FIX RATHER THAN A HOLE.
+ *
+ * This check used to assert `mutated.verdict.exit === 0` — disabling gap
+ * detection bought a green byte — and its closing note said a byte that stayed
+ * at 3 would mean the suite measures nothing. Both were correct while the ONLY
+ * route to exit 3 was `gaps.length && coverage < threshold`.
+ *
+ * ADR-0012 decision 7 removed the `gaps.length` conjunct, because with it a run
+ * whose weakest rule was below the floor and whose gap list was empty fell
+ * through to exit 0 and printed "every rule's coverage is at or above the
+ * declared threshold" beside a figure showing one was not. The byte now has TWO
+ * independent reasons to be 3, so suppressing one leaves the other standing.
+ *
+ * The mutation is therefore still detected — in the disposition, in the finding
+ * count, and in the reason string — and the byte surviving it is a stronger
+ * property than the byte moving was. What would mean the suite measures nothing
+ * is the mutation changing NOTHING, which the four assertions below rule out. */
 check('with gap detection ON  the byte is 3', control.verdict.exit, 3);
-check('with gap detection OFF the byte is 0', mutated.verdict.exit, 0);
-check('the mutation moved the byte', control.verdict.exit !== mutated.verdict.exit, true);
+check('with gap detection OFF the byte is STILL 3 — coverage holds it independently', mutated.verdict.exit, 3);
+check('the mutation is detected in the disposition', `${control.verdict.disposition}→${mutated.verdict.disposition}`, 'qualified→unqualified');
+check('  and in the findings it suppressed', `${control.findings.length}→${mutated.findings.length}`, '1→0');
+check('  and the reason names the inconsistency instead of inventing a gap',
+  /NO gap was recorded for it/.test(mutated.verdict.why), true);
+check('  the control\'s reason does NOT say that, because its gap is real',
+  /NO gap was recorded for it/.test(control.verdict.why), false);
 check('and the manifest itself is unchanged by the mutation', mutated.verdict.applicable, control.verdict.applicable);
 
-console.log('  ^ gapsFrom() is load-bearing: removing it changes the result.');
-console.log('    A byte that stayed at 3 here would mean the suite measures nothing.');
+console.log('  ^ gapsFrom() is load-bearing: removing it changes the disposition, the');
+console.log('    findings and the reason. It no longer changes the BYTE, because since');
+console.log('    ADR-0012 decision 7 a sub-threshold rule trips exit 3 on its own. A');
+console.log('    mutation that changed NOTHING would mean the suite measures nothing.');
 
 /* =========================================================================
  * TEST 6 — title redaction, tested against the WHOLE rendered output

@@ -4,5 +4,5 @@
     "strict": true, "noEmit": true, "skipLibCheck": true,
     "types": ["node"], "allowJs": false
   },
-  "include": ["ids.ts", "make-fixture-config.ts", "config.ts", "notion-port.ts", "observed.ts", "manifest.ts", "verdict.ts", "finding.ts", "rule.ts", "references.ts", "sys001.ts", "ref001.ts", "scan.ts", "report.ts", "fixture-oracle.ts", "cli.ts", "CHECK-harness.ts", "CHECK-fakes.ts", "CHECK-scan-scaffold.ts", "CHECK-sys001.ts", "CHECK-ref001.ts"]
+  "include": ["ids.ts", "make-fixture-config.ts", "config.ts", "notion-port.ts", "observed.ts", "manifest.ts", "verdict.ts", "finding.ts", "rule.ts", "references.ts", "sys001.ts", "ref001.ts", "scan.ts", "report.ts", "fixture-oracle.ts", "cli.ts", "CHECK-harness.ts", "CHECK-fakes.ts", "CHECK-verdict.ts", "CHECK-scan-scaffold.ts", "CHECK-sys001.ts", "CHECK-ref001.ts"]
 }

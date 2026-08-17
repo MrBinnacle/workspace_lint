@@ -4,5 +4,5 @@
     "strict": true, "noEmit": true, "skipLibCheck": true,
     "types": ["node"], "allowJs": false
   },
-  "include": ["live-ref001.ts", "link-recognition.ts", "verdict.ts", "CHECK-link-recognition.ts"]
+  "include": ["live-ref001.ts", "link-recognition.ts", "CHECK-link-recognition.ts"]
 }

@@ -197,43 +197,35 @@ export function renderReport(r: ScanResult, opts: RenderOptions = {}): string[] 
     }`,
   );
   out.push(`  requests:         ${r.requestCount} · wall ${r.wallMs} ms   (NOT a validated budget — #7 owns that)`);
-  /* THE UNIT IS APPENDED HERE BECAUSE THE REASON STRING DOES NOT CARRY ONE.
-   * deriveVerdict builds `why` as "…coverage 3/4 is below the declared
-   * threshold", a bare ratio, and spec criterion 6 and ADR-0011 decision 4 both
-   * forbid printing a figure without naming what it counts. verdict.ts is
-   * copied verbatim from a frozen prototype (spec §5), so the reason string is
-   * not edited here; the render layer names the unit instead. The real remedy is
-   * an ADR permitting the prototype and this file to diverge — filed as the
-   * follow-up on #43, not decided in it. The figures in `why` are RESOURCES:
-   * deriveVerdict is fed the funnel counts, which stage resources. */
-  out.push(`  exit:             ${r.verdict.exit}   (${r.verdict.why})   [figures in this reason are resources]`);
+  /* NO UNIT IS APPENDED HERE ANY MORE, AND THAT IS THE FIX RATHER THAN A
+   * REGRESSION. The previous line appended "[figures in this reason are
+   * resources]" because deriveVerdict built `why` as a bare "3/4". ADR-0012
+   * decision 5 moved the remedy to the source: `why` is composed through
+   * formatRow(), which has no code path that omits the unit. Re-appending a
+   * unit here would now be wrong as well as redundant — the figures in `why`
+   * are the weakest rule's coverage item, which is `internal references` on any
+   * run REF001 sets the minimum on, and was only ever `resources` by accident
+   * of there being one rule. */
+  out.push(`  exit:             ${r.verdict.exit}   (${r.verdict.why})`);
 
-  /* WHAT THE EXIT BYTE ACTUALLY COMPARED, PRINTED EVERY RUN.
+  /* WHAT THE EXIT BYTE COMPARED, PRINTED EVERY RUN.
    *
-   * ADR-0011 decision 5 makes `--min-coverage` a floor on EVERY rule, i.e. on
-   * the minimum of the coverage vector. deriveVerdict compares the FUNNEL scalar
-   * — evaluated resources over applicable resources — and verdict.ts is copied
-   * verbatim from a frozen prototype (spec §5), so changing what it compares is
-   * an ADR (#49) and not an edit. The two figures were the same number while one
-   * rule existed. They are two numbers now.
-   *
-   * This is disclosed rather than quietly correct because the alternative is a
-   * report whose byte asserts a comparison the run did not make. When the two
-   * fall on opposite sides of the threshold the byte is WRONG in the flattering
-   * direction, and the line below says so in those words. */
+   * This line survived #49; the warning that used to follow it did not, because
+   * it has nothing left to warn about. ADR-0011 decision 5 makes the threshold a
+   * floor on every rule and ADR-0012 decision 2 made the byte compare that
+   * figure, so the divergence this block once disclosed is now unrepresentable.
+   * The line stays because a byte published without the figure it compared is a
+   * coverage claim the reader cannot check, and #45's exporter carries the same
+   * obligation. The funnel is printed beside it as a different noun, not as an
+   * alternative. */
   const b = r.byteBasis;
   out.push(
-    `  byte basis:       compared ${(b.funnel * 100).toFixed(1)}% (funnel, unit: resources) against the declared ` +
-    `threshold ${b.declaredThreshold}; ADR-0011 decision 5 requires ${
-      b.vectorMinimum ? `${(b.vectorMinimum.ratio * 100).toFixed(1)}% (${b.vectorMinimum.rule}, unit: ${b.vectorMinimum.unit})` : 'the vector minimum, and the vector is empty'
-    }`,
+    `  byte basis:       compared ${
+      b.compared ? `${formatRow(b.compared)} — the weakest rule, ${b.compared.rule} —` : 'nothing — the vector is empty, so the scan judged nothing —'
+    } against the declared threshold ${b.declaredThreshold}` +
+    `   (funnel, not compared: ${(b.funnel * 100).toFixed(1)}% of resources)`,
   );
-  if (b.byteWouldDiffer) {
-    out.push('  ⚠ THE EXIT BYTE IS NOT THE ONE ADR-0011 DECISION 5 REQUIRES. The vector minimum is');
-    out.push('    below the declared threshold and the funnel figure is not, so a rule below the');
-    out.push('    floor is masked by a rule above it. #49 decides what verdict.ts compares; until');
-    out.push('    it lands this byte must not be read as a coverage verdict over every rule.');
-  }
+  if (r.verdict.cause) out.push(`  cause:            ${r.verdict.cause}`);
 
   out.push('');
   out.push('──────── CALLS MADE (read-only) ────────');

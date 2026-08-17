@@ -23,7 +23,6 @@ import {
   KNOWN_INTERNAL_HOSTS,
   type HostEntry,
 } from './link-recognition.js';
-import { deriveVerdict, type Gap } from './verdict.js';
 
 let fails = 0;
 const check = (name: string, got: unknown, want: unknown) => {
@@ -124,48 +123,25 @@ console.log('  ^ Notion documents custom domains for Sites. This case is not hyp
 console.log('    and no allow-list can ever cover it.');
 
 /* =========================================================================
- * TEST 3 — the residue reaches the exit byte
- * ========================================================================= */
-
-head('TEST 3 — an unrecognised reference lowers coverage and forces exit 3');
-
-/* Four applicable references: three resolved, one unrecognised. */
-const gaps: Gap[] = [
-  { resource: customDomainHref, cause: 'link-host-unrecognised', bounded: true },
-];
-const v = deriveVerdict({ applicable: 4, evaluated: 3, gaps, violations: 0, coverageThreshold: 1.0 });
-
-check('the unrecognised reference stays in the denominator', v.applicable, 4);
-check('coverage ratio', `${v.evaluated}/${v.applicable}`, '3/4');
-check('gap is bounded, so the disposition is qualified not disclaimed', v.disposition, 'qualified');
-check('exit', v.exit, 3);
-
-const v0 = deriveVerdict({ applicable: 4, evaluated: 4, gaps: [], violations: 0, coverageThreshold: 1.0 });
-check('control: with nothing unrecognised the same inputs exit 0', v0.exit, 0);
-
-/* An unrecognised reference cannot reach exit 0 by raising the threshold alone.
- * Its SYS001 gap finding is still new and unsuppressed, and ADR-0008 exit 1
- * fires on that. This corrected an error in spec §5, which had claimed exit 0.
- * The check was executed rather than reasoned about, and the reasoning lost. */
-const vTol = deriveVerdict({ applicable: 4, evaluated: 3, gaps, violations: 0, coverageThreshold: 0.5 });
-check('raising the threshold to 0.5 does NOT buy exit 0', vTol.exit, 1);
-check('the report is still qualified', vTol.disposition, 'qualified');
-
-const vBaselined = deriveVerdict({
-  applicable: 4, evaluated: 3, gaps, violations: 0,
-  coverageThreshold: 0.5, newUnsuppressedFindings: 0,
-});
-check('exit 0 requires the gap to be BASELINED as well', vBaselined.exit, 0);
-check('and the report stays qualified even then', vBaselined.disposition, 'qualified');
-console.log('  ^ the only route to exit 0 with an unrecognised link is an explicit');
-console.log('    operator decision recorded in the baseline. Not a threshold tweak.');
-
-const vUnbounded = deriveVerdict({
-  applicable: 4, evaluated: 3, violations: 0, coverageThreshold: 0.5,
-  gaps: [{ resource: 'wl-pagination', cause: 'enumeration abandoned', bounded: false }],
-});
-check('an UNBOUNDED gap is not tolerable at any threshold', vUnbounded.exit, 2);
-check('and renders no summary verdict', vUnbounded.disposition, 'disclaimed');
+ * TEST 3 — MOVED. The exit-byte assertions live in the slice now.
+ * =========================================================================
+ * This file used to call deriveVerdict directly — five calls, eleven assertions
+ * — against prototypes/verdict.ts, a second copy of the slice's implementation
+ * held byte-identical to it.
+ *
+ * ADR-0012 decision 1 retired that copy. `prototypes/verdict.ts` is deleted and
+ * this file no longer imports it: one executable implementation of the exit
+ * byte, which is what results-ref001-live.md §4 asks for and what two
+ * synchronised copies were never going to give.
+ *
+ * The eleven assertions are NOT dropped. They are in slice/CHECK-verdict.ts,
+ * which calls deriveVerdict directly for the same reason this file did. One of
+ * them — "exit 0 requires the gap to be BASELINED as well" — is the only cover
+ * anywhere for ADR-0008 decision 3's baselined branch, because scan() hardcodes
+ * newUnsuppressedFindings. It was checked before the move rather than assumed.
+ *
+ * What remains in this file is link recognition, which is what its name says.
+ */
 
 /* =========================================================================
  * TEST 4 — external links do not enter the denominator

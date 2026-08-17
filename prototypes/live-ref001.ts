@@ -15,11 +15,13 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
-/* Link recognition and the verdict live in their own modules so the offline
- * checks execute the SAME code this live run does. See CHECK-link-recognition.ts.
- * Spec: docs/spec/REF001-link-recognition.md. */
+/* Link recognition lives in its own module so the offline checks execute the
+ * SAME code this live run does. See CHECK-link-recognition.ts.
+ * Spec: docs/spec/REF001-link-recognition.md.
+ *
+ * The verdict USED to live beside it and no longer does — ADR-0012 decision 1
+ * deleted this package's copy. See the block above the report below. */
 import { extractReferences, internalRefs, unrecognisedRefs, hyphenate } from './link-recognition.js';
-import { deriveVerdict, type Gap } from './verdict.js';
 
 /* ---------------------------------------------------------------- env ---- */
 
@@ -333,26 +335,25 @@ function report() {
       detail: `Applicable resource was not evaluated — ${cause}` });
   }
 
-  /* One implementation of the verdict, shared with CHECK-link-recognition.ts.
-   * The exit byte and the manifest were maintained separately in the first live
-   * run and disagreed — the byte read 1 where the contract required 3. */
-  const gapFindings = findings.filter(f => f.rule === 'SYS001');
+  /* THIS PROBE NO LONGER RENDERS A VERDICT — ADR-0012 decision 1.
+   *
+   * It used to call a local deriveVerdict held byte-identical to the slice's.
+   * That copy is deleted: there is one executable implementation of the exit
+   * byte and it lives in slice/verdict.ts, exercised by slice/cli.ts and by
+   * four offline suites.
+   *
+   * Reimplementing a verdict here would be the third copy, and it would now be
+   * a WRONG one. ADR-0011 decision 5 makes the byte compare the minimum of the
+   * coverage vector; this probe runs one rule and builds no vector, so any byte
+   * it produced would be the funnel scalar — the exact defect #49 closed.
+   *
+   * What this file is FOR is unchanged and is the reason it survives: it is the
+   * proven read-only live probe that parses .env in-process and never lets the
+   * token reach stdout. It prints what the API returned. The verdict over that
+   * is slice/cli.ts's job. */
   const violations = findings.filter(f => f.rule !== 'SYS001');
-  const gaps: Gap[] = gapFindings.map(g => ({
-    resource: g.resource, cause: g.detail, bounded: g.bounded, isRootMiss: g.isRootMiss,
-  }));
-
-  const v = deriveVerdict({
-    applicable: manifest.size,
-    evaluated: [...manifest.values()].filter(m => m.stages.has('evaluated')).length,
-    gaps,
-    violations: violations.length,
-    /* No baseline exists in this prototype, so every finding is new and
-     * unsuppressed by construction. */
-    newUnsuppressedFindings: findings.length,
-    coverageThreshold: Number(env.COVERAGE_THRESHOLD ?? 1),
-  });
-  const { disposition, applicable, evaluated, exit, why } = v;
+  const applicable = manifest.size;
+  const evaluated = [...manifest.values()].filter(m => m.stages.has('evaluated')).length;
 
   say('');
   say('──────── COVERAGE MANIFEST ────────');
@@ -368,17 +369,23 @@ function report() {
     say(`  ${f.rule}  ${f.resource}  certainty=${f.certainty}  target_state=${f.target_state ?? '—'}  ${f.bounded ? 'bounded' : 'UNBOUNDED'}\n        ${f.detail}`);
 
   say('');
-  say('──────── REPORT ────────');
-  say(`  disposition:     ${disposition}${disposition === 'disclaimed' ? '   ← NO SUMMARY VERDICT RENDERED' : ''}`);
-  say(`  coverage ratio:  ${evaluated}/${applicable}`);
-  say(`  conformity:      ${violations.length ? 'violates' : disposition === 'disclaimed' ? 'withheld' : 'conforms'}`);
-  say(`  exit:            ${exit}   (${why})`);
+  say('──────── OBSERVED (NO VERDICT IS RENDERED HERE) ────────');
+  say(`  funnel:          ${evaluated}/${applicable} resources evaluated   (unit: resources)`);
+  say(`  findings:        ${findings.length} total, ${violations.length} of them conformity violations`);
+  say('  disposition:     NOT COMPUTED — this probe renders no verdict and no exit byte.');
+  say('                   ADR-0012 decision 1: one executable implementation of the byte,');
+  say('                   and it is slice/verdict.ts. A byte computed here would compare');
+  say('                   the funnel scalar, which is the defect #49 closed.');
+  say('                   For a verdict: cd ../slice && npx tsx cli.ts scan --config ...');
 
   say('');
   say('──────── CALLS MADE (read-only) ────────');
   for (const c of CALLS) say(`  ${String(c.status).padEnd(4)} ${c.code ?? ''} ${c.endpoint}`);
 
-  process.exit(exit);
+  /* 0 means THE PROBE COMPLETED, not that the workspace conforms. The exit byte
+   * with a coverage meaning is slice/cli.ts's, and this file deliberately does
+   * not have one to return. */
+  process.exit(0);
 }
 
 main().catch(e => {

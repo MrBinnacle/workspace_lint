@@ -23,14 +23,12 @@
  *   3. `violations` STOPS BEING ZERO. A REF001 finding is a proved defect, not a
  *      coverage gap, so it drives the disposition. Rules DECLARE which kind they
  *      produce; nothing here reads a rule name to decide.
- *   4. THE EXIT BYTE STOPS BEING TRUSTWORTHY WITHOUT #49, and this file does not
- *      pretend otherwise. deriveVerdict compares the FUNNEL scalar; ADR-0011
- *      decision 5 makes the threshold a floor on every rule, i.e. the MINIMUM of
- *      the vector. Those were one number in T2 and are two now. verdict.ts is
- *      copied verbatim from a frozen prototype, so the fix is an ADR (#49) and
- *      not an edit here. What this slice does instead is MEASURE the divergence
- *      and hand it to the report, which discloses it per run. See
- *      `ScanResult.byteBasis`.
+ *   4. THE EXIT BYTE COMPARES THE VECTOR MINIMUM, not the funnel — ADR-0011
+ *      decision 5 through ADR-0012 decision 2, closing #49. The threshold is a
+ *      floor on every rule, so the byte compares the weakest row. Those were one
+ *      number in T2 and are two now. This file hands `deriveVerdict` the whole
+ *      vector; it does not reduce it first, and it does not compute a second
+ *      copy of the minimum. `ScanResult.byteBasis` records what was compared.
  *
  * WHAT STILL DOES NOT REACH `evaluated`: a resource that stalled before
  * `fetched`, a resource that reached `fetched` carrying a drop-out cause, and
@@ -46,31 +44,34 @@ import { SYS001 } from './sys001.js';
 import { REF001, REF001_UNIT, refKey } from './ref001.js';
 import { dedupeReferences, extractReferences, redactHref, type Reference, type TargetKind } from './references.js';
 import type { Rule } from './rule.js';
-import { headlineCoverage, type CoverageRow, type Finding, type Outcome } from './finding.js';
+import type { CoverageRow, Finding, Outcome } from './finding.js';
 
 const DATA_SOURCE_CAUSE =
   'data-source enumeration is not implemented in this slice — rows and schemas are REQ001/UNQ001 concerns, out of scope per spec §1.2';
 
 /**
- * Which figure the exit byte was actually computed on, and which figure
- * ADR-0011 decision 5 requires.
+ * What the exit byte was computed on, recorded per run.
  *
- * MEASURED RATHER THAN ASSERTED, because the two coincide whenever one rule has
- * an empty applicable set and a reader would otherwise conclude the byte is
- * sound from a run where the question never arose.
+ * It survived #49. Before ADR-0012 this type existed to DISCLOSE that the byte
+ * compared the wrong figure; it now records which figure the byte compared, and
+ * #45's exporter must serialise it alongside the byte — a byte published
+ * without its basis is a coverage claim the reader cannot check.
+ *
+ * `funnel` is kept beside `compared` because they are different nouns and the
+ * report prints both. It is NOT what the byte compared, and the field name no
+ * longer implies otherwise.
  */
 export type ByteBasis = {
-  /** What deriveVerdict compared: evaluated/applicable over RESOURCES. */
+  /** The resource funnel: evaluated/applicable over RESOURCES. Recorded only. */
   funnel: number;
-  /** What ADR-0011 decision 5 requires: the minimum over the coverage vector. */
-  vectorMinimum: CoverageRow | null;
-  declaredThreshold: number;
   /**
-   * True when the two figures fall on opposite sides of the declared threshold.
-   * That is the only case where the divergence changes the byte, and it is the
-   * false green #49 exists to close.
+   * What the byte compared — the minimum row of the coverage vector, per
+   * ADR-0011 decision 5. This is the SAME OBJECT as `verdict.coverageMinimum`,
+   * read from the verdict rather than recomputed: a second derivation of the
+   * same number is the drift hazard of results-ref001-live.md §4.
    */
-  byteWouldDiffer: boolean;
+  compared: CoverageRow | null;
+  declaredThreshold: number;
 };
 
 export type ScanResult = {
@@ -193,6 +194,11 @@ export async function scan(opts: ScanOptions): Promise<ScanResult> {
     const verdict = deriveVerdict({
       applicable,
       evaluated,
+      /* THE WHOLE VECTOR, unreduced — ADR-0012 decision 2. deriveVerdict takes
+       * the minimum itself, through the same headlineCoverage() the report's
+       * headline uses. Reducing it here would put a second copy of that
+       * derivation in a second file. */
+      coverage,
       gaps,
       /* NO LONGER ZERO. Findings that are not coverage gaps — a REF001 dead link
        * is a defect the rule proved, and ADR-0005 decision 3 counts it toward
@@ -209,23 +215,15 @@ export async function scan(opts: ScanOptions): Promise<ScanResult> {
       didNotRunAsDeclared,
     });
 
-    /* #49, MEASURED. deriveVerdict was handed the funnel scalar because
-     * verdict.ts is frozen verbatim from the prototype (spec §5) and what it
-     * compares is a decision that goes in an ADR before it goes in code. The
-     * scan therefore computes the figure ADR-0011 decision 5 actually requires
-     * and hands both to the report, which discloses the divergence per run. A
-     * byte reported without that disclosure would be a coverage claim over a
-     * comparison the run did not make. */
-    const vectorMinimum = headlineCoverage(coverage);
+    /* #49 CLOSED. `compared` is READ FROM THE VERDICT, not recomputed here.
+     * Calling headlineCoverage() a second time would produce the same number
+     * today and would be a second holding of it, which is the defect
+     * results-ref001-live.md §4 records: two derivations maintained beside each
+     * other drift, and they drift toward the flattering answer. */
     const byteBasis: ByteBasis = {
       funnel: verdict.coverage,
-      vectorMinimum,
+      compared: verdict.coverageMinimum,
       declaredThreshold: config.minCoverage,
-      byteWouldDiffer:
-        !didNotRunAsDeclared &&
-        vectorMinimum !== null &&
-        vectorMinimum.ratio < config.minCoverage &&
-        verdict.coverage >= config.minCoverage,
     };
 
     return {
