@@ -108,14 +108,16 @@ job here, not the evidence-sufficiency axis's.
 **Conclusion.** #34 is a rule-specification task. ADR-0005's evidence-sufficiency axis is not
 missing a value and no ADR is required to close the issue.
 
-**One tension is surfaced rather than resolved.** `CONTEXT.md` defines *Applicable set* as "The
-in-scope **resources** a rule's preconditions fit," and ADR-0005 decision 4 defines the coverage
-ratio as "**resources** evaluated over **resources** in the applicable set." REF001's applicable set
-is a set of internal references, which the glossary calls **Edges**, not Resources. The word is too
-narrow for an edge-scoped rule. §5 below is written in terms of references and is correct as
-written; the glossary sentence is a candidate for a living-document correction. **This spec does not
-make that correction** — it changes a canonical definition and that is the operator's call. Filed
-separately.
+**One tension was surfaced rather than resolved here, and it has since been resolved elsewhere.**
+This spec observed that `CONTEXT.md` defined *Applicable set* as "The in-scope **resources** a rule's
+preconditions fit" while REF001's applicable set is a set of internal references, which the glossary
+calls **Edges**. It filed the mismatch as issue #36 rather than correcting a canonical definition.
+
+**ADR-0011 closed #36 on 2026-08-17.** Every rule now declares its own **coverage item**; REF001's
+is an internal reference. `CONTEXT.md` is corrected and the coverage ratio is a per-rule vector, not
+a scalar over resources. §5 below was written in terms of references and needed no change — it was
+working around the glossary and now works with it. ADR-0011 also corrected issue #36's own table,
+which recorded `REQ001`'s unit as a resource; it is a (resource, required property) pair.
 
 ## 2. The host set is unbounded. Enumeration cannot be the soundness mechanism.
 
@@ -271,7 +273,10 @@ would break `CONTEXT.md`'s certainty distinction.
 
 **Coverage ratio.** REF001's coverage ratio is resolved references over discovered references.
 Every `unrecognised` candidate lowers it. Per ADR-0005 decision 4 it is published together with the
-conformity ratio, never alone.
+conformity ratio, never alone. Per ADR-0011 it is **one row of the report's coverage vector**, with
+its unit — internal references — printed beside it, and it is never pooled into a count with another
+rule's figure. Wherever "the declared threshold" appears below, it is a floor on **this rule's own**
+figure, not on any aggregate.
 
 **Disposition.** The gap is bounded and no declared root is lost, so neither pervasiveness condition
 in ADR-0005 decision 3 fires. Disposition is `qualified`, not `disclaimed`. A summary verdict is
@@ -296,7 +301,9 @@ So an unrecognised link reaches exit `0` only when the operator has **baselined*
 explicit recorded decision, not a configuration tweak, and it is the correct bar. The report is
 still `qualified`, the manifest still names every dropped href, and both ratios are still published.
 ADR-0008's invariant holds exactly: exit `0` asserts no new unsuppressed finding and coverage at or
-above the declared threshold, and nothing else.
+above the declared threshold, and nothing else. ADR-0011 restated the coverage clause as **every
+rule's** coverage at or above the threshold, which tightens this table rather than loosening it —
+REF001 clearing the floor no longer implies the run does.
 
 **The ADR outranks this spec.** Where the two disagree the ADR wins and the spec is the defect,
 which is what happened here.

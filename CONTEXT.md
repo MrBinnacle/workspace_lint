@@ -26,7 +26,7 @@ The product tests declared rules. It does not infer workspace quality, intent, o
 | Resource | A page, database, data source, block, property, or user. |
 | Workspace graph | The normalized resources and edges from one scan. |
 | Edge | A parent, child, relation, mention, hyperlink, or configured dependency. |
-| Coverage manifest | The staged record of what the scan reached: declared, resolved, enumerated, fetched, evaluated. Every drop-out names a resource and a specific cause. |
+| Coverage manifest | The staged record of what the scan reached: declared, resolved, enumerated, fetched, evaluated. Every drop-out names a resource and a specific cause. It also records each rule's declared coverage item. See ADR-0011. |
 | Invariant | A structural statement that must remain true. |
 | Rule | Executable logic that tests one invariant. |
 | Observation | What the scan saw, with evidence and provenance. A 404 is an observation. |
@@ -34,13 +34,14 @@ The product tests declared rules. It does not infer workspace quality, intent, o
 | Outcome | What a rule concluded, as a pair: a Conformity and an Evidence sufficiency. Never a single value. See ADR-0005. |
 | Conformity | Whether the invariant held across the evaluated set: `conforms` or `violates`. Absent when the evaluated set is empty. |
 | Evidence sufficiency | Whether the evaluated set covered the applicable set: `sufficient`, `unreached` (never fetched), or `undecidable` (fetched, not judgeable). |
-| Applicable set | The in-scope resources a rule's preconditions fit. The denominator of that rule's coverage. |
-| Evaluated set | The applicable resources the rule actually judged. |
-| Gap | An applicable resource that left the coverage funnel before evaluation, with a named cause. Bounded when the missing resources can be named, unbounded when they cannot. |
+| Coverage item | The unit a rule's applicable set is a set of. Declared by the rule, not shared across rules — `SYS001` counts resources, `REF001` counts internal references, `REQ001` counts (resource, required property) pairs, `UNQ001` counts unordered pairs of resources in a uniqueness scope. Recorded in the manifest and printed with any figure computed over it. See ADR-0011. |
+| Applicable set | The in-scope coverage items a rule's preconditions fit. The denominator of that rule's coverage. See ADR-0011. |
+| Evaluated set | The applicable coverage items the rule actually judged. |
+| Gap | An applicable coverage item that left the coverage funnel before evaluation, with a named cause. The funnel stages resources, so one resource drop-out produces a gap in every rule whose coverage items depended on it. Bounded when the missing items can be named, unbounded when they cannot. |
 | Pervasive | The property of a gap set that voids the summary verdict: a declared root was never reached, or any gap is unbounded. |
 | Report disposition | What the report as a whole may claim: `unqualified`, `qualified`, or `disclaimed`. A disclaimed report renders no summary verdict. |
-| Conformity ratio | Conforming rules over rules that reached a conformity claim. Never published without the coverage ratio. |
-| Coverage ratio | Resources evaluated over resources in the applicable set. Never published without the conformity ratio. Publishing either alone is prohibited. |
+| Conformity ratio | Conforming rules over rules that reached a conformity claim. Never published without the coverage vector. |
+| Coverage ratio | Per rule: coverage items evaluated over coverage items in that rule's applicable set. The report publishes the **vector** of them, one figure per rule with its unit named. The headline figure is the **minimum** over the vector; there is no figure computed by pooling counts across rules, because counts of different things do not add. Never published without the conformity ratio, and the headline is never published without the vector. Publishing any of them alone is prohibited. See ADR-0011. |
 | Fingerprint | The stable identity of a finding across runs, in two layers. The **anchor** is the (rule, resource) pair, using Notion's native object ID. The **discriminator** is a map of named, versioned partial fingerprints answering *which finding of this rule on this resource*, matched by an ordered hierarchy of keys inside one anchor. Contains no observed value, no expected value, no page title, no ancestor path, and nothing volatile. See ADR-0010. |
 | Matchkey hierarchy | The ordered key list that matches produced findings to baseline entries inside one anchor. Run as passes, highest-precision key first; a matched pair leaves the pool, so matching is one-to-one. Never a relation, and its transitive closure is never taken. See ADR-0010. |
 | Baseline | The accepted-debt record. Each entry holds an anchor, a discriminator map, and an evidence digest — three disjoint parts. Entries still appear in reports. See ADR-0008 and ADR-0010. |
@@ -52,13 +53,14 @@ The product tests declared rules. It does not infer workspace quality, intent, o
 | Target state | What a scan established about a referenced object: `present`, `absent`, or `unreachable`. A property of the object, not of the finding. |
 | Normalization | The named function that strips volatile fields from an API response before hashing or comparison. Determinism is defined against its output, never against the raw response. |
 
-Five distinctions the glossary enforces, because collapsing any of them breaks the product contract:
+Six distinctions the glossary enforces, because collapsing any of them breaks the product contract:
 
 - **Baseline is not suppression.** A baseline records existing debt and keeps it visible. A suppression hides a finding and must carry a reason and an expiry.
 - **Confirmed is not indeterminate.** A rule reports `certainty: confirmed` only when the API proved the defect. Notion returns 404 for both "absent" and "inaccessible", so a 404 produces `indeterminate`.
 - **Certainty is not target state.** `certainty` describes the finding: did the scan prove it. `target state` describes the referenced object: `present`, `absent`, or `unreachable`. A finding can be `confirmed` about an `unreachable` target — "this link cannot be resolved" is a proved fact. Collapsing the two axes makes that finding inexpressible.
 - **Evidence sufficiency is not certainty.** `certainty` is about a finding the rule made: was this defect proved. Evidence sufficiency is about findings the rule may have failed to make: were there applicable resources it never judged. A rule can be `confirmed` on every finding it produced and still be `unreached`. Collapsing the two makes "nothing was wrong in what I read, and here is what I did not read" inexpressible — which is the product.
 - **The Operator is not the Executor and not the Consumer.** Three roles, one word until ADR-0009. The Operator chose the scope, so the Consumer's attestation means something. The roles are distinct; the people may coincide.
+- **A resource is not a coverage item.** A resource is what the scan fetches. A coverage item is what a rule counts, and it differs per rule. Collapsing them puts the wrong denominator under every rule whose unit is not a resource, and it does so in the flattering direction: at 90% of resources read, `UNQ001` has evaluated 80.9% of the pairs it quantifies over. This distinction was absent until ADR-0011 and the collapse had already shipped a `2/2 — 100%` figure over a root with three children.
 
 The rule that produces those distinctions, stated once so it stops being re-derived: **a value is distinct when its remedy is distinct.** It works as a deletion test too — a value whose remedy duplicates another's is not a value. ADR-0005 decision 1, ADR-0006's correction of the proof record, and ADR-0008 decision 1 were all decided by it. See ADR-0009 decision 6.
 
@@ -102,6 +104,13 @@ Four rules ship in v0.1. Four are deferred — specified, not cut, and not built
 | `REL001` | A relation violates its allowed target contract. | Configured | Deferred |
 | `DEP001` | An active resource points to an inactive dependency. | Configured | Deferred |
 | `CAN001` | A boundary contains more than one explicit canonical marker. | Configured | Deferred |
+
+Each shipping rule declares its own coverage item, and the four are not the same unit: `SYS001`
+counts resources, `REF001` counts internal references, `REQ001` counts (resource, required property)
+pairs, and `UNQ001` counts unordered pairs of resources within a uniqueness scope. ADR-0011 holds
+the reasoning and the arithmetic. **The four deferred rules have no coverage item assigned**; each
+must declare one before it is built, and a deferred rule whose unit turns out to duplicate an
+existing one is the Revisit-if that would collapse the per-rule declaration back to a fixed set.
 
 Orphan detection stays out of v0.1 until the product defines valid roots.
 
