@@ -1,9 +1,9 @@
 {
   "project": "workspace_lint",
   "updated": "2026-08-16",
-  "session": "S002",
+  "session": "S003",
   "phase": "pre-build",
-  "phase_detail": "Grilling closed in S001. S002 built the gate-1 demand-test instruments and ran a nine-pass cross-domain prior-art sweep with adversarial verification. No source code. Build gate not open.",
+  "phase_detail": "Grilling closed in S001. S002 built the gate-1 demand-test instruments and ran a nine-pass cross-domain prior-art sweep with adversarial verification. S003 spent that sweep: ADR-0005 supersedes three parts of ADR-0003, the glossary carries the split outcome model, and the refuted SARIF claim is corrected in PRODUCT.md. No source code. Build gate not open.",
   "next_gate": {
     "name": "demand test",
     "kind": "human",
@@ -38,35 +38,49 @@
     },
     {
       "id": "ADR-0003",
-      "status": "accepted, PARTIALLY INVALIDATED by S002 — superseding ADR required",
+      "status": "accepted, PARTIALLY SUPERSEDED by ADR-0005",
       "summary": "SARIF 2.1.0 as output-contract design source, SonarQube issue-lifecycle as state machine. SARIF is an export target later, not a v0.1 schema commitment.",
-      "invalidation": "The OSCAL observation/finding split remains adoptable, but the `incomplete` outcome cannot be inherited from OSCAL, which defines no not-assessed value. XCCDF is the better donor. Separately, the four-valued outcome mixes two axes and must be split."
+      "superseded_parts": "Decision 2 (four-valued outcome enum), decision 3 (`incomplete` fails the run), and the final Consequences paragraph (the SARIF coverage claim). The file was NOT edited — ADR-0005 supersedes those three parts by reference. Decisions 1, 4, 5, 6 stand.",
+      "still_standing": "Finding identity is the Notion object ID. Observation/finding split from OSCAL. Baseline entries are never counts. Suppressions require a reason and an expiry, with no escape hatch."
     },
     {
       "id": "ADR-0004",
       "status": "accepted",
       "summary": "Determinism defined against a named Normalization function. Specify it before the proof runs."
+    },
+    {
+      "id": "ADR-0005",
+      "status": "accepted",
+      "summary": "Outcome is a pair — conformity (conforms|violates, absent when nothing was evaluated) × evidence sufficiency (sufficient|unreached|undecidable). `inapplicable` deleted: operator exclusion moves to the scope declaration, precondition mismatch becomes an applicability filter in the manifest. Report disposition unqualified|qualified|disclaimed; a disclaimed report renders no summary verdict. Coverage manifest is a five-stage funnel: declared, resolved, enumerated, fetched, evaluated.",
+      "governing_rule": "A value earns its place only if it changes what the operator does next. This is why evidence sufficiency has three values (different remedies) and why ISA 705's `adverse` was dropped (materiality is not computable by a CLI).",
+      "hard_rule": "No ratio is published without the coverage figure bounding it. XCCDF's exclude-from-scoring rule applied alone reproduces the Great Expectations defect — success_percent over evaluated expectations lets a half-unrun suite report 100%.",
+      "pervasiveness_predicate": "Gaps are pervasive when a declared root was never reached, or any gap is unbounded. Structural, not a percentage: a ratio threshold would be computed over a denominator the scan has just admitted it cannot establish. Generalises ADR-0002 decision 2.",
+      "deviations_from_checkpoint_plan": "Five funnel stages, not four — `enumerated` was added between resolved and fetched because it is the only source of unbounded gaps, and the disclaimed disposition keys on those.",
+      "evidential_standing": "Decisions 1-3 rest on adversarially re-verified primary sources (ISA 705 paras 5(a) and 17, XCCDF value list, OSCAL metaschema negative, SARIF schema, PCAOB AS 3105.45, ISO 19011 6.5.1 k, Semgrep enum). Decision 5's funnel shape rests on CONSORT 13a/13b, PRISMA 16b and STROBE 13 — fetched but NOT re-verified, adopted on three-way convergence. Re-verify clause numbers before publishing them."
     }
   ],
-  "corrections_pending": [
+  "corrections_pending": [],
+  "corrections_applied": [
     {
       "target": "PRODUCT.md",
       "claim": "No SARIF object expresses analysis scope or coverage.",
-      "status": "REFUTED by verification",
+      "status": "REFUTED — corrected in S003, commit db02541",
       "replacement": "SARIF carries per-result and per-artifact not-analysed primitives — result.kind, invocation.executionSuccessful, toolExecutionNotifications, artifact.roles analysisTarget — but defines no run-level coverage aggregate.",
-      "note": "Semgrep routes coverage through its native schema, not SARIF. A SARIF export loses the manifest. Decide before integration."
+      "residual": "The same refuted sentence still stands in ADR-0002 Consequences and ADR-0003 Consequences. Both are deliberately NOT edited — ADRs are immutable records and ADR-0005 supersedes those paragraphs by reference. Do not 'fix' them.",
+      "decided": "Semgrep routes coverage through its native schema, not SARIF. A SARIF export loses the manifest. ADR-0005 §6 accepts that export loss explicitly."
     },
     {
       "target": "PRODUCT.md, any throughput model",
       "claim": "Notion rate limits scale 10/25/50/100 req/s by plan.",
-      "status": "UNPUBLISHED — sourced from third-party blogs",
-      "replacement": "Notion documents an average of three requests per second per connection. The workspace ceiling is 'scaled to the workspace's plan' with no tier table. At 3 req/s the three-minute warm-scan kill criterion is a budget of roughly 540 requests."
+      "status": "NO-OP — verified in S003, the figures appear in no canonical doc",
+      "detail": "grep over PRODUCT.md, CONTEXT.md and docs/adr/ returns nothing. Remaining instances are in checkpoint.md (as the instruction), coverage-artifact-prior-art.md (marked PARTIAL), sweep-raw/verify-platform.md (the correction itself) and sweep-raw/wildcard.md (fenced CONTEXT-ONLY). Nothing to delete.",
+      "standing_figure": "Size every throughput model on 3 req/s per connection. The three-minute warm-scan kill criterion is a budget of roughly 540 requests."
     },
     {
       "target": "docs/adr/0003",
       "claim": "OSCAL supplies the observation/finding split including an incomplete outcome.",
-      "status": "PARTIALLY INVALIDATED",
-      "replacement": "Write a superseding ADR. Do not edit ADR-0003 in place."
+      "status": "RESOLVED by ADR-0005",
+      "replacement": "The observation/finding split remains adopted. `incomplete` is not inherited from OSCAL — it is defined in ADR-0005 from XCCDF."
     }
   ],
   "asserted_without_adr": [
@@ -80,17 +94,11 @@
   ],
   "open_decisions": [
     {
-      "id": "outcome-model",
-      "detail": "Replace the flat four-value enum with two orthogonal fields — conformity and evidence-sufficiency — and move `inapplicable` into the scope declaration. Add a report-level disclaimer disposition so a pervasively incomplete scan can refuse to render a summary verdict. Adopt the XCCDF rule that a non-verdict never enters a scoring denominator.",
-      "due": "before the 72-hour proof, because it determines what the proof measures",
-      "needs": "superseding ADR",
-      "evidence": "docs/research/coverage-artifact-prior-art.md §2"
-    },
-    {
-      "id": "manifest-shape",
-      "detail": "Model the coverage manifest as a staged funnel after CONSORT and PRISMA: declared roots → resolved → fetched → rules evaluated, every drop-out carrying a specific machine-readable cause and a named resource. Generic reasons are banned. Consider Configuration Status Accounting — a standing record fed by each scan rather than a per-scan artifact that is discarded.",
-      "due": "before the 72-hour proof",
-      "evidence": "docs/research/coverage-artifact-prior-art.md §1"
+      "id": "configuration-status-accounting",
+      "detail": "Is the coverage manifest a per-scan artifact or a standing record fed by each scan? MIL-HDBK-61A shows audit outputs flowing back into a standing record of what is under management. If the manifest is produced per scan and discarded, coverage claims can be asserted once but never checked over time.",
+      "status": "DEFERRED by ADR-0005, deliberately. It is a storage decision, not a model decision, and its source is unverified.",
+      "due": "after the 72-hour proof",
+      "blocked_on": "re-verifying MIL-HDBK-61A Fig 8-3, which no verifier has checked"
     },
     {
       "id": "name",
@@ -105,7 +113,8 @@
     {
       "id": "rule-catalogue-additions",
       "detail": "Controlled-vocabulary membership (uncovered, testable, voiced). Orphan detection (deferral reason removed by ADR-0002). Duplicate-title should move from configured UNQ001 to built-in.",
-      "due": "after demand test"
+      "due": "after demand test",
+      "note": "SYS001 was already restated in S003 — from 'Scan result is incomplete' to 'A declared root or applicable resource was not evaluated'. It keeps only its finding-identity job: a stable ID a baseline can reference. The run-failure decision moved to the report disposition in ADR-0005."
     }
   ],
   "api_target": {
@@ -120,7 +129,9 @@
     "Is result order stable across two identical paginated calls?",
     "Does the ~11,200-object search ceiling still hold?",
     "Is Semgrep's `skipped` output verbose-gated? The CLI reference does not say; test empirically.",
-    "Do any two values of the split outcome vocabulary ever collapse in practice? Test against a workspace with a deliberately unshared subtree."
+    "Do `unreached` and `undecidable` ever diverge in practice? Test against a workspace with a deliberately unshared subtree. If they never separate, collapse evidence sufficiency to `sufficient | insufficient` and push the cause taxonomy entirely into the manifest. This is ADR-0005's first Revisit-if.",
+    "Can enumeration and fetching be separated against the real API? ADR-0005's five-stage funnel puts `enumerated` between resolved and fetched because it is the only source of unbounded gaps. If the API does not distinguish them, the `disclaimed` disposition loses its trigger and needs a different one.",
+    "How often does `disclaimed` fire on a real workspace? If a pervasively gapped scan is the normal case rather than the exception, a tool that usually refuses to render a verdict is not usable, and ADR-0002's declared-root model needs revisiting before ADR-0005 does."
   ],
   "research": {
     "location": "docs/research/",
