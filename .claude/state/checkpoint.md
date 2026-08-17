@@ -1,6 +1,6 @@
 # Checkpoint — workspace_lint
 
-Bands S001–S007 are archived verbatim at `.claude/state/checkpoint-archive.md`. This file holds
+Bands S001–S008 are archived verbatim at `.claude/state/checkpoint-archive.md`. This file holds
 the standing constraints and the current band only.
 
 ## Standing constraints — always current, not session-scoped
@@ -10,21 +10,25 @@ the standing constraints and the current band only.
 dated records and stay standing in the archive, but the chain they form does not survive rotation —
 read this block instead. Nothing here depends on a band still being present.
 
-**Fixture and credentials.**
+**Credentials and fixture.**
 
 - `.env` holds a **live read-only Notion token**. Gitignored. **It cannot be read by any tool** —
   CC Safety Net blocks it on `secret.basename.env`, and the block forbids workarounds. Every claim
   in this file about `.env` contents is therefore **structurally unverifiable**. Do not spend a
   session-start step attempting it; report the claims as unverified and move on.
 - **`REAL_ROOT_ID` was reported set by the operator on 2026-08-17. Unconfirmed, per the above.**
-  If good it unblocks Q8, the Q3 re-run against organic timestamps, and **#7**. Two gates sit in
-  front of any run: the integration must **also be connected to that page** in Notion's share
-  settings, which is a human step — a missing share returns 404 and reads as a coverage failure
-  rather than a setup gap — and Q8's output is a manifest of **real** page titles and IDs, so the
-  redaction question is decided before results land in the repo.
+  If good it unblocks Q8, the Q3 re-run against organic timestamps, and **#7**. The integration must
+  **also be connected to that page** in Notion's share settings — a human step, and a missing share
+  returns 404 that reads as a coverage failure rather than a setup gap.
+- **The PAT is ruled out and no longer needs testing.** ADR-0009 gated it on observation; the #27
+  sweep closed it on documentation instead. A PAT offers exactly two capability options and the API
+  one is a single bundle — *"Read, create, update, and search content"* — with no read-only variant,
+  so it violates **Principle 7** at the credential layer regardless of which endpoints the code
+  calls. **Do not run the PAT fixture test in #27's DoD.** It would measure reach for a credential
+  the product cannot use.
 - **The fixture is mutable and it is an instrument.** Editing rows, blocks or titles by hand
   changes what the proof measures. **`wl-revoke-child` is currently disconnected** — restoring it
-  resets Q1.
+  resets Q1. `wl-outside-grant` is the working REF001 control: 404 on retrieve, link readable.
 
 **Proof questions.** Full status in `store.json` → `unknowns_assigned_to_proof`.
 
@@ -35,134 +39,168 @@ read this block instead. Nothing here depends on a band still being present.
 
 **Documents.**
 
-- **ADRs are never edited in place.** A refuted claim standing in ADR-0002 or ADR-0003 is correct,
-  not a bug. **Living docs — `PRODUCT.md`, `CONTEXT.md` — are corrected directly.** That carve-out
-  is the whole rule; without it the constraint reads as "never correct anything."
+- **ADRs are never edited in place.** A refuted claim standing in ADR-0002, ADR-0003 or ADR-0008 is
+  correct, not a bug. **Living docs — `PRODUCT.md`, `CONTEXT.md` — are corrected directly.** That
+  carve-out is the whole rule; without it the constraint reads as "never correct anything."
 - **ADR-0005's evidential floor is uneven and the ADR says so.** Decisions 1–3 rest on
   adversarially re-verified primary sources. Decision 5's funnel rests on CONSORT 13a/13b, PRISMA
   16b and STROBE 13 — **fetched but never re-verified**, adopted on three-way convergence.
-  Re-verify the clause numbers before quoting them anywhere published.
-- **A refuted claim is never in one place.** Twice now it has been three surfaces. Grep before
+- **A refuted claim is never in one place.** Three times now it has been three surfaces. Grep before
   asserting a correction is scoped.
+- **ADR-0006 decision 2's search row is superseded by ADR-0007.** Cite ADR-0007's table.
+  `POST /v1/search` **does** carry `request_status` and has **no documented cap**. A signal is not a
+  cap. ADR-0006's block-children finding is *stronger* than when written: PR #711 threads the field
+  through seven response types and omits `ListBlockChildrenResponse`.
 
 **Research method.**
 
-- **Scouts self-nominate their softest claims.** Use those to prioritise verification, **never to
-  bound it.** One scout's file came back stronger than it flagged; the genuine errors were
-  elsewhere.
-- **Citation hazards** — full list in `store.json` → `citation_hazards`. ISO 19011:2018 and ISA
-  705 were read from unauthorised copies: cite by clause or paragraph, publish no URL. Six further
-  standards were reached only through consultancy paraphrase and are not citable at clause level.
-- **`docs/inputs/` holds inputs, none canonical**, with differing evidentiary weight. Do not treat
-  them as parity.
+- **Citations are receipts.** Operator ruling, 2026-08-17: a claim carries a locator a third party
+  can follow — URL plus fetch date, file plus section, commit SHA, clause number. *"Anything short
+  of that — paraphrase without pointer, 'as we discussed,' 'Notion's docs say' — is commentary, not
+  evidence."*
+- **A negative about an endpoint requires that endpoint's own page** (ADR-0007 decision 4). **Now
+  generalised: a claim about a model requires that model's own reference.** ADR-0009 asserted a
+  capability-model fact without opening the capabilities page. Grep of `docs/research/` would not
+  have caught it — the fact was not in the repository at all.
+- **Scouts self-nominate their softest claims.** Use those to prioritise verification, never to
+  bound it.
+- **Citation hazards** — full list in `store.json`. ISO 19011:2018 and ISA 705 were read from
+  unauthorised copies: cite by clause, publish no URL.
+- **Research agents cannot reach Reddit.** `notion-user-pain.md`'s own next action — re-run with a
+  Reddit-capable fetch path — is **permanently blocked**. The solo and small-team
+  willingness-to-configure verdicts stay "NO EVIDENCE FOUND" and "WEAK", produced by a blocked
+  crawler rather than by an absence in the world.
 
-**Numbers now sitting in a locked ADR, both unverified.**
+**Numbers in a locked ADR, both unverified.**
 
-- **The `10,000` cap constant is vendor-documented and unobserved.** No real capped response has
-  confirmed it, and vendor documentation has already been wrong once here
-  (`notion-api-practice.md` §5.2). When it reaches code it needs a named constant, a comment
-  pointing at ADR-0006, and a test that fails loudly on disagreement.
-- **`request_status: {"type": "complete"}` has never been seen on either branch.** No decision
-  depends on it. No code path may block on its arrival.
-
-**ADR-0006 decision 2's search row is superseded by ADR-0007. Cite ADR-0007's table, not
-ADR-0006's.** `POST /v1/search` **does** carry `request_status`, and it has **no documented cap** —
-so ADR-0006 decision 4's exclusion of search from the cap-proximity trip survives on its stated
-reason. **A signal is not a cap.** ADR-0006's other two rows stand, and its block-children finding
-is now *stronger*: PR #711 threads the field through seven response types and omits
-`ListBlockChildrenResponse`, so that claim rests on an enumerated omission rather than on
-documentation silence. **ADR-0007's search row is documented, not observed** — no capped search has
-been seen, and neither branch of `request_status` has been seen on any endpoint. That is the
-evidence class that produced ADR-0002 decision 4.
-
-**The corrected row changes nothing the product does, and v0.1 may not call search at all.** Five
-design surfaces are silent on whether a scan uses `POST /v1/search`; that silence is **not** a
-finding, and ADR-0007 refuses to convert it into one. Open as **#24**.
+- **The `10,000` cap constant is vendor-documented and unobserved.** When it reaches code it needs a
+  named constant, a comment pointing at ADR-0006, and a test that fails loudly on disagreement.
+- **`request_status: {"type": "complete"}` has never been seen on either branch.** No code path may
+  block on its arrival.
 
 **Environment.** `~/.claude/settings.json` is gitignored, so the `guard-downstream-framing-gh.py`
-PreToolUse wiring exists only on this machine. The hook file itself is committed.
+PreToolUse wiring exists only on this machine. The hook file itself is committed. **CC Safety Net
+failed closed once on 2026-08-17** — a long `gh issue create` heredoc returned *"command analysis
+failed unexpectedly. This is not caused by your command."* The fix that worked: write the body to
+the scratchpad, pass `--body-file`. Do not brute-force variants.
 
-**Operator rulings** are in `store.json` → `operator_rulings` and in project memory. They are not
-restated here.
+**Operator rulings** are in `store.json` → `operator_rulings` and in project memory.
 
 ---
 
-## S008 — 2026-08-17 — The correction held, and two of its three findings were not in the issue
+## S009 — 2026-08-17 — Four phases, and the one that produced no commit produced the most
 
-**PHASE:** Pre-build. No source code. Build gate closed. Board is decisions and chores only.
+**PHASE:** Pre-build. No source code, no toolchain. Build gate closed.
 
-**TESTS:** None. No toolchain. Not a gap.
+**TESTS:** None. No toolchain. Not a gap — and it is now the problem, see the verdict.
 
-**ALL WORK MERGED.** PR #23 merged as `280524e` (`5e22750`) during the close — the operator merged
-it while this band was being written, so ADR-0007 is on `main` and nothing is in flight. Issues
-**#24** and **#25** filed as its follow-ups. **#10 is unblocked**: `main` no longer carries the
-known-wrong table, so ratification is free to proceed.
+**MERGED:** ADR-0008 (`33017b8`, PR #26 → `f6f8c5c`), ADR-0009 (`40062cd`, PR #28 → `6faf04c`), and the
+Developer Platform sweep (`d8cebd7`, PR #30 → `d189f18`). `origin/main` is at **`d189f18`**.
+**FILED:** #29, #31. **Nothing in flight.**
 
-### #21 shipped as ADR-0007, and the issue's own framing was one of the things audited
+### The three shipped decisions, in one paragraph each
 
-#21 was well drafted — it named the wrong row, both primary sources, and four things the ADR had to
-do. **Both sources were re-fetched anyway**, because the error being corrected was caused by trusting
-a page nobody had opened, and inheriting the correction's evidence repeats the method while fixing
-the instance. Both confirmed. One fact came back that #21 had not mentioned: **the search reference
-documents no cap**, so ADR-0006 decision 4's exclusion of search from the cap-proximity trip survives
-on exactly its stated reason. *A signal is not a cap.*
+**ADR-0008** specifies the exit contract and the baseline state machine. Two of #20's premises broke
+under drafting: `suppressed` is not a baseline state (SARIF separates it), and keying exit status on
+the report disposition would have made the baseline permanently inert, because ADR-0005 decision 3's
+`unqualified` carries a conformity clause. Two findings the issue did not contain: **`resolved` is a
+coverage claim** — it requires the (rule, resource) pair to have reached `evaluated`, or the baseline
+shrinks because access shrank, which is a bug ESLint ships today. And **the fingerprint kill
+criterion is not cleared**: drafting asserted page-ID stability as an obvious property of UUIDs, and
+ADR-0007's mandatory grep returned `notion-api-documented.md` **§3, "Object identity has no documented
+guarantee"** (line 596), recording it as documented-silent with only a negative search result behind
+it. That rule has now paid for itself once, which is the third data point **#25** was waiting on.
+**Locator defect:** ADR-0008 line 175 and PR #26 cite this as "§596", which is the *line number*
+written as a section number and would send a reader looking for a section that does not exist. ADR-0008
+is merged and not edited; the superseding ADR for **#31** carries the correction.
 
-**The error was inert, and that is not a defence.** ADR-0006 decision 1 makes the test positive, so
-the scan looks for `request_status` on every response page and never consults the table to decide
-whether to look. A wrong **None** in a descriptive column gated nothing, and if search never emits
-the field the behaviour is identical to the old table. Containment came from a decision made for
-another reason. **A negative in a table that *did* gate behaviour would have shipped.**
+**ADR-0009** defines `Operator` — used 35 times across the canonical docs with no definition, inside
+other glossary entries. Split into **Operator / Executor / Consumer**; roles distinct, people may
+coincide. Integration primary, PAT secondary-and-now-dead. The operator supplied the verdict and it
+was adopted with **one substantive amendment**: the requirement that any membership change surface as
+a coverage-boundary change is unimplementable, because no endpoint returns a user's accessible set.
+Split into **detected** (principal change) versus **disclosed** (drift under a fixed principal), with
+a falling coverage ratio explicitly barred as a detector.
 
-**The coverage benefit does not reach v0.1, which contradicts #21.** The issue says the correction
-makes the ~11,200 wall reportable. True of the endpoint, not of the product: five design surfaces —
-ADR-0002, `CONTEXT.md`, `PRODUCT.md`, #18's hydration map, and the proof run — are **silent** on
-whether a scan calls search. ADR-0007 states the silence and **refuses to assert the negative**,
-because misreading silence as absence is the error it exists to correct. Filed as **#24**.
+**The #27 sweep** answered all six questions from primary sources and none by observation. **ADR-0002's
+Revisit-if was checked and has NOT fired.** Workers can be read-only via an integration token but have
+no exit byte, both output shapes reopen a stated boundary, and they have been billed since
+**2026-08-11** on credits consumed per run and scaled by run duration — a meter that charges more the
+more completely the scan reads.
 
-### The grep would have returned two files, not one
+### The findings that are not in any ADR
 
-`notion-api-practice.md` §4.5 and `competitive-landscape.md` §4 both carried the correct fact, both
-landed in `12106c5` at 18:51, and ADR-0006 is `f8917fa` at 21:42 — ancestry confirmed with
-`git merge-base --is-ancestor`. So the standing method rule was not a coin flip against thin
-evidence. **Second ADR to contradict a file already in the tree.** Enforcement filed as **#25** with
-a recommendation to *wait for a third instance*: two occurrences justify writing the rule down, and a
-permanent tax on every ADR write wants more than n=2.
+**1. ADR-0008 decision 6 is defective. Filed as #31.** *"Two entries are logically identical when any
+one key matches"* is not transitive. Take the closure and unrelated findings merge; don't and matching
+is order-dependent, violating **ADR-0004**. Fix: **priority-ordered probing** — a deterministic total
+function, not a relation. Needs a superseding ADR. **The prototype will build identity on this, so fix
+it first.**
 
-**ADR-0006's central finding came out stronger.** Block-children carrying no signal rested on
-documentation silence — the same inference that failed on the search row — and now rests on PR #711
-naming seven response types and omitting `ListBlockChildrenResponse`.
+**2. The false-green synthesis — the session's largest finding.** `notion-user-pain.md` §4: structural
+rot is *"a chronic irritation, not an acute incident"* with no published damage account, while broken
+integrations produce panic and quantified loss. Sundararajan names the mechanism verbatim: *"The
+execution log still shows green. That's the part that makes it hard to catch."* Every high-intensity
+item in this repository is **one defect class — a system reporting success over an unverified state**:
+`has_more` lying at 10,000 rows, permission-filtered child lists, block-children with no truncation
+signal, relations truncating at 25, formulas returning `unsupported`, `grep -q` exiting 0 after an
+error, and the proof's own vanishing `child_page`. **The product is an anti-false-green instrument,
+not a tidiness linter.** This dissolves the engineer-versus-auditor fork the session had forced an
+hour earlier: both buyers have the same defect, on different surfaces.
 
-### Two small ones
+**3. The session's own zero-config argument was wrong.** It claimed the rule catalogue is backwards on
+a configured-versus-not axis. `notion-user-pain.md` §2 says the inversion is **loudness versus
+testability** — the two loudest pains (P1 staleness, P9 clutter) are the two the tool cannot honestly
+claim to solve, and willingness-to-configure is **strongest** exactly where the testable pains are
+voiced. Ranking by *intensity* rather than volume inverts it again and dissolves §2's "central
+tension" — the furious pains are the silent-failure pains, and those are the most testable.
 
-`docs/agents/domain.md` used "ADR-0007 (event-sourced orders)" as a placeholder example, which now
-collides with a real ADR; renumbered to `ADR-00NN`. And **the PreToolUse hook caught the PR body
-shipping without a Revisit-if** — the ADR had a full one, the PR did not, and a reviewer reads the
-PR first. Appended rather than argued with.
+**4. `PRODUCT.md`'s demand test targets a branch this session argued is refuted.** *"Five teams that
+must prove a structural claim to a third party"* is the auditor. Both the demand test and its kill
+criterion name that buyer. **Rewrite before sending anything.**
+
+**5. That refutation is conditional and was overstated when made.** It rests on ADR-0005 decision 3's
+claim that an unbounded gap *"cannot be sized"* — which is itself unexamined against the field that
+sizes unobserved populations. Do not treat the auditor branch as settled-dead.
+
+**6. Four unasked rigour questions**, recorded in memory as `bannister-goes-to-the-problem-domain`:
+certain-vs-possible answers (incomplete-information databases), transaction isolation and phantoms
+(**`UNQ001` is phantom-prone by construction and may return `conforms` over a workspace holding a
+duplicate**), unseen-population estimation, and entity resolution.
+
+**7. Architecture calls, made and not yet ADR'd.** The core type is provenance, not `Page`:
+`Observed<T> = complete | partial+cause | unreachable`, with **no function `Observed<T> → T`** and
+combinators that propagate partiality — so `unique` over a `partial` list *cannot* return true. One
+adapter seam is the only code permitted to construct an `Observed`. **TypeScript**, because the
+official SDK's types are the `request_status` source of truth and give drift detection at `tsc` time.
 
 ### BLOCKERS
 
-**None technical.** `.env` is unreadable by any tool, so its claims are permanently unverifiable —
-this is a stated hole in the session-start verification pass, not a blocker. **Gate 1 is unchanged
-and is not on the board**; it advances when the operator sends, and the Reddit diagnosis is the first
-send.
+**None technical.** `.env` stays unreadable. Gate 1 is unchanged and advances when the operator sends
+— **but the send target is now wrong**, per finding 4.
 
 ### EXACT NEXT STEPS
 
-1. **#20 — baseline state machine + exit-code contract.** The top agent item and the one with real
-   design content: exit status composes report disposition *and* coverage ratio, two independent
-   inputs.
-2. **#24** — whether v0.1 calls search. A scope decision with a product surface, not a lookup.
-3. **#18, #19** — mechanical, and they belong to their own fast-tier session.
-4. **#10** — now unblocked by ADR-0007 landing. Still `needs-triage` on its own un-runnable
-   checklist item.
-5. **#8, #14, #25** — operator decisions. Not agent work.
+1. **#31 — supersede ADR-0008 decision 6.** Twenty minutes, and the prototype depends on it.
+2. **Prototype REF001 end to end** against the live fixture with `Observed<T>` in place. Red test
+   already exists: the link to `wl-outside-grant` must produce `certainty: confirmed`,
+   `target_state: unreachable`, and with `wl-revoke-child` disconnected the run must **not** emit an
+   unqualified verdict. `/prototype`, not `/wayfinder` — the fog is not in the decisions, there are
+   nine ADRs of decisions made with no runnable feedback.
+3. **Re-read the eight rules as false-green detectors** rather than tidiness checks. P3's four named
+   defect classes look uncovered by the current catalogue.
+4. **#29, #24, #25, #18, #19, #10, #8, #7** — unchanged.
 
-**NEXT-MODEL:** frontier for **#20** — a state machine composing two independent exit inputs is
-judgement, and **#24** is a scope call with an onboarding surface. **#18** and **#19** are mechanical
-and get their own fast-tier session. **Do not straddle**; shrink the next session's scope rather than
-cross the tier boundary inside it.
+**NEXT-MODEL:** **frontier**. The next session writes a superseding ADR and then prototypes against a
+live API with a novel provenance type — irreversible head plus ambiguity. **#18 and #19 remain
+mechanical and belong to their own fast-tier session; do not straddle.**
 
 **NEXT-REPO/CWD:** `C:\Users\mlpgr\2026_Projects\workspace_lint` — single repo; state, plan and
 resume ritual all at the root.
 
-**SELF-ASSESS:** VERDICT: 2 (ADR-0007 landed with two findings the issue had not specified, and the correction's own evidence was re-fetched rather than inherited) · ATTRIB: skill
+**SELF-ASSESS:** VERDICT: 2 (operator-graded, solicited blind) · ATTRIB: none — task-inherent
+
+**Caveat attached to the grade, not a re-opening of it.** The session shipped a defect into `main`
+(#31) and wrote a wrong locator into a merged ADR. Both were caught in-session, by the mandatory grep
+and by the close's dereference pass respectively. The operator's own read is that the gap is rigour
+rather than triage, and the largest finding of the session came from the operator's product intuition,
+not from the agent.

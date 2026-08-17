@@ -544,3 +544,86 @@ Secondary: Reddit was unreachable from every research path attempted, and `commu
 - `docs/inputs/` holds two inputs, neither canonical: the Notion PRD (URLs, dated) and a decay causal synthesis (reasoning, no URLs). Their evidentiary weights differ and the files say so. Do not treat them as parity.
 - Counting is inside ADR-0001; scoring is outside it. A decay report that grades a workspace reopens the entropy-engine framing without a superseding ADR.
 - The four proof tests listed in `PRODUCT.md` are unknowns no source could close. Two of them require a **mutable** fixture workspace. That is not a breach of Principle 7 and should not be read as one.
+
+
+---
+
+## S008 — 2026-08-17 — The correction held, and two of its three findings were not in the issue
+
+**PHASE:** Pre-build. No source code. Build gate closed. Board is decisions and chores only.
+
+**TESTS:** None. No toolchain. Not a gap.
+
+**ALL WORK MERGED.** PR #23 merged as `280524e` (`5e22750`) during the close — the operator merged
+it while this band was being written, so ADR-0007 is on `main` and nothing is in flight. Issues
+**#24** and **#25** filed as its follow-ups. **#10 is unblocked**: `main` no longer carries the
+known-wrong table, so ratification is free to proceed.
+
+### #21 shipped as ADR-0007, and the issue's own framing was one of the things audited
+
+#21 was well drafted — it named the wrong row, both primary sources, and four things the ADR had to
+do. **Both sources were re-fetched anyway**, because the error being corrected was caused by trusting
+a page nobody had opened, and inheriting the correction's evidence repeats the method while fixing
+the instance. Both confirmed. One fact came back that #21 had not mentioned: **the search reference
+documents no cap**, so ADR-0006 decision 4's exclusion of search from the cap-proximity trip survives
+on exactly its stated reason. *A signal is not a cap.*
+
+**The error was inert, and that is not a defence.** ADR-0006 decision 1 makes the test positive, so
+the scan looks for `request_status` on every response page and never consults the table to decide
+whether to look. A wrong **None** in a descriptive column gated nothing, and if search never emits
+the field the behaviour is identical to the old table. Containment came from a decision made for
+another reason. **A negative in a table that *did* gate behaviour would have shipped.**
+
+**The coverage benefit does not reach v0.1, which contradicts #21.** The issue says the correction
+makes the ~11,200 wall reportable. True of the endpoint, not of the product: five design surfaces —
+ADR-0002, `CONTEXT.md`, `PRODUCT.md`, #18's hydration map, and the proof run — are **silent** on
+whether a scan calls search. ADR-0007 states the silence and **refuses to assert the negative**,
+because misreading silence as absence is the error it exists to correct. Filed as **#24**.
+
+### The grep would have returned two files, not one
+
+`notion-api-practice.md` §4.5 and `competitive-landscape.md` §4 both carried the correct fact, both
+landed in `12106c5` at 18:51, and ADR-0006 is `f8917fa` at 21:42 — ancestry confirmed with
+`git merge-base --is-ancestor`. So the standing method rule was not a coin flip against thin
+evidence. **Second ADR to contradict a file already in the tree.** Enforcement filed as **#25** with
+a recommendation to *wait for a third instance*: two occurrences justify writing the rule down, and a
+permanent tax on every ADR write wants more than n=2.
+
+**ADR-0006's central finding came out stronger.** Block-children carrying no signal rested on
+documentation silence — the same inference that failed on the search row — and now rests on PR #711
+naming seven response types and omitting `ListBlockChildrenResponse`.
+
+### Two small ones
+
+`docs/agents/domain.md` used "ADR-0007 (event-sourced orders)" as a placeholder example, which now
+collides with a real ADR; renumbered to `ADR-00NN`. And **the PreToolUse hook caught the PR body
+shipping without a Revisit-if** — the ADR had a full one, the PR did not, and a reviewer reads the
+PR first. Appended rather than argued with.
+
+### BLOCKERS
+
+**None technical.** `.env` is unreadable by any tool, so its claims are permanently unverifiable —
+this is a stated hole in the session-start verification pass, not a blocker. **Gate 1 is unchanged
+and is not on the board**; it advances when the operator sends, and the Reddit diagnosis is the first
+send.
+
+### EXACT NEXT STEPS
+
+1. **#20 — baseline state machine + exit-code contract.** The top agent item and the one with real
+   design content: exit status composes report disposition *and* coverage ratio, two independent
+   inputs.
+2. **#24** — whether v0.1 calls search. A scope decision with a product surface, not a lookup.
+3. **#18, #19** — mechanical, and they belong to their own fast-tier session.
+4. **#10** — now unblocked by ADR-0007 landing. Still `needs-triage` on its own un-runnable
+   checklist item.
+5. **#8, #14, #25** — operator decisions. Not agent work.
+
+**NEXT-MODEL:** frontier for **#20** — a state machine composing two independent exit inputs is
+judgement, and **#24** is a scope call with an onboarding surface. **#18** and **#19** are mechanical
+and get their own fast-tier session. **Do not straddle**; shrink the next session's scope rather than
+cross the tier boundary inside it.
+
+**NEXT-REPO/CWD:** `C:\Users\mlpgr\2026_Projects\workspace_lint` — single repo; state, plan and
+resume ritual all at the root.
+
+**SELF-ASSESS:** VERDICT: 2 (ADR-0007 landed with two findings the issue had not specified, and the correction's own evidence was re-fetched rather than inherited) · ATTRIB: skill

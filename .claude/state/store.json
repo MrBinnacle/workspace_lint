@@ -1,7 +1,7 @@
 {
   "project": "workspace_lint",
   "updated": "2026-08-17",
-  "session": "S008",
+  "session": "S009",
   "phase": "pre-build",
   "phase_detail": "Pre-build. S008 landed #21 as ADR-0007, correcting ONE ROW of ADR-0006 decision 2: POST /v1/search DOES carry a truncation signal. ADR-0006 is not edited. Three findings beyond the correction -- the error was inert under decision 1's positive test, the coverage benefit does not reach v0.1 because search has no declared role (filed #24), and the fact stood in TWO research files three hours before ADR-0006 (enforcement question filed #25). ADR-0006's block-children finding is STRENGTHENED, now resting on an enumerated SDK omission rather than documentation silence. No source code. Build gate not open. ALL WORK MERGED: PR #23 merged as 280524e during the close, so ADR-0007 is on main and nothing is in flight.",
   "next_gate": {
@@ -86,9 +86,44 @@
       "finding_method": "Second ADR to contradict a file already in the tree, and the fact stood in TWO research files three hours earlier. Method rules adopted: a per-endpoint claim needs the per-endpoint page; absence from a doc page is not-checked, not absent; grep docs/research/ before asserting a factual table. Rule 3 is UNENFORCED -- enforcement filed as #25.",
       "evidence_class": "WEAK, and stated in the ADR rather than buried. Both sources are statements of intent -- a doc page and an SDK type. No capped search has been observed and neither branch of request_status has been seen on ANY endpoint. This is the class that produced ADR-0002 decision 4, a field documented as present and absent from every real response.",
       "evidence": "https://developers.notion.com/reference/post-search and makenotion/notion-sdk-js PR #711, both re-fetched while drafting; docs/research/notion-api-practice.md section 4.5; docs/research/competitive-landscape.md section 4"
+    },
+    {
+      "id": "ADR-0008",
+      "status": "accepted and MERGED to main as f6f8c5c (33017b8)",
+      "title": "Exit status is a priority signal over two axes; resolved is a coverage claim the baseline must earn",
+      "implements": "ADR-0005 decision 4. Generalises ADR-0002 decision 2 -- exit 2 keeps its number and widens from unreachable-declared-root to the disclaimed disposition.",
+      "corrects": "the Baseline glossary entry in CONTEXT.md. The PRD input is NOT edited.",
+      "key": "Exit precedence 4>2>3>1>0, non-monotonic by choice to leave ADR-0002 untouched. Exit 0 asserts exactly two things: no new unsuppressed finding, and coverage at or above the declared threshold. Five baseline states with suppression as an orthogonal axis. resolved requires the (rule,resource) pair to have reached the manifest's evaluated stage.",
+      "defect": "Decision 6 is DEFECTIVE -- see issue #31. Any-match fingerprinting is not transitive. Needs a superseding ADR before any identity code is written."
+    },
+    {
+      "id": "ADR-0009",
+      "status": "accepted and MERGED to main as 6faf04c (40062cd)",
+      "title": "The integration is the primary credential, the Operator is the accountability locus for the access boundary, and membership drift is disclosed rather than detected",
+      "closes": "#1, narrowly -- the accountable role only. The buyer half was untracked by the auto-close and is refiled as #29.",
+      "key": "Operator / Executor / Consumer split; roles distinct, people may coincide. Principal added as a term rather than dual mode-labelled definitions of Connection. A coverage threshold may never relax a disclaimed disposition.",
+      "caveat": "Decision 1's claim that the integration grant does not move with employment is asserted into a DOCUMENTED SILENCE. The capabilities reference covers loss of EDIT access only. See docs/research/notion-developer-platform.md section 7. Comparative ranking survives; the independence claim does not."
     }
   ],
-  "corrections_pending": [],
+  "corrections_pending": [
+    {
+      "id": "#31",
+      "target": "ADR-0008 decision 6",
+      "detail": "Any-match fingerprint matching is not transitive: transitive closure merges unrelated findings, no closure makes matching order-dependent and violates ADR-0004. Fix is priority-ordered probing, a deterministic total function rather than a relation. Also carries a locator correction -- ADR-0008 line 175 cites notion-api-documented.md as section 596, which is a LINE NUMBER written as a section number; the real locator is section 3, 'Object identity has no documented guarantee'.",
+      "blocks": "the REF001 prototype, which builds identity on this"
+    },
+    {
+      "id": "PRODUCT.md demand test",
+      "target": "PRODUCT.md demand test and its kill criterion",
+      "detail": "Both name 'five teams that must prove a structural claim to a third party' -- the auditor buyer, which S009 argued is refuted on capability grounds. Rewrite before sending anything. NOTE the refutation is CONDITIONAL on ADR-0005 decision 3's unexamined 'cannot be sized' claim.",
+      "blocks": "Gate 1"
+    },
+    {
+      "id": "competitive-landscape wedge",
+      "target": "docs/research/competitive-landscape.md section 270",
+      "detail": "States the wedge as 'R1 the coverage manifest combined with a CI exit code'. Under the false-green synthesis the manifest is the soundness certificate rather than half a wedge. Not yet decided; do not edit before the rule-catalogue re-read."
+    }
+  ],
   "corrections_applied": [
     {
       "target": "PRODUCT.md",
@@ -181,6 +216,21 @@
       "detail": "Controlled-vocabulary membership (uncovered, testable, voiced). Orphan detection (deferral reason removed by ADR-0002). Duplicate-title should move from configured UNQ001 to built-in.",
       "due": "after demand test",
       "note": "SYS001 was already restated in S003 — from 'Scan result is incomplete' to 'A declared root or applicable resource was not evaluated'. It keeps only its finding-identity job: a stable ID a baseline can reference. The run-failure decision moved to the report disposition in ADR-0005."
+    },
+    {
+      "id": "product-identity-false-green",
+      "detail": "S009's largest finding, not yet an ADR. Every high-intensity item in the repository is one defect class -- a system reporting success over an unverified state. Sources: notion-user-pain.md section 4 (chronic irritation vs acute incident, and the Sundararajan quote 'The execution log still shows green'), ADR-0002 (has_more lying at 10,000 rows), ADR-0006 (block-children carry no truncation signal), notion-user-pain.md P10 (relations truncate at 25), the 2026-08-05 unsupported formula value, docs/proof/results.md section 4 (the child_page block vanishes). Consequence: the product is an anti-false-green instrument, not a tidiness linter, and the engineer-versus-auditor fork dissolves because both buyers have the same defect on different surfaces.",
+      "next": "Re-read the eight rules as false-green detectors before writing the ADR. P3's four named defect classes look uncovered."
+    },
+    {
+      "id": "soundness-classification",
+      "detail": "Four formal literatures apply to this product and none has been opened across nine ADRs: certain-vs-possible answers in incomplete-information databases (ADR-0005's outcome pair is a folk re-derivation), transaction isolation and phantom reads (UNQ001 is phantom-prone by construction and may return conforms over a workspace holding a duplicate), unseen-population estimation (ADR-0005 decision 3 asserts an unbounded gap cannot be sized without consulting the field that sizes unobserved populations), and entity resolution (where issue #31's defect is a standard result).",
+      "next": "Rule-by-rule soundness classification: sound / sound-with-hypotheses / not soundly implementable against this API. Operator framing: soundness is what buyers pay for, and free linters are free because they are unsound."
+    },
+    {
+      "id": "architecture-provenance-type",
+      "detail": "Called in S009, not yet ADR'd. Core type is provenance, not Page: Observed<T> = complete | partial+cause | unreachable, with NO function Observed<T> -> T, and combinators that propagate partiality so that unique over a partial list cannot return true. One adapter seam is the only code permitted to construct an Observed. Language: TypeScript, because the official SDK's types are the request_status source of truth and give drift detection at tsc time; the Rust fuzzing NEVER-rule does not fire because JSON over HTTPS is not in its named class.",
+      "next": "Validate by prototype rather than by ADR. Does Observed<T> stay ergonomic or poison every call site?"
     }
   ],
   "api_target": {
@@ -226,26 +276,19 @@
   "operator_rulings": [
     "No ghostwriting. Produce content specifications for anything he will send as himself, never drafted first-person copy. The literal-humanist-voice register governs how the agent writes; it does not license writing as him.",
     "LinkedIn is excluded from every project.",
-    "SewerAI and Sepehr Sobhani are not contacts. The engagement never closed and was never paid. The artifacts are design input only."
+    "SewerAI and Sepehr Sobhani are not contacts. The engagement never closed and was never paid. The artifacts are design input only.",
+    "Citations are receipts, 2026-08-17. A claim carries a locator a third party can follow -- ADR, repo file plus section, official API doc, commit SHA, dated post. Paraphrase without a pointer, 'as we discussed', 'Notion's docs say', 'the ADR covers this' -- all commentary, not evidence. In a system treating UNMEASURED and claim ceilings as first-class, the citation is the only mechanism keeping the ceiling honest.",
+    "The gap is rigour, not triage, 2026-08-17. 'The real hole here is in lack of rigor, computer science research, and systems design analysis - not ticket triage.' Proved the same session by issue #31: a merged ADR adopted a matching rule that is not an equivalence relation, and no template, PR review or hook caught it. Check formal properties before writing the evidence section.",
+    "Notion Workers and the PAT are not v0.1 surfaces, 2026-08-17. The PAT is ruled out by Principle 7 -- its API capability is a single bundle including create and update, with no read-only variant -- so the planned PAT fixture test in #27's DoD is NOT to be run. Workers are technically viable via an integration token and strategically premature: no exit byte, both output shapes reopen a stated boundary, Business/Enterprise only, and billed since 2026-08-11 on a per-run credit meter that charges more the more completely the scan reads."
   ],
   "tracker": {
     "host": "GitHub issues, gh CLI",
-    "open": {
-      "25": "enhancement -- two ADRs have now contradicted docs/research/. Decide whether the grep becomes a hook. RECOMMENDATION IN THE ISSUE: wait for a third instance; a permanent tax on every ADR write wants more than n=2.",
-      "24": "enhancement -- declare whether v0.1 calls POST /v1/search, and for what. Five design surfaces are SILENT, which is not a negative finding. Root-discovery affordance is the live candidate; ADR-0002 is NOT reopened by it.",
-      "20": "ready-for-agent, FRONTIER -- baseline state machine + exit-code contract. The one with real design content. Now the top agent item.",
-      "18": "ready-for-agent, FAST TIER -- rule-to-hydration map. Budget: ~540 requests inside the 3-minute warm-scan criterion.",
-      "19": "ready-for-agent, FAST TIER -- config-schema rule rejecting name-only resource identity.",
-      "14": "ready-for-human -- PRODUCT.md positioning. Draft landed on main; the wording is the operator's call.",
-      "10": "needs-triage -- UNBLOCKED. ADR-0007 has landed, so main no longer carries the known-wrong table and ratification may proceed. Still blocked on its own un-runnable checklist item.",
-      "8": "ready-for-human -- npm name, a brand choice with three costed options.",
-      "1": "needs-info -- blocked on the demand test.",
-      "7": "needs-info -- REAL_ROOT_ID reported SET by the operator 2026-08-17. UNVERIFIED: .env is unreadable (CC Safety Net, secret.basename.env). The integration must ALSO be connected to that page in Notion share settings, which is a human step; a missing share returns 404 and looks like a coverage failure, not a setup gap."
-    },
+    "open": "#29 buyer question (needs-info) - #31 ADR-0008 decision 6 transitivity defect, BLOCKS the prototype - #27 observation half only, PAT test to be DROPPED - #24 does v0.1 call search - #25 ADR-vs-research enforcement, now has a THIRD data point in a new shape - #18, #19 mechanical, fast-tier session - #10 ratify proof - #8 npm name - #7 perf budgets",
     "closed_S005": "#2 #3 #4 #5 #6 #9 consolidated into #16 — they were undocumented decisions, not open questions.",
     "note": "ALL WORK MERGED. main carries ADR-0007 at 280524e; nothing in flight. GATE 1 IS UNCHANGED AND IS NOT ON THIS BOARD: it advances when the operator sends. asserted_without_adr remains at 1 entry.",
     "closed_S006": "#13 closes on the PR #17 merge (Closes #13 in commit f8917fa).",
     "closed_S007": "#15 and #16 closed by PR #22. #13 closed by PR #17.",
-    "closed_S008": "#21 closed by PR #23, MERGED as 280524e. #24 and #25 filed as its follow-ups."
+    "closed_S008": "#21 closed by PR #23, MERGED as 280524e. #24 and #25 filed as its follow-ups.",
+    "closed_S009": "#20 (ADR-0008), #1 (ADR-0009, narrowly -- buyer half refiled as #29)"
   }
 }
