@@ -187,6 +187,60 @@ finish() {
 
 TOTAL_STAGES=8
 
+# ──────────────────────────────────────────────────────────────────────────
+# Interactivity guard. Added after a run on 2026-08-17 in which stdin was not
+# a terminal: every read() returned EOF instantly, all ten values were written
+# empty, and the stage-5 confirm fell through to its default. That produced
+# REVOCATION_SUPPORTED=no — a phantom answer to the single most consequential
+# question in the fixture, indistinguishable in .env from a real one.
+#
+# A wizard whose output feeds a proof must not be able to invent an answer.
+# ──────────────────────────────────────────────────────────────────────────
+
+die() { printf '\n  %s✗ %s%s\n\n' "$RED" "$1" "$RESET" >&2; exit 1; }
+
+if [[ ! -t 0 ]]; then
+  die "stdin is not a terminal — refusing to run.
+  Every prompt would read EOF and silently record an empty value.
+  Run this in a real terminal:  bash scripts/setup-proof-fixture.sh
+  Not through a harness, a pipe, or an editor's run button."
+fi
+
+# need KEY "Prompt" — like ask, but will not accept an empty value.
+need() {
+  local key="$1" prompt="$2"
+  while :; do
+    ask "$key" "$prompt"
+    [[ -n "${!key}" ]] && return 0
+    warn "required — this value ends up in .env and the proof reads it."
+  done
+}
+
+# need_secret KEY "Prompt" — like ask_secret, but will not accept empty.
+need_secret() {
+  local key="$1" prompt="$2"
+  while :; do
+    ask_secret "$key" "$prompt"
+    [[ -n "${!key}" ]] && return 0
+    warn "required — without it nothing can call the API."
+  done
+}
+
+# must_answer "question" — y/n with NO default. Loops until the human types
+# one or the other. Used where a default would be mistaken for evidence.
+must_answer() {
+  local reply=""
+  while :; do
+    printf '  %s? %s [y/n] ' "$YELLOW" "$1"
+    read -r reply || die "stdin closed mid-question — no answer recorded."
+    case "$reply" in
+      [Yy]*) return 0 ;;
+      [Nn]*) return 1 ;;
+      *) warn "type y or n — this answer is recorded as a proof result." ;;
+    esac
+  done
+}
+
 banner "workspace_lint — 72-hour proof fixture"
 
 # ── 1 ─────────────────────────────────────────────────────────────────────
@@ -206,7 +260,7 @@ note "  Insert content and Update content must both be OFF."
 say ""
 say "Then open the integration's Configuration tab and reveal the Internal"
 say "Integration Secret."
-ask_secret NOTION_TOKEN "Paste the integration secret (starts ntn_):"
+need_secret NOTION_TOKEN "Paste the integration secret (starts ntn_):"
 write_env NOTION_TOKEN "$NOTION_TOKEN"
 write_env NOTION_VERSION "2026-03-11"
 note "NOTION_VERSION is pinned by ADR-0002 decision 4 — it must carry request_status."
@@ -222,7 +276,7 @@ step "Open its ... menu -> Connections -> Connect to -> workspace-lint-proof"
 say ""
 say "The page ID is the 32-character hex string at the end of the URL,"
 say "before any '?'. Example: notion.so/wl-proof-fixture-<32 hex chars>"
-ask FIXTURE_ROOT_ID "Paste the fixture root page ID:"
+need FIXTURE_ROOT_ID "Paste the fixture root page ID:"
 write_env FIXTURE_ROOT_ID "$FIXTURE_ROOT_ID"
 pause
 
@@ -241,7 +295,7 @@ say "Written to .proof-fixture-blocks.txt (150 lines)."
 step "Open that file, select all, copy."
 step "Create a child page of wl-proof-fixture named: wl-pagination"
 step "Paste. Notion makes each line its own paragraph block."
-ask PAGINATION_PAGE_ID "Paste the wl-pagination page ID:"
+need PAGINATION_PAGE_ID "Paste the wl-pagination page ID:"
 write_env PAGINATION_PAGE_ID "$PAGINATION_PAGE_ID"
 pause
 
@@ -262,7 +316,7 @@ step "Use ... -> Merge with CSV, and pick .proof-fixture-rows.csv"
 warn "Do NOT change any property type yet — that is a proof step, not setup."
 say ""
 say "The data source ID is the 32-hex string in the URL of the database page."
-ask FIXTURE_DS_ID "Paste the wl-dataset data source ID:"
+need FIXTURE_DS_ID "Paste the wl-dataset data source ID:"
 write_env FIXTURE_DS_ID "$FIXTURE_DS_ID"
 write_env TYPE_CHANGE_PROP "Status"
 note "The proof will change Status from Select to Text and re-read its property ID."
@@ -283,11 +337,11 @@ step "Create a child page of THAT named: wl-revoke-child"
 step "Open wl-revoke-child -> ... -> Connections."
 say ""
 warn "Look for an option to remove or disable workspace-lint-proof on this child."
-ask REVOKE_PARENT_ID "Paste the wl-revoke-parent page ID:"
-ask REVOKE_CHILD_ID "Paste the wl-revoke-child page ID:"
+need REVOKE_PARENT_ID "Paste the wl-revoke-parent page ID:"
+need REVOKE_CHILD_ID "Paste the wl-revoke-child page ID:"
 write_env REVOKE_PARENT_ID "$REVOKE_PARENT_ID"
 write_env REVOKE_CHILD_ID "$REVOKE_CHILD_ID"
-if confirm "Did Notion let you remove the connection from the CHILD only?"; then
+if must_answer "Did Notion let you remove the connection from the CHILD only?"; then
   write_env REVOCATION_SUPPORTED "yes"
   say ""
   say "Recorded: selective revocation exists. The proof can now test whether the"
