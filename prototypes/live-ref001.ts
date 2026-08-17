@@ -15,6 +15,12 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
+/* Link recognition and the verdict live in their own modules so the offline
+ * checks execute the SAME code this live run does. See CHECK-link-recognition.ts.
+ * Spec: docs/spec/REF001-link-recognition.md. */
+import { extractReferences, internalRefs, unrecognisedRefs, hyphenate } from './link-recognition.js';
+import { deriveVerdict, type Gap } from './verdict.js';
+
 /* ---------------------------------------------------------------- env ---- */
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -120,57 +126,20 @@ async function listChildren(id: string, label: string, maxPages = 20): Promise<O
 }
 
 /* ------------------------------------------------- link extraction ---- */
-
-const UUID = /([0-9a-f]{8})-?([0-9a-f]{4})-?([0-9a-f]{4})-?([0-9a-f]{4})-?([0-9a-f]{12})/i;
-const hyphenate = (s: string) => {
-  const m = UUID.exec(s);
-  return m ? `${m[1]}-${m[2]}-${m[3]}-${m[4]}-${m[5]}`.toLowerCase() : null;
-};
+/* Moved to link-recognition.ts and specified in
+ * docs/spec/REF001-link-recognition.md.
+ *
+ * The host list narrowed as a result. It previously admitted notion.so,
+ * www.notion.so, notion.com and www.notion.com; none of those has a locator, so
+ * spec §2.1 marks them `not checked` and §7 makes "no host without a locator"
+ * non-negotiable. They now travel the residue path, which costs precision and
+ * not soundness. Only app.notion.com is observed; only *.notion.site is
+ * documented.
+ *
+ * The residue is no longer a hand-pushed finding either. It enters the coverage
+ * manifest, and SYS001 derives from the manifest — see report(). */
 
 type Link = { targetId: string; via: string; sourceBlock: string };
-
-/* Notion serves the same page from several hosts. A hostname allow-list that
- * misses one does not produce an error — it produces SILENCE, which is the
- * defect class this product exists to catch. Observed live 2026-08-17: the
- * fixture's own link to wl-outside-grant is served from app.notion.com, and an
- * allow-list of {notion.so, notion.site} dropped it without a word.
- *
- * Two rules follow, and the second matters more than the first:
- *   1. The list must be complete for the hosts Notion actually serves.
- *   2. An href that carries a Notion-shaped ID and does NOT match the list is
- *      reported as UNRECOGNISED. It is never silently dropped. An extractor
- *      that cannot classify a link must say so, exactly as a rule that cannot
- *      reach a resource must say so.
- */
-const NOTION_HOSTS = /^(www\.)?notion\.(so|com)$|^app\.notion\.com$|\.notion\.site$/i;
-
-const unrecognisedHrefs: { href: string; sourceBlock: string }[] = [];
-
-function extractLinks(blocks: any[]): Link[] {
-  const out: Link[] = [];
-  for (const b of blocks) {
-    if (b.type === 'link_to_page' && b.link_to_page?.page_id)
-      out.push({ targetId: hyphenate(b.link_to_page.page_id)!, via: 'link_to_page', sourceBlock: b.id });
-    const rt: any[] = b[b.type]?.rich_text ?? [];
-    for (const t of rt) {
-      if (t.type === 'mention' && t.mention?.type === 'page' && t.mention.page?.id) {
-        out.push({ targetId: hyphenate(t.mention.page.id)!, via: 'mention', sourceBlock: b.id });
-        continue;
-      }
-      if (!t.href) continue;
-      const href = String(t.href);
-      const id = hyphenate(href);
-      if (!id) continue;                                  // no Notion-shaped id — not our business
-      if (href.startsWith('/')) { out.push({ targetId: id, via: 'href(relative)', sourceBlock: b.id }); continue; }
-      let host = '';
-      try { host = new URL(href).host; } catch { /* unparseable */ }
-      if (NOTION_HOSTS.test(host)) out.push({ targetId: id, via: `href(${host})`, sourceBlock: b.id });
-      else unrecognisedHrefs.push({ href, sourceBlock: b.id });   // never dropped
-    }
-  }
-  const seen = new Set<string>();
-  return out.filter(l => { const k = l.targetId + '|' + l.sourceBlock; if (seen.has(k)) return false; seen.add(k); return true; });
-}
 
 /* ----------------------------------------------------- the scan ------- */
 
@@ -289,7 +258,9 @@ async function main() {
   /* -- REF001 ------------------------------------------------------------ */
   say('');
   say('REF001 — resolving every internal link found in readable content.');
-  const links = extractLinks(blocks);
+  const refs = extractReferences(blocks);
+  const links: Link[] = internalRefs(refs).map(r => ({ targetId: r.targetId, via: r.via, sourceBlock: r.sourceBlock }));
+  const unrecognised = unrecognisedRefs(refs);
   say(`  ${links.length} link(s) discovered: ${links.map(l => l.via).join(', ') || '(none)'}`);
 
   /* The synthetic control is OPT-IN (`--control`). It was the default in the first
@@ -301,11 +272,22 @@ async function main() {
     links.push({ targetId: hyphenate(UNSHARED)!, via: 'control(synthetic)', sourceBlock: 'root' });
   }
 
-  if (unrecognisedHrefs.length) {
-    say(`  !! ${unrecognisedHrefs.length} href(s) carry a Notion-shaped ID on an UNRECOGNISED host:`);
-    for (const u of unrecognisedHrefs) say(`     ${u.href}`);
-    findings.push({ rule: 'SYS001', resource: 'root', certainty: 'indeterminate', bounded: true,
-      detail: `${unrecognisedHrefs.length} link(s) could not be classified as internal or external. Not evaluated, and not dropped.` });
+  /* Spec §5. Each unrecognised candidate is ONE drop-out at the Evaluated stage,
+   * entered in the manifest and never pushed onto the findings list by hand.
+   * SYS001 derives from the manifest in report(); a second copy of the coverage
+   * data drifts, and results-ref001-live.md §4 records it drifting toward the
+   * flattering answer. The drop-out is bounded: it names the containing block
+   * and quotes the href verbatim, so it can be counted and each member named. */
+  if (unrecognised.length) {
+    say(`  !! ${unrecognised.length} href(s) could not be classified as internal or external:`);
+    for (const u of unrecognised) {
+      say(`     [${u.cause}] ${u.href}`);
+      manifest.set(`unrecognised-link:${u.href}`, {
+        alias: `«link ${u.href.slice(0, 28)}…»`,
+        stages: new Set<Stage>(['declared', 'resolved', 'enumerated', 'fetched']),
+        cause: `${u.cause} — block ${u.sourceBlock}`,
+      });
+    }
   }
 
   if (UNSHARED) {
@@ -351,23 +333,26 @@ function report() {
       detail: `Applicable resource was not evaluated — ${cause}` });
   }
 
-  const gaps = findings.filter(f => f.rule === 'SYS001');
-  const unbounded = gaps.filter(g => !g.bounded);
-  const rootMiss = gaps.filter(g => g.isRootMiss);
+  /* One implementation of the verdict, shared with CHECK-link-recognition.ts.
+   * The exit byte and the manifest were maintained separately in the first live
+   * run and disagreed — the byte read 1 where the contract required 3. */
+  const gapFindings = findings.filter(f => f.rule === 'SYS001');
   const violations = findings.filter(f => f.rule !== 'SYS001');
+  const gaps: Gap[] = gapFindings.map(g => ({
+    resource: g.resource, cause: g.detail, bounded: g.bounded, isRootMiss: g.isRootMiss,
+  }));
 
-  const pervasive = rootMiss.length > 0 || unbounded.length > 0;
-  const disposition = pervasive ? 'disclaimed' : (violations.length || gaps.length) ? 'qualified' : 'unqualified';
-
-  const applicable = manifest.size;
-  const evaluated = [...manifest.values()].filter(v => v.stages.has('evaluated')).length;
-  const coverage = applicable ? evaluated / applicable : 0;
-
-  let exit: number, why: string;
-  if (disposition === 'disclaimed') { exit = 2; why = 'Disposition is disclaimed — no summary verdict is rendered.'; }
-  else if (gaps.length && coverage < 1) { exit = 3; why = 'Gaps exist and are confined, and coverage is below threshold.'; }
-  else if (findings.length) { exit = 1; why = 'At least one finding is new and unsuppressed. Evidence is complete.'; }
-  else { exit = 0; why = 'No new unsuppressed finding, coverage at or above threshold.'; }
+  const v = deriveVerdict({
+    applicable: manifest.size,
+    evaluated: [...manifest.values()].filter(m => m.stages.has('evaluated')).length,
+    gaps,
+    violations: violations.length,
+    /* No baseline exists in this prototype, so every finding is new and
+     * unsuppressed by construction. */
+    newUnsuppressedFindings: findings.length,
+    coverageThreshold: Number(env.COVERAGE_THRESHOLD ?? 1),
+  });
+  const { disposition, applicable, evaluated, exit, why } = v;
 
   say('');
   say('──────── COVERAGE MANIFEST ────────');
