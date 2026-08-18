@@ -76,7 +76,13 @@ read this block instead. Nothing here depends on a band still being present.
 - **ADR-0006 decision 2's search row is superseded by ADR-0007.** Cite ADR-0007's table.
 - **ADR-0005's evidential floor is uneven and the ADR says so.** Decision 5's funnel rests on CONSORT,
   PRISMA and STROBE clauses **fetched but never re-verified**.
-- **A refuted claim is never in one place.** Four times now. Grep before asserting a correction is scoped.
+- **A refuted claim is never in one place.** Five times now, and the last was **five surfaces at
+  once** — "the project is pre-build", standing in `CLAUDE.md`, `CONTEXT.md`, `README.md`,
+  `docs/agents/domain.md` and this file after PR #56. **Grep the STATE, not your phrasing.** The S019
+  sweep found two by grepping the words it was replacing (`pre-build`, `no source code`) and missed
+  three that asserted the same state differently — `README.md` named the branch, `domain.md` said
+  "there is no `src/` yet". A `/code-review` pass found all three. Grep branch names, paths, and the
+  negation of the claim you are about to write.
 
 **Research method.**
 
@@ -129,9 +135,16 @@ read this block instead. Nothing here depends on a band still being present.
 **Environment.** `~/.claude/settings.json` is gitignored, so the `guard-downstream-framing-gh.py`
 PreToolUse wiring exists only on this machine. **CC Safety Net failed closed once on a long
 `gh issue create` heredoc** — write the body to the scratchpad and pass `--body-file`. The
-**`guard-canonical-doc-edit.py` (added 2026-08-17) blocks `Edit`/`Write` to `CONTEXT.md`,
-`PRODUCT.md`, `docs/adr/**` and `docs/spec/**` unless an approved plan under `~/.claude/plans/`,
-modified within 24h, **names that file**.** The approved plan's Files table is the authorisation
+**`guard-canonical-doc-edit.py` (added 2026-08-17) blocks `Edit`/`Write` to `CLAUDE.md`,
+`CONTEXT.md`, `PRODUCT.md`, `docs/adr/**` and `docs/spec/**` unless an approved plan under
+`~/.claude/plans/`, modified within 24h, **names that file**.** **`CLAUDE.md` was added on
+2026-08-17 (S019)** after PR #56 left it asserting "Pre-build: no source code exists yet" to every
+new session — the guard covered the documents an ADR supersedes and left outside the set the one
+every session is bootstrapped from. It is guarded **machine-wide by basename, including
+`~/.claude/CLAUDE.md`**; `/init` writing a new `CLAUDE.md` is blocked until a plan names it.
+⚠ **The matcher does not distinguish a plan's Files table from its background prose.** A file
+mentioned in passing is authorised. Treat the **Files table** as the authorisation; a quiet hook is
+not approval. `PRODUCT.md` would have passed on that slack in S019 and was filed as **#61** instead. The approved plan's Files table is the authorisation
 token. **There is deliberately no environment-variable escape** — an env var is a blanket unlock the
 model can set for itself, which is the failure the guard exists to stop. The escape is
 `EnterPlanMode` → name the file in the plan → `ExitPlanMode`. **Not guarded, deliberately:**
@@ -160,17 +173,23 @@ without a triage-role label**, reading the roles from `docs/agents/triage-labels
   CLOSED** (#45, two live runs byte-identical at 5987 bytes — and the CONTROL is what closes it:
   the same two runs *without* `--deterministic` differ, so the claim is about Normalization
   removing something rather than about a report with nothing volatile in it).
-- **Source code exists, on `build/t3-ref001`, in `slice/`.** Session commits `8dd2d36` (ADR-0012),
-  `37bd9e1` (T4 reports), `6b719cf` (T5 red test).
-  A **`private: true`** package named `slice-v0.1`, deliberately **not** `src/` and not on `main`:
+- **SOURCE CODE IS ON `main`, in `slice/`, since PR #56 merged 2026-08-17 at 23:39Z** (merge commit
+  `b138063`). This supersedes every earlier band's "not on `main`, nothing pushed" line; those stay
+  standing as dated records. **PR #57 was closed unmerged** — `build/t2-sys001` is a strict ancestor
+  of `t3`, so it delivered nothing extra, and merging it first would have restored
+  `prototypes/verdict.ts`, the second exit-byte implementation ADR-0012 decision 1 deleted.
+  A **`private: true`** package named `slice-v0.1`, deliberately **not** `src/`:
   `src/` asserts *this is the product tree*, and that claim is due the same day **#8** lands.
-  **#8, the npm name, is still the only thing between this branch and `main`** — `CONTEXT.md`
-  requires it "before the first `package.json`", and a private unpublishable package does not
-  consume it.
+  **#8 no longer blocks anything from `main`.** `CONTEXT.md`'s Name constraint now reads "before the
+  first **publishable** `package.json`", which is what the shipped file already asserts about itself.
+  The operative trigger is `private: true` being removed or a tree being renamed `src/`.
   Suite: `cd slice && npm run check` — **eight files, 38 + 56 + 92 + 124 + 89 + 50 + 76 + 21 = 546
-  assertions, offline, no network, no token**. **`tsconfig.json` is now a GLOB (`*.ts`), not a
+  assertions, offline, no network, no token**. ⚠ **`npm run check` DOES NOT TYPECHECK, and no script
+  does** — `npx tsc --noEmit` is hand-run, so a type error passes the gate. Filed as **#60**. Two
+  commands until it lands. **`tsconfig.json` is a GLOB (`*.ts`), not a
   hand-kept list** — it was an explicit 26-entry `include` and a new file was silently untypechecked
-  (#55). `CHECK-suite-registration.ts` is the control for the `check` script, which a glob cannot fix.
+  (#55). `CHECK-suite-registration.ts` is the control for the `check` script, which a glob cannot fix,
+  and #60's assertion belongs in that file rather than a new one.
   Live: `npx tsx cli.ts scan --config ../wl.config.json --oracle`,
   after `npx tsx make-fixture-config.ts [ENV_KEY]` writes the gitignored config from `.env` —
   **the key argument is how the live exit-byte table was produced.**
@@ -226,6 +245,105 @@ waste of tokens."* Do not solicit a `VERDICT`, do not write a `SELF-ASSESS` line
 of the close ritual still runs; the ritual line records `verdict=n/a`.
 
 **Operator rulings** are in `store.json` → `operator_rulings` and in project memory.
+
+---
+
+---
+
+## S019 — 2026-08-17 — the slice reached `main`, and the repository went on describing itself as pre-build
+
+**PHASE:** **BUILD, and shipped to `main` for the first time.** No code was written this session. The
+work was the merge, the tracker, and the five documents the merge falsified.
+
+**TESTS:** `tsc --noEmit` clean. **546 slice assertions, exit 0**, unchanged and untouched. The guard
+suite went **32 → 47 assertions, exit 0**, red at 8 failures before the change. **Two mutation checks,
+both scored on the exit code** — the pre-existing one bypasses `plan_authorises`; the new one removes
+`claude.md` from `CANONICAL_FILES` and confirms both `CLAUDE.md` blocks flip to allow while
+`CONTEXT.md` stays blocked. **Deref: see the ritual line.**
+
+**COMMITTED:** `7b79d43` on **`fix/post-merge-doc-drift`**, branched from `main` at `b138063`.
+**MERGED BY THE OPERATOR:** PR **#56**. **CLOSED UNMERGED:** PR **#57**.
+**FILED:** **#58**, **#59**, **#60**, **#61**. **COMMENTED:** #8, #19.
+
+### The merge, and why only one PR of the two
+
+Two PRs were open against `main`. `git merge-base --is-ancestor` settles it: `build/t2-sys001` is a
+**strict ancestor** of `build/t3-ref001`, and `git log t3..t2` is empty. #56 delivered everything #57
+did plus eleven commits. **Order was not cosmetic** — t2's tree still carries `prototypes/verdict.ts`,
+which t3 deletes under ADR-0012 decision 1. Merging #57 first would have put two executable exit-byte
+implementations on `main` and left them there for as long as #56 stayed open. #57 was closed with the
+ancestry proof in a comment; the branch is left in place.
+
+Both PRs arrived with GitHub's default branch-name titles and empty bodies. #56 was retitled and given
+a body before the merge, because its merge commit is `main`'s permanent record of the largest change
+in the repository's history.
+
+### Five surfaces said pre-build, and my grep found two of them
+
+The finding worth carrying: **I grepped for the wording I was replacing.** `pre-build`, `no source
+code`, `72-hour`. That found `CLAUDE.md` and `CONTEXT.md`. It could not find `README.md`, which said
+the source was on `build/t3-ref001`, or `docs/agents/domain.md`, which said "there is no `src/` yet",
+or this file. **A stale claim does not have to reuse your phrasing to assert your state.**
+
+`/code-review` found all three and every one of its eight findings verified. Two are worth naming:
+
+- **One correction created the defect it then had to fix.** The new `CONTEXT.md` paragraph ends "See
+  `PRODUCT.md` and `README.md`" while `README.md` still contradicted it. A pointer into a document
+  that disagrees with you is worse than no pointer.
+- **`docs/agents/domain.md` had pre-registered this exact revisit** — "the file-structure block and
+  the 'no `src/` yet' line both go stale the day the first code lands." The trigger fired and nobody
+  ran it. The Revisit-if now records that it fired, and stays registered because `src/` is still due.
+
+### The guard covered the wrong set
+
+`guard-canonical-doc-edit.py` protected `CONTEXT.md`, `PRODUCT.md`, `docs/adr/**` and `docs/spec/**` —
+the documents an ADR supersedes — and left `CLAUDE.md` outside. `CLAUDE.md` is injected into every
+session and it opened this one by asserting the project had no code. It is now guarded, **machine-wide
+by basename**, which was chosen rather than inherited; the accepted costs are in the standing block.
+
+**And the guard has slack the standing block now names.** `PRODUCT.md` needed two corrections and was
+not in the approved plan's Files table — but the plan mentioned the basename in background prose, and
+the matcher does not distinguish the two. The edit would have been allowed. Declining it and filing
+**#61** is the whole of the decision: taking that slack inside the commit that widened the control
+would have been the failure the control exists to stop.
+
+### BLOCKERS
+
+**None.** Nothing gates the build and nothing gates the queue.
+
+### EXACT NEXT STEPS
+
+**Fourteen issues open.** Four were filed this session.
+
+1. **Push `fix/post-merge-doc-drift`.** It carries `7b79d43` and this close, and it has never left this
+   disk.
+2. **#60 — the typecheck is wired into nothing.** `npm run check` does not run `tsc` and no script
+   does. The assertion belongs in `CHECK-suite-registration.ts`, which exists as the control for
+   exactly this class of hole. `/implement` driving `/tdd`; **`CLAUDE.md` is plan-gated** and its gate
+   paragraph collapses back to one command once this lands, so name it in the plan.
+3. **#61 — `PRODUCT.md`.** Gate 2 has no closure marker while `CONTEXT.md` names `PRODUCT.md` as the
+   authority for the gates; line 128 counts seven sweeps against twelve. Plan-gated: name the file in
+   the **Files table**, not in prose.
+4. **#51 / #50 / #24 — still the scope family**, unchanged from S018. #24 is upstream of ADR-0013's
+   `attested` branch, which stays dead code until something calls search.
+5. **#19 then #18.** Both now carry native `blocked_by` edges from **#58** (`REQ001`) and **#59**
+   (`UNQ001`), the two build tickets for the Configured half of the rule catalog. #19's scope was
+   restated in a comment: half its definition of done already ships in `slice/config.ts` for the roots
+   case, and what is missing is the rule-configuration section.
+6. **#27**, **#25** (still the tripwire, n unchanged at 2 — **no new ADR landed this session**),
+   **#7**, **#8**, **#29** unchanged.
+
+**NEXT-MODEL:** **fast tier.** The next head is **#60** then **#61** — one script change with its
+assertion in a file that already exists, and one document correction whose facts are settled in three
+other documents. No ADR is expected and every governing decision is written. **Do not straddle:** if
+the session instead opens #24, that is architecture and belongs on frontier in its own session.
+
+**NEXT-REPO/CWD:** `C:\Users\mlpgr\2026_Projects\workspace_lint` — single repo; state, plan and resume
+ritual all at the root. Work is on `fix/post-merge-doc-drift`, branched from `main`. **The two guard
+files are NOT in this repo** — `~/.claude/hooks/guard-canonical-doc-edit.py` and its suite are
+machine-local and unversioned, as all four guards are.
+
+**NO SELF-ASSESS LINE, BY OPERATOR RULING 2026-08-17.** The ritual line records `verdict=n/a`.
 
 ---
 
