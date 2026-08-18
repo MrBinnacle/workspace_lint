@@ -87,8 +87,8 @@ read this block instead. Nothing here depends on a band still being present.
 **Research method.**
 
 - **`docs/research/` has an INDEX.md as of 2026-08-17 (#54). Start there, not at the directory.**
-  Thirteen files, one line each: the question it answers and what it refutes.
-  <!-- claim: count glob="docs/research/*.md" exclude="INDEX.md" equals=13 -->
+  Nineteen files, one line each: the question it answers and what it refutes.
+  <!-- claim: count glob="docs/research/*.md" exclude="INDEX.md" equals=19 -->
   Two entries carry notes
   rather than rows — `notion-live-probe.md` holds **observations** but is documented-tier and that is
   **not** a misfiling (it ran through an OAuth connector and ADR-0004 says it "does not clear the REST

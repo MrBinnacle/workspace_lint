@@ -1,7 +1,7 @@
 # `docs/research/` — index
 
-Thirteen files. **One line per file: the question it answers, and what it refutes.**
-<!-- claim: count glob="docs/research/*.md" exclude="INDEX.md" equals=13 -->
+Nineteen files. **One line per file: the question it answers, and what it refutes.**
+<!-- claim: count glob="docs/research/*.md" exclude="INDEX.md" equals=19 -->
 
 
 This exists because a reading list that names a directory does not tell you which file answers your
@@ -29,12 +29,18 @@ assertion and it is beaten by `docs/proof/`. Two exceptions are called out below
 | `frame-completeness-prior-art.md` | **May the frame be called sufficient?** — the prior question to the one above. | The outcome model was **one component short**: coverage error had no axis. Source of ADR-0013. Bias runs in the flattering direction (Kosinski & Barnhart 2003). |
 | `name-and-legal.md` | Is `workspace-lint` available, and what are the trademark boundaries? | The evidence behind **issue #8**. Not legal advice; marks where a lawyer is genuinely required. |
 | `documented-claim-drift-prior-art.md` | A document asserts a fact, the system changes, nothing detects it. What exists, and where is it mature? | **Refutes the reflex design.** The software field builds *probabilistic* traceability recovery because links were never declared; aerospace and nuclear **configuration management** declares a baseline and pays at write time instead. Manual compliance evaluation runs to 25% of assessment effort even where a regulator mandates it. Behind **#62**. ACM/IEEE and IAEA **not checked**. |
+| `claim-in-document-store-prior-art.md` | Does anything evaluate an assertion written **inside** a document store against that store's own live data? | **Refutes #69's moat claim.** Di Iorio et al., *Constrained Wiki* (2012), defines the predicate and prototyped it twice. SharePoint **cannot express** the assertion — vendor-stated. The mechanism is mature in dbt and Great Expectations, which keep assertion and data in **two** systems. What is unoccupied is the one-system collapse. **See the note below: this is a null result on named routes.** |
+| `zero-config-naming-prior-art.md` | What does "zero-config" mean in shipped tooling, and what do those tools still require? | **No surveyed tool requires zero input**; thirteen checked, claim against minimum input. The term is overloaded inside this repository — ADR-0001 rejects "zero-config inference" while `PRODUCT.md` names the entry point after it. Behind **#70**. |
+| `result-taxonomy-prior-art.md` | How does the field separate a finding from an observation, and a rule from a metric? | SARIF §3.27.9's six `kind` values; `informational` ≠ `review`. **SARIF contains `metric` zero times.** SonarQube gates on **metrics, never on issues**. Every surveyed non-failing tier ships its own escalation switch. Counter-evidence included: Google deleted the warning tier. Behind **#70**. |
+| `metric-aggregation-prior-art.md` | Where is the line between counting and scoring, operationally? | **Operator-set thresholds are not a third option** — Beller et al., 168,214 projects, 80%+ of configs never change after creation. Convergent validity fails across MI, SIG and SQALE. The Maintainability Index has not been recalibrated since 1994. Eight buildable rules and a reconstructibility test. Behind **#70**. |
+| `executable-spec-adoption-prior-art.md` | Who authors executable specifications, and do inline assertions survive? | **Two questions, see the note below.** The Gherkin promise was never audited — surveys show 60.7% developers, 1.8% business analysts. Suppression false-positive rate is **4–5%**; a third of suppressions silence a claim the team agrees with. The failure mode is **freezing, not deletion**. Behind **#69**. |
+| `inconclusive-verdict-prior-art.md` | Does any assertion system distinguish "failed" from "could not be evaluated"? | **Closes half of the checkpoint's standing NOT CHECKED** — Razniewski & Nutt (VLDB 2011) is free at `vldb.org` and now read. SMT-LIB's `unknown` + `:reason-unknown` is the design; **budget exhaustion may never return a refutation**. Does not contradict `static-analysis-prior-art.md`. Behind **#69** and **#71**. |
 
 `sweep-raw/` holds the verbatim scout reports and the two verification reports behind
 `coverage-artifact-prior-art.md`, including every scout's dissent section. It is evidence for that
-file, not a fourteenth entry.
+file, not a twentieth entry.
 
-## Two files whose tier needs a word
+## Four files whose tier or scope needs a word
 
 **`notion-live-probe.md` holds observations but sits in the documented tier, and that is not a
 misfiling.** `docs/proof/` records the fixture under the **read-only REST integration**. This probe
@@ -48,6 +54,19 @@ are easy to confuse.** The first asks *how big is the gap* and finds it unmeasur
 *may the frame be called sufficient* and finds the model had no axis for the question. The second
 nearly got written as a duplicate of the first during the ADR-0013 sweep; one line of index would have
 prevented the near-miss, which is why this file exists.
+
+**`claim-in-document-store-prior-art.md` records a null result on named routes, and the distinction
+between its two halves is the file's whole value.** For SharePoint the vendor states the limit in its
+own words — *"Calculated fields can only operate on their own row"* — and that is **evidence of
+absence**. For Notion, Confluence and the wikis, five and six routes returned nothing, and that is
+**absence of evidence**: the routes see published packages, public repositories and listed marketplace
+apps, and they cannot see a script inside a company. Coda is recorded as blocked at HTTP 403/404, not
+as absent. Do not collapse the three into "nobody does this."
+
+**`executable-spec-adoption-prior-art.md` answers two questions, not one**, and the index's one-line
+rule bends for it. Question 1 is who authors executable specifications; question 2 is whether inline
+assertions survive. They are kept in one file because both were produced by one sweep against one
+literature, and splitting them would put half of a shared blocked-routes table in each half.
 
 ## Keeping this honest
 
