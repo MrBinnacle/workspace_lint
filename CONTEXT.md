@@ -29,6 +29,8 @@ The product tests declared rules. It does not infer workspace quality, intent, o
 | Coverage manifest | The staged record of what the scan reached: declared, resolved, enumerated, fetched, evaluated. Every drop-out names a resource and a specific cause. It also records each rule's declared coverage item. See ADR-0011. |
 | Invariant | A structural statement that must remain true. |
 | Rule | Executable logic that tests one invariant. |
+| Rule catalogue | All eight specified rules, four shipping and four deferred. Say "the rule catalogue" or "the eight catalogued rules". Never "the eight v0.1 rules". |
+| v0.1 rules | The **four** rules v0.1 ships: `SYS001`, `REF001`, `REQ001`, `UNQ001`. The phrase means the shipping four and nothing else. A claim about all eight names the catalogue instead. |
 | Observation | What the scan saw, with evidence and provenance. A 404 is an observation. |
 | Finding | A judgement a rule reached from observations, with evidence and a stable location. |
 | Outcome | What a rule concluded, as a pair: a Conformity and an Evidence sufficiency. Never a single value. See ADR-0005. |
@@ -142,7 +144,7 @@ Building. `main` carries product source as of PR #56, merged 2026-08-17 — `sli
 
 All four are marked **Ships** in the rule catalog above, which states v0.1 *scope*; built is a separate question and this paragraph answers it.
 
-`PRODUCT.md` holds the user, the job, the gates, and the kill criteria. This file is the glossary. Both are canonical. Thirteen research sweeps sit in `docs/research/`, indexed at `docs/research/INDEX.md` — start at the index, not the directory. <!-- claim: count glob="docs/research/*.md" exclude="INDEX.md" equals=13 --> The Notion PRD that seeded this file is mirrored at `docs/inputs/prd-2026-08-16.md` and is an input, not an authority.
+`PRODUCT.md` holds the user, the job, the gates, and the kill criteria. This file is the glossary. Both are canonical. Nineteen research sweeps sit in `docs/research/`, indexed at `docs/research/INDEX.md` — start at the index, not the directory. <!-- claim: count glob="docs/research/*.md" exclude="INDEX.md" equals=19 --> The Notion PRD that seeded this file is mirrored at `docs/inputs/prd-2026-08-16.md` and is an input, not an authority.
 
 Both pre-build gates closed on 2026-08-17 and nothing gates the build. Gate 1, the demand test, closed on owner research rather than on a five-team send: it chose an entry point — the zero-config decay report — and did not establish a price, so no willingness-to-pay figure exists for any framing. Gate 2, the 72-hour proof, closed as circular as filed, six of its nine checks requiring the build it existed to gate; those checks are build-acceptance criteria, not pre-build gates. See `PRODUCT.md` and `README.md`.
 
