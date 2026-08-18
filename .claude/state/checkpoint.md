@@ -104,6 +104,8 @@ read this block instead. Nothing here depends on a band still being present.
   nothing works, record the status codes — a 403 and a 402 are evidence, "unavailable" is not.
   Still genuinely blocked as of 2026-08-18: ISO OBP (403), IAEA (402), eCFR (bot-block redirect),
   nrc.gov (403), everyspec (404), and EIA-649 which has no public text at all.
+  **The five-tier source ladder is at `docs/agents/domain.md` → "The source ladder".** Work down it;
+  "not checked" is earned at tier 4, not reached for at tier 2.
 - **Citations are receipts.** A claim carries a locator a third party can follow — URL plus fetch date,
   file plus **section heading**, commit SHA, clause number. Never a line number written as a section.
 - **A negative about an endpoint requires that endpoint's own page**; **a claim about a model requires
