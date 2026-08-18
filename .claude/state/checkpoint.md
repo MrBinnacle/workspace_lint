@@ -258,6 +258,25 @@ exists because the §5 plan gate was model-pull and failed on two consecutive se
 without a triage-role label**, reading the roles from `docs/agents/triage-labels.md`; escape is
 `TRIAGE_LABEL_ACK=1`. Its wiring is machine-local for the same reason the others' is.
 
+**Two standing risks in the enforcement layer, measured 2026-08-18 and deliberately NOT filed** —
+neither blocks a rule, and the S025 standing rule forbids opening a decision ticket that does not.
+
+- ⛔ **The enforcement layer exists on ONE machine and has no backup.** `~/.claude/settings.json` is
+  gitignored, so every hook wiring in this project — the canonical-doc guard, the triage-label guard,
+  the pull-rebase guard, the skill router — is reproducible nowhere. **§1 designates the hook layer as
+  the place a discipline goes when it must survive the loop; that layer does not currently survive a
+  disk.** This is the largest structural risk in the tooling and the cheapest to fix.
+- ⚠ **`skill-router.py` has no test suite.** Three of nine hooks are tested
+  (`guard-canonical-doc-edit` 163 lines, `guard-gh-issue-triage-label` 113, `guard-git-pull-rebase`
+  98). The router is the untested one that matters most, because §14 marks
+  `downstream-instruction-framing` MANDATORY and the router is the whole of that enforcement. It was
+  measurably incomplete: on 2026-08-18 the rule matched `\bADR\b` and `execution plan` but **not the
+  bare word "plan"**, so *"write me a plan for issue 18"* fired nothing. Verified against the hook
+  before and after; three patterns were added and five probes confirm no false positive on
+  "plane"/"planner". **A rule that fires only when the operator's phrasing happens to contain a
+  different word is model-pull wearing a hook's clothes** — and a test suite is what would have
+  caught it, not a reading.
+
 **The gates. Both of them are closed, and nothing gates the build.**
 
 - **Gate 1, the demand test — CLOSED 2026-08-17** on owner research rather than on a five-team send.
