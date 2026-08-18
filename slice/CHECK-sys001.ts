@@ -5,7 +5,7 @@
  * No network, no .env, no token. The clock is injected and the Notion surface is
  * the shared fake in CHECK-fakes.ts.
  *
- * THREE OF THESE TESTS ARE MUTATION CHECKS AND THEY ARE THE POINT OF THE FILE.
+ * FOUR OF THESE TESTS ARE MUTATION CHECKS AND THEY ARE THE POINT OF THE FILE.
  * A control that passes with its mechanism bypassed tested nothing (spec §4.1).
  * Each one disables a different load-bearing clause and asserts the result moves:
  *
@@ -18,13 +18,16 @@
  *            must fall from `disclaimed` to `qualified` and the byte from 2 to 3.
  *   TEST 7 — feed a gap naming a resource the manifest does not hold; the rule
  *            must report the disagreement instead of defaulting around it.
+ *   TEST 10b — apply ADR-0005 decision 2's applicability filter to the resource
+ *            this build cannot read; the ratio must reach 3/3 and the byte must
+ *            go 3 → 0. It prices the #50 ruling that TEST 10 states.
  */
 
 import { createHarness, reportSection } from './CHECK-harness.js';
-import { scan } from './scan.js';
+import { scan, BUILT_RULES } from './scan.js';
 import { renderReport } from './report.js';
 import { hyphenate } from './ids.js';
-import { anchorFor, anchorKey, headlineCoverage } from './finding.js';
+import { anchorFor, anchorKey, coverageRow, headlineCoverage } from './finding.js';
 import { SYS001, SYS001_ID, SYS001_UNIT, DROPOUT_STAGE_KEY, lastStage, type Sys001Rule } from './sys001.js';
 import { REF001 } from './ref001.js';
 import type { Entry, Manifest } from './manifest.js';
@@ -56,6 +59,15 @@ check('and there is exactly one finding for it', r1.findings.length, 1);
 check('  one finding per gap, never one per resource in the manifest', r1.findings.length, r1.gaps.length);
 
 const fDataset = findingFor(r1.findings, DATASET)!;
+/* THIS LINE EXISTS BECAUSE THE ONE BELOW IT THROWS, and the throw is silent
+ * about its cause. `findingFor` returns undefined the moment the data source
+ * stops producing a finding — which is exactly what applying the applicability
+ * filter does (TEST 10). A module-level throw then halts the file, so the
+ * operator gets a TypeError on `.rule` and TEST 10's named ruling is never
+ * reached. Asserting presence first does not stop the throw; it puts the cause
+ * on the line above it. Removing the `!` properly means guarding nine call
+ * sites, which is #50's Revisit-if and not #50's job. */
+check('a finding exists for the data source — every check below depends on it', fDataset !== undefined, true);
 check('the finding names SYS001', fDataset.rule, SYS001_ID);
 check('  and anchors on (rule ID, resource ID) — ADR-0010 decision 1', anchorKey(fDataset.anchor), `SYS001:${hyphenate(DATASET)}`);
 check('  the resource ID is the HYPHENATED native ID', fDataset.anchor.resource, '5db3573f-8cf6-a332-afe7-fee0d11db964');
@@ -331,6 +343,118 @@ check('  evidence sufficiency is ABSENT, not `sufficient`', rAuth.outcomes[SYS00
 check('  and the report says why', /evidence ABSENT — the applicable set is empty/.test(authReport), true);
 console.log('  ^ every some() over an empty manifest is false, so the fall-through');
 console.log('    reported a run that made no successful call as fully covered.');
+
+/* ------------------------------------------------------------------------ */
+
+
+/* =========================================================================
+ * TEST 10 — #50: the applicability filter does NOT reach a build-scope exclusion
+ *
+ * THE DECISION THIS FILE EXISTS TO KEEP.
+ *
+ * ADR-0005 decision 2 relocates `inapplicable` into two places, and one of them
+ * is an APPLICABILITY FILTER on the (rule, resource) pair: "The resource leaves
+ * that rule's applicable set, and therefore leaves its coverage denominator."
+ * Issue #50 asks whether that filter applies to the fixture's data source, which
+ * this slice never enumerates by design.
+ *
+ * IT DOES NOT, AND THE RULING IS A CONSEQUENCE OF ADR-0005 RATHER THAN A NEW
+ * DECISION — which is what #50's third revisable item asked to be settled.
+ *
+ * 1. Decision 2 scopes the filter to a PRECONDITION MISMATCH: a mismatch
+ *    between a rule's preconditions and a resource's properties. "This build
+ *    does not enumerate data sources" is neither. It is a fact about the TOOL.
+ *    Admitting it would make every coverage denominator a function of build
+ *    state, so each unimplemented capability would RAISE the ratio.
+ * 2. ADR-0005 decision 4 already names the resulting number as a defect in
+ *    prior art: Great Expectations computes its success rate over evaluated
+ *    expectations, so "a suite in which half the expectations never executed can
+ *    report 100%. The number is not incomplete; it is wrong."
+ * 3. REF001 answers the identical question the identical way, decided on live
+ *    evidence in `docs/proof/results-51-database-identity.md`: a database
+ *    reference it cannot retrieve stays in its denominator as a named drop-out.
+ *    One product cannot hold two answers for one shape.
+ *
+ * The evidence value therefore stays `unreached` (TEST 3), and #50's
+ * "in the meantime" becomes the settled reading. The residual register is not an
+ * alternative home either: ADR-0013 decision 3 keeps residuals out of every
+ * ratio, so routing the data source there reaches 3/3 by a different door.
+ * ========================================================================= */
+
+head('TEST 10 — #50: a resource this build does not reach stays in the denominator');
+
+/* THE TWO FOURS ARE DIFFERENT NOUNS AND ONLY THE SECOND IS THIS TEST'S SUBJECT.
+ * `verdict.applicable` is the RESOURCE FUNNEL — verdict.ts is explicit that it
+ * "is not what the byte compares" and that collapsing the two produced the #49
+ * defect. SYS001's applicable set is its coverage ROW. Labelling the funnel as
+ * the rule's applicable set would leave an assertion that cannot fail for the
+ * reason its own name gives. */
+const sys001Row = (rows: typeof r1.coverage) => rows.find(c => c.rule === SYS001_ID)!;
+check('the resource funnel counts 4 — the enumerated set, not the handled subset', r1.verdict.applicable, 4);
+check('  and SYS001\'s own coverage row has the data source in its denominator', sys001Row(r1.coverage).applicable, 4);
+check('  so the ratio is 0.75 and NOT 1.0', sys001Row(r1.coverage).ratio, 0.75);
+check('it is a GAP, not an excluded non-defect', r1.gaps.some(g => g.resource === hyphenate(DATASET)), true);
+check('  bounded — the resource is named and counted', fDataset.bounded, true);
+
+/* ADR-0005 decision 5 constraint 2 bans a generic cause. The cause must name
+ * the SCOPE decision, because that is the fact an operator cannot act on and
+ * must not be left to infer from the word `unreached`. */
+const dsGap = r1.gaps.find(g => g.resource === hyphenate(DATASET))!;
+check('the cause names the scope decision, not a generic failure', /out of scope per spec/.test(dsGap.cause), true);
+check('  and it names the rules that own the excluded content', /REQ001\/UNQ001/.test(dsGap.cause), true);
+
+head('TEST 10b — MUTATION CHECK: apply the filter and the byte MUST go green');
+
+/* THE FILTER, IMPLEMENTED. This is exactly what ADR-0005 decision 2 prescribes
+ * for a precondition mismatch — the pair leaves the applicable set, so it leaves
+ * the denominator and produces no finding. Running it here is the only way to
+ * price the decision above: a reader can see what reversing it buys. */
+const filtered: Sys001Rule = {
+  ...SYS001,
+  findingsFrom: (m, gaps) => SYS001.findingsFrom(m, gaps).filter(f => f.anchor.resource !== hyphenate(DATASET)),
+  /* THE DENOMINATOR DROPS THE NAMED RESOURCE, NOT "ONE OF THEM". `count() - 1`
+   * was the first form and it is wrong in a way that would never go red: on a
+   * fixture where the data source is absent it silently removes some other
+   * resource, and the mutation would still print 3/3 while testing nothing. */
+  coverage: (m, judged) =>
+    coverageRow(SYS001_ID, SYS001_UNIT, judged.size, m.of(SYS001_UNIT).filter(e => e.key !== hyphenate(DATASET)).length),
+};
+/* SUBSTITUTED INTO BUILT_RULES, NOT HARDCODED BESIDE ONE OTHER RULE.
+ * `rules: [filtered, REF001]` is the same list as today's BUILT_RULES and stops
+ * being so the moment REQ001 (#58) or UNQ001 (#59) lands: the mutant would then
+ * silently drop a rule the control keeps, and the 3 → 0 byte movement would no
+ * longer be attributable to the filter. Rows are looked up by rule ID for the
+ * same reason — `coverage[0]` is SYS001's row only by accident of ordering. */
+const mutatedRules = BUILT_RULES.map(r => (r.id === SYS001_ID ? filtered : r));
+const mutated10 = await scan({ config: cfg(), port: fakePort(THREE_CHILDREN), now: clock(), rules: mutatedRules });
+
+check('the mutant swaps exactly one rule and keeps the rest', mutatedRules.length, BUILT_RULES.length);
+check('with the filter ON the ratio reads 1.0 over a root the scan did not fully read', sys001Row(mutated10.coverage).ratio, 1);
+check('  and the row reads 3/3', `${sys001Row(mutated10.coverage).evaluated}/${sys001Row(mutated10.coverage).applicable}`, '3/3');
+check('the shipped byte is 3 — coverage below the declared threshold', r1.verdict.exit, 3);
+check('  with the filter ON the byte is 0', mutated10.verdict.exit, 0);
+
+/* THE RESULT THIS CHECK WAS WRITTEN TO FIND, AND IT IS NOT THE EXPECTED ONE.
+ *
+ * The gap SURVIVES the filter. `gapsFrom` derives the gap set from the manifest,
+ * which the rule cannot edit, so the mutated run still records one gap and is
+ * still `qualified`. A reader would reasonably expect that surviving gap to hold
+ * the byte. IT DOES NOT. ADR-0012 decision 2 makes the byte compare the coverage
+ * VECTOR, and the vector is the rule's own row — so the denominator decision is
+ * the ONLY thing between this run and exit 0.
+ *
+ * A run that names a gap in its own report and exits 0 is the false green this
+ * product exists to detect. There is no second guard behind the denominator. */
+check('the gap SURVIVES the filter — gapsFrom reads the manifest, not the rule', mutated10.gaps.length, 1);
+check('  and the report is still qualified', mutated10.verdict.disposition, 'qualified');
+check('  yet the byte is green anyway — a named gap does NOT hold the byte', mutated10.verdict.exit, 0);
+check('  because the byte compares the rule coverage row (ADR-0012 decision 2)', /3\/3 resources \(100\.0%\)/.test(mutated10.verdict.why), true);
+
+console.log('  ^ 3/3 — 100% over a declared root holding four resources, one of which');
+console.log('    the scan never looked inside. results-ref001-live.md §3 records the');
+console.log('    original 2/2 — 100%; the filter reaches the same figure by a mechanism');
+console.log('    with an ADR behind it, which makes it harder to spot rather than easier.');
+console.log('    And the surviving gap does not stop it: the byte reads the vector.');
 
 /* ------------------------------------------------------------------------ */
 
