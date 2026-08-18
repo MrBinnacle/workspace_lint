@@ -87,7 +87,9 @@ read this block instead. Nothing here depends on a band still being present.
 **Research method.**
 
 - **`docs/research/` has an INDEX.md as of 2026-08-17 (#54). Start there, not at the directory.**
-  Thirteen files, one line each: the question it answers and what it refutes. Two entries carry notes
+  Thirteen files, one line each: the question it answers and what it refutes.
+  <!-- claim: count glob="docs/research/*.md" exclude="INDEX.md" equals=13 -->
+  Two entries carry notes
   rather than rows — `notion-live-probe.md` holds **observations** but is documented-tier and that is
   **not** a misfiling (it ran through an OAuth connector and ADR-0004 says it "does not clear the REST
   path"); and `unseen-population-sizing.md` vs `frame-completeness-prior-art.md` answer **different**
@@ -194,8 +196,9 @@ without a triage-role label**, reading the roles from `docs/agents/triage-labels
   first **publishable** `package.json`", which is what the shipped file already asserts about itself.
   The operative trigger is `private: true` being removed or a tree being renamed `src/`.
   Suite: `cd slice && npm run check` — **ONE command, and it typechecks first**: `npm run typecheck
-  && ` then eight files, 38 + 56 + 92 + 124 + 89 + 50 + 76 + **27** = **552 assertions**, offline,
-  no network, no token. ~~`npm run check` DOES NOT TYPECHECK~~ — **#60 CLOSED**, and the
+  && ` then NINE files, 38 + 56 + 92 + 124 + 89 + 50 + 76 + 56 + **29** = **610 assertions**, offline,
+  no network, no token.
+  <!-- claim: count glob="slice/CHECK-*.ts" exclude="CHECK-harness.ts,CHECK-fakes.ts" equals=9 --> ~~`npm run check` DOES NOT TYPECHECK~~ — **#60 CLOSED**, and the
   counterfactual is recorded: `main@f42fadd` printed `ALL CHECKS PASS` at **exit 0** over a tree
   carrying a real `TS2322`. The chain is `&&`, so a type error now stops the gate before any
   assertion runs. **`tsconfig.json` is a GLOB (`*.ts`), not a
@@ -260,6 +263,132 @@ waste of tokens."* Do not solicit a `VERDICT`, do not write a `SELF-ASSESS` line
 of the close ritual still runs; the ritual line records `verdict=n/a`.
 
 **Operator rulings** are in `store.json` → `operator_rulings` and in project memory.
+
+---
+
+---
+
+## S020 — 2026-08-18 — the gate did not compile the code it certified, and one number was wrong in five documents
+
+**PHASE:** **BUILD.** Three units: **#60** (the typecheck in the gate), **#61** (`PRODUCT.md`'s
+gate status and the sweep count), **#62** (the declared-baseline claim check). **Three issues
+closed, one filed (#65).**
+
+**TESTS:** **546 → 610 assertions across NINE suites**, exit 0, offline. **Thirteen mutation
+checks this session, every one scored on the exit code** — three on the typecheck wiring, six on
+the claim checker, four in the #61 pass's counterfactual set. Controls green in all cases.
+**Deref: see the ritual line.**
+
+**COMMITTED:** `70520e1`, `74e9b91` (`fix/typecheck-in-gate`); `8552ae3`
+(`fix/product-md-gate-status`); `4f08f1f` (`build/claim-check`).
+**MERGED BY THE OPERATOR:** PR **#64**, PR **#66**. **OPEN:** PR **#68**.
+
+### The gate was certifying code it never compiled
+
+`npm run check` chained eight suites and no compiler. `tsc --noEmit` sat in a script nothing
+invoked, so a type error passed at exit 0 and every session ran two commands while reporting one
+as the gate.
+
+**The counterfactual was run, not argued.** With a deliberate `TS2322` on disk, `main@f42fadd`
+printed `ALL CHECKS PASS` over 546 assertions and **exited 0**. That is this product's own defect
+class — a green report over an unrun set — printed by the instrument that certifies the
+repository.
+
+`TEST 4` asserts **four links**, because asserting only that `check` mentions the typecheck leaves
+the control substitutable by `"typecheck": "echo ok"`. Its ordering pair guards its own indices
+first: without that, a script naming only the suites compares `-1 < 0` and passes vacuously.
+
+### One number, five documents, and the issue asked for the wrong one
+
+#61 said write **twelve** research sweeps. It is **thirteen** — the #62 sweep landed in S019's
+post-close addendum, after the issue was filed. The stale count stood in `PRODUCT.md`,
+`CONTEXT.md`, `docs/agents/domain.md` (**twice** — the read-order step and the structure diagram),
+`docs/research/INDEX.md` and this file.
+
+**`INDEX.md`'s stated failure mode is not the one that fired.** It said the failure mode is
+"adding a file to `docs/research/` without adding a row here". Commit `ef6a237` added the file
+**and its row**. The **hand-kept header scalar** is what broke, silently, because nothing read the
+header against the table. Its drift counter is set to **one and recorded**, not reset.
+
+### `CONTEXT.md` was declined under one plan and named under the next
+
+The sweep found `CONTEXT.md:139` mid-execution, and it was **not** in the approved Files table.
+The guard would most likely have passed it — the plan named the basename in **background prose**.
+Declined, `EnterPlanMode` re-entered, the file named in the table, `ExitPlanMode`. **Second
+instance of this exact loophole being declined rather than taken**; the first became #61.
+
+Filing it for later was rejected on separate grounds: `PRODUCT.md` would have said thirteen while
+the document that names it as gate authority said twelve.
+
+### The claim check, and the drift it shipped inside itself
+
+`slice/CHECK-claims.ts` evaluates inline `<!-- claim: ... -->` falsifiers — `count`, `exists`,
+`absent` — inside `npm run check`. Design from the **completed** practitioner sweep: Terraform's
+`plan -refresh-only -detailed-exitcode`.
+
+**Two acceptance criteria were changed rather than dropped.** Criterion 3's `b138063` fixture is
+**unsatisfiable by any inline-annotation design** — the annotations do not exist in that commit —
+so a synthetic fixture proving the checker *fails* replaced it. Criterion 6's scope defers
+tracker-backed status (needs the API; the gate is offline and that is worth more) and identifier
+claims.
+
+**The suite shipped the drift class it was built to catch.** This file still read *"eight files …
+552 assertions"* while being one of the six documents the checker reads, so the gate went green
+over a stale scalar in the commit that introduces the catcher. The evaluator's own fixtures
+hard-coded `13` — a seventh copy of the scalar inside the retirer. And `absent` passed vacuously
+on a mistyped path, which would have stayed green **after `REQ001` shipped**.
+
+### `/code-review` earned its place twice, and found my own defects both times
+
+Nine findings on #61, nine on #62. **All eighteen verified; all eighteen fixed.** Four were
+defects the fix itself introduced — most tellingly, `domain.md`'s structure diagram still read
+`12 files` after line 23 of the **same file** was corrected. That is the S019 miss repeating
+inside its own repair, 119 lines apart.
+
+### A merged PR is not work on `main`
+
+PR #67 was stacked on #66. #66 merged to `main` at `01:44:11Z`; **#67 merged into the base branch
+at `01:44:21Z`**, ten seconds after `main` had absorbed it. Nothing errored. The tell was **#62
+staying open** — `Closes #N` fires only on a merge to the default branch. Verified with
+`git merge-base --is-ancestor`, not with the PR's MERGED badge. Repaired as **PR #68**.
+
+### BLOCKERS
+
+**None.** PR #68 is open and carries #62's reviewed content to `main`.
+
+### EXACT NEXT STEPS
+
+**Fourteen issues open.** #65 was filed this session.
+
+1. **Merge PR #68.** Until it lands, `slice/CHECK-claims.ts` is not on `main`, the gate on `main`
+   is 552 rather than 610, and **#62 stays open**. `fix/product-md-gate-status` is spent and
+   carries #67's merge commit; delete it rather than branch from it.
+2. **#65 — "v0.1 rules" means eight in `PRODUCT.md` and four in `CONTEXT.md`/`CLAUDE.md`.**
+   Filed this session. `PRODUCT.md`'s competitive claim depends on which sense the reader holds.
+   Both files are plan-gated.
+3. **#18 then #19 (narrowed).** An external review of the board verified that **#19 is
+   half-shipped** — `slice/config.ts:65-74` already rejects a name-only root with the ticket's own
+   rationale. What remains is the **rule-configuration surface** `REQ001` and `UNQ001` consume.
+   #18 is the rule-to-hydration map and **may conclude property depth does not fit `PRODUCT.md`'s
+   three-minute kill criterion**, which is a product finding landing on #7. **Frontier work.**
+4. **#50 / #51** — the coverage-figure decisions, unchanged.
+5. **#58 then #59**, once #18 and #19 land.
+6. **#27 is closable.** `docs/research/notion-developer-platform.md` §8 already recommends: keep
+   the local CLI, do not build on Workers, do not use a PAT. **What is open is accepting it** —
+   an operator decision, not a research gap.
+7. **#25** (still the tripwire, n unchanged at 2), **#7**, **#8**, **#24**, **#29** unchanged.
+
+**NEXT-MODEL:** **frontier.** The next head after #68 and #65 is **#18** — a spec that may
+invalidate a kill-criterion budget, with #19's narrowing riding on it. That is architecture and
+ambiguity, not execution mechanics. **Do not straddle:** if the session instead only merges #68
+and clears #65, that is fast-tier work and should be its own short session.
+
+**NEXT-REPO/CWD:** `C:\Users\mlpgr\2026_Projects\workspace_lint` — single repo; state, plan and
+resume ritual all at the root. **The four guard hooks and `deref_check.py` are NOT in this repo** —
+they are machine-local and unversioned under `~/.claude/`, which is why #62's taxonomy overstates
+the path class.
+
+**NO SELF-ASSESS LINE, BY OPERATOR RULING 2026-08-17.** The ritual line records `verdict=n/a`.
 
 ---
 
