@@ -23,6 +23,9 @@ The product tests declared rules. It does not infer workspace quality, intent, o
 | Connection | The Notion API identity and its granted read capability. Describes the internal-integration model, which is the primary one. |
 | Shared scope | The pages and data sources visible to the connection. The connection cannot enumerate it. |
 | Declared root | A resource the operator names in configuration as a scan entry point. Coverage is measured against declared roots, never against the workspace. |
+| Policy | The operator-authored rule configuration: which rules run, over what scopes, with what parameters and thresholds. Distinct from declared roots, which are scope. A scan requires scope. It does not require policy. |
+| Policy-free scan | A scan run with credentials and declared roots but no policy. Only built-in rules evaluate. Coverage is measured against declared roots exactly as in a configured scan, and the report disposition is computed the same way. Not "zero-config": the operator must still supply a token and at least one declared root, and the connection cannot enumerate its own grant (ADR-0002). The **policy-free decay report** is the entry point built on this mode. |
+| Built-in rule | A rule whose applicable set is determined without policy. Contrast: configured rule. Which rules are built-in is a separate question from what the category means — `UNQ001`'s membership is open on issue #70. |
 | Resource | A page, database, data source, block, property, or user. |
 | Workspace graph | The normalized resources and edges from one scan. |
 | Edge | A parent, child, relation, mention, hyperlink, or configured dependency. |
@@ -146,7 +149,7 @@ All four are marked **Ships** in the rule catalog above, which states v0.1 *scop
 
 `PRODUCT.md` holds the user, the job, the gates, and the kill criteria. This file is the glossary. Both are canonical. Nineteen research sweeps sit in `docs/research/`, indexed at `docs/research/INDEX.md` — start at the index, not the directory. <!-- claim: count glob="docs/research/*.md" exclude="INDEX.md" equals=19 --> The Notion PRD that seeded this file is mirrored at `docs/inputs/prd-2026-08-16.md` and is an input, not an authority.
 
-Both pre-build gates closed on 2026-08-17 and nothing gates the build. Gate 1, the demand test, closed on owner research rather than on a five-team send: it chose an entry point — the zero-config decay report — and did not establish a price, so no willingness-to-pay figure exists for any framing. Gate 2, the 72-hour proof, closed as circular as filed, six of its nine checks requiring the build it existed to gate; those checks are build-acceptance criteria, not pre-build gates. See `PRODUCT.md` and `README.md`.
+Both pre-build gates closed on 2026-08-17 and nothing gates the build. Gate 1, the demand test, closed on owner research rather than on a five-team send: it chose an entry point — the policy-free decay report, renamed from "zero-config decay report" on 2026-08-18 and unchanged in substance — and did not establish a price, so no willingness-to-pay figure exists for any framing. Gate 2, the 72-hour proof, closed as circular as filed, six of its nine checks requiring the build it existed to gate; those checks are build-acceptance criteria, not pre-build gates. See `PRODUCT.md` and `README.md`.
 
 The public repository `MrBinnacle/workspace_lint` exists as of 2026-08-16, created on the owner's instruction. This supersedes the PRD's "no repository has changed" rollback line and its "public release not approved" field. Rollback is now a repository action, not a Notion row action.
 
