@@ -10,8 +10,10 @@ Revisit-if says a third instance stops being a bad day and becomes a missing che
 instrument is built, per the standing §0.5 rule.
 
 **Method and its limits.** Scholar Gateway (Wiley corpus), two queries, 2026-08-18. **`WebSearch` is
-exhausted at 200/200** and was not available. One `WebFetch` to IAEA was attempted and returned
-**HTTP 402**. See "Not checked" — the gaps are large and are recorded, not glossed.
+exhausted at 200/200** and was not available, so the non-Wiley literature was reached through the
+**arXiv API directly** and the practitioner tools through their own documentation. Six sources that a
+first pass recorded as "not checked" were subsequently fetched and are now first-hand, including the
+nuclear regulatory text. What remains unreached is in §6 and is smaller than it was.
 
 ---
 
@@ -34,6 +36,30 @@ that would falsify it was never written down. Every one of these techniques is i
 construction, and they are imprecise because they are solving a harder problem than this repository
 has.
 
+### 1a. The non-Wiley literature, reached via the arXiv API
+
+Queried 2026-08-18, `abs:"documentation drift" OR abs:"outdated comments" OR abs:"code-comment
+inconsistency" OR abs:"stale documentation"`. **Total results: 11.** That number is itself a finding —
+an earlier draft of this file speculated that the ACM/IEEE venues would hold a rich docs-as-tests
+literature. On this query they do not. The corpus is small and it is almost entirely about **code
+comments**, not about documents making claims about system state.
+
+- **`ReCite`** — "We Must Have Missed This Comment: Detecting and Repairing Stale Function References
+  in Linux Kernel Comments," Sun et al., [arXiv:2608.03734](https://arxiv.org/abs/2608.03734),
+  2026-08-04. Finds comments that reference functions which **no longer exist**. This is the
+  identifier class from §4, at kernel scale, and it is the closest published analogue to the
+  repository's own failure.
+- **Outdated comments correlate with bugs.** Radmanesh et al., "Investigating the Impact of Code
+  Comment Inconsistency on Bug Introducing," [arXiv:2409.10781](https://arxiv.org/abs/2409.10781),
+  2024-09-16.
+- **Detect-and-repair, LLM-based.** `CCISolver`, Zhong et al.,
+  [arXiv:2506.20558](https://arxiv.org/abs/2506.20558), 2025-06-25; `HatCUP`, Zhu et al.,
+  [arXiv:2205.00600](https://arxiv.org/abs/2205.00600), 2022-05-02; Nguyen et al.,
+  [arXiv:2512.19883](https://arxiv.org/abs/2512.19883), 2025-12-22.
+- **Cross-check:** Huang et al., the Wiley hit above, is also [arXiv:2403.00251](https://arxiv.org/abs/2403.00251).
+  Two independent retrieval paths returning the same paper is weak corroboration that the search was
+  not badly scoped.
+
 ---
 
 ## 2. The high-reliability domains do not recover the link. They declare it.
@@ -55,12 +81,30 @@ management**.
   A later CM strategy for aircraft product lines is written to **ISO/IEC 26580** — Epp, Robert, Ruch
   & Olechowski (2024), *INCOSE IS* 34(1):2287–2304, [10.1002/iis2.13270](https://doi.org/10.1002/iis2.13270)
 
-- **Nuclear.** The Finnish regulator's **YVL B.1 requirement #305**, quoted in the literature: *"The
-  licensee shall maintain detailed design documentation to be able to ensure the design integrity and
-  safety of the facility over its entire service life, including the planning of modifications and
-  component replacements."* Documentation currency is a **regulated obligation**, not a tidiness
-  preference.
-  — Varkoi, Mäkinen, Cameron & Nevalainen (2019), *JSEP* 32(3), [10.1002/smr.2177](https://doi.org/10.1002/smr.2177)
+- **Nuclear — and this one is now first-hand.** Finnish guide **YVL B.1, "Safety design of a nuclear
+  power plant," issued 15.6.2019**, fetched from [stuklex.fi](https://www.stuklex.fi/en/ohje/YVLB-1)
+  on 2026-08-18. Four requirements bear directly, and #359 is the whole design in one sentence:
+
+  > **359.** The documentation concerning design and implementation shall be **consistent and
+  > traceable to a frozen baseline of the plant design.**
+
+  > **327.** The configuration system documentation shall be updated in connection with any
+  > modifications made.
+
+  > **305.** The licensee shall maintain detailed design documentation to be able to ensure the design
+  > integrity and safety of the facility over its entire service life, including the planning of
+  > modifications and component replacements. *[dated 2013-11-15]*
+
+  > **355.** The documentation describing the nuclear facility, its systems and their design
+  > requirements shall be clearly structured, comprehensive and **capable of accommodating any
+  > updates** made during the course of design, implementation and operation.
+
+  Documentation currency is a **regulated obligation**, not a tidiness preference — and the regulator
+  specifies the mechanism, not just the outcome: a frozen baseline, plus traceability to it, plus an
+  update obligation triggered by modification. *(Requirement #305 was previously carried here
+  second-hand via Varkoi, Mäkinen, Cameron & Nevalainen (2019), *JSEP* 32(3),
+  [10.1002/smr.2177](https://doi.org/10.1002/smr.2177). The primary source confirms that quotation
+  verbatim. Varkoi et al. remains the source for the §3 cost figure.)*
 
 - **Process safety.** Under OSHA PSM (29 CFR 1910.119(d)), a Canadian Chemical Producers Association
   analysis of 89 incidents found six PSM elements contributed to 85% of them, and **"Process
@@ -117,19 +161,68 @@ problem where the exact version is available.
 
 ---
 
-## 5. Not checked
+## 5. The practitioner tools, verified — and two of them are the answer
 
-- **ACM, IEEE, VLDB and USENIX.** Out of reach: the Scholar Gateway corpus is Wiley, and `WebSearch`
-  is exhausted at 200/200. The software-engineering venues where documentation-drift and
-  docs-as-tests work most likely sits are therefore **not checked, not absent**.
-- **IAEA configuration-management guidance.** One `WebFetch` attempted 2026-08-18; the server
-  returned **HTTP 402**. No locator obtained, so no claim is made about its content.
-- **MIL-HDBK-61A, EIA-649, ISO/IEC 26580, YVL B.1 as primary sources.** Each is named by a
-  secondary source above and none was fetched. The YVL #305 wording is quoted **via Varkoi et al.**
-  and is labelled so wherever it is reused.
-- **US NRC design-basis reconstitution.** The obvious nearest regulatory analogue in the domain and
-  it was not reached at all — no search path available this session.
-- **Existing tooling.** `doctest`, rustdoc doctests, `cog`, ArchUnit, Terraform drift detection and
-  AWS Config are all plausible practitioner prior art. **None was verified this session**, because
-  verifying a tool's behaviour needs its own documentation fetched, and the budget went to the
-  literature. Do this before writing any code.
+Checked 2026-08-18 against each tool's own documentation. This was #62's gating step and it changed
+the shape of the recommendation again.
+
+**Terraform is the closest working precedent, and it already does exactly this.**
+`terraform plan -refresh-only` "creates a plan whose goal is only to update the Terraform state and
+any root module output values to match changes made to remote objects **outside of Terraform**," and
+`-detailed-exitcode` gives **0 = empty diff, 1 = error, 2 = non-empty diff**
+([HashiCorp docs](https://developer.hashicorp.com/terraform/cli/commands/plan), fetched 2026-08-18).
+Declared state versus observed state, difference signalled by an exit code, designed for CI. That is
+the §4 design, in production, at scale — and it scores on the exit code, which is the discipline this
+repository already applies to its mutation checks.
+
+**`cog --check` is the answer for the count class, and it is better than checking.**
+Cog "lets you use small bits of Python code in otherwise static files to generate whatever text you
+need," and `--check` means **"Check that the files would not change if run again"**
+([cog docs](https://cog.readthedocs.io/en/latest/running.html), fetched 2026-08-18). So a count like
+"twelve research sweeps" is not verified — it is **generated**, and the check fails when the file is
+stale. A claim that is generated from its source cannot drift from it. *(The docs page does not state
+`--check`'s exit code; confirm before relying on it in a gate.)*
+
+**Two tools are the right pattern aimed at the wrong subject.**
+- `doctest` "searches for pieces of text that look like interactive Python sessions, and then executes
+  those sessions to verify that they work exactly as shown" — and the documentation is explicit that
+  prose is out of scope: all narrative text in docstrings "is completely ignored during testing"
+  ([Python docs](https://docs.python.org/3/library/doctest.html), fetched 2026-08-18). Executable
+  claims only.
+- ArchUnit is "a free, simple and extensible library for checking the architecture of your Java code
+  using any plain Java unit test framework" ([archunit.org](https://www.archunit.org/), fetched
+  2026-08-18). Structural claims asserted as ordinary tests that fail on violation — the declared-
+  assertion pattern exactly, scoped to Java bytecode rather than to documents.
+
+**Consequence for #62.** The build is smaller than it looked. Count claims should be **generated**
+(cog's strategy), not checked. Status claims should be **checked against a source of truth with an
+exit code** (Terraform's strategy). Neither needs a natural-language contradiction detector, and
+neither needs an agent to re-read anything.
+
+## 6. Not checked
+
+Six items a first pass listed here were fetched instead and moved into the body. **An exhausted
+`WebSearch` is not an unreachable web** — arXiv publishes an API, regulators publish their own
+guides, and tools document themselves. What is left is genuinely blocked, and each entry names how.
+
+- **MIL-HDBK-61A.** Named by Stanilka & Dagli as the governing DoD guidance. One fetch to a mirror
+  returned **HTTP 404**. Title and role are second-hand; no text is quoted.
+- **EIA Standard 649.** Named by the same source. A paid SAE standard with no public text. Not
+  reachable by any route available here.
+- **ISO/IEC 26580.** Named by Epp et al. The ISO Online Browsing Platform returned **HTTP 403**, so
+  even the free scope statement was not obtained.
+- **IAEA configuration-management guidance.** One fetch returned **HTTP 402**.
+- **US 10 CFR 50.71(e)**, the FSAR update obligation — the nearest US regulatory analogue to YVL B.1.
+  Two attempts: eCFR **302-redirects to a bot-block page**, and nrc.gov returned **HTTP 403**. Named
+  from prior knowledge and therefore **not cited anywhere in this file**. The Finnish guide is
+  first-hand and carries the regulatory claim on its own.
+- **AWS Config.** Not attempted. Terraform already establishes the drift-detection precedent
+  first-hand, so the marginal value was low; recorded so the omission is a choice and not an oversight.
+- **`cog --check`'s exit code.** The options page states what `--check` does but not what it returns.
+  Confirm before putting it in a gate.
+- **rustdoc doctests.** Not attempted; `doctest` establishes the executable-example class already.
+
+**On the size of the arXiv result.** Eleven results is a real number from one query, not a survey.
+A different phrasing — "specification conformance", "living documentation", "executable
+specification" — would return a different set. Treat §1a as evidence that the *code-comment* framing
+is well worked and the *document-asserts-system-state* framing is not, rather than as a census.

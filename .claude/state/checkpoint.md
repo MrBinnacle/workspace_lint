@@ -94,8 +94,16 @@ read this block instead. Nothing here depends on a band still being present.
   questions — *how big is the gap* versus *may the frame be called sufficient* — which nearly produced
   a duplicate sweep.
 - **WebSearch is exhausted at 200/200 and has been since before the ADR-0013 sweep.** `WebFetch` and
-  the Scholar Gateway MCP still work. Scholar Gateway's corpus is **Wiley**, so ACM/VLDB/IEEE
-  literature is out of reach and must be recorded **not checked**, never absent.
+  the Scholar Gateway MCP still work. Scholar Gateway's corpus is **Wiley**.
+- ⚠ **"Not checked" is a verdict, not a first response — work smarter, not harder.** S019 published a
+  sweep with **eight** items marked not-checked because `WebSearch` was gone. **Six were one
+  `WebFetch` away.** `http://export.arxiv.org/api/query?search_query=...` is a public no-key API and
+  reaches the ACM/IEEE-adjacent preprint literature; regulators publish their own guides free
+  (`stuklex.fi` turned a second-hand YVL quote into a first-hand one with a better requirement in it);
+  and every tool documents itself. **Before writing "not checked", name the route not taken.** When
+  nothing works, record the status codes — a 403 and a 402 are evidence, "unavailable" is not.
+  Still genuinely blocked as of 2026-08-18: ISO OBP (403), IAEA (402), eCFR (bot-block redirect),
+  nrc.gov (403), everyspec (404), and EIA-649 which has no public text at all.
 - **Citations are receipts.** A claim carries a locator a third party can follow — URL plus fetch date,
   file plus **section heading**, commit SHA, clause number. Never a line number written as a section.
 - **A negative about an endpoint requires that endpoint's own page**; **a claim about a model requires
