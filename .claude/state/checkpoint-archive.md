@@ -2194,3 +2194,214 @@ so a reading of "Hans" is **documented-tier**, belongs in `docs/research/`, and 
 **NEXT-MODEL is unchanged: frontier.** #73 and #74 are both scope-and-architecture questions and they
 join #70 at the head. **The verdict field is NOT re-opened by this addendum.**
 
+
+## S022 — 2026-08-18 — the config learned to declare a rule, and refusing what it cannot run turned out to be the whole feature
+
+**PHASE:** **BUILD.** #19's load-bearing half is built, reviewed, corrected and pushed. **One commit
+(`b6518e6`), one PR (#79, OPEN), one issue filed (#78), one issue comment.** No canonical doc decided
+anything new; `CLAUDE.md` and `README.md` changed only to stop asserting stale facts.
+
+**TESTS:** **676 assertions, ten suites, exit 0, offline.** Up from 610. `CHECK-config.ts` is the
+tenth suite (64 assertions); `CHECK-suite-registration.ts` went 29 → 31 because two of its assertions
+are per-suite. **Deref: 41 path claims checked / 9 flagged / 9 hand-verified** — eight are the
+machine-local `~/.claude/` hooks outside the checker's root, the ninth is `prototypes/verdict.ts`, an
+absence claim the checker correctly confirms. Same shape as S021.
+
+### The session opened on a state file that did not know what had happened
+
+**The previous session wrote no band.** It merged PR #72, mirrored the Hans doctrine into
+`docs/inputs/` as PR #77, filed #75 and #76, and closed #73 — and `checkpoint.md`'s EXACT NEXT STEPS
+still said *"Merge PR #72"*. Three of its four steps were already done. The reconciliation was done by
+reading the tracker at session start and it cost real context. **The rotation instruction at the top
+of this file survived; the band itself never got written.**
+
+### What shipped, and the design position inside it
+
+`parseConfig` validated `version`, `roots` and `minCoverage`, so `REQ001` had nowhere to declare its
+required property — which is why **#58 and #59 both named #19 as a blocking edge**. The section is
+`rules`, optional, empty when absent, and `REQ001` is its only member: **#70 decision 1 is open**, and
+a schema that guessed at `UNQ001`'s shape would be rewritten by whichever way that decision falls.
+
+**Six refusals, each exiting 4.** A scope addressed by name/alias/URL; a `REQ001` entry with no scope;
+a rule ID outside the catalog; a built-in rule (`SYS001`, `REF001` take no configuration); a
+catalogued-but-unbuilt rule (`UNQ001` names #59); and a duplicate `(rule, normalized scope ID,
+property)`. **The identity rejection is now ONE implementation** — `parseResourceRef`, called for
+declared roots and rule scopes alike. It was one edit away from being two.
+
+**`scope` is REQUIRED on a `REQ001` entry, and the absence of a default IS the decision.** A
+required-property rule with no scope asserts the property over every enumerated resource, which infers
+applicability from nothing — the list ADR-0001 decision 4 rejects. A default scope is available to #58
+as a recorded decision; it is not available to a loader as a convenience.
+
+**No severity field, deliberately.** ESLint separates severity from options at the loader and a rule
+cannot read its own severity. This product has no severity axis: the exit byte derives from findings
+and the coverage vector (ADR-0011, ADR-0012). A severity key would be a second, contradictory route to
+the exit byte.
+
+### The example config exposed a hole in the design that produced it
+
+Writing `wl.config.example.json` is what found it. **The loader validates the document against a
+HAND-KEPT table, so it said yes to `REQ001` while `scan.ts` runs `[SYS001, REF001]`** — an accepted
+rule that nothing evaluates, which is the false green the `UNQ001` refusal exists to stop, in the
+product's own entry point.
+
+Closed by asking the **build** rather than the table: `unimplementedRules(configured, implemented)` in
+`rule.ts`, wired into `cli.ts` before any call is made, with **`BUILT_RULES` exported from `scan.ts`
+so the list has one definition**. That export also deleted a hand-written scalar — the CLI header
+printed `rules implemented: 2 (SYS001, REF001)` as a literal.
+
+**Then the example itself shipped broken**: it declared a `REQ001` entry the CLI rejected at exit 4,
+so the only worked example in the repository was unusable. **Nothing in the suite loaded that file.**
+It does now — `CHECK-config.ts` TEST 8. **An example config is an executable claim about the product,
+and until this session nothing executed it.**
+
+### Review found three defects, all introduced by this change
+
+`/code-review high`, run before the commit. All three verified by repro, each fixed with the assertion
+that missed it:
+
+- **`RULE_STATUS[id]` resolved through `Object.prototype`.** `{"rule":"toString"}` walked past the
+  not-in-catalog branch with `status.kind` undefined and fell through to the last return — telling the
+  operator their typo was a real catalog rule shipping later. `Object.hasOwn` now. **The suite could
+  not have caught it: every ID it tested had no prototype twin.** Four twins asserted.
+- **`property` was validated with `.trim()` and STORED RAW**, so `"Owner"` and `"Owner "` loaded as two
+  entries — the duplicate TEST 5 exists to close, one field to the right. `"Owner "` names no Notion
+  property, so it would have added a pair to `REQ001`'s denominator that no observation fills.
+- **A present-but-MALFORMED `id` got the identity message**, telling an operator who had written an
+  `id` to supply an `id`. It fired on the likeliest path there is — the worked example pairs an `id`
+  with an `alias`, so one wrong hex digit produced it.
+
+### Controls, all scored on the exit code
+
+- Bypass the scope identity rejection → `CHECK-config.ts` exits 1. Restored, exits 0.
+- Remove `tsx CHECK-config.ts` from the check chain → `CHECK-suite-registration.ts` exits 1 naming the
+  file. Restored, exits 0.
+- **The claim gate went RED before the scalars were updated** — `checkpoint.md:219 count — 10 file(s)
+  match slice/CHECK-*.ts`, exit 1. Counterfactual run rather than argued, second session running.
+
+⚠ **Two NUL bytes appeared inside a template literal in `config.ts`** where spaces were written. The
+signal was `grep` reporting **"Binary file config.ts matches"** and `file` reporting `data` — the
+compiler, the tests and the diff were all clean and said nothing. Removed deliberately. **In a
+repository whose method is grepping, a file that reads as binary is a silent loss of the primary
+instrument.**
+
+### BLOCKERS
+
+**None.** PR #79 is open and mergeable and carries everything.
+
+### EXACT NEXT STEPS
+
+**Eighteen issues open.** #78 was filed this session. The operator ratified this ordering
+("Concur"), and items 2–6 are mine to take without checking in.
+
+1. **Merge PR #79.** It closes #19. Until it lands, `main` has no rule-configuration section and #58
+   is still double-blocked.
+2. **#51 — REF001 cannot retrieve a database target.** Highest-value item off the critical path:
+   REF001 is the load-bearing coverage mechanism, and if every database reference is a permanent gap
+   then a SHIPPED rule is producing gaps no amount of sharing can close.
+3. **#18 — the rule-to-hydration map.** Now #58's ONLY remaining blocker. Check **#24** first: whether
+   v0.1 calls `POST /v1/search` changes the request budget the map is estimated against.
+4. **#70's three decisions**, then **#58**, then **#59**. Only #70-1's ADR-supersession question is
+   the operator's.
+5. **#78** before `REQ001`'s report format is fixed. It needs two live-API facts, not an argument.
+6. **#71** — record and close. **#74** — count the broken references in "Hans".
+
+**THE OPERATOR OWES THREE RULINGS, and #75/#76 rank above the build if he agrees with them.** #75: the
+job statement in `PRODUCT.md` hands administration back to him, which his own Identity rule 3 forbids.
+#76: the competitor is the credit meter, not another linter. Both change what the entry point is for,
+so they change what #70's decisions are aimed at. Third: the **`zero-config` rename** —
+`PRODUCT.md:123` and `ADR-0001:20` use the term for opposite things, recommended replacement
+`policy-free scan`. All three touch plan-gated files.
+
+⚠ **Seven issues carry `needs-triage` and none arrived from outside.** By the skill map's own rule
+`/triage` is for issues you did not create, so these need **disposition**, not triage. The label is
+doing nothing and the board reads as unsorted when it is not.
+
+**NEXT-MODEL:** **frontier.** The head after #79 is **#51**, which asks whether a shipped rule's
+central coverage claim survives a class of target it cannot retrieve — that is architecture, and #70's
+three decisions sit behind it. **Do not straddle:** merging #79 and closing #71 is fast-tier work and
+should be its own short session if that is all that happens.
+
+**NEXT-REPO/CWD:** `C:\Users\mlpgr\2026_Projects\workspace_lint` — single repo; state, plan and resume
+ritual all at the root. **The four guard hooks and `deref_check.py` are NOT in this repo** —
+machine-local and unversioned under `~/.claude/`, verified present on this machine this session.
+
+**NO SELF-ASSESS LINE, BY OPERATOR RULING 2026-08-17.** The ritual line records `verdict=n/a`.
+
+**POST-CLOSE ADDENDUM (S022, after `3822c50` shipped) — the operator ruled on all three open
+questions and re-ranked the queue, so the build is no longer the head.**
+
+Ruled 2026-08-18, after the close, against a secondary pass the operator ran himself over live
+`PRODUCT.md`, `CONTEXT.md` and this file. **He agrees with #75, #76 and the `zero-config` →
+`policy-free` rename, and ranks #75 and #76 ABOVE the build.**
+
+His stated grounds, which match what the tracker already held: Gate 1 closed on **framing 2** as the
+entry point while the catalog and the build are still aimed at framings 1 and 3; #75 and #76 change
+the job statement and the competitive claim, so they change what the entry point is **for**; the
+rename is already developed in #70's comments and collides with ADR-0001 decision 4; and all three
+need plan-gated edits to `PRODUCT.md` and the glossary surfaces around it.
+
+### How the next session should treat this
+
+**Non-negotiable — these are the operator's own decisions, not proposals.** He agreed to all three
+and set the ranking. Do not re-open whether #75, #76 or the rename should happen, and do not
+re-order them below the build. **Everything about HOW to land them is revisable**, and the session
+holding the files open has evidence this one did not.
+
+### The three, and what each one actually licenses
+
+1. **#75 — the job statement.** `PRODUCT.md`'s "Job to be done" makes the operator the repairer and
+   the report the deliverable. His own doctrine (`Hans Operating Instructions` v10.0, Identity rule
+   3) says *"You administer the workspace. Matthew does not."* **Agreed: the statement changes.**
+   *Revisit if:* rewriting it turns out to promise a capability v0.1 cannot ship — a job statement
+   the product cannot satisfy is a worse defect than the one being fixed, and that trade is the
+   operator's to re-decide, not the session's to resolve quietly.
+2. **#76 — the competitor is the credit meter.** A Notion Custom Agent doing continuous
+   reconciliation is metered per run, forever, at the vendor's price; a local CLI is not.
+   **Agreed: the competitive claim changes.** *Revisit if:* Notion publishes pricing that removes
+   the per-run meter, which would delete the asymmetry the claim rests on.
+3. **The rename — `zero-config decay report` → `policy-free scan`.** `PRODUCT.md:123` and
+   `ADR-0001:20` use "zero-config" for opposite things. **Agreed.**
+   ⛔ **The rename does NOT touch `ADR-0001`.** An ADR is never edited in place; line 20 stays as
+   written and stays correct. What changes is `PRODUCT.md`'s term and the surfaces that copy it.
+   ⛔ **The rename does NOT decide #70-1.** Renaming the entry point is not the same act as deciding
+   whether `UNQ001` is Configured, built-in or split — that still needs a superseding ADR if the
+   built-in-with-violations route is taken. **A session that conflates these will believe ADR-0001
+   decision 4 has been dealt with when it has not.**
+   *Revisit if:* a grep finds "zero-config" load-bearing in a document that cannot be edited — an
+   ADR or a dated proof record. Those stay as written and the rename becomes a glossary entry
+   recording both senses, not a sweep.
+
+### Two mechanical constraints on doing this work
+
+**All three edits are plan-gated.** `guard-canonical-doc-edit.py` blocks `Edit`/`Write` to
+`PRODUCT.md` and `CONTEXT.md` unless an approved plan under `~/.claude/plans/`, modified within 24h,
+**names that file**. The route is `EnterPlanMode` → name the files → `ExitPlanMode`. ⚠ The matcher
+does not distinguish a plan's Files table from its prose, so a file mentioned in passing passes;
+**treat the Files table as the authorisation and a quiet hook as nothing.**
+
+**A refuted claim is never in one place — five times now, once across five surfaces.** Grep the
+STATE for the rename, not the phrasing: `zero-config`, `zero config`, `decay report`, and the
+negation of what you are about to write. `README.md`, `docs/agents/domain.md` and `CONTEXT.md`'s
+glossary have all carried copies of a `PRODUCT.md` claim before.
+
+### EXACT NEXT STEPS, corrected in place
+
+~~1. Merge PR #79.~~ **MERGED** as `e18c78f`; **#19 is CLOSED**. **PR #80 carries the close itself**
+and is open — the close commit landed on the merged branch after the merge and was cherry-picked
+onto a fresh branch off `main`.
+
+1. **Merge PR #80**, or the entire S022 close exists only on a branch.
+2. **#75 and #76, then the rename** — one plan, three documents, above the build by operator ruling.
+   Recommended as one plan rather than three: they edit the same file and a second plan-gated pass
+   over `PRODUCT.md` costs another gate cycle. *Revisit if:* the session finds #75's rewrite forces
+   a change to `CONTEXT.md`'s glossary that #76 does not need, in which case split them.
+3. **#51**, then **#18** (check **#24** first), then **#70's three decisions**, then **#58**, then
+   **#59**. Unchanged in order; all now sit below item 2.
+4. **#78** before `REQ001`'s report format is fixed. **#71** record and close. **#74** count the
+   broken references in "Hans".
+
+**NEXT-MODEL is unchanged: frontier.** The head is now three canonical-document rewrites that
+change what the product claims to be for, which is further from mechanical than #51 was, not closer.
+
+**The verdict field is NOT re-opened by this addendum.**
