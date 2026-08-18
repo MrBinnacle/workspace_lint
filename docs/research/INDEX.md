@@ -1,6 +1,8 @@
 # `docs/research/` — index
 
 Thirteen files. **One line per file: the question it answers, and what it refutes.**
+<!-- claim: count glob="docs/research/*.md" exclude="INDEX.md" equals=13 -->
+
 
 This exists because a reading list that names a directory does not tell you which file answers your
 question. That is **Shape C** in `docs/agents/domain.md` — *"the evidence was in the repo, indexed,

@@ -87,7 +87,9 @@ read this block instead. Nothing here depends on a band still being present.
 **Research method.**
 
 - **`docs/research/` has an INDEX.md as of 2026-08-17 (#54). Start there, not at the directory.**
-  Thirteen files, one line each: the question it answers and what it refutes. Two entries carry notes
+  Thirteen files, one line each: the question it answers and what it refutes.
+  <!-- claim: count glob="docs/research/*.md" exclude="INDEX.md" equals=13 -->
+  Two entries carry notes
   rather than rows — `notion-live-probe.md` holds **observations** but is documented-tier and that is
   **not** a misfiling (it ran through an OAuth connector and ADR-0004 says it "does not clear the REST
   path"); and `unseen-population-sizing.md` vs `frame-completeness-prior-art.md` answer **different**
@@ -194,8 +196,9 @@ without a triage-role label**, reading the roles from `docs/agents/triage-labels
   first **publishable** `package.json`", which is what the shipped file already asserts about itself.
   The operative trigger is `private: true` being removed or a tree being renamed `src/`.
   Suite: `cd slice && npm run check` — **ONE command, and it typechecks first**: `npm run typecheck
-  && ` then eight files, 38 + 56 + 92 + 124 + 89 + 50 + 76 + **27** = **552 assertions**, offline,
-  no network, no token. ~~`npm run check` DOES NOT TYPECHECK~~ — **#60 CLOSED**, and the
+  && ` then NINE files, 38 + 56 + 92 + 124 + 89 + 50 + 76 + 56 + **29** = **610 assertions**, offline,
+  no network, no token.
+  <!-- claim: count glob="slice/CHECK-*.ts" exclude="CHECK-harness.ts,CHECK-fakes.ts" equals=9 --> ~~`npm run check` DOES NOT TYPECHECK~~ — **#60 CLOSED**, and the
   counterfactual is recorded: `main@f42fadd` printed `ALL CHECKS PASS` at **exit 0** over a tree
   carrying a real `TS2322`. The chain is `&&`, so a type error now stops the gate before any
   assertion runs. **`tsconfig.json` is a GLOB (`*.ts`), not a

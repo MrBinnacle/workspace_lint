@@ -22,6 +22,7 @@ assertion.
    claim, not after.** **Start at `docs/research/INDEX.md`**, which gives one line per file: the
    question it answers and what it refutes. Thirteen files; the index is what makes "read the
    research" an action rather than a directory listing.
+   <!-- claim: count glob="docs/research/*.md" exclude="INDEX.md" equals=13 -->
 6. **`docs/proof/`** — what the API actually did when asked. Outranks everything above it on any
    question of fact.
 7. **`docs/inputs/`** — external artifacts, **none canonical**. Read them; never cite one as
@@ -129,6 +130,13 @@ rule into an excuse, and that is worse than an unmarked gap because it looks lik
 with a working search the cheap-broad-sweep step moves up rather than staying rationed.
 
 ## File structure
+
+<!-- claim: count glob="docs/research/*.md" exclude="INDEX.md" equals=13 -->
+<!-- claim: exists path="slice/scan.ts" -->
+<!-- The diagram below is a fenced block, so its claims sit here rather than beside the
+     lines they guard — an HTML comment inside a fence renders as literal text. This is the
+     one place in the repo where the adjacency the design depends on is broken, and the
+     diagram's file count is exactly what drifted from the prose thirty lines further up. -->
 
 ```
 /
