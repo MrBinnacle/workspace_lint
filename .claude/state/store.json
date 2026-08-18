@@ -1,9 +1,9 @@
 {
   "project": "workspace_lint",
   "updated": "2026-08-17",
-  "session": "S017",
-  "phase": "BUILD -- Gate 3 complete at n=1, all five tracer bullets closed",
-  "phase_detail": "Source code on branch build/t3-ref001, in slice/, under a private:true package.json named slice-v0.1. main STILL has no src/ and no package.json, and that is still correct: #8, the npm name, is the only thing between this branch and main. All five tracer bullets are built and CLOSED -- #42 scaffold, #43 SYS001, #44 REF001, #45 reports, #46 red test. 449 offline assertions across six suites, tsc clean on TypeScript 7.0.2 in both packages, and ALL FIVE ADR-0008 exit bytes reached LIVE against the proof fixture, each by its own seeded fault. Acceptance criteria 1, 4 and 5 are closed. Nothing merged, nothing pushed. The build phase produced one finding larger than itself: a permission-filtered child list yields exit 0 with conforms/sufficient over a page whose subtree the connection cannot see, reproduced live with a full-access control and filed against #35 WITHOUT changing the coverage model.",
+  "session": "S019",
+  "phase": "BUILD -- shipped to main. PR #56 merged 2026-08-17 at 23:39Z (b138063)",
+  "phase_detail": "SOURCE CODE IS ON main, in slice/, under a private:true package.json named slice-v0.1. PR #56 merged build/t3-ref001; PR #57 was closed unmerged because build/t2-sys001 is a strict ancestor of t3 and merging it first would have restored prototypes/verdict.ts, the second exit-byte implementation ADR-0012 decision 1 deleted. #8 no longer blocks anything from main: CONTEXT.md's Name constraint now reads 'before the first PUBLISHABLE package.json' and the operative trigger is private:true being removed or a tree being renamed src/. The merge falsified five documents that went on saying the project was pre-build -- CLAUDE.md, CONTEXT.md, README.md, docs/agents/domain.md and the checkpoint -- and a grep for the replaced WORDING found only two of them; /code-review found the rest. guard-canonical-doc-edit.py now covers CLAUDE.md, machine-wide, and its suite went 32 -> 47 assertions with a second mutation check on the new branch. PRODUCT.md still drifts and was deliberately left alone: it is not in the approved plan's Files table, and the guard would have allowed the edit only because the plan named it in prose. Filed as #61. All five tracer bullets are built and CLOSED -- #42 scaffold, #43 SYS001, #44 REF001, #45 reports, #46 red test. 546 offline assertions across eight suites, exit 0, and tsc clean on TypeScript 7.0.2 in both packages -- but npm run check DOES NOT run tsc and no script does, so a type error passes the gate; filed as #60. ALL FIVE ADR-0008 exit bytes reached LIVE against the proof fixture, each by its own seeded fault. Acceptance criteria 1, 4 and 5 are closed. The build phase produced one finding larger than itself: a permission-filtered child list yields exit 0 with conforms/sufficient over a page whose subtree the connection cannot see, reproduced live with a full-access control and filed against #35 WITHOUT changing the coverage model.",
   "gate_1_demand_test": {
     "status": "CLOSED 2026-08-17 on owner research, not on a five-team send. Issue #40 closed with it.",
     "what_closed_it": "docs/inputs/decay-causal-synthesis-2026-08-16.md -- the operator's own causal synthesis of workspace decay, derived from Reddit discussion no research path in this project could reach. Plus this file's own research.known_blind_spot record that the operator reaches Reddit and HAS CONVERTED A BUYER THERE, and docs/research/solo-segment-evidence.md conceding its NO 'may be a verdict on the config file, not on the segment'.",
@@ -367,10 +367,13 @@
   "tracker": {
     "host": "GitHub issues, gh CLI",
     "open": [
+      "#62 (declared-baseline claim check; §0.5 sweep DONE, practitioner sweep DONE, design is generate-counts + exit-code-check-status)",
+      "#61 (PRODUCT.md gate-2 marker + sweep count; plan-gated, name it in the Files table)",
+      "#60 (npm run check does not typecheck and no script does)",
+      "#59 (T7 UNQ001; blocked_by #18, #19)",
+      "#58 (T6 REQ001; blocked_by #18, #19)",
       "#51",
       "#50",
-      "#39",
-      "#35",
       "#29",
       "#27",
       "#25",
@@ -409,7 +412,7 @@
     "note_S017": "All five tracer bullets are CLOSED. The build queue is empty. The head is now #35, a decision and not a build: may a scan that cannot detect permission filtering report evidence:sufficient and exit 0."
   },
   "build": {
-    "branch": "build/t3-ref001",
+    "branch": "main (merged via PR #56, b138063); doc corrections on fix/post-merge-doc-drift",
     "commits": [
       "0ac7c2d",
       "9dcb069",

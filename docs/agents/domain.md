@@ -103,12 +103,39 @@ looking for a section that does not exist; that exact defect shipped into an acc
 **Citation hazard:** ISO 19011:2018 and ISA 705 were read from unauthorised copies. Cite by clause or
 paragraph; **publish no URL for either.** Full list in `.claude/state/store.json` → `citation_hazards`.
 
+## The source ladder — work down it before writing "not checked"
+
+Operator direction, 2026-08-17: *"a straightforward tiered hierarchy of pain-in-the-butt-ness to use
+as a quick reference for rapid triaging."* It exists because S019 published a sweep with **eight**
+items marked not-checked when `WebSearch` ran out, and **six of them sat in tiers 0–1**.
+
+Read it as a cost ladder. Start at 0, stop when the question is answered, and **never quote a tier as
+unreachable without having tried the ones above it.**
+
+| Tier | Pain | Route | Notes |
+| --- | --- | --- | --- |
+| **0** | none | **This repository.** `docs/research/INDEX.md` first, then `docs/proof/`, then grep. | The answer is often already here. A duplicate sweep has nearly shipped once. |
+| **1** | one call, no key, no budget | **The thing's own site.** Tool docs (`docs.python.org`, `readthedocs`, `developer.hashicorp.com`). **arXiv's public API** — `http://export.arxiv.org/api/query?search_query=…`, no key. **Regulators publish free** (`stuklex.fi`). RFCs, MDN, GitHub raw. | Where the six missed items were. A preprint of a paywalled paper usually lives here. |
+| **1.5** | one call, MCP | **Context7** for library and API facts; **`gh`** for anything on GitHub. | Context7 beats memory for library behaviour, and the operator has asked why it goes unused. |
+| **2** | metered or narrow | **Scholar Gateway** — Wiley corpus only, so name the corpus limit whenever it returns nothing. **`WebSearch`** — 200 per session and currently exhausted; treat as the scarcest thing here. | Tier 2 is not the first reach. It has been. |
+| **3** | may fail, try once | **Publisher landing pages.** ISO OBP, IAEA, NRC, eCFR. **Mirrors** for public standards. **PDFs** — `WebFetch` to save, then `pypdf` to extract; the Read tool has no poppler. | Try once. **Record the status code** — a 403 and a 402 are evidence; "unavailable" is not. |
+| **4** | blocked without money or a human | Paid standards with no public text (EIA-649, most ISO). Venues absent from tier 1–2 and with no preprint. **Reddit** — unreachable from every agent path, reachable by the owner. Anything needing interactive auth. | Only here does "not checked" become the honest answer, and it still names the route and the failure. |
+
+**The rule this ladder encodes.** "Not checked, not absent" is a verdict earned after tiers 0–2 are
+spent and tier 3 has been attempted once. Reaching for it at the first blocked tool turns a rigour
+rule into an excuse, and that is worse than an unmarked gap because it looks like diligence.
+
+*Revisit if:* `WebSearch` is restored. Tier 2's ordering was written under an exhausted budget, and
+with a working search the cheap-broad-sweep step moves up rather than staying rationed.
+
 ## File structure
 
 ```
 /
+├── CLAUDE.md               ← agent front door (canonical; plan-gated)
 ├── CONTEXT.md              ← glossary + settled defaults (canonical)
 ├── PRODUCT.md              ← user, job, gates, kill criteria (canonical)
+├── slice/                  ← product source, on main since PR #56
 └── docs/
     ├── adr/                ← accepted decisions, never edited
     ├── spec/               ← behavioural specs, per-rule and per-slice, edited in place
@@ -119,7 +146,8 @@ paragraph; **publish no URL for either.** Full list in `.claude/state/store.json
     └── agents/             ← this file and its siblings
 ```
 
-There is no `src/` yet. The repo is pre-build.
+There is no `src/`, and that is deliberate rather than pending: naming a tree `src/` claims it is the
+product tree, and that claim is due the day #8 settles the npm name. The code lives in `slice/`.
 
 ## Use the glossary's vocabulary
 
@@ -171,7 +199,8 @@ the standing layer-placement rule, a discipline that must fire cannot depend on 
 
 *Revisit if:* `src/` appears. The file-structure block and the "no `src/` yet" line both go stale the
 day the first code lands, and a stale structure diagram is the kind of claim that calcifies because
-nobody follows it.
+nobody follows it. **This trigger fired on 2026-08-17**, when PR #56 put `slice/` on `main`; both were
+corrected then. It stays registered, because `src/` itself is still due the day #8 lands.
 
 **That gap is now closed.** `docs/research/INDEX.md` gives one line per file — the question it answers
 and what it refutes — and step 5 above points at it. Issue #54.

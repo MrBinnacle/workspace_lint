@@ -12,7 +12,7 @@ The tool tests rules you declare. It does not judge workspace quality, and it do
 
 ## Status
 
-**Building, at n=1.** Source exists on the branch `build/t3-ref001`, in `slice/` — a deliberately private, unpublishable package. It is **not** on `main` and it is **not** `src/`, because naming a tree `src/` claims it is the product tree and that claim is due the same day [issue #8](../../issues/8), the npm name, lands.
+**Building, at n=1.** Source is on `main`, in `slice/` — a deliberately private, unpublishable package, merged 2026-08-17 in [PR #56](../../pull/56). It is **not** `src/`, because naming a tree `src/` claims it is the product tree and that claim is due the same day [issue #8](../../issues/8), the npm name, lands.
 
 Both pre-build gates are **closed**, and nothing gates the build:
 
