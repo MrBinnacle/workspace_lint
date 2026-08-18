@@ -87,7 +87,7 @@ read this block instead. Nothing here depends on a band still being present.
 **Research method.**
 
 - **`docs/research/` has an INDEX.md as of 2026-08-17 (#54). Start there, not at the directory.**
-  Twelve files, one line each: the question it answers and what it refutes. Two entries carry notes
+  Thirteen files, one line each: the question it answers and what it refutes. Two entries carry notes
   rather than rows — `notion-live-probe.md` holds **observations** but is documented-tier and that is
   **not** a misfiling (it ran through an OAuth connector and ADR-0004 says it "does not clear the REST
   path"); and `unseen-population-sizing.md` vs `frame-completeness-prior-art.md` answer **different**

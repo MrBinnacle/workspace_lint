@@ -20,8 +20,8 @@ assertion.
    for any rule or slice you are about to implement or change. Edited in place.
 5. **`docs/research/`** — the evidence the ADRs were built from. **Read before asserting any factual
    claim, not after.** **Start at `docs/research/INDEX.md`**, which gives one line per file: the
-   question it answers and what it refutes. Twelve files; the index is what makes "read the research"
-   an action rather than a directory listing.
+   question it answers and what it refutes. Thirteen files; the index is what makes "read the
+   research" an action rather than a directory listing.
 6. **`docs/proof/`** — what the API actually did when asked. Outranks everything above it on any
    question of fact.
 7. **`docs/inputs/`** — external artifacts, **none canonical**. Read them; never cite one as
@@ -139,7 +139,7 @@ with a working search the cheap-broad-sweep step moves up rather than staying ra
 └── docs/
     ├── adr/                ← accepted decisions, never edited
     ├── spec/               ← behavioural specs, per-rule and per-slice, edited in place
-    ├── research/           ← documented evidence (12 files; start at INDEX.md)
+    ├── research/           ← documented evidence (13 files; start at INDEX.md)
     ├── proof/              ← observed evidence, outranks documentation
     ├── inputs/             ← external artifacts, none canonical
     ├── demand-test/        ← outbound instruments
