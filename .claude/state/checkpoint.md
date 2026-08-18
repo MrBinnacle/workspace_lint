@@ -330,7 +330,11 @@ would have been the failure the control exists to stop.
    (`UNQ001`), the two build tickets for the Configured half of the rule catalog. #19's scope was
    restated in a comment: half its definition of done already ships in `slice/config.ts` for the roots
    case, and what is missing is the rule-configuration section.
-6. **#27**, **#25** (still the tripwire, n unchanged at 2 — **no new ADR landed this session**),
+6. **#62 — the claim-check.** Its §0.5 sweep is DONE (`docs/research/documented-claim-drift-prior-art.md`)
+   and it changed the design from a drift detector to a **declared-baseline check**. Its own first step
+   is a practitioner-tooling sweep the literature pass could not reach — `doctest`, rustdoc doctests,
+   `cog`, ArchUnit, Terraform drift detection, AWS Config. **Do not write code before that runs.**
+7. **#27**, **#25** (still the tripwire, n unchanged at 2 — **no new ADR landed this session**),
    **#7**, **#8**, **#29** unchanged.
 
 **NEXT-MODEL:** **fast tier.** The next head is **#60** then **#61** — one script change with its
@@ -344,6 +348,32 @@ files are NOT in this repo** — `~/.claude/hooks/guard-canonical-doc-edit.py` a
 machine-local and unversioned, as all four guards are.
 
 **NO SELF-ASSESS LINE, BY OPERATOR RULING 2026-08-17.** The ritual line records `verdict=n/a`.
+
+**POST-CLOSE ADDENDUM (S019, after `3503028` shipped) — the §0.5 sweep ran, and it refuted the design
+the close left implied.** The band above ends by saying the missing check "needs a prior-art sweep
+first, which is its own session." The operator directed it be done now. It was, and it did not need a
+session — two Scholar Gateway queries.
+
+~~"Building that check needs a prior-art sweep first, which is its own session."~~ The sweep is
+complete and recorded at **`docs/research/documented-claim-drift-prior-art.md`**, indexed, and the
+build ticket is **#62**. What the sweep changed:
+
+- **The software literature is solving a harder problem than this repo has.** Traceability recovery,
+  IR link reconstruction and learning-based code-comment consistency detection are all probabilistic
+  *by construction*, because the link between a claim and its falsifier was never declared.
+- **Aerospace and nuclear declare the baseline instead**, and the discipline has a name —
+  **configuration management**, surveilling change "against a certified design baseline". Documentation
+  currency is a regulated obligation there, not a tidiness preference.
+- **Manual compliance evaluation runs to 25% of assessment effort** even where a regulator mandates
+  and funds it (Varkoi et al. 2019). **That rules out the reflex design** — "have a session re-read
+  the documents" — which is what this repository would otherwise have built.
+- The five S019 instances split into **four classes** with different costs: path (self-healing, already
+  covered by `deref_check.py`), count, status and identifier. Only the path class self-heals. The rest
+  are quoted, never visited.
+
+**Not checked and recorded as such:** ACM, IEEE, VLDB and USENIX are out of a Wiley corpus with
+`WebSearch` exhausted at 200/200; one IAEA `WebFetch` returned HTTP 402; and **no practitioner tool was
+verified** — that is #62's own first step and it gates writing any code.
 
 ---
 
