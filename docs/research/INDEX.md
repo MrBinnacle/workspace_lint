@@ -1,6 +1,6 @@
 # `docs/research/` — index
 
-Twelve files. **One line per file: the question it answers, and what it refutes.**
+Thirteen files. **One line per file: the question it answers, and what it refutes.**
 
 This exists because a reading list that names a directory does not tell you which file answers your
 question. That is **Shape C** in `docs/agents/domain.md` — *"the evidence was in the repo, indexed,
@@ -30,7 +30,7 @@ assertion and it is beaten by `docs/proof/`. Two exceptions are called out below
 
 `sweep-raw/` holds the verbatim scout reports and the two verification reports behind
 `coverage-artifact-prior-art.md`, including every scout's dissent section. It is evidence for that
-file, not a thirteenth entry.
+file, not a fourteenth entry.
 
 ## Two files whose tier needs a word
 
@@ -50,9 +50,24 @@ prevented the near-miss, which is why this file exists.
 ## Keeping this honest
 
 **An index nobody updates is worse than a known absence**, because it asserts a completeness it does
-not have — the defect class this product exists to detect, arriving in its own documentation. Adding a
-file to `docs/research/` without adding a row here is the failure mode.
+not have — the defect class this product exists to detect, arriving in its own documentation. ~~Adding a
+file to `docs/research/` without adding a row here is the failure mode.~~ **That is not the failure mode
+that fired.** See below.
 
-***Revisit if:*** this file drifts from the directory twice. At two, the honest fix is a generated
-index or a check in the suite, not a hand-maintained list — the same conclusion issue #55 reached
-about `tsconfig.json`, for the same reason.
+**DRIFT INSTANCE 1 — 2026-08-18, and the row discipline is not what broke.** `documented-claim-drift-prior-art.md`
+was added in commit `ef6a237` **with its table row**. What did not move was the **header scalar**: line 3
+went on reading "Twelve files" over a thirteen-row table, and line 33 went on calling `sweep-raw/` "not a
+thirteenth entry" once a thirteenth existed. The same stale count had propagated to `PRODUCT.md`,
+`CONTEXT.md`, `docs/agents/domain.md` and `.claude/state/checkpoint.md` — **five documents on one
+number** — and was corrected in the #61 pass.
+
+**The lesson is narrower and worse than the one this section stated.** The prescribed discipline —
+add a row when you add a file — **held**. A hand-kept count that duplicates a fact the table already
+carries is what broke, and it broke silently because nothing reads the header against the table.
+A generated index removes the scalar rather than reminding anyone to update it.
+
+***Revisit if:*** this file drifts from the directory **a second time**. At two, the honest fix is a
+generated index or a check in the suite, not a hand-maintained list — the same conclusion issue #55
+reached about `tsconfig.json`, for the same reason. **The counter now stands at one and is recorded
+rather than reset**; a fix that clears the drift without recording it would leave the next session
+believing this is the first.
