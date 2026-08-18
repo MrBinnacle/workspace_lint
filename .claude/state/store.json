@@ -392,7 +392,13 @@
     "SewerAI and Sepehr Sobhani are not contacts. The engagement never closed and was never paid. The artifacts are design input only.",
     "Citations are receipts, 2026-08-17. A claim carries a locator a third party can follow -- ADR, repo file plus section, official API doc, commit SHA, dated post. Paraphrase without a pointer, 'as we discussed', 'Notion's docs say', 'the ADR covers this' -- all commentary, not evidence. In a system treating UNMEASURED and claim ceilings as first-class, the citation is the only mechanism keeping the ceiling honest.",
     "The gap is rigour, not triage, 2026-08-17. 'The real hole here is in lack of rigor, computer science research, and systems design analysis - not ticket triage.' Proved the same session by issue #31: a merged ADR adopted a matching rule that is not an equivalence relation, and no template, PR review or hook caught it. Check formal properties before writing the evidence section.",
-    "Notion Workers and the PAT are not v0.1 surfaces, 2026-08-17. The PAT is ruled out by Principle 7 -- its API capability is a single bundle including create and update, with no read-only variant -- so the planned PAT fixture test in #27's DoD is NOT to be run. Workers are technically viable via an integration token and strategically premature: no exit byte, both output shapes reopen a stated boundary, Business/Enterprise only, and billed since 2026-08-11 on a per-run credit meter that charges more the more completely the scan reads."
+    "Notion Workers and the PAT are not v0.1 surfaces, 2026-08-17. The PAT is ruled out by Principle 7 -- its API capability is a single bundle including create and update, with no read-only variant -- so the planned PAT fixture test in #27's DoD is NOT to be run. Workers are technically viable via an integration token and strategically premature: no exit byte, both output shapes reopen a stated boundary, Business/Enterprise only, and billed since 2026-08-11 on a per-run credit meter that charges more the more completely the scan reads.",
+    {
+      "date": "2026-08-18",
+      "ruling": "Agrees with #75, #76 and the zero-config -> policy-free rename. Ranks #75 and #76 ABOVE the build.",
+      "grounds": "Gate 1 closed on framing 2 as the entry point while the catalog and build are aimed at framings 1 and 3. #75 and #76 change the job statement and the competitive claim, so they change what the entry point is FOR. Confirmed by his own secondary pass over live PRODUCT.md, CONTEXT.md and checkpoint.md.",
+      "scope": "The three are decided. HOW to land them is revisable by the session holding the files. The rename does NOT edit ADR-0001 (never edited in place) and does NOT decide #70-1 (UNQ001's mode still needs a superseding ADR if built-in-with-violations is taken)."
+    }
   ],
   "tracker": {
     "host": "GitHub issues, gh CLI",
@@ -420,8 +426,8 @@
     ],
     "closed_S022": "none. #19 closes when PR #79 merges.",
     "filed_S022": "#78 - REQ001 configures a property by NAME. Two live-API facts would settle it; blocks nothing but must precede REQ001's report format.",
-    "critical_path": "PR #79 -> #18 (hydration map, now #58's ONLY blocker; check #24 first) -> #58. #59 additionally needs #70-1. #51 ranks second overall despite being off the path: REF001 is the load-bearing coverage mechanism.",
-    "operator_owes": "#75 (the job statement hands administration back), #76 (the competitor is the credit meter), and the zero-config rename. All three touch plan-gated files and all three rank above the build if he agrees with them.",
+    "critical_path": "#75 + #76 + the rename FIRST, by operator ruling 2026-08-18 - all plan-gated edits to PRODUCT.md and the glossary surfaces. Then PR #80 -> #51 -> #18 (check #24 first) -> #70's three decisions -> #58 -> #59.",
+    "operator_owes": "Nothing. All three rulings given 2026-08-18.",
     "note": "Seven issues carry needs-triage and none arrived from outside. By the skill map's rule /triage is for issues you did not create, so these need DISPOSITION, not triage."
   },
   "build": {
