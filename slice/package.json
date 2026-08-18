@@ -5,7 +5,7 @@
   "type": "module",
   "description": "The v0.1 scan slice. PRIVATE and unpublishable — this is NOT the npm name, which is issue #8 and must land before the first publishable package.json (CONTEXT.md, 'Name constraint').",
   "scripts": {
-    "check": "tsx CHECK-verdict.ts && tsx CHECK-scan-scaffold.ts && tsx CHECK-sys001.ts && tsx CHECK-ref001.ts && tsx CHECK-report.ts && tsx CHECK-redtest.ts && tsx CHECK-residuals.ts && tsx CHECK-suite-registration.ts",
+    "check": "npm run typecheck && tsx CHECK-verdict.ts && tsx CHECK-scan-scaffold.ts && tsx CHECK-sys001.ts && tsx CHECK-ref001.ts && tsx CHECK-report.ts && tsx CHECK-redtest.ts && tsx CHECK-residuals.ts && tsx CHECK-suite-registration.ts",
     "check:redtest": "tsx CHECK-redtest.ts",
     "check:residuals": "tsx CHECK-residuals.ts",
     "check:verdict": "tsx CHECK-verdict.ts",

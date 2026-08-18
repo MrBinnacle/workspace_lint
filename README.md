@@ -110,10 +110,12 @@ Node and TypeScript, and **no ADR records that choice** — it is the working as
 
 ```bash
 cd slice
-npm run typecheck     # tsc --noEmit
-npm run check         # the full offline suite: no network, no token, no .env
+npm run check         # the gate: tsc --noEmit, then the full offline suite
+npm run typecheck     # tsc --noEmit alone — a shortcut, not a second gate
 ```
 
-The offline suite is the gate. It runs every rule against a hand-built fake of the Notion surface, and it includes **mutation checks** — each disables a mechanism and confirms the corresponding control goes red, scored on the process exit code. A control that passes with its mechanism bypassed tested nothing.
+`npm run check` is the gate and it is one command. It typechecks first, then runs every rule against a hand-built fake of the Notion surface: no network, no token, no `.env`. The chain is `&&`, so a type error stops the gate before any assertion runs.
+
+It includes **mutation checks** — each disables a mechanism and confirms the corresponding control goes red, scored on the process exit code. A control that passes with its mechanism bypassed tested nothing. `CHECK-suite-registration.ts` applies that to the gate itself: it asserts that every suite on disk is registered, that `tsconfig.json` covers the directory by glob, and that the `check` script actually invokes a real `tsc --noEmit` ahead of the suites.
 
 `.gitignore` covers Node, Python and Rust; trim it once the stack is an actual decision rather than an assumption.
