@@ -325,8 +325,8 @@ would have been the failure the control exists to stop.
 
 **Fourteen issues open.** Four were filed this session.
 
-1. **Push `fix/post-merge-doc-drift`.** It carries `7b79d43` and this close, and it has never left this
-   disk.
+1. ~~**Push `fix/post-merge-doc-drift`.**~~ **DONE, and merged to `main` in PR #63** — the document
+   corrections, the sweep, the source ladder and this close. Nothing is outstanding on that branch.
 2. **#60 — the typecheck is wired into nothing.** `npm run check` does not run `tsc` and no script
    does. The assertion belongs in `CHECK-suite-registration.ts`, which exists as the control for
    exactly this class of hole. `/implement` driving `/tdd`; **`CLAUDE.md` is plan-gated** and its gate
@@ -353,9 +353,11 @@ other documents. No ADR is expected and every governing decision is written. **D
 the session instead opens #24, that is architecture and belongs on frontier in its own session.
 
 **NEXT-REPO/CWD:** `C:\Users\mlpgr\2026_Projects\workspace_lint` — single repo; state, plan and resume
-ritual all at the root. Work is on `fix/post-merge-doc-drift`, branched from `main`. **The two guard
-files are NOT in this repo** — `~/.claude/hooks/guard-canonical-doc-edit.py` and its suite are
-machine-local and unversioned, as all four guards are.
+ritual all at the root. **Everything from this session is on `main`**, via PR #56 (the slice) and
+PR #63 (the corrections, the sweep, the ladder, this close). Start the next session from `main` and
+branch from there; `fix/post-merge-doc-drift` is spent. **The two guard files are NOT in this repo** —
+`~/.claude/hooks/guard-canonical-doc-edit.py` and its suite are machine-local and unversioned, as all
+four guards are.
 
 **NO SELF-ASSESS LINE, BY OPERATOR RULING 2026-08-17.** The ritual line records `verdict=n/a`.
 
