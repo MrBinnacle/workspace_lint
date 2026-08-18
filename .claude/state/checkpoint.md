@@ -478,3 +478,81 @@ ritual all at the root. **The four guard hooks and `deref_check.py` are NOT in t
 machine-local and unversioned under `~/.claude/`, verified present on this machine this session.
 
 **NO SELF-ASSESS LINE, BY OPERATOR RULING 2026-08-17.** The ritual line records `verdict=n/a`.
+
+**POST-CLOSE ADDENDUM (S022, after `3822c50` shipped) — the operator ruled on all three open
+questions and re-ranked the queue, so the build is no longer the head.**
+
+Ruled 2026-08-18, after the close, against a secondary pass the operator ran himself over live
+`PRODUCT.md`, `CONTEXT.md` and this file. **He agrees with #75, #76 and the `zero-config` →
+`policy-free` rename, and ranks #75 and #76 ABOVE the build.**
+
+His stated grounds, which match what the tracker already held: Gate 1 closed on **framing 2** as the
+entry point while the catalog and the build are still aimed at framings 1 and 3; #75 and #76 change
+the job statement and the competitive claim, so they change what the entry point is **for**; the
+rename is already developed in #70's comments and collides with ADR-0001 decision 4; and all three
+need plan-gated edits to `PRODUCT.md` and the glossary surfaces around it.
+
+### How the next session should treat this
+
+**Non-negotiable — these are the operator's own decisions, not proposals.** He agreed to all three
+and set the ranking. Do not re-open whether #75, #76 or the rename should happen, and do not
+re-order them below the build. **Everything about HOW to land them is revisable**, and the session
+holding the files open has evidence this one did not.
+
+### The three, and what each one actually licenses
+
+1. **#75 — the job statement.** `PRODUCT.md`'s "Job to be done" makes the operator the repairer and
+   the report the deliverable. His own doctrine (`Hans Operating Instructions` v10.0, Identity rule
+   3) says *"You administer the workspace. Matthew does not."* **Agreed: the statement changes.**
+   *Revisit if:* rewriting it turns out to promise a capability v0.1 cannot ship — a job statement
+   the product cannot satisfy is a worse defect than the one being fixed, and that trade is the
+   operator's to re-decide, not the session's to resolve quietly.
+2. **#76 — the competitor is the credit meter.** A Notion Custom Agent doing continuous
+   reconciliation is metered per run, forever, at the vendor's price; a local CLI is not.
+   **Agreed: the competitive claim changes.** *Revisit if:* Notion publishes pricing that removes
+   the per-run meter, which would delete the asymmetry the claim rests on.
+3. **The rename — `zero-config decay report` → `policy-free scan`.** `PRODUCT.md:123` and
+   `ADR-0001:20` use "zero-config" for opposite things. **Agreed.**
+   ⛔ **The rename does NOT touch `ADR-0001`.** An ADR is never edited in place; line 20 stays as
+   written and stays correct. What changes is `PRODUCT.md`'s term and the surfaces that copy it.
+   ⛔ **The rename does NOT decide #70-1.** Renaming the entry point is not the same act as deciding
+   whether `UNQ001` is Configured, built-in or split — that still needs a superseding ADR if the
+   built-in-with-violations route is taken. **A session that conflates these will believe ADR-0001
+   decision 4 has been dealt with when it has not.**
+   *Revisit if:* a grep finds "zero-config" load-bearing in a document that cannot be edited — an
+   ADR or a dated proof record. Those stay as written and the rename becomes a glossary entry
+   recording both senses, not a sweep.
+
+### Two mechanical constraints on doing this work
+
+**All three edits are plan-gated.** `guard-canonical-doc-edit.py` blocks `Edit`/`Write` to
+`PRODUCT.md` and `CONTEXT.md` unless an approved plan under `~/.claude/plans/`, modified within 24h,
+**names that file**. The route is `EnterPlanMode` → name the files → `ExitPlanMode`. ⚠ The matcher
+does not distinguish a plan's Files table from its prose, so a file mentioned in passing passes;
+**treat the Files table as the authorisation and a quiet hook as nothing.**
+
+**A refuted claim is never in one place — five times now, once across five surfaces.** Grep the
+STATE for the rename, not the phrasing: `zero-config`, `zero config`, `decay report`, and the
+negation of what you are about to write. `README.md`, `docs/agents/domain.md` and `CONTEXT.md`'s
+glossary have all carried copies of a `PRODUCT.md` claim before.
+
+### EXACT NEXT STEPS, corrected in place
+
+~~1. Merge PR #79.~~ **MERGED** as `e18c78f`; **#19 is CLOSED**. **PR #80 carries the close itself**
+and is open — the close commit landed on the merged branch after the merge and was cherry-picked
+onto a fresh branch off `main`.
+
+1. **Merge PR #80**, or the entire S022 close exists only on a branch.
+2. **#75 and #76, then the rename** — one plan, three documents, above the build by operator ruling.
+   Recommended as one plan rather than three: they edit the same file and a second plan-gated pass
+   over `PRODUCT.md` costs another gate cycle. *Revisit if:* the session finds #75's rewrite forces
+   a change to `CONTEXT.md`'s glossary that #76 does not need, in which case split them.
+3. **#51**, then **#18** (check **#24** first), then **#70's three decisions**, then **#58**, then
+   **#59**. Unchanged in order; all now sit below item 2.
+4. **#78** before `REQ001`'s report format is fixed. **#71** record and close. **#74** count the
+   broken references in "Hans".
+
+**NEXT-MODEL is unchanged: frontier.** The head is now three canonical-document rewrites that
+change what the product claims to be for, which is further from mechanical than #51 was, not closer.
+
+**The verdict field is NOT re-opened by this addendum.**
