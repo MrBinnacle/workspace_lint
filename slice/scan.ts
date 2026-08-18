@@ -391,7 +391,22 @@ export async function scan(opts: ScanOptions): Promise<ScanResult> {
     const alias = titleOf(c);
     if (c.type === 'child_database') {
       /* A NAMED gap. Bounded, because the resource is named and counted, and
-       * present, because its block was returned in the parent's listing. */
+       * present, because its block was returned in the parent's listing.
+       *
+       * ⛔ THIS IS NOT AN APPLICABILITY FILTER AND MUST NOT BECOME ONE — #50.
+       * ADR-0005 decision 2's filter takes the (rule, resource) pair out of the
+       * denominator on a PRECONDITION MISMATCH: the rule's preconditions against
+       * the resource's properties. "This build does not enumerate data sources"
+       * is neither — it is a fact about the tool, and admitting it would make
+       * every denominator a function of build state, so each unimplemented
+       * capability would RAISE the ratio. ADR-0005 decision 4 already names the
+       * resulting figure as a defect in prior art, and REF001 answers the same
+       * question the same way on live evidence
+       * (docs/proof/results-51-database-identity.md).
+       *
+       * CHECK-sys001.ts TEST 10b implements the filter and prices it: the ratio
+       * reads 3/3, the byte goes 3 → 0, and the gap SURVIVES in the report while
+       * the run exits green. There is no second guard behind this line. */
       manifest.mark({ id: c.id, alias, stage: 'enumerated', loss: { cause: DATA_SOURCE_CAUSE, bounded: true, target: 'present' } });
       continue;
     }
