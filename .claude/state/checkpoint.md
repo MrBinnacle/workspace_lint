@@ -6,6 +6,17 @@ aspirational — it said "S001–S009" while carrying seven bands.
 
 ## Standing constraints — always current, not session-scoped
 
+⛔ **BEFORE YOU COMMIT A CLOSE: ROTATE. This file holds ONE band.** Move the previous band verbatim to
+`.claude/state/checkpoint-archive.md` in the same commit that writes the new one, and **hoist anything
+load-bearing out of it first** — the standing block below has claimed to be self-sufficient twice and
+was not, most recently on 2026-08-18 when five claims had to be rescued from bands about to be cut.
+
+**This instruction lives here, not in the close skill, because the close skill has no rotation step
+and the rotation was pure model habit for nine sessions before it died at S016 and went unnoticed for
+six more (#73).** It is still model-pull, now from the always-loaded surface rather than from an
+unretrieved skill — which is weaker than a control and stronger than nothing. **#73 holds the real
+fix; until it lands this line is the only thing standing between the file and the same curve.**
+
 **This block is the authority, and it is complete on its own.** Archived bands each end with a
 "Standing cautions carried forward" paragraph pointing at the band before it. Those paragraphs are
 dated records and stay standing in the archive, but the chain they form does not survive rotation —
