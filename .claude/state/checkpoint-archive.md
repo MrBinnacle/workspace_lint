@@ -2405,3 +2405,130 @@ onto a fresh branch off `main`.
 change what the product claims to be for, which is further from mechanical than #51 was, not closer.
 
 **The verdict field is NOT re-opened by this addendum.**
+
+---
+
+## S023 — 2026-08-18 — the product stopped promising what it cannot do, and the entry point stopped being named after a phrase an ADR rejects
+
+**PHASE:** **CANONICAL DOCUMENTS.** Not the build. Three operator rulings landed in one pass —
+**one commit (`28f135a`), one PR (#83, MERGED as `57b8871`), two issues closed (#75, #76), three
+issues filed (#82, #83's precursor none, #84).** No code changed. `slice/` is untouched.
+
+**TESTS:** **676 assertions, ten suites, exit 0, offline** — unchanged, and **that is the point
+rather than a result.** Every edit this session was prose. See BLOCKERS for what that means.
+
+### What shipped
+
+**#75 — the job statement.** `PRODUCT.md`'s "Job to be done" made the operator the repairer and the
+report the deliverable, against his own doctrine's *"You administer the workspace. Matthew does
+not."* It now claims **census removal only**, with an explicit boundary paragraph: the product
+removes the part where a human has to look and does not remove the repair. Old wording kept visible.
+
+**#75's own candidate wording was REJECTED**, on that issue's own *Revisit if*. It promised *"one
+recommendation, its evidence, and its rollback path"* — per-finding report content v0.1 has not
+scoped, and a rollback path is undefined for a tool that writes nothing. The hard half became **#82**.
+
+**"Productivity theater" was recorded in the RIGHT place, which was not the obvious one.** The
+first plan filed it as a third member of "The tension this product does not resolve" — a section
+that names pains the tool **cannot** address. #75 establishes the opposite about this one. It ships
+as the pain the tool **does** address, measurable as admin time, evidence class stated in the same
+paragraph.
+
+**#76 — the competitor is the credit meter.** Landed in "The commercial risk, stated plainly" and
+**deliberately not** in the "Why the ordering is that way round" bullet, whose claims are sourced to
+`docs/research/competitive-landscape.md`. This evidence is owner doctrine from `docs/inputs/`, a
+different tier; putting it there would have made a sweep appear to say something it does not.
+
+**The rename.** Entry point → **policy-free decay report**; **policy-free scan** is the run mode.
+Three glossary rows added. `ADR-0001` untouched.
+
+### The defect the plan caught in itself, and it is the reusable one
+
+The approved plan said "re-term the built-in duplicate-title sentence." Scrutiny found that
+re-terming it **alone** would have made a sentence ADR-0001 decision 4 forbids read **more** settled,
+not less — the term would change and the contested claim would ship under a cleaner name. It now
+carries a bracketed correction naming the collision and pointing at #70-1.
+
+⭐ **The general rule: renaming a term inside a contested sentence launders the contest.** Touching
+the prose around a known-open question removes the option of staying silent about it.
+
+### BLOCKERS
+
+**None for the build.** One standing epistemic limit, recorded rather than solved:
+
+⚠ **The gate cannot see prose work, and this session was entirely prose.** `npm run check` passed at
+676 before and after and would have passed over any wrong sentence. `CHECK-claims.ts` evaluates
+`count`, `exists` and `absent` claims about paths; **no claim comment can express "this sentence
+promises only what the product ships."** The controls that did the work were a negation grep across
+every surface outside the dated records, reading the new job statement against `CONTEXT.md`'s
+non-goals item by item, `git diff --name-only` returning exactly two files, and re-checking the two
+"Seven" counts. **A close that reports the green gate as evidence for a prose change is reporting a
+control that was never engaged.**
+
+### EXACT NEXT STEPS
+
+**Eighteen issues open.** #82 and #84 were filed this session; #75, #76 and #19 are closed.
+
+1. **#51 — REF001 cannot retrieve a database target.** The head. **It is NOT an argument**: it turns
+   on two API facts neither the issue nor any ADR settles — which object a `child_database` block's
+   ID names versus what `mention.database.id` carries (recorded as a live difference in
+   `docs/proof/fixture.md`), and which endpoint retrieves it after the `2026-03-11` data-source
+   split. **Probe → `docs/proof/` → decide.** The token and `FIXTURE_ROOT_ID` are confirmed good and
+   `prototypes/live-ref001.ts` is the proven `.env`-reading probe. #51 has **zero comments** — its
+   body is the whole specification.
+2. **#18 — the rule-to-hydration map.** #58's only remaining blocker. Check **#24** first.
+3. **#70's three decisions**, then **#58**, then **#59**. Decision 1 is partly downstream of #51:
+   how much port-widening appetite exists is an input to it.
+4. **Disposition sweep, fast tier, its own session.** Seven issues carry `needs-triage` and none
+   arrived from outside, so by the skill map's own rule `/triage` does not apply — they need
+   **disposition**. **#71** record and close; **#74** count the broken references in "Hans".
+5. **#78** before `REQ001`'s report format is fixed. **#84** — map the owner's six entropy invariants
+   onto the catalogue; #19 closing means it now lands against a shipped loader.
+
+**#82 is the operator's**, and nothing depends on it. It is filed with three positions and a note
+that the third reverses Principle 7 and needs a superseding ADR.
+
+**NEXT-MODEL: frontier.** #51 asks whether a shipped rule's central coverage claim survives a class
+of target it cannot retrieve, and the answer widens a port or accepts a permanent coverage gap in the
+load-bearing rule. **Do not straddle:** the disposition sweep is fast-tier work and belongs in its
+own session, per the routing rule that model boundaries sit on session boundaries.
+
+**NEXT-REPO/CWD:** `C:\Users\mlpgr\2026_Projects\workspace_lint` — single repo; state, plan and
+resume ritual all at the root. The guard hooks remain machine-local at `~/.claude/hooks/` and are not
+in this repo; `deref_check.py` is at `~/.claude/skills/session-end-to-state/scripts/deref_check.py`,
+**not** in `~/.claude/hooks/` — a close looked for it there on 2026-08-18 and did not find it.
+
+### WHAT ONLY THE OPERATOR CAN DO — nothing below is agent-executable
+
+Called out so the next session neither waits on these silently nor tries them and fails.
+
+**To launch the next session, in this order:**
+
+1. `/clear` — full clear, **never `/compact`** (§1.6 Memento discipline; summarisation sediment).
+2. Select **frontier** model before the first prompt. Routing is per-session; a mid-session switch
+   forces a full context re-read.
+3. `/session-start-from-state` — reads this file, `store.json` and the two `.jsonl` logs, and emits
+   the `READ-v1:` contract line.
+
+**Skills that are user-invoked and that the model cannot call for itself** — if one is wanted, type
+it: `/code-review` (and `/code-review ultra`, which is billed and cloud-run), `/session-end-to-state`,
+`/session-start-from-state`, `/grill-me`, `/grill-with-docs`, `/azimuth`, `/claudeception`,
+`/skill-necessity-gate`, `/cite-verified-research-sweep`. A skill marked
+`disable-model-invocation` refuses the Skill tool; the model asking for one is the model asking
+**you** to type it.
+
+**Decisions that are yours and are blocking nothing right now:**
+
+- **#82** — does executive function force a repair surface Principle 7 forbids. Three positions are
+  written up; position 3 reverses a product boundary and needs a superseding ADR.
+- **#8** — the npm package name. Still open. Nothing on `main` is blocked by it; the trigger is
+  `private: true` being removed or a tree being renamed `src/`.
+- **#29** — name the buyer for v0.1. Carries `needs-info`.
+- **#25** — whether the research grep becomes enforcement. Carries `ready-for-human`.
+
+**Actions no agent can perform at all:** anything in Notion's developer portal, any share/permission
+change inside the Notion UI (including reconnecting `wl-revoke-child`, which resets Q1), and
+anything requiring a TTY — **the `!` prefix has no TTY**, so an interactive script routed through it
+reads EOF and records defaults.
+
+**NO SELF-ASSESS LINE, BY OPERATOR RULING 2026-08-17.** The ritual line records `verdict=n/a`.
