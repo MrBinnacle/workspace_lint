@@ -6,7 +6,7 @@ This repository is canonical. External planning artifacts (Notion pages, memos, 
 
 Building. Source is on `main` in `slice/` — a private, unpublishable package, deliberately not `src/` until #8 settles the npm name. Two of the four v0.1 rules are built: `SYS001` and `REF001`. `REQ001` and `UNQ001` are #58 and #59. Both pre-build gates closed on 2026-08-17 and nothing gates the build.
 
-Gate, and it is two commands, not one: `cd slice && npm run check` runs 546 offline assertions with no network and no token, and `cd slice && npx tsc --noEmit` typechecks. **`npm run check` does not typecheck.** No script wires the two together, so a type error passes the suite — the hole #55 was filed to close, one layer up.
+Gate, and it is one command: `cd slice && npm run check` typechecks the tree and then runs 552 offline assertions, with no network and no token. The typecheck runs first and the chain is `&&`, so a type error stops the gate before any assertion runs. It was not always so — until #60 closed, `npm run check` ran no compiler and a tree that did not compile printed `ALL CHECKS PASS` at exit 0. `CHECK-suite-registration.ts` TEST 4 is the control that keeps the compiler in the chain.
 
 ## Agent skills
 

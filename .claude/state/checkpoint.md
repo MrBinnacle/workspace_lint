@@ -193,13 +193,18 @@ without a triage-role label**, reading the roles from `docs/agents/triage-labels
   **#8 no longer blocks anything from `main`.** `CONTEXT.md`'s Name constraint now reads "before the
   first **publishable** `package.json`", which is what the shipped file already asserts about itself.
   The operative trigger is `private: true` being removed or a tree being renamed `src/`.
-  Suite: `cd slice && npm run check` — **eight files, 38 + 56 + 92 + 124 + 89 + 50 + 76 + 21 = 546
-  assertions, offline, no network, no token**. ⚠ **`npm run check` DOES NOT TYPECHECK, and no script
-  does** — `npx tsc --noEmit` is hand-run, so a type error passes the gate. Filed as **#60**. Two
-  commands until it lands. **`tsconfig.json` is a GLOB (`*.ts`), not a
+  Suite: `cd slice && npm run check` — **ONE command, and it typechecks first**: `npm run typecheck
+  && ` then eight files, 38 + 56 + 92 + 124 + 89 + 50 + 76 + **27** = **552 assertions**, offline,
+  no network, no token. ~~`npm run check` DOES NOT TYPECHECK~~ — **#60 CLOSED**, and the
+  counterfactual is recorded: `main@f42fadd` printed `ALL CHECKS PASS` at **exit 0** over a tree
+  carrying a real `TS2322`. The chain is `&&`, so a type error now stops the gate before any
+  assertion runs. **`tsconfig.json` is a GLOB (`*.ts`), not a
   hand-kept list** — it was an explicit 26-entry `include` and a new file was silently untypechecked
-  (#55). `CHECK-suite-registration.ts` is the control for the `check` script, which a glob cannot fix,
-  and #60's assertion belongs in that file rather than a new one.
+  (#55). `CHECK-suite-registration.ts` is the control for both halves and now has FOUR tests: TEST 3
+  covers **which** files the typecheck reads, TEST 4 covers **whether anything runs it**. TEST 4
+  asserts the whole chain — invocation, that `typecheck` runs a real `tsc`, `--noEmit`, the `&&`
+  separator, and the ordering — because asserting invocation alone leaves the control substitutable
+  by `"typecheck": "echo ok"`.
   Live: `npx tsx cli.ts scan --config ../wl.config.json --oracle`,
   after `npx tsx make-fixture-config.ts [ENV_KEY]` writes the gitignored config from `.env` —
   **the key argument is how the live exit-byte table was produced.**

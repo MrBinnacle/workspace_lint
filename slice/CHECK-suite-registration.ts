@@ -1,4 +1,4 @@
-/* The suite checks that the suite is complete — issue #55.
+/* The suite checks that the suite is complete — issues #55 and #60.
  *
  *   npx tsx CHECK-suite-registration.ts
  *
@@ -15,6 +15,10 @@
  *   - `package.json`'s `check` script names each suite by hand. A glob cannot
  *     fix that half — the script has to run them in order — so it needs a
  *     control instead.
+ *   - And the glob only decides WHICH files the typecheck reads. Nothing RAN
+ *     it: `check` chained eight suites and no compiler, so a type error passed
+ *     the gate at exit 0 for as long as the slice has existed. That is #60, and
+ *     TEST 4 is its control.
  *
  * A green gate over an unrun set is the defect class this product exists to
  * detect. Finding it inside this product's own instrument is the reason this
@@ -82,7 +86,46 @@ check('include is a single entry', include.length, 1);
 check('  and it is a glob over this directory', include[0], '*.ts');
 check('  so no file in slice/ can be omitted from the typecheck by forgetting it', include.some(p => p.includes('CHECK-')), false);
 
+head('TEST 4 — the `check` script runs the typecheck, and the typecheck it runs is real');
+
+/* THE CHAIN HAS FOUR LINKS AND EVERY ONE IS ASSERTED — issue #60.
+ *
+ * `tsconfig.json` being a glob (TEST 3) makes the typecheck cover every file.
+ * It does not make anything RUN the typecheck. `npm run check` chained eight
+ * suites and no compiler, so a type error passed the gate at exit 0 while the
+ * suites went green over code that does not compile — the same shape as the
+ * hole in TEST 3, one layer up, and the reason both live in this file.
+ *
+ * Asserting only that `check` mentions the typecheck would leave this control
+ * SUBSTITUTABLE: redefining `typecheck` to `echo ok` keeps that assertion green
+ * while the gate stops typechecking, and a control that passes with its own
+ * mechanism bypassed has tested nothing. So the invoked script is checked too. */
+const typecheckScript = pkg.scripts.typecheck ?? '';
+
+check('the `check` script invokes the typecheck', checkScript.includes('npm run typecheck'), true);
+check('  and the `typecheck` script runs the compiler', /(^|\s)tsc(\s|$)/.test(typecheckScript), true);
+check('  and passes --noEmit, so it checks rather than builds', typecheckScript.includes('--noEmit'), true);
+
+/* THE SEPARATOR IS PART OF THE MECHANISM. `npm run typecheck ; tsx …` runs the
+ * compiler and then discards its exit code, which reinstates the exact defect
+ * under test while every assertion above stays green. */
+check('  and is chained with && so a failure stops the gate', /npm run typecheck\s*&&/.test(checkScript), true);
+
+/* ORDERING IS ASSERTED RATHER THAN LEFT TO HABIT. A type error usually explains
+ * the assertion failures that follow it; reported after 500-odd assertions it
+ * has scrolled off. #60 records the ordering as revisable — if it is revised,
+ * this pair is what changes, which is the point of writing it down. */
+const typecheckAt = checkScript.indexOf('npm run typecheck');
+const firstSuiteAt = checkScript.indexOf('tsx CHECK-');
+/* Both indices are asserted PRESENT first. Without this line a script naming
+ * neither would compare -1 < -1, which is false but says nothing about order,
+ * and a script naming only the suites would compare -1 < 0 and pass VACUOUSLY —
+ * the empty-set hole TEST 1 guards with its `onDisk.length > 0` line. */
+check('  both the typecheck and a suite are present to order', typecheckAt >= 0 && firstSuiteAt >= 0, true);
+check('  and the typecheck runs before the first suite', typecheckAt >= 0 && firstSuiteAt >= 0 && typecheckAt < firstSuiteAt, true);
+
 finish(
-  'Both gates are list-driven. The typecheck half is now a glob; this file is the control for\n' +
-  'the half that cannot be. A green gate over an unrun set is what this product exists to detect.',
+  'Both gates are list-driven, and this file is the control for what a glob cannot fix. TEST 3\n' +
+  'covers WHICH files the typecheck reads; TEST 4 covers WHETHER anything runs it. A green gate\n' +
+  'over an unrun set is what this product exists to detect.',
 );
