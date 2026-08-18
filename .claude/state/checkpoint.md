@@ -388,95 +388,120 @@ of the close ritual still runs; the ritual line records `verdict=n/a`.
 
 
 
-## S024 — 2026-08-18 — the API refuted the issue's own premise: a readable database is a 400, not a 404
 
-**PHASE:** **EVIDENCE, then a decision. Not the build.** #51 worked to a recorded decision. **One
-commit (`8818902`) on branch `docs/51-database-identity`, PR #86 OPEN and NOT MERGED, one issue
-comment, zero issues closed.** `slice/` is untouched.
+## S025 — 2026-08-18 — the filter was refused, the mutation priced it, and the review that "returned nothing" returned five findings
 
-**TESTS:** **676 assertions, ten suites, exit 0, offline** — run before the close and unchanged.
-**The gate cannot see this session's work and this is not a hedge:** no `slice/` file changed, and
-`docs/proof/` is deliberately excluded from `CHECK-claims.ts`'s `ANNOTATED` list because dated
-records must not be corrected to match the present. The green gate is evidence about the tree, not
-about anything written this session.
+**PHASE:** **BUILD.** #50 decided and shipped. **Two commits (`b4ff999`, `37259dd`), PR #87 MERGED
+as `faff3ca`, one issue CLOSED (#50), one authorization recorded (#51).** `main` is green.
 
-**LIVE:** four read-only probes, roughly 25 GETs, `Notion-Version: 2026-03-11`, subject identity
-`workspace-lint-proof`. `prototypes/live-db51.ts` · `live-db51b.ts` · `live-db51c.ts` ·
-`live-db51d.ts`. Token never reached stdout.
+**TESTS:** **693 assertions, ten suites, exit 0, offline.** Up from 676. `CHECK-sys001.ts` went
+92 → 109. Verified on merged `main`, not only on the branch.
 
-### What the API did — `docs/proof/results-51-database-identity.md`
+**LIVE:** none. No API call was made this session.
 
-**A `child_database` block's `id` names the DATABASE. So does `mention.database.id`.** Same ID. The
-data source under it is a third object with a different ID and **no reference shape carries it.**
-That explains the suffix mismatch `fixture.md` recorded: the fixture table records the data-source
-ID, every discoverable reference records the database ID.
+### What shipped — #50
 
-| ID | `/v1/pages` | `/v1/databases` | `/v1/data_sources` | `/v1/blocks` |
-| --- | --- | --- | --- | --- |
-| page, granted | **200** | 400 `validation_error` | 404 | — |
-| database, granted | 400 `validation_error` | **200** | 404 | **200** |
-| data source, granted | 404 | 404 | **200** | 404 |
-| anything outside the grant | 404 | 404 | 404 | 404 |
+**The applicability filter does NOT reach a resource this build cannot read, and it needs no ADR.**
+ADR-0005 decision 2 scopes the filter to a **precondition mismatch** — a rule's preconditions against
+a *resource's properties*. "This build does not enumerate data sources" is neither; it is a fact
+about the **tool**. So the filter never reached the case and nothing new had to be decided. That
+settles #50's third revisable item as *consequence, not new decision*.
 
-⭐ **#51's stated precision limit is REFUTED by the API.** The issue says a 404 on a Route B href
-*"covers a readable database as well as a dead link."* It does not. A readable database returns
-**400 `validation_error`**, verbatim *"is a database, not a page. Use the retrieve database API
-instead."* The two cases are separated by the status code with **no port widening at all**. The
-limit narrows to a different, true statement: **a 404 covers an absent target and a target of any
-kind outside the grant**, because the API discloses object kind only to a connection permitted to
-read the object. For those targets `unreachable` was already the only defensible answer.
+Two independent grounds hold the same line. ADR-0005 decision 4 already names the resulting figure as
+a defect in prior art — Great Expectations scores over *evaluated* expectations, so *"a suite in which
+half the expectations never executed can report 100%. The number is not incomplete; it is wrong."*
+And REF001 answered the identical question identically on live evidence (#51).
 
-### The decision — recorded on #51, NOT implemented
+⭐ **TEST 10b implements the filter and prices it, and the result was not the expected one.** The
+ratio reads 3/3 and the byte goes 3 → 0 as predicted. The unexpected half: **the gap SURVIVES and the
+run exits 0 anyway.** `gapsFrom` derives the gap set from the manifest, which a rule cannot edit, so
+the mutated run still reports one gap and is still `qualified` — and the byte is green regardless,
+because ADR-0012 decision 2 makes the byte compare the coverage **vector**. **A run that names a gap
+in its own report and exits 0. There is no second guard behind the denominator decision.**
 
-**Widen `NotionPort` by ONE method: `retrieveDatabase(id)` → `GET /v1/databases/{id}`.** Four GETs,
-not three. It closes the whole Route A gap; **`/v1/data_sources` resolves nothing `REF001` needs**
-and must not be added; the same one method also fixes Route B, because a 400 is now a positive
-signal to re-try on `/v1/databases`.
+**Nothing about the shipped behaviour changed.** `scan.ts` already counted the `child_database` and
+named the cause; assertions already pinned `3/4`. What was missing was the decision, and a control
+saying why `3/4` is a ruling rather than an artifact.
 
-⛔ **Implementation is GATED on the operator.** `CLAUDE.md` §3 puts a network call not in the
-original spec under ASK FIRST and `notion-port.ts` states the surface is three GETs. #51 says "this
-is the ask." The comment is the recommendation; it is not the authorization.
+### #51 — AUTHORIZED, and still blocked on the operator
 
-### What the fixture gained, and what it did not
+`GET /v1/databases/{id}` is authorized as the **fourth** read endpoint (2026-08-18). `notion-port.ts`'s
+header must stop saying three. **`/v1/data_sources/{id}` was neither requested nor granted** — it
+resolves no observed reference shape. #51 stays OPEN as an implementation ticket behind two
+non-agent-executable preconditions; see BLOCKERS.
 
-**`wl-outside-grant-db` is PERMANENT** — top-level, never connected, **never linked from anything**,
-recorded in `fixture.md`. It is the database analogue of `wl-outside-grant` and the only way to
-observe the out-of-grant case. It cannot enter any manifest.
+### The two process failures, and the second one cost a defect
 
-**`wl-dbref-probe` was created under the root, read once, and moved back out.** The root
-re-enumerates to 15 blocks, same types, `child_database` intact. `fixture-oracle.ts`'s `applicable:
-4` and `references.applicable: 1` were **not touched** and still hold.
+⚠ **`sed -i` and a `cat >>` heredoc rewrote a CRLF file to LF**, turning an 80-line append into
+`445 insertions, 338 deletions`. `core.autocrlf` is `false` and there is no `.gitattributes`, so the
+flip lands in the committed blob. Caught by the diffstat looking absurd, which is the only tell.
+**Use the Edit tool on this repo's source files.**
 
-⚠ **The fixture still contains NO database reference.** Whoever implements #51 needs one for the red
-test, and adding it moves `references.applicable` — which must be **re-pre-registered before the run
-and never corrected after it.**
+⛔ **A background `/code-review` fork was declared to have "returned nothing" and the work was
+committed on that conclusion. It returned ten minutes later with five valid findings**, one of them a
+defect self-review had missed: a control asserting `verdict.applicable` — the **resource funnel** —
+under the label *"the data source is IN SYS001's applicable set"*. It could not have failed for the
+reason its own label gave. `TaskList` reported "No tasks found" twice while the fork was live.
+**An empty task list is not evidence a fork finished.** Wait, or say plainly the work shipped
+unreviewed. Never predict a pending agent's result.
+
+### Convex — evaluated and REFUSED, no ticket opened
+
+An external prompt asked whether Convex is worth adopting. **No, in any capacity, now.** Every
+candidate capability is store-and-distribute, and **ADR-0003 already assigned that job to SARIF plus
+SonarQube's issue-lifecycle model** — while the local baseline it would sit on has not been written
+(`finding.ts` and `report.ts` both record that the slice has no baseline file; #5 and #20 closed as
+*design*). The one capability SARIF cannot carry is coverage history, and **ADR-0009 decision 4
+already rules a coverage delta over time inadmissible** — *"a guess wearing a number."* Issue #6
+independently ruled that even a GitHub Action ships after the local core, gated on a threat review,
+because *"CI is a different privacy contract, not a packaging detail."*
+
+**Deliberately no ticket filed** — an open ticket is a standing invitation to relitigate a question
+the ADRs answered before it was asked. Full analysis is in the session transcript only; it is not a
+repository artifact and was not made one.
 
 ### BLOCKERS
 
-1. **PR #86 is OPEN and unmerged.** The evidence is not on `main`.
-2. **The §3 authorization for a fourth read endpoint is the operator's** and nothing agent-side can
-   supply it.
-3. **`link_to_page.database_id` is UNOBSERVED.** No Markdown form produces a `link_to_page` block —
-   it is made in the Notion UI. The prior that it carries a database ID is strong and a prior is not
-   an observation. It cannot reverse the widen, only redirect which endpoint the one method calls.
+**None for the build.** Three standing items, all operator-only:
+
+1. ⛔ **One `link_to_page` block pointing at `wl-dataset`, made in the Notion UI.** `references.ts`
+   line 245 reads `link_to_page.database_id`; no Markdown form produces that block, so the field is
+   **UNOBSERVED**. It cannot reverse #51's authorization, only redirect which endpoint the one method
+   calls.
+2. ⛔ **A permanent database reference in the fixture.** Still none. #51's red test needs one, and
+   adding it moves `fixture-oracle.ts`'s `references.applicable`, which must be **re-pre-registered
+   before the run and never corrected after it**.
+3. ⚠ **`findingFor(...)!` at nine call sites in `CHECK-sys001.ts`.** Reversing #50's ruling in
+   `scan.ts` takes the suite to exit 1 **by throwing at TEST 1**, before TEST 10's named ruling is
+   reached. One line now states the cause above the throw. That is a diagnostic, not a fix. Not
+   filed — it blocks no rule.
 
 ### EXACT NEXT STEPS
 
-1. **Merge PR #86.**
-2. **#18 — the rule-to-hydration map.** The head. #58's only remaining blocker. **Check #24 first**
-   (whether v0.1 calls `POST /v1/search`); both are OPEN.
-3. **#51's implementation** unblocks only on the §3 call. If authorized: observe
-   `link_to_page.database_id`, add a permanent database reference to the fixture, re-pre-register
-   `references.applicable`, then the method.
-4. **#70's three decisions**, then **#58**, then **#59**. Decision 1 was partly downstream of #51 and
-   now has its answer: **port-widening appetite is one GET, and the evidence for it is on the issue.**
-5. **Disposition sweep — fast tier, its own session.** Still queued. **#71** record and close; **#74**
-   count the broken references in "Hans".
+**Sixteen issues open.** #50 closed this session; nothing was filed.
 
-**NEXT-MODEL: frontier.** #18 specifies which rule hydrates what, and #24 decides whether a whole
-endpoint enters the product. Both are irreversible-shaped. **Do not straddle:** the disposition sweep
-is fast-tier and keeps its own session, and #51's implementation is blocked on the operator rather
-than on a model tier.
+1. **#24 + #18 as ONE unit — the head.** #18 is #58's only remaining blocker. **#24 does not need its
+   own session:** its body says naming a sixth surface that gives search a role settles it
+   immediately, the five surveyed surfaces are silent, and **#18's hydration map is that sixth
+   surface.** If search is not in the map, #24 closes as a by-product with the negative *stated*.
+   ⛔ **PLAN-GATED — it writes `docs/`.** EnterPlanMode, name the file in the Files table, ExitPlanMode.
+2. **#58 — REQ001.** Then **#70 decision 1**, then **#59 — UNQ001**. That completes the four v0.1
+   rules. #70 decision 1's input is now answered: **port-widening appetite is one GET.**
+3. **#51's implementation**, once the two preconditions above are met.
+4. **Disposition sweep — fast tier, its own session.** **#71** record and close; **#74** count the
+   broken references in "Hans".
+
+⭐ **THE STANDING RULE ADOPTED THIS SESSION: no new decision ticket opens until four rules ship,
+unless it blocks a rule.** Two of the sixteen open issues build v0.1. The queue has been growing
+faster than the build. Nothing was filed this session under this rule — not the Convex question, not
+the baseline gap, not the nine `!` call sites.
+
+**Off the critical path and deliberately shut:** #8, #25, #27, #29, #69, #71, #74, #78, #82, #84.
+
+**NEXT-MODEL: frontier.** #18 specifies which rule hydrates what against a ~540-request budget, and
+#24 decides whether a whole endpoint enters the product. Both are irreversible-shaped and both are
+prose an ADR will be read against. **Do not straddle:** the disposition sweep is fast-tier and keeps
+its own session; #51's implementation is blocked on the operator, not on a model tier.
 
 **NEXT-REPO/CWD:** `C:\Users\mlpgr\2026_Projects\workspace_lint` — single repo; state, plan and
 resume ritual all at the root.
@@ -485,16 +510,10 @@ resume ritual all at the root.
 
 **To launch the next session:** `/clear` (never `/compact`) → select **frontier** → `/session-start-from-state`.
 
-**Blocking something:**
+**Blocking something:** the two #51 preconditions above.
 
-- **The §3 authorization for `GET /v1/databases/{id}`** — #51. Nothing else in this repository can
-  grant it, and #51 stays open until it is granted or declined.
-- **One `link_to_page` block pointing at `wl-dataset`**, made in the Notion UI. It is the only way to
-  close the last unobserved reference shape.
-- **A permanent database reference in the fixture**, if #51 is authorized.
-
-**Blocking nothing right now:** #82 (three positions written, the third needs a superseding ADR),
-#8 (npm name), #29 (`needs-info`), #25 (`ready-for-human`).
+**Blocking nothing right now:** #82 (three positions; the third needs a superseding ADR), #8 (npm
+name), #29 (`needs-info`), #25 (`ready-for-human`).
 
 **Actions no agent can perform at all:** anything in Notion's developer portal, any share or
 permission change in the Notion UI (including reconnecting `wl-revoke-child`, which resets Q1), and

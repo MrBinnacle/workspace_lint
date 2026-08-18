@@ -2532,3 +2532,119 @@ anything requiring a TTY — **the `!` prefix has no TTY**, so an interactive sc
 reads EOF and records defaults.
 
 **NO SELF-ASSESS LINE, BY OPERATOR RULING 2026-08-17.** The ritual line records `verdict=n/a`.
+
+---
+
+## S024 — 2026-08-18 — the API refuted the issue's own premise: a readable database is a 400, not a 404
+
+**PHASE:** **EVIDENCE, then a decision. Not the build.** #51 worked to a recorded decision. **One
+commit (`8818902`) on branch `docs/51-database-identity`, PR #86 OPEN and NOT MERGED, one issue
+comment, zero issues closed.** `slice/` is untouched.
+
+**TESTS:** **676 assertions, ten suites, exit 0, offline** — run before the close and unchanged.
+**The gate cannot see this session's work and this is not a hedge:** no `slice/` file changed, and
+`docs/proof/` is deliberately excluded from `CHECK-claims.ts`'s `ANNOTATED` list because dated
+records must not be corrected to match the present. The green gate is evidence about the tree, not
+about anything written this session.
+
+**LIVE:** four read-only probes, roughly 25 GETs, `Notion-Version: 2026-03-11`, subject identity
+`workspace-lint-proof`. `prototypes/live-db51.ts` · `live-db51b.ts` · `live-db51c.ts` ·
+`live-db51d.ts`. Token never reached stdout.
+
+### What the API did — `docs/proof/results-51-database-identity.md`
+
+**A `child_database` block's `id` names the DATABASE. So does `mention.database.id`.** Same ID. The
+data source under it is a third object with a different ID and **no reference shape carries it.**
+That explains the suffix mismatch `fixture.md` recorded: the fixture table records the data-source
+ID, every discoverable reference records the database ID.
+
+| ID | `/v1/pages` | `/v1/databases` | `/v1/data_sources` | `/v1/blocks` |
+| --- | --- | --- | --- | --- |
+| page, granted | **200** | 400 `validation_error` | 404 | — |
+| database, granted | 400 `validation_error` | **200** | 404 | **200** |
+| data source, granted | 404 | 404 | **200** | 404 |
+| anything outside the grant | 404 | 404 | 404 | 404 |
+
+⭐ **#51's stated precision limit is REFUTED by the API.** The issue says a 404 on a Route B href
+*"covers a readable database as well as a dead link."* It does not. A readable database returns
+**400 `validation_error`**, verbatim *"is a database, not a page. Use the retrieve database API
+instead."* The two cases are separated by the status code with **no port widening at all**. The
+limit narrows to a different, true statement: **a 404 covers an absent target and a target of any
+kind outside the grant**, because the API discloses object kind only to a connection permitted to
+read the object. For those targets `unreachable` was already the only defensible answer.
+
+### The decision — recorded on #51, NOT implemented
+
+**Widen `NotionPort` by ONE method: `retrieveDatabase(id)` → `GET /v1/databases/{id}`.** Four GETs,
+not three. It closes the whole Route A gap; **`/v1/data_sources` resolves nothing `REF001` needs**
+and must not be added; the same one method also fixes Route B, because a 400 is now a positive
+signal to re-try on `/v1/databases`.
+
+⛔ **Implementation is GATED on the operator.** `CLAUDE.md` §3 puts a network call not in the
+original spec under ASK FIRST and `notion-port.ts` states the surface is three GETs. #51 says "this
+is the ask." The comment is the recommendation; it is not the authorization.
+
+### What the fixture gained, and what it did not
+
+**`wl-outside-grant-db` is PERMANENT** — top-level, never connected, **never linked from anything**,
+recorded in `fixture.md`. It is the database analogue of `wl-outside-grant` and the only way to
+observe the out-of-grant case. It cannot enter any manifest.
+
+**`wl-dbref-probe` was created under the root, read once, and moved back out.** The root
+re-enumerates to 15 blocks, same types, `child_database` intact. `fixture-oracle.ts`'s `applicable:
+4` and `references.applicable: 1` were **not touched** and still hold.
+
+⚠ **The fixture still contains NO database reference.** Whoever implements #51 needs one for the red
+test, and adding it moves `references.applicable` — which must be **re-pre-registered before the run
+and never corrected after it.**
+
+### BLOCKERS
+
+1. **PR #86 is OPEN and unmerged.** The evidence is not on `main`.
+2. **The §3 authorization for a fourth read endpoint is the operator's** and nothing agent-side can
+   supply it.
+3. **`link_to_page.database_id` is UNOBSERVED.** No Markdown form produces a `link_to_page` block —
+   it is made in the Notion UI. The prior that it carries a database ID is strong and a prior is not
+   an observation. It cannot reverse the widen, only redirect which endpoint the one method calls.
+
+### EXACT NEXT STEPS
+
+1. **Merge PR #86.**
+2. **#18 — the rule-to-hydration map.** The head. #58's only remaining blocker. **Check #24 first**
+   (whether v0.1 calls `POST /v1/search`); both are OPEN.
+3. **#51's implementation** unblocks only on the §3 call. If authorized: observe
+   `link_to_page.database_id`, add a permanent database reference to the fixture, re-pre-register
+   `references.applicable`, then the method.
+4. **#70's three decisions**, then **#58**, then **#59**. Decision 1 was partly downstream of #51 and
+   now has its answer: **port-widening appetite is one GET, and the evidence for it is on the issue.**
+5. **Disposition sweep — fast tier, its own session.** Still queued. **#71** record and close; **#74**
+   count the broken references in "Hans".
+
+**NEXT-MODEL: frontier.** #18 specifies which rule hydrates what, and #24 decides whether a whole
+endpoint enters the product. Both are irreversible-shaped. **Do not straddle:** the disposition sweep
+is fast-tier and keeps its own session, and #51's implementation is blocked on the operator rather
+than on a model tier.
+
+**NEXT-REPO/CWD:** `C:\Users\mlpgr\2026_Projects\workspace_lint` — single repo; state, plan and
+resume ritual all at the root.
+
+### WHAT ONLY THE OPERATOR CAN DO
+
+**To launch the next session:** `/clear` (never `/compact`) → select **frontier** → `/session-start-from-state`.
+
+**Blocking something:**
+
+- **The §3 authorization for `GET /v1/databases/{id}`** — #51. Nothing else in this repository can
+  grant it, and #51 stays open until it is granted or declined.
+- **One `link_to_page` block pointing at `wl-dataset`**, made in the Notion UI. It is the only way to
+  close the last unobserved reference shape.
+- **A permanent database reference in the fixture**, if #51 is authorized.
+
+**Blocking nothing right now:** #82 (three positions written, the third needs a superseding ADR),
+#8 (npm name), #29 (`needs-info`), #25 (`ready-for-human`).
+
+**Actions no agent can perform at all:** anything in Notion's developer portal, any share or
+permission change in the Notion UI (including reconnecting `wl-revoke-child`, which resets Q1), and
+anything requiring a TTY — **the `!` prefix has no TTY.**
+
+**NO SELF-ASSESS LINE, BY OPERATOR RULING 2026-08-17.** The ritual line records `verdict=n/a`.
