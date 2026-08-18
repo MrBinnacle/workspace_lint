@@ -1,9 +1,9 @@
 {
   "project": "workspace_lint",
   "updated": "2026-08-18",
-  "session": "S020",
-  "phase": "BUILD -- the gate now compiles the code it certifies (#60) and reads the repository's own documented claims (#62). PR #68 open and NOT yet on main.",
-  "phase_detail": "S020 closed #60, #61 and #62 and filed #65. 610 assertions across nine offline suites. PR #64 and PR #66 merged to main. PR #67 merged into a spent base branch and never reached main; repaired as PR #68, which is OPEN -- until it merges, CHECK-claims.ts is not on main and #62 stays open.",
+  "session": "S021",
+  "phase": "BUILD -- no product code written this session. Five expert sweeps answered #70 and #69. PR #72 open and NOT yet on main.",
+  "phase_detail": "S021 filed #69 (DOC001 proposal, recommended v0.2 behind gate 3), #70 (the demand gate chose framing 2 and the catalog builds framings 1 and 3) and #71 (Razniewski & Nutt now checked), and settled #65. Six research sweeps landed: docs/research/ 13 -> 19. 610 assertions unchanged. The claim gate caught its first real drift -- six files added with no scalar updated went RED at exit 1 with six failing claims, then green.",
   "gate_1_demand_test": {
     "status": "CLOSED 2026-08-17 on owner research, not on a five-team send. Issue #40 closed with it.",
     "what_closed_it": "docs/inputs/decay-causal-synthesis-2026-08-16.md -- the operator's own causal synthesis of workspace decay, derived from Reddit discussion no research path in this project could reach. Plus this file's own research.known_blind_spot record that the operator reaches Reddit and HAS CONVERTED A BUYER THERE, and docs/research/solo-segment-evidence.md conceding its NO 'may be a verdict on the config file, not on the segment'.",
@@ -209,6 +209,31 @@
   ],
   "open_decisions": [
     {
+      "id": "#70-1",
+      "question": "Is UNQ001 Configured, built-in, or split into a policy-free observation mode plus a configured violation mode?",
+      "status": "OPEN. The built-in-with-conformity-violations option is FORBIDDEN by ADR-0001 decision 4, which rejects zero-config inference of owner, canon, UNIQUENESS or peer status -- the identical list as Principle 4, but in an ADR. Taking it needs a superseding ADR. The Observation route needs none, because 'these two pages share a title' infers nothing. Changes #59's blocking edges: a mode needing no rule configuration is not blocked by #19."
+    },
+    {
+      "id": "#70-2",
+      "question": "Do the three decay signals (edit age and owner nulls, per-database maintenance-load counts, abandoned databases) become Rules, or a non-Rule observations section?",
+      "status": "OPEN. Recommended: not Rules. CONTEXT.md defines a Rule as executable logic that tests one invariant, and a count tests none. SARIF contains the word 'metric' zero times in 227 pages; SonarQube gates on metrics, never on individual issues. Consequence: the observations section contributes nothing to the exit byte, and every metric needs a stable key and a named unit so it can become a gate condition later without the measuring code changing."
+    },
+    {
+      "id": "#70-3",
+      "question": "Where does the ADR-0001 counting/scoring line fall, operationally?",
+      "status": "OPEN. Recommended: counts plus totals, constrained by a mechanical test -- every aggregate must be arithmetically reconstructible by the reader from the per-item rows printed in the same report. Operator-set thresholds REJECTED as a third option: Beller et al., 168,214 projects, 80%+ of config files never change after creation, so a threshold set once has a vendor default's authority and worse provenance. Eight buildable rules and a worked pass/fail table are on #70."
+    },
+    {
+      "id": "#70-4",
+      "question": "Adopt 'policy-free scan' in place of 'zero-config'?",
+      "status": "OPEN, and it is the operator's call. docs/adr/0001-linter-not-entropy-engine.md:20 rejects 'zero-config inference' while PRODUCT.md:123 names the adopted entry point the 'zero-config decay report'. One phrase, two senses, two canonical documents. Both files are plan-gated. Blast radius measured: PRODUCT.md lines 53, 69, 86, 123, 184 and CONTEXT.md line 147. ADR-0001 is NOT edited -- its sense is correct as written."
+    },
+    {
+      "id": "#69",
+      "question": "Is DOC001 -- claims declared inside Notion pages -- a v0.2 rule behind gate 3, or does it supersede part of the v0.1 catalog?",
+      "status": "OPEN. Recommended v0.2. The moat claim is REFUTED by Constrained Wiki (2012), DOI 10.1155/2012/893575. The audience claim is the unaudited Gherkin promise -- surveys show 60.7% developers and 1.8% business analysts. Three gating items before any spec: the carrier proof (which Notion block type can hold a claim -- cheapest and most likely to invalidate the design), the Coda gap, and an ADR on Principle 6's content-is-not-code boundary."
+    },
+    {
       "id": "#35",
       "question": "May a coverage figure built from the subset the tool can see be published as evidence:sufficient with exit 0?",
       "status": "OPEN, and it now has a LIVE REPRODUCTION rather than an argument",
@@ -345,7 +370,11 @@
         "notion.so, www.notion.so and notion.com as internal-link hosts -- no Notion-owned source states any of them; third-party reports describe an in-progress vendor migration and are NOT relied on"
       ]
     },
-    "sweep_count_S020": "THIRTEEN files in docs/research/ excluding INDEX.md, and the count is now a machine-checked claim in six documents. It read twelve or seven in five of them until S020; INDEX.md's row for documented-claim-drift-prior-art.md had landed while its header scalar had not."
+    "sweep_count_S020": "THIRTEEN files in docs/research/ excluding INDEX.md, and the count is now a machine-checked claim in six documents. It read twelve or seven in five of them until S020; INDEX.md's row for documented-claim-drift-prior-art.md had landed while its header scalar had not.",
+    "sweep_count_S021": "NINETEEN files in docs/research/ excluding INDEX.md. Six landed in S021: claim-in-document-store-prior-art.md, zero-config-naming-prior-art.md, result-taxonomy-prior-art.md, metric-aggregation-prior-art.md, executable-spec-adoption-prior-art.md, inconclusive-verdict-prior-art.md.",
+    "razniewski_nutt_checked_S021": "Razniewski & Nutt, Completeness of Queries over Incomplete Databases, VLDB 2011, is NO LONGER NOT CHECKED. Free at vldb.org/pvldb/vol4/p749-razniewski.pdf, HTTP 200 -- the paywall assumption was wrong. The S018 band's NOT CHECKED line stands as a dated record. Table completeness vs query completeness statements with a decision procedure and a weakest-precondition result. Issue #71. Motro 1989 remains NOT CHECKED.",
+    "not_checked_after_S021": "Motro 1989 (TODS); vacuity detection in model checking (Beer CAV 1997, Kupferman & Vardi STTT 2003); SQL/ISO 9075 three-valued logic clause numbers; RV-Monitor; Bauer Leucker & Schallhart TOSEM 2011 (closed); IST 2020 10.1016/j.infsof.2020.106311 (closed -- the one paper likely to hold a direct BDD authorship measurement); TOSEM 2025 10.1145/3715729 (HTTP 403 despite Unpaywall reporting OA -- holds suppression survival time); Coda formulas and automations (403/404, JS-rendered).",
+    "method_note_S021": "Unpaywall's recorded OA location can be wrong while an OA copy exists -- for SANER 2018 it named a host returning 403 while Semantic Scholar named one returning 200 for the same file. Query both before recording a paywall. OpenAlex free-text search= is unusable for multi-concept software-engineering queries; use filter=title.search:."
   },
   "citation_hazards": [
     "ISO 19011:2018 was read from a site hosting a complete unauthorised copy including its intact copyright page. Wording and clause numbers are genuine and verified. The URL must never appear in a published artifact. Cite the clause and link the ISO catalogue.",
@@ -393,6 +422,7 @@
     "closed_S008": "#21 closed by PR #23, MERGED as 280524e. #24 and #25 filed as its follow-ups.",
     "closed_S009": "#20 (ADR-0008), #1 (ADR-0009, narrowly -- buyer half refiled as #29)",
     "closed_S010": "#31 (closed by ADR-0010 via PR #32)",
+    "filed_S021": "#69 (DOC001 -- a Notion page declares its own falsifier), #70 (the demand gate chose framing 2 and the catalog builds framings 1 and 3), #71 (Razniewski & Nutt is no longer NOT CHECKED). PR #72 opened against main; it closes #65. SIXTEEN issues open at close.",
     "filed_S010": "#34 -- specify REF001 link recognition: the host set, and the unrecognised outcome",
     "closed_S011": "#34 closed by PR #37 (spec, not ADR).",
     "closed_S012": "#14 CLOSED as ALREADY COMPLETE -- finished 2026-08-16 in cc16d63, on origin/main, every DoD element present in the issue's own wording. S010 and S011 both carried it as the Gate 1 blocker anyway. #36 CLOSED by PR #38, merged as 88d401e.",

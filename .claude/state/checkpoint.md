@@ -86,6 +86,11 @@ read this block instead. Nothing here depends on a band still being present.
 
 **Research method.**
 
+- **A claim comment inside a fenced code block is DOCUMENTATION, not an assertion.** `CHECK-claims.ts`
+  blanks fences before parsing and has a test for it. `README.md` carries a real `equals=13` example
+  inside a ```` ```markdown ```` fence and it **must not** be updated when the count changes —
+  updating it would assert that it is live. Verified 2026-08-18 when the count went 13 → 19 and
+  README's example correctly stayed silent.
 - **`docs/research/` has an INDEX.md as of 2026-08-17 (#54). Start there, not at the directory.**
   Nineteen files, one line each: the question it answers and what it refutes.
   <!-- claim: count glob="docs/research/*.md" exclude="INDEX.md" equals=19 -->
@@ -263,6 +268,152 @@ waste of tokens."* Do not solicit a `VERDICT`, do not write a `SELF-ASSESS` line
 of the close ritual still runs; the ritual line records `verdict=n/a`.
 
 **Operator rulings** are in `store.json` → `operator_rulings` and in project memory.
+
+---
+
+---
+
+## S021 — 2026-08-18 — five experts answered the questions, one refuted the pitch, and the claim gate caught its first real drift
+
+**PHASE:** **BUILD, but no product code was written.** The session was a proposal, five expert
+sweeps, and the documentation change that landed them. **Three issues filed (#69, #70, #71), one
+PR opened (#72), six issue comments, nine new/changed documents.**
+
+**TESTS:** **610 assertions, exit 0, offline** — unchanged, no suite added. **The counterfactual was
+run rather than argued:** with six files on disk and no scalar updated, `npm run check` went **red at
+exit 1 with six failing claims.** **Deref: 51 path claims checked / 10 flagged / 10 hand-verified** —
+nine are the machine-local `~/.claude/` hooks outside the checker's root, and the tenth is
+`prototypes/verdict.ts`, an **absence claim the checker correctly confirms**.
+
+**COMMITTED:** `e9bfc10`, `f4345b5` on **`docs/land-expert-sweeps`**. **OPEN: PR #72.**
+
+### The operator proposed a pivot, and four of its load-bearing claims did not survive
+
+The proposal: scale `CHECK-claims.ts` into Notion pages, so a page carries a declared falsifier next
+to its prose. Filed as **#69**. It collides with `CONTEXT.md` in four places, and the review pass
+found a fifth the issue did not name.
+
+**The moat claim is refuted by a 2012 paper.** Di Iorio, Draicchio, Vitali & Zacchiroli,
+*"Constrained Wiki: The WikiWay to Validating Content"*, DOI `10.1155/2012/893575`, defines the
+predicate and prototyped it twice, for MediaWiki and MoinMoin. DOI resolved against Crossref. **Any
+phrasing containing "no other tool", "first" or "only" must be dropped.** What survives is narrower
+and better: dbt, Great Expectations and Terraform all keep the assertion in a repository and the data
+in a system elsewhere; #69 collapses the two into one. That is a design position, not a census, so it
+cannot be refuted by finding one repo.
+
+**The audience claim is the Gherkin promise and it was never audited.** Practitioner surveys put the
+population at 60.7% developers and **1.8% business analysts**; both papers hedge readability with
+*"in theory"* in their own abstracts; readability by end users was measured, authorship never was.
+Verdict is **unsupported, not refuted** — the one paper likely to hold a direct measurement is closed
+access.
+
+**The predicted failure mode is FREEZING, not deletion.** *"Some teams find that parts of the system
+are effectively frozen due to the challenges of finding and modifying the examples associated with
+them."* A page whose prose nobody edits because the claim must be re-derived is the decay this
+product detects, arriving as a side effect of the fix. **Test any design against "does this make the
+prose more expensive to edit", not against "will people delete the claim".**
+
+**Two constraints arrive from other fields.** SMT-LIB 2.6: `unknown` is a first-class response
+carrying a machine-readable cause, and **resource-limit exhaustion may never be reported as a
+refutation** — binding under Notion's ~3 req/s ceiling. And **Razniewski & Nutt (VLDB 2011) is no
+longer NOT CHECKED**; the S018 band's line stands as a dated record. It is **free at `vldb.org`** and
+the paywall assumption was wrong. Filed as **#71**.
+
+### The finding that outranks the pivot: the build is not aimed at the gate's own conclusion
+
+Found while checking the operator's tickets, filed as **#70**. Gate 1 closed on **framing 2**, the
+zero-config decay report. The catalog builds framings 1 and 3. Three of framing 2's six signals have
+**no rule ID and no ticket**, and `PRODUCT.md`'s kill criterion for the entry point **cannot fire,
+because the surface it evaluates is not built.**
+
+**And "zero-config" names something two canonical documents disagree about.**
+`docs/adr/0001-linter-not-entropy-engine.md:20` rejects *"zero-config inference of owner, canon,
+uniqueness, or peer status"*; `PRODUCT.md:123` names the adopted entry point the *"zero-config decay
+report"*. Recommended replacement: **`policy-free scan`** — a run with declared roots and no declared
+policy. **NOT RENAMED THIS SESSION.** It is the operator's call and both files are plan-gated.
+
+**ADR-0001 decision 4 forbids what `PRODUCT.md:86` proposes.** Making duplicate-title detection
+**built-in** is *"zero-config inference of … uniqueness"* — the identical list, in an **ADR** rather
+than a settled default. So it needs a **superseding ADR**, not a paragraph. `PRODUCT.md` carries both
+the violation at line 86 and the warning against it at line 82. **The only route that does not need a
+new ADR is the finding's KIND:** a shared title is an Observation and infers nothing; a violated
+declared-unique value is a conformity violation and needs a Policy.
+
+### What the five sweeps settled, in one line each
+
+- **SARIF has six `kind` values and `informational` ≠ `review`.** A shared title is `review`-shaped.
+  **SARIF contains `metric` zero times in 227 pages**; SonarQube gates on **metrics, never issues**.
+  And **every surveyed non-failing tier ships its own escalation switch** — non-failing is a default,
+  never a property. So the Observation must print the `UNQ001` stanza that promotes it.
+- **Counts and totals are admissible; scores are not.** The buildable test: **every aggregate must be
+  arithmetically reconstructible from the per-item rows printed in the same report.** Eight rules and
+  a worked pass/fail table are on #70.
+- **An operator-set threshold is not a third option.** Beller et al., **168,214 projects**: 80%+ of
+  config files never change after creation. A threshold set once has a vendor default's authority and
+  **worse provenance**. The product already has a legal home for thresholds — a configured Rule.
+- **The Maintainability Index has not been recalibrated since 1994** and is still shipped. Gate 3 runs
+  at n=1, so **nothing this product ships can be calibrated.**
+- **Google deleted the warning tier**, and its 2009 Fixit fixed **16%** of reviewed warnings while
+  **44%** became filed bugs. The counter-argument lands hardest on the metrics section.
+
+### The claim gate caught its first real drift, and two things it structurally cannot see
+
+Six failing claims at exit 1, then green. **That is #62 working on the first change that tried to
+move past it.** In S019 the same class shipped and a person found it afterwards.
+
+**`README.md`'s `equals=13` correctly did NOT fire.** It is inside a ```` ```markdown ```` fence,
+`CHECK-claims.ts` blanks fences before parsing, and TEST covers it — *"a claim inside a fence is
+ignored"*. **The example is documentation of the syntax and stays at 13.** Changing it would imply it
+is live.
+
+**Two ordinals drifted that no claim covers**, both found by grep: `docs/agents/domain.md`'s structure
+diagram read `13 files` **127 lines from its own corrected prose** — the same surface that drifted in
+the #61 pass — and `INDEX.md` called `sweep-raw/` *"not a fourteenth entry"*, which is the exact
+ordinal drift that file records as DRIFT INSTANCE 1. **An unannotated sentence is unchecked.**
+
+**`INDEX.md`'s drift counter stays at ONE.** This change added files *with* their rows *and* updated
+every scalar. Recording it as a drift instance would misreport the history.
+
+### The operator's standing order fired again, and I had broken it
+
+Round 1 of the grilling put five decisions to the operator. His answer: *"Ask experts in their
+respective fields - not me."* That is the standing order in project memory and this is at least the
+second time it has needed restating. **A decision with a literature is not a values decision.** Four
+of the five had one; the fifth was scope and I decided it rather than handing it back.
+
+### BLOCKERS
+
+**None.** PR #72 is open and carries everything.
+
+### EXACT NEXT STEPS
+
+**Sixteen issues open.** Three were filed this session.
+
+1. **Merge PR #72.** It closes #65. Until it lands, `main` has thirteen sweeps and the six expert
+   files exist nowhere but the branch.
+2. **#70 needs three decisions before #59 is built** — they change its blocking edges. Is `UNQ001`
+   Configured, built-in, or **split**? Do the three decay signals become Rules or a non-Rule
+   observations section? Where is the ADR-0001 line, operationally? All three have evidence on the
+   issue; **the built-in-with-violations option is out unless an ADR supersedes ADR-0001 decision 4.**
+3. **#69 is v0.2, recommended, behind gate 3.** Its three gating items are unchanged: the carrier
+   proof (which Notion block type can hold a claim — **cheapest and most likely to invalidate the
+   design**), the Coda gap, and the Principle 6 ADR.
+4. **#18 then #19**, unchanged, then **#58 and #59**. #18 is unaffected by every #70 decision — a
+   hydration-depth map does not depend on whether a rule is configured.
+5. **#71** — record and close, or keep open as a coverage-model design input. Recommended: close it
+   and reopen against #18's request budget, since affordability is unmeasurable before the map exists.
+6. **#50 / #51 / #24 / #25 / #27 / #7 / #8 / #29** unchanged.
+
+**NEXT-MODEL:** **frontier.** The next head after #72 is **#70's three decisions**, and they are
+architecture: one of them turns on whether an ADR must be superseded, and all three govern what the
+entry point is allowed to print. **Do not straddle:** merging #72 and closing #71 is fast-tier work
+and should be its own short session if that is all that happens.
+
+**NEXT-REPO/CWD:** `C:\Users\mlpgr\2026_Projects\workspace_lint` — single repo; state, plan and
+resume ritual all at the root. **The four guard hooks and `deref_check.py` are NOT in this repo** —
+machine-local and unversioned under `~/.claude/`, verified present on this machine this session.
+
+**NO SELF-ASSESS LINE, BY OPERATOR RULING 2026-08-17.** The ritual line records `verdict=n/a`.
 
 ---
 
