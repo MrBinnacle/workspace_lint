@@ -443,5 +443,58 @@ machine-local and unversioned under `~/.claude/`, verified present on this machi
 
 **NO SELF-ASSESS LINE, BY OPERATOR RULING 2026-08-17.** The ritual line records `verdict=n/a`.
 
+**POST-CLOSE ADDENDUM (S021, after `a0189fc` shipped) — the hygiene trim found a step that had
+stopped firing six sessions ago, and going to first principles refuted the fix I had drafted for it.**
+
+~~**Sixteen issues open.**~~ **Eighteen.** #73 and #74 were filed after the close.
+
+**`d3173d9` — the trim.** `checkpoint.md` 1165 → 447 lines. Bands S015–S020 archived. **Five claims
+were hoisted first and would otherwise have been lost** — the three live-run caveats, the manifest
+`(unit, key)` rule, and the `SYS001` certainty rule. They are in the standing block above. The
+standing block's own assertion that it is *"complete on its own"* was **false when tested**.
+
+**#73 — the rotation stopped at S016 and nothing noticed for six sessions.** Measured: rotation ran at
+**nine consecutive closes**, then stopped dead. `session-end-to-state` has **no rotation step** — the
+ritual appends and nothing removes, so the rotation was model habit carried by each close reading the
+previous one. The invariant is also **inexpressible**: the claim grammar has three kinds and all three
+are filesystem predicates, so no annotation could have caught it.
+
+**The first version of #73 proposed a fourth claim kind. The operator stopped it, and he was right.**
+Every drift this repository has ever recorded is a **hand-kept copy of a fact the system already
+holds**. `INDEX.md` had already concluded *"a generated index removes the scalar rather than reminding
+anyone to update it"* — and #62 built the reminder. **A claim checker is a verification answer to a
+duplication problem.** The split that matters is **re-derivable vs not**, and it is forced by the
+reader being stateless: a stateless gate can only verify what it can re-derive right now. Asserted
+claims need a dated observation with provenance, which is what `docs/proof/` is for and why it
+outranks documentation. Verified: the S018 close **commit body is the S018 band**, so every close
+writes its band twice and `checkpoint-archive.md` is 1,999 lines of the first copy.
+
+**⚠ ADR-0010 forbids a fingerprint containing anything volatile. `checkpoint.md`'s header carried
+"Bands S001–S009" — a volatile count in the one part of the file meant to be stable. The repository
+wrote the rule for findings and violated it in its own state file.**
+
+**#74 — Notion AI is stateless, so the workspace holds a boot-up document.** The operator wrote one
+roughly a year ago so a stateless Notion AI would answer with context. **This repository was bitten by
+the identical failure** — `CLAUDE.md` told every new session the project was pre-build after source
+reached `main`. `REF001` and `SYS001` are already built and are exactly what checks such a document.
+**The artifact is a page named "Hans" plus subpages, and the current build cannot reach it** — the
+integration's grant covers the fixture, `REAL_ROOT_ID` is still unexercised, and sharing real content
+is the human step #7 waits on. **Route: the Notion MCP connector, deferred to a later session by the
+operator.** ⚠ MCP is a different credential path — ADR-0004 says it *"does not clear the REST path"* —
+so a reading of "Hans" is **documented-tier**, belongs in `docs/research/`, and does **not** close #7.
+
+**EXACT NEXT STEPS, corrected in place:**
+
+1. **Merge PR #72**, unchanged. It now carries four commits including the trim.
+2. **Read "Hans" and its subpages via the Notion MCP connector** and count references that no longer
+   resolve — #74's verification step 1. Cheap, and it is the first real evidence for the boot-up-
+   document framing. File the result in `docs/research/`, never `docs/proof/`.
+3. **#73 before any further claim annotation is written.** Adding a fifth derived scalar deepens the
+   defect it names.
+4. **#70's three decisions**, then #18 → #19 → #58/#59, unchanged.
+
+**NEXT-MODEL is unchanged: frontier.** #73 and #74 are both scope-and-architecture questions and they
+join #70 at the head. **The verdict field is NOT re-opened by this addendum.**
+
 ---
 
