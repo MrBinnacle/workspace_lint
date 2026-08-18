@@ -50,7 +50,7 @@ The working tagline "CI for Notion workspaces" undersells this. The product is a
 
 **Primary: whoever must prove a structural claim about a Notion workspace to someone else.** Regulated organizations, and teams whose Notion databases feed production systems. The distinguishing trait is not workspace size or tidiness; it is that a wrong answer has a named cost and an audience.
 
-*Primary is not the same as first, and this file has now been bitten once by the difference.* Gate 1 closed on framing 2, the zero-config decay report, as the **entry point**. This buyer is who the declared rules serve once someone already runs the tool — the position "The config file is the suspect, not the segment" reaches independently. A reader who treats this paragraph as naming the acquisition target reproduces the defect issue #40 recorded.
+*Primary is not the same as first, and this file has now been bitten once by the difference.* Gate 1 closed on framing 2, the policy-free decay report, as the **entry point**. This buyer is who the declared rules serve once someone already runs the tool — the position "The config file is the suspect, not the segment" reaches independently. A reader who treats this paragraph as naming the acquisition target reproduces the defect issue #40 recorded.
 
 **Named as likely, not established:** consultants auditing client workspaces. `docs/research/notion-user-pain.md` recommends this segment, because it is the only one where frequent testable pain and *behavioural* willingness to configure appear in the same person — one practitioner already hand-writes structural rules as Notion formulas. The counter-argument is live: a consultant billing hourly has an incentive against a tool that mechanizes billable hours, and the willingness case rests on two named individuals.
 
@@ -66,7 +66,7 @@ The working tagline "CI for Notion workspaces" undersells this. The product is a
 
 Its own counter-argument is why this is a design finding rather than a stop: four independent artifacts attack four slices of this pain, which is the signature of a fragmented under-served market, not an absent one. The sweep could not separate "no demand" from "no demand at this configuration cost" without Reddit, which stayed unreachable across four attempts by two agents.
 
-**Consequence for v0.1.** ADR-0001 recorded the configuration requirement as a paid cost — a first run "reports coverage and little else." That is now the wrong reading. The zero-config surface is the product for adoption:
+**Consequence for v0.1.** ADR-0001 recorded the configuration requirement as a paid cost — a first run "reports coverage and little else." That is now the wrong reading. The policy-free surface is the product for adoption:
 
 - coverage against declared roots, which is the wedge;
 - unresolvable internal references;
@@ -83,17 +83,25 @@ Declared rules serve the buyer who must prove something to a third party. They a
 
 **The objection this surface exists to answer.** A config-driven linter is itself a maintenance tax, levied on people who by the same account have no maintenance energy left. The people willing to pay it are the ones whose workspaces are already fine. The tool must return something before it asks for anything.
 
-This makes duplicate-title-within-a-data-source a **built-in** rather than a configured rule. It is currently `UNQ001`, configured. Zero-config detection is confirmed, and it is one of the two surfaces a competitor already ships without configuration.
+This makes duplicate-title-within-a-data-source a **built-in** rather than a configured rule. It is currently `UNQ001`, configured. Policy-free detection is confirmed, and it is one of the two surfaces a competitor already ships without configuration.
+
+*(Contested, and marked so on 2026-08-18 rather than left reading as settled. The sentence above asserts a built-in duplicate-title rule. ADR-0001 decision 4 rejects "zero-config inference of owner, canon, **uniqueness**, or peer status" — the same list, in an ADR — and the paragraph two above this one already warns that "shipping one would reopen ADR-0001 without a superseding ADR." The escape identified in issue #70 is the finding's **kind**, not the rule's mode: "these two pages share a title" is an observation and infers nothing, while "a declared unique value occurs more than once" is a conformity violation and requires a declaration. **#70 decision 1 holds this and is open.** The rename of the term in this sentence does not decide it, and a session that reads the two as one act will believe ADR-0001 decision 4 has been dealt with when it has not.)*
 
 ## Job to be done
 
-> When my workspace changes, show me which declared structural rules no longer hold, and tell me what you could not see. Give me enough evidence to repair the defect without a manual census.
+> When my workspace changes, tell me what no longer holds and what you could not see — with the evidence and the links — so that keeping it in order never starts with me running a census.
+
+*(Rewritten 2026-08-18. The earlier statement read "show me which declared structural rules no longer hold, and tell me what you could not see. Give me enough evidence to repair the defect without a manual census." It made the operator the repairer and the report the deliverable. Issue #75 recorded the collision: the owner's workspace doctrine, written roughly a year before this repository existed, states "You administer the workspace. Matthew does not," and "any design that requires sustained filing work from Matthew is incorrect by construction." The old wording is kept visible rather than removed, per this file's convention.)*
+
+**What this job does not include, stated rather than implied.** The product removes the **census** — the part where a human has to look. It does not remove the **repair**. `CONTEXT.md`'s non-goals forbid deleting, rewriting, migrating or repairing Notion content, and Principle 7 makes read-only a product boundary. A read-only tool therefore cannot stop being administration; it can stop administration starting with a manual audit. That is the whole claim, and the larger one — "stop making me my own workspace admin" — must not be sold on the strength of it. Whether the executive-function constraint forces a repair surface anyway is **issue #82**, and taking it would reverse Principle 7 and need a superseding ADR.
 
 ## The tension this product does not resolve
 
 `docs/research/notion-user-pain.md` found that the catalogued pains rank in near-inverse order to their testability. The two loudest — stale pages that still look authoritative, and "it's cluttered, I can't find anything" — are the two the tool cannot honestly claim to address. The most testable pain, schema drift, is voiced by the smallest population.
 
 This is structural, not a copywriting problem. One concrete consequence: the tool can flag a page's `last_edited_time` age. It cannot flag wrongness. Selling age-detection as staleness-detection would breach the product's own fourth principle.
+
+**A third pain sits beside those two, and the ranking inverts for it.** The owner names **"productivity theater"** — time spent administering the system instead of using it — as a pain-point keyword in this population. Unlike the two above, this one is measurable, because admin time is measurable, and it is what an automated reconciler removes. It is the pain the census-removal job statement is aimed at. **Its evidence class is owner-supplied market vocabulary and it cannot be verified from inside this repository** — no agent in this project has ever reached Reddit, so the same limit applies here that applies to `docs/inputs/decay-causal-synthesis-2026-08-16.md`, which is the evidence that closed Gate 1. Recorded in issue #75. Note also that "theater" is a first-class failure mode in the owner's own doctrine — *"output that looks like work but makes no verifiable state change"* — so the user's word for the pain and the operator's word for the failure are the same word.
 
 ## The commercial risk, stated plainly
 
@@ -104,6 +112,12 @@ Structural tidiness has no named cost.
 **There is a named cost, and it is not tidiness.** `docs/inputs/decay-causal-synthesis-2026-08-16.md` identifies it: unconstrained accumulation degrades search and authority signal, trust in the workspace collapses, and users route around it into Slack, Drive, and personal notes. The cost is abandonment plus duplicated work elsewhere. That is expensive and it is noticed — but it is noticed as a feeling about the tool, not as a line item, which is why it does not read as a named cost the way a security miss does.
 
 **Agents raise that cost, and this inverts a competitive finding.** `docs/research/competitive-landscape.md` reads Notion Custom Agents as the threat, since seven of the eight catalogued rules are instructable to one. True and incomplete: an agent reading a decayed workspace quotes outdated drafts back with authority. Stale content used to be passive. It is now laundered into answers. Every agent Notion ships makes "what is stale, and what could you not read" worth more — and the second half is the question an agent structurally cannot answer about itself.
+
+**The competitor is not another linter. It is the credit meter, and this is the fact that decides the comparison.** A Notion Custom Agent doing continuous reconciliation is metered per run, forever, at the vendor's price. A local CLI is not. The comparison is therefore not free-tool-versus-free-tool; it is a free local scan against metered agent runs, and it partially softens the monetize-at-zero risk stated above — the alternative here carries a recurring bill.
+
+The evidence is one operator who built the reconciliation protocol and cannot afford to run it. `docs/inputs/hans-operating-instructions-v10-2026-08-16.md` records the constraint as an operating rule — *"Each run uses credits. Do not start background loops or speculative work"* — and requires approval before any recurring credit cost, naming triggers, agents and scheduled runs. `docs/inputs/hans-workspace-cartography-v1.4.0-2026-07-17.md` is designed around it: *"Cost-scoped. Credits meter per run. Always run the smallest scope that answers the actual question."* Two constraints meet in the same person: automated reconciliation costs credits he does not have, and manual reconciliation costs executive function he does not have. **That gap is the product**, and it is two structural constraints rather than a preference. The market shape follows: whoever most needs continuous reconciliation is whoever can least afford to run it as an agent. Recorded in issue #76.
+
+**Three limits on that claim, stated here so it is not read wider than it is.** First, **no price** — a cost asymmetry is not evidence that anyone pays to close it, and Gate 1 closed without a willingness-to-pay figure. Second, **n=1**, and the one is the owner, whom `.claude/state/store.json` already records as the primary-user hypothesis. Third, **"free" means no per-run vendor charge, not unlimited** — Notion publishes roughly 3 requests per second per connection, which is what the three-minute warm-scan kill criterion bounds. A local scan has a time cost and a rate ceiling. It has no meter. **Whether Notion Enterprise changes these economics is not asserted**: that is a claim about a vendor's pricing and it needs that vendor's own page, which has not been read.
 
 Buildability is the smaller risk. That nobody will pay for a coverage proof is the larger one — and the demand test must therefore ask about trust and re-work, not about tidiness.
 
@@ -120,7 +134,7 @@ Buildability is the smaller risk. That nobody will pay for a coverage proof is t
    The three framings stand as written, because they are what the build now targets:
 
    1. **Configured** — "declare your rules, get a verdict." The framing the PRD assumes, and the one `docs/research/solo-segment-evidence.md` indicts.
-   2. **Zero-config decay report** — "run one command, get what is stale, abandoned, duplicated, and over-complex, with links." Costs the user nothing before it returns something.
+   2. **Policy-free decay report** — "run one command, get what is stale, abandoned, duplicated, and over-complex, with links." Costs the user nothing before it returns something. *(Renamed 2026-08-18, from "zero-config decay report". The gate's decision is unchanged — it decided which framing is the entry point, a claim about the buyer and the surface, not about the label. The old term named two incompatible things across canonical documents: ADR-0001 decision 4 **rejects** "zero-config inference", while this line used it for the adopted entry point. "Policy-free" names what is absent, and a policy-free scan still has scope: a token and at least one declared root are required, which is why "zero-config" was never true of this product either. Definitions in `CONTEXT.md`; survey of thirteen shipped tools in `docs/research/zero-config-naming-prior-art.md`; reasoning on issue #70. **ADR-0001 is not edited** — its sense of the term is correct as written.)*
    3. **Coverage proof** — "run one command, get a defensible statement of what was and was not read." The wedge, and the one no competitor and no agent can supply.
 
    The outcome was a NO on 1 with a YES on 2. That changed what gets built, not whether — which is what this gate existed to establish.
@@ -181,7 +195,7 @@ From the PRD, with two additions and one correction.
 - The privacy contract requires page-body persistence or unapproved third-party transmission.
 - The useful product reduces to a one-off script for this workspace.
 - ~~**New:** the demand test finds no team that must prove a structural claim to a third party.~~ **Superseded 2026-08-17, when Gate 1 closed on framing 2.** This criterion killed the project on the failure of framing 3 — the buyer the product section had already ruled out as the entry point. It would have stopped the work on a fork the product had abandoned. Kept visible rather than deleted, per this file's convention. Replaced by the criterion below.
-- **New, replacing the criterion above:** the zero-config surface returns nothing a workspace owner recognises as a defect worth repairing. The countable signals are listed under "The config file is the suspect, not the segment." If a first run against a real decayed workspace produces a report its owner reads as noise, the entry point has failed, and no configured rule set rescues it — configuration is the cost this framing exists to avoid.
+- **New, replacing the criterion above:** the policy-free surface returns nothing a workspace owner recognises as a defect worth repairing. The countable signals are listed under "The config file is the suspect, not the segment." If a first run against a real decayed workspace produces a report its owner reads as noise, the entry point has failed, and no configured rule set rescues it — configuration is the cost this framing exists to avoid.
 - **New:** Notion ships first-party coverage certification. This would remove the only differentiator no competitor currently holds.
 
 ## Rule catalogue gaps
