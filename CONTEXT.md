@@ -29,6 +29,8 @@ The product tests declared rules. It does not infer workspace quality, intent, o
 | Coverage manifest | The staged record of what the scan reached: declared, resolved, enumerated, fetched, evaluated. Every drop-out names a resource and a specific cause. It also records each rule's declared coverage item. See ADR-0011. |
 | Invariant | A structural statement that must remain true. |
 | Rule | Executable logic that tests one invariant. |
+| Rule catalogue | All eight specified rules, four shipping and four deferred. Say "the rule catalogue" or "the eight catalogued rules". Never "the eight v0.1 rules". |
+| v0.1 rules | The **four** rules v0.1 ships: `SYS001`, `REF001`, `REQ001`, `UNQ001`. The phrase means the shipping four and nothing else. A claim about all eight names the catalogue instead. |
 | Observation | What the scan saw, with evidence and provenance. A 404 is an observation. |
 | Finding | A judgement a rule reached from observations, with evidence and a stable location. |
 | Outcome | What a rule concluded, as a pair: a Conformity and an Evidence sufficiency. Never a single value. See ADR-0005. |
