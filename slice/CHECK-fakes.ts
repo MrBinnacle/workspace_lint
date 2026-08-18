@@ -80,7 +80,11 @@ export function fakePort(spec: Record<string, FakeResource>, meFails = false): N
   };
 }
 
-export const cfg = (id = ROOT, minCoverage = 1.0): Config => ({ version: 1, roots: [{ id, alias: 'wl-proof-fixture' }], minCoverage });
+/* `rules` is empty and stays empty until a Configured rule is built. Every
+ * suite that drives the scan through this fixture asserts against the two
+ * BUILT-IN rules, so a configured entry here would put a rule in the funnel
+ * that no assertion in any suite expects. #58 adds it with REQ001's own tests. */
+export const cfg = (id = ROOT, minCoverage = 1.0): Config => ({ version: 1, roots: [{ id, alias: 'wl-proof-fixture' }], minCoverage, rules: [] });
 export const clock = () => { let t = 1000; return () => (t += 7); };
 
 /* The fixture as it actually is: a declared root with three children, one of

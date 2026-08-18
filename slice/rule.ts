@@ -12,6 +12,7 @@
  * CHECK-sys001.ts TEST 4 exists to catch.
  */
 
+import type { RuleDecl } from './config.js';
 import type { Manifest, ResourceKey } from './manifest.js';
 import type { CoverageRow, CoverageUnit, Finding, Outcome } from './finding.js';
 import type { Gap } from './verdict.js';
@@ -52,3 +53,27 @@ export type Rule = {
   /** The outcome PAIR — ADR-0005 decision 1. Never one value. */
   outcome(m: Manifest, judged: Set<ResourceKey>, findings: Finding[]): Outcome;
 };
+
+/**
+ * Rule IDs the operator configured that this build has no implementation for.
+ *
+ * THE LOADER CANNOT ANSWER THIS AND MUST NOT PRETEND TO. `config.ts` validates
+ * the shape of a rule declaration — that is a question about the document. This
+ * is a question about the BUILD: which rules were compiled into the binary that
+ * is about to run. Two different questions, and folding the second into the
+ * loader would put a hard-coded list of built rules in a file that has no way to
+ * know when one is added.
+ *
+ * A non-empty return is exit 4, before the traversal begins. The alternative —
+ * running the scan and reporting coverage that says nothing about the configured
+ * rule — is a green run over a rule that never ran. That is the failure this
+ * product exists to detect, and shipping it in the product's own entry point
+ * would make every claim the report makes about "the declared rules" false by
+ * construction.
+ */
+export function unimplementedRules(configured: RuleDecl[], implemented: Rule[]): string[] {
+  const built = new Set(implemented.map(r => r.id));
+  /* Deduplicated: two entries configuring one unbuilt rule are one defect, and
+   * printing the ID twice reads as two different problems. */
+  return [...new Set(configured.map(d => d.rule).filter(id => !built.has(id)))];
+}

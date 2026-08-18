@@ -173,11 +173,23 @@ function evaluateStage(manifest: Manifest, rules: Rule[]): void {
   }
 }
 
+/**
+ * The rules THIS BUILD can execute, exported so that nothing has to restate it.
+ *
+ * The CLI needs the same list to answer a different question — whether the
+ * operator configured a rule this binary cannot run (`unimplementedRules` in
+ * rule.ts) — and it printed the count as a hand-written `2 (SYS001, REF001)`
+ * before this was exported. A hand-kept copy of a fact the system already holds
+ * is the drift class this repository keeps re-finding; here it would have made
+ * the report's own header lie about which rules produced the figures under it.
+ */
+export const BUILT_RULES: Rule[] = [SYS001, REF001];
+
 export async function scan(opts: ScanOptions): Promise<ScanResult> {
   const { config, port } = opts;
   const deriveGaps = opts.deriveGaps ?? gapsFrom;
   const deriveResiduals = opts.deriveResiduals ?? residualsFrom;
-  const rules = opts.rules ?? [SYS001, REF001];
+  const rules = opts.rules ?? BUILT_RULES;
   const now = opts.now ?? (() => Date.now());
 
   const t0 = now();

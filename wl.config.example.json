@@ -6,5 +6,6 @@
       "alias": "example-root"
     }
   ],
-  "minCoverage": 1.0
+  "minCoverage": 1.0,
+  "rules": []
 }
