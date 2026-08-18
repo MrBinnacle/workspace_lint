@@ -367,6 +367,7 @@
   "tracker": {
     "host": "GitHub issues, gh CLI",
     "open": [
+      "#62 (declared-baseline claim check; §0.5 sweep DONE, practitioner sweep DONE, design is generate-counts + exit-code-check-status)",
       "#61 (PRODUCT.md gate-2 marker + sweep count; plan-gated, name it in the Files table)",
       "#60 (npm run check does not typecheck and no script does)",
       "#59 (T7 UNQ001; blocked_by #18, #19)",
