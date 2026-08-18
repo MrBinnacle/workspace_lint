@@ -1,9 +1,9 @@
 {
   "project": "workspace_lint",
   "updated": "2026-08-18",
-  "session": "S025",
-  "phase": "BUILD. #50 decided, shipped and CLOSED (PR #87, merged faff3ca); main is green at 693 assertions. #51's fourth read endpoint is AUTHORIZED and its implementation is blocked on two operator-only preconditions. Two of four v0.1 rules built; REQ001 (#58) blocked only by #18. The head is #24 + #18 as ONE plan-gated unit.",
-  "standing_rule_adopted_S025": "NO NEW DECISION TICKET OPENS UNTIL FOUR RULES SHIP, UNLESS IT BLOCKS A RULE. Two of sixteen open issues build v0.1 and the queue has been growing faster than the build. Nothing was filed in S025 under this rule - not the Convex question, not the untracked baseline gap, not the nine non-null assertions in CHECK-sys001.ts.",
+  "session": "S026",
+  "phase": "BUILD. #24 and #18 taken as ONE unit and both shipped; PR #89 merged as 846cd64 and PR #90 as 063b0a2, main green at 696 assertions. ADR-0014 decides POST /v1/search has no role in the v0.1 scan - the first scope question this project has closed by STATING a negative rather than leaving surfaces silent. docs/spec/v0.1-hydration-map.md closes #18. NOTHING NOW BLOCKS #58 (REQ001) OR #59 (UNQ001), which are the two unbuilt rules of the four v0.1 ships. The head is #58 alone, fast tier.",
+  "standing_rule_adopted_S025": "NO NEW DECISION TICKET OPENS UNTIL FOUR RULES SHIP, UNLESS IT BLOCKS A RULE. Adopted S025. IT IS NOW COUNTABLE, S026: a supplementary 'decision' label was added to the tracker and 'gh issue list --label decision --state open' is the check. Eight open decision tickets at S026 close, of fourteen open issues. The rule was previously stated over a set nothing could count. The label is supplementary, never a third category, so /triage's one-category-role invariant still holds on every issue. Nothing was filed in S026 under this rule - not the untested skill-router, not the unbacked settings.json, not the six untested hooks.",
   "phase_detail_s024": "S024: EVIDENCE, then a decision. #51 worked to a recorded decision; PR #86 merged as 818aba0.",
   "phase_detail": "S025 shipped #50. ADR-0005 decision 2's APPLICABILITY FILTER DOES NOT REACH A RESOURCE THIS BUILD CANNOT READ, and the ruling is a consequence of that ADR rather than a new decision - the filter is scoped to a precondition mismatch between a rule's preconditions and a RESOURCE's properties, while 'this build does not enumerate data sources' is a fact about the TOOL. Admitting it would make every denominator a function of build state, so each unimplemented capability would RAISE the ratio. ADR-0005 decision 4 already names the resulting figure as a defect in prior art, and REF001 answered the identical question identically in #51. The residual register was checked as an alternative home and refused: ADR-0013 decision 3 keeps residuals out of every ratio, so it reaches 3/3 by a different door. NOTHING ABOUT THE SHIPPED BEHAVIOUR CHANGED - scan.ts already counted the child_database and named the cause. What was missing was the decision. TEST 10b implements the filter and found what the ticket did not anticipate: THE GAP SURVIVES AND THE RUN EXITS 0 ANYWAY, because gapsFrom reads the manifest a rule cannot edit while ADR-0012 decision 2 makes the byte compare the coverage VECTOR. There is no second guard behind the denominator. #51's fourth read endpoint GET /v1/databases/{id} was AUTHORIZED by the operator, with /v1/data_sources/{id} neither requested nor granted. Convex was evaluated against three proposed uses and REFUSED in all three, with NO TICKET FILED. Two process failures are recorded in the band: sed -i flipped a CRLF file to LF, and a background /code-review fork was declared to have returned nothing and then returned five valid findings, one of them a real defect self-review missed. S024 detail follows. S024 settled #51 by calling the live API at Notion-Version 2026-03-11 rather than by arguing it. A child_database block's id names the DATABASE and so does mention.database.id; the data source is a third object whose ID no reference shape carries; GET /v1/databases/{id} retrieves it and GET /v1/data_sources/{id} resolves nothing REF001 needs. THE ISSUE'S OWN PREMISE WAS REFUTED: a readable database returns 400 validation_error on GET /v1/pages, not 404, with a message naming the object kind, so the case that produced an invented defect is separable at the status code with no port widening at all. The surviving limit is narrower - a 404 covers an absent target and a target of any kind OUTSIDE the grant, because the API discloses object kind only to a connection permitted to read the object. Decision recorded on the issue: widen NotionPort by ONE method, retrieveDatabase -> GET /v1/databases/{id}, four GETs not three, implementation gated on the section 3 ASK FIRST call. Evidence: docs/proof/results-51-database-identity.md. One shape stays UNOBSERVED and is named rather than assumed: link_to_page.database_id, because only the Notion UI produces that block. The fixture gained wl-outside-grant-db permanently (top-level, never connected, never linked) and a temporary wl-dbref-probe that was moved back out; fixture-oracle.ts's applicable: 4 and references.applicable: 1 were not touched and still hold. THE GATE CANNOT SEE THIS SESSION: no slice/ file changed and docs/proof/ is deliberately outside CHECK-claims.ts's ANNOTATED list.",
   "phase_detail_s023": "S023 landed #75 (the job statement claims CENSUS REMOVAL ONLY, and says in the file what it does not do), #76 (the competitor is the credit meter, with no-price / n=1 / free-means-no-meter shipping alongside it, and the enterprise half deliberately unasserted), and the zero-config -> policy-free rename. No code changed. Two plan defects were caught by scrutiny before any edit: productivity theater was about to be filed as a pain the tool CANNOT address when #75 establishes the opposite, and re-terming PRODUCT.md's contested built-in sentence alone would have laundered the contest. Filed #82 (does executive function force a repair surface Principle 7 forbids - operator's call, three positions, the third needs a superseding ADR) and #84 (map the owner's six entropy invariants onto the catalogue). THE GATE CANNOT SEE PROSE WORK: 676 assertions passed identically before and after, and the real controls were a negation grep, the non-goals read item by item, and git diff --name-only.",
@@ -407,12 +407,11 @@
   ],
   "tracker": {
     "host": "GitHub issues, gh CLI",
-    "open_count": 18,
+    "open_count": 14,
     "open": [
-      "#79 is a PR not an issue",
+      "#84",
+      "#82",
       "#78",
-      "#76",
-      "#75",
       "#74",
       "#71",
       "#70",
@@ -420,23 +419,20 @@
       "#59",
       "#58",
       "#51",
-      "#50",
       "#29",
       "#27",
       "#25",
-      "#24",
-      "#19 (closes when PR #79 merges)",
-      "#18",
       "#8"
     ],
-    "closed_S022": "none. #19 closes when PR #79 merges.",
-    "filed_S022": "#78 - REQ001 configures a property by NAME. Two live-API facts would settle it; blocks nothing but must precede REQ001's report format.",
-    "critical_path": "#75 + #76 + the rename FIRST, by operator ruling 2026-08-18 - all plan-gated edits to PRODUCT.md and the glossary surfaces. Then PR #80 -> #51 -> #18 (check #24 first) -> #70's three decisions -> #58 -> #59.",
-    "operator_owes": "Nothing. All three rulings given 2026-08-18.",
-    "note": "Seven issues carry needs-triage and none arrived from outside. By the skill map's rule /triage is for issues you did not create, so these need DISPOSITION, not triage."
+    "closed_S026": "#24 (ADR-0014) and #18 (docs/spec/v0.1-hydration-map.md), both auto-closed at 2026-08-18T23:11:48Z when PR #89 merged. #19 closed 2026-08-18T20:00:59Z, the day before, and TWO living docs still asserted it was open until this session corrected them.",
+    "filed_S026": "Nothing. Five tooling findings were shipped as artifacts or recorded in the checkpoint standing block rather than filed, under the standing rule.",
+    "label_state_S026": "All 14 open issues carry exactly one state role and exactly one category role, which is /triage's own invariant. Ten issues gained the 'enhancement' they lacked. 16 of 16 already carried a state role before this session - that is guard-gh-issue-triage-label.py's output, not diligence. Eight carry the new 'decision' label: #8 #25 #27 #29 #69 #70 #78 #82. #84 and #74 were deliberately left unlabelled as genuinely ambiguous between a decision and a report, and docs/agents/triage-labels.md records the abstention.",
+    "critical_path": "#58 (REQ001) -> #70 decision 1 -> #59 (UNQ001). That completes the four v0.1 rules. #58 is unblocked and fast-tier; #70 decision 1 is frontier and must not be straddled into the same session.",
+    "operator_owes": "Two Notion-UI preconditions for #51 only: a link_to_page block pointing at wl-dataset, and a permanent database reference in the fixture. Neither blocks a rule.",
+    "note": "Five issues still carry needs-triage: #78 #74 #71 #70 #69. /triage is disable-model-invocation: true and can only be fired by the operator; the agent can pre-stage what it reads but cannot run it. .out-of-scope/ now exists, which is the directory /triage reads in step 1 and writes before closing a rejected enhancement."
   },
   "build": {
-    "branch": "main at 61eea7d; build/19-rule-config-schema pushed, PR #79 OPEN and mergeable",
+    "branch": "main at 063b0a2 (PR #90). Working branch chore/close-s026 for this close.",
     "commits": [
       "0ac7c2d",
       "9dcb069",
@@ -446,7 +442,11 @@
       "8dd2d36 (ADR-0012, the exit byte compares the vector minimum)",
       "37bd9e1 (T4 reports: one document, three renderings)",
       "6b719cf (T5 red test: five live bytes, and the false green)",
-      "b6518e6 (#19 - the config declares a rule, and the loader refuses every rule this build cannot run)"
+      "b6518e6 (#19 - the config declares a rule, and the loader refuses every rule this build cannot run)",
+      "fe93ff5 (ADR-0014 - search has no role in the v0.1 scan; the sixth surface ADR-0007 pre-registered)",
+      "c3e4522 (docs/spec/v0.1-hydration-map.md - the budget is bound by block-tree shape, not workspace size)",
+      "1131f8f (the two living docs stopped asserting #19 was open; three claim comments, 693 -> 696)",
+      "c404e49 (.out-of-scope/ seeded with the Convex refusal; decision label; the router that missed 'plan')"
     ],
     "directory": "slice/",
     "modules": [
@@ -470,7 +470,7 @@
       "rule.ts gains unimplementedRules",
       "scan.ts exports BUILT_RULES"
     ],
-    "suite": "cd slice && npm run check -- ONE command; it typechecks first ('npm run typecheck && ...') then TEN files, 38+64+56+92+124+89+50+76+56+31 = 676 assertions, offline, no network, no token.",
+    "suite": "cd slice && npm run check - ONE command, typechecks first, then ten files. 696 assertions, exit 0, offline, no network, no token. Up from 693: CHECK-claims.ts TEST 6 emits one assertion per claim comment and three were added in S026.",
     "mutation_checks": "Thirteen in S020, every one scored on the EXIT CODE because a crashed suite prints no FAIL. Three on the typecheck wiring (remove it; redefine typecheck to 'echo ok'; separator && -> ;). Six on the claim checker (falsify a real count; delete a file an exists claim names; disable the count branch; create a file an absent claim denies; remove the absent parent-directory guard; remove fence stripping). Controls green throughout. S022 added two, both scored on the exit code: bypass the scope identity rejection in parseResourceRef (CHECK-config.ts exits 1); remove tsx CHECK-config.ts from the check chain (CHECK-suite-registration.ts exits 1 naming the file). The claim gate also went red on the stale scalars before they were updated - counterfactual run, not argued.",
     "live_command": "cd slice && npx tsx make-fixture-config.ts [ENV_KEY] && npx tsx cli.ts scan --config ../wl.config.json [--oracle] [--json PATH] [--markdown PATH] [--deterministic]. THE ENV_KEY ARGUMENT is how the live exit-byte table was produced: FIXTURE_ROOT_ID, REVOKE_PARENT_ID, UNSHARED_PAGE_ID.",
     "config_generator": "npx tsx make-fixture-config.ts -- reads FIXTURE_ROOT_ID from .env and writes the gitignored wl.config.json; the config contract is ID-only and there is deliberately no ${VAR} escape in the loader",
@@ -505,6 +505,7 @@
         "calls"
       ]
     },
-    "claim_check": "slice/CHECK-claims.ts (#62). Evaluates inline <!-- claim: count|exists|absent --> falsifiers in PRODUCT.md, CONTEXT.md, CLAUDE.md, docs/agents/domain.md, docs/research/INDEX.md and checkpoint.md. DEFERRED with reasons: tracker-backed status (needs the GitHub API; the gate is offline and that property is worth more) and identifier claims (needs a token-at-source table; ReCite arXiv:2608.03734 is the reference). Path claims are covered ONLY by deref_check.py, which is machine-local in the session-end skill and NOT in this repository -- #62's taxonomy row reading 'covered today: yes' overstates it. An unannotated sentence is unchecked and most sentences are unannotated."
+    "claim_check": "slice/CHECK-claims.ts (#62). Evaluates inline <!-- claim: count|exists|absent --> falsifiers in PRODUCT.md, CONTEXT.md, CLAUDE.md, docs/agents/domain.md, docs/research/INDEX.md and checkpoint.md. DEFERRED with reasons: tracker-backed status (needs the GitHub API; the gate is offline and that property is worth more) and identifier claims (needs a token-at-source table; ReCite arXiv:2608.03734 is the reference). Path claims are covered ONLY by deref_check.py, which is machine-local in the session-end skill and NOT in this repository -- #62's taxonomy row reading 'covered today: yes' overstates it. An unannotated sentence is unchecked and most sentences are unannotated.",
+    "hydration_map_S026": "docs/spec/v0.1-hydration-map.md. Per rule: fetch depth, pagination requirement, endpoint attestation, and what a partial hydration does to evidence sufficiency. The cost formula reproduces the only observed call log at exactly 7 requests; everything larger is labelled extrapolation from n=1. ~315 requests at 150 resources and 8% block nesting, ~495 at 20%, against a 540 budget. THE FINDING: the budget is bound by block-tree SHAPE, not workspace SIZE - the recursive descent contributes one request per block with children and is unbounded in the shape of the content. Consequence not yet decided: PRODUCT.md's warm-scan kill criterion cannot be predicted from a resource count. TWO HAZARDS #58 MEETS FIRST: relation and people property values truncate at 100 inside an otherwise SUCCESSFUL response (a residual under ADR-0013, never a violation), and POST /v1/data_sources/{id}/query returns has_more: false at exactly 10,000 rows."
   }
 }

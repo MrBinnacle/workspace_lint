@@ -277,6 +277,60 @@ neither blocks a rule, and the S025 standing rule forbids opening a decision tic
   different word is model-pull wearing a hook's clothes** — and a test suite is what would have
   caught it, not a reading.
 
+**Six constraints hoisted from the S025 band on 2026-08-18 before it was archived**, plus two
+adopted in S026. Each governs work that is not done, and nothing else in this file records them.
+
+- ⭐ **THE STANDING RULE: no new decision ticket opens until four rules ship, unless it blocks a
+  rule.** Adopted S025. The queue was growing faster than the build. **It is now countable** — the
+  `decision` label was added 2026-08-18 and `gh issue list --label decision --state open` is the
+  check. Eight open decision tickets at close. A rule stated over a set nobody could count was not a
+  rule.
+- ⛔ **A run can name a gap in its own report and exit `0`, and there is no second guard.** `#50`'s
+  TEST 10b priced the reversal: `gapsFrom` derives the gap set from the manifest, which a rule cannot
+  edit, so a mutated run still reports one gap and is still `qualified` — and the byte is green
+  regardless, because ADR-0012 decision 2 makes it compare the coverage **vector**. Nothing sits
+  behind the denominator decision.
+- ⛔ **`notion-port.ts`'s header still says THREE read endpoints and there are four.**
+  `GET /v1/databases/{id}` was authorized 2026-08-18 (#51). `/v1/data_sources/{id}` was neither
+  requested nor granted. #51 stays open behind two operator-only preconditions.
+- ⛔ **Three operator-only items block #51 and nothing else.** One `link_to_page` block pointing at
+  `wl-dataset`, made in the Notion UI — `references.ts` line 245 reads `link_to_page.database_id` and
+  no Markdown form produces that block, so the field is **unobserved**. A permanent database
+  reference in the fixture, whose addition moves `fixture-oracle.ts`'s `references.applicable` and
+  must be **re-pre-registered before the run, never corrected after it**. And `findingFor(...)!` at
+  **THREE** call sites in `CHECK-sys001.ts` — lines 61, 140 and 330 — which sends a reversal to exit
+  1 by throwing at TEST 1 before TEST 10's named ruling is reached; a diagnostic line now states the
+  cause above the throw.
+  ⚠ **The S025 band said NINE and it was wrong.** Caught by the S026 close's deref step, which is
+  the first time anything dereferenced it. The **mechanism** was right and only the count was
+  invented; a count is the fastest-rotting claim there is because it is quoted and never visited,
+  and each re-quotation reads as corroboration. `grep -o "findingFor([^)]*)!" slice/CHECK-sys001.ts`
+  is the check. *(The same pass flagged `references.ts` line 245 as missing
+  `link_to_page.database_id` — a FALSE alarm: the line reads `b.link_to_page?.database_id` and the
+  grep omitted the optional chaining. The claim held; the check was the defect. Search for
+  `link_to_page` and read the line.)*
+- ⚠ **`sed -i` and `cat >>` heredocs rewrite a CRLF file to LF**, and the flip lands in the committed
+  blob because `core.autocrlf` is `false` and there is no `.gitattributes`. An 80-line append became
+  `445 insertions, 338 deletions`. **Use the `Edit` tool on this repo's source files.** When a script
+  must write, open with `newline=""` and preserve the file's own ending — the S026 band rotation did
+  that and produced a symmetric 132-in/131-out diffstat.
+- ⛔ **An empty task list is not evidence a background fork finished.** `TaskList` reported "No tasks
+  found" twice while a `/code-review` fork was live; it returned ten minutes later with five valid
+  findings. Wait, or say plainly that the work shipped unreviewed. Never predict a pending agent's
+  result.
+- **`.out-of-scope/` exists as of 2026-08-18 and is the record format for a refusal.** A refusal and
+  a ticket are **independent choices**, and S025 treated them as one — it declined the ticket for
+  good reasons and lost the record as a side effect. `/triage` reads the directory in step 1 to catch
+  an already-rejected proposal and writes to it before closing a rejected enhancement. Seeded with
+  the Convex refusal. An entry with **no issue behind it is the normal case here**, not a malformed
+  one.
+- ⚠ **A verification grep that returns nothing may have searched the wrong tree.** The Bash tool's
+  cwd persists, so a `cd slice` from a test run silently redirects a repo-root-relative sweep and
+  "no matches" reads exactly like a clean repository. This fired on 2026-08-18 against the stale-claim
+  sweep itself — the one check that exists because the same false claim has stood in three or more
+  surfaces five times. **Absolute-`cd` every verification command and carry a positive control**, so
+  an empty result proves the search happened.
+
 **The gates. Both of them are closed, and nothing gates the build.**
 
 - **Gate 1, the demand test — CLOSED 2026-08-17** on owner research rather than on a five-team send.
@@ -408,134 +462,155 @@ of the close ritual still runs; the ritual line records `verdict=n/a`.
 
 
 
-## S025 — 2026-08-18 — the filter was refused, the mutation priced it, and the review that "returned nothing" returned five findings
 
-**PHASE:** **BUILD.** #50 decided and shipped. **Two commits (`b4ff999`, `37259dd`), PR #87 MERGED
-as `faff3ca`, one issue CLOSED (#50), one authorization recorded (#51).** `main` is green.
 
-**TESTS:** **693 assertions, ten suites, exit 0, offline.** Up from 676. `CHECK-sys001.ts` went
-92 → 109. Verified on merged `main`, not only on the branch.
+## S026 — 2026-08-18 — the endpoint was decided out rather than left silent, and the hook that enforces "always frame a plan" did not know the word "plan"
 
-**LIVE:** none. No API call was made this session.
+**PHASE:** **BUILD.** #24 and #18 taken as ONE unit and both shipped. **Four commits, TWO PRs merged
+(#89 as `846cd64`, #90 as `063b0a2`), three issues CLOSED (#24, #18, and #19 the day before),
+nothing filed.** `main` is green at `063b0a2`.
 
-### What shipped — #50
+**TESTS:** **696 assertions, ten suites, exit 0, offline.** Up from 693 — `CHECK-claims.ts` TEST 6
+emits one assertion per claim comment and three were added. Verified on merged `main`.
 
-**The applicability filter does NOT reach a resource this build cannot read, and it needs no ADR.**
-ADR-0005 decision 2 scopes the filter to a **precondition mismatch** — a rule's preconditions against
-a *resource's properties*. "This build does not enumerate data sources" is neither; it is a fact
-about the **tool**. So the filter never reached the case and nothing new had to be decided. That
-settles #50's third revisable item as *consequence, not new decision*.
+**LIVE:** none. No API call was made this session, and none was needed: both artifacts decide what
+the product does, not what the API does.
 
-Two independent grounds hold the same line. ADR-0005 decision 4 already names the resulting figure as
-a defect in prior art — Great Expectations scores over *evaluated* expectations, so *"a suite in which
-half the expectations never executed can report 100%. The number is not incomplete; it is wrong."*
-And REF001 answered the identical question identically on live evidence (#51).
+### What shipped — #24, as ADR-0014
 
-⭐ **TEST 10b implements the filter and prices it, and the result was not the expected one.** The
-ratio reads 3/3 and the byte goes 3 → 0 as predicted. The unexpected half: **the gap SURVIVES and the
-run exits 0 anyway.** `gapsFrom` derives the gap set from the manifest, which a rule cannot edit, so
-the mutated run still reports one gap and is still `qualified` — and the byte is green regardless,
-because ADR-0012 decision 2 makes the byte compare the coverage **vector**. **A run that names a gap
-in its own report and exits 0. There is no second guard behind the denominator decision.**
+**`POST /v1/search` has no role in the v0.1 scan, and the reason is not that search is broken.**
+ADR-0007 decision 3 opened five design surfaces, found every one silent, refused to read that
+silence as a negative, and pre-registered its falsifier: *a decision that assigns search a role
+falsifies the enumeration.* **ADR-0014 is that decision and the role it assigns is none.**
 
-**Nothing about the shipped behaviour changed.** `scan.ts` already counted the `child_database` and
-named the cause; assertions already pinned `3/4`. What was missing was the decision, and a control
-saying why `3/4` is a ruling rather than an artifact.
+It answers #24's four requirements in order. Root discovery is not in v0.1, and search would be the
+wrong instrument even if it were: ADR-0002 findings 1–3 make it non-exhaustive, blind to inherited
+access, and dead at ~11,200 objects, so a suggestion list is **a partial enumeration the tool cannot
+attest** — a named residual under ADR-0013 decision 2, which decision 3 forbids rendering as a
+number. **A first run that under-suggests looks like a small workspace.** ADR-0006 decision 5's
+disclosure resolves to its unchanged branch. ADR-0007's search row is marked accurate-and-unexercised
+so a fourth session does not re-derive it.
 
-### #51 — AUTHORIZED, and still blocked on the operator
+⭐ **Supersedes nothing, and that is the point.** It decides what an ADR declined to decide, which is
+the first time this project has closed a scope question by *stating* a negative rather than by
+leaving surfaces silent.
 
-`GET /v1/databases/{id}` is authorized as the **fourth** read endpoint (2026-08-18). `notion-port.ts`'s
-header must stop saying three. **`/v1/data_sources/{id}` was neither requested nor granted** — it
-resolves no observed reference shape. #51 stays OPEN as an implementation ticket behind two
-non-agent-executable preconditions; see BLOCKERS.
+**A seventh surface exists and it executes.** `slice/notion-port.ts` already declares `SEARCH`,
+classifies it `attested`, and comments *"Not called by this slice."* The ADR names which of the two
+is enforcement — **the port's classification table, which fires when a call is added** — and which is
+a rule that must be remembered. Do not let a later session read the ADR as the mechanism.
 
-### The two process failures, and the second one cost a defect
+### What shipped — #18, as `docs/spec/v0.1-hydration-map.md`
 
-⚠ **`sed -i` and a `cat >>` heredoc rewrote a CRLF file to LF**, turning an 80-line append into
-`445 insertions, 338 deletions`. `core.autocrlf` is `false` and there is no `.gitattributes`, so the
-flip lands in the committed blob. Caught by the diffstat looking absurd, which is the only tell.
-**Use the Edit tool on this repo's source files.**
+Per rule: fetch depth, pagination requirement, endpoint attestation, and what a partial hydration
+does to that rule's evidence sufficiency. The four deferred rules get a line each and **are assigned
+no coverage item**. The one slice-scoping choice is marked revisable: `REQ001`'s acquisition route,
+N page retrieves versus one paginated data-source query, unexercised either way.
 
-⛔ **A background `/code-review` fork was declared to have "returned nothing" and the work was
-committed on that conclusion. It returned ten minutes later with five valid findings**, one of them a
-defect self-review had missed: a control asserting `verdict.applicable` — the **resource funnel** —
-under the label *"the data source is IN SYS001's applicable set"*. It could not have failed for the
-reason its own label gave. `TaskList` reported "No tasks found" twice while the fork was live.
-**An empty task list is not evidence a fork finished.** Wait, or say plainly the work shipped
-unreviewed. Never predict a pending agent's result.
+⭐ **THE FINDING: the request budget is bound by block-tree SHAPE, not by workspace SIZE.** The
+estimate is a formula and it **reproduces this project's only call log at exactly 7 requests**;
+everything larger is labelled extrapolation from n=1 rather than presented as an estimate. At 150
+resources: **~315 requests at 8% block nesting, ~495 at 20%**, against 540. The resource count
+contributes one request each; the recursive descent contributes one per block with children and is
+unbounded in the *shape* of the content. A tier-(C) third-party figure agrees from outside: one
+250-block page with 50 toggles costs **103 calls — 19% of the budget, on one page.**
 
-### Convex — evaluated and REFUSED, no ticket opened
+**Consequence not yet decided:** `PRODUCT.md`'s warm-scan kill criterion **cannot be predicted from a
+resource count**, so a first run cannot warn an operator before exceeding it. Whether that warning is
+owed is a product question the spec deliberately does not decide.
 
-An external prompt asked whether Convex is worth adopting. **No, in any capacity, now.** Every
-candidate capability is store-and-distribute, and **ADR-0003 already assigned that job to SARIF plus
-SonarQube's issue-lifecycle model** — while the local baseline it would sit on has not been written
-(`finding.ts` and `report.ts` both record that the slice has no baseline file; #5 and #20 closed as
-*design*). The one capability SARIF cannot carry is coverage history, and **ADR-0009 decision 4
-already rules a coverage delta over time inadmissible** — *"a guess wearing a number."* Issue #6
-independently ruled that even a GitHub Action ships after the local core, gated on a threat review,
-because *"CI is a different privacy contract, not a packaging detail."*
+**Two ceilings the map prints.** `POST /v1/data_sources/{id}/query` caps at 10,000 and returns
+`has_more: false` at exactly 10,000. And **`REQ001` over a relation or people property can read a
+value truncated at 100 inside an otherwise SUCCESSFUL response** — a residual under ADR-0013, not a
+violation, and **#58 meets it first.**
 
-**Deliberately no ticket filed** — an open ticket is a standing invitation to relitigate a question
-the ADRs answered before it was asked. Full analysis is in the session transcript only; it is not a
-repository artifact and was not made one.
+### The claim system was mutation-tested, and the sweep that followed nearly shipped a false clean
+
+Moving the spec out of the tree takes the suite to **exit 1** with both claims failing by name and
+path; moving it back returns exit 0. **A claim comment that cannot fail is not a check.**
+
+⚠ Then the stale-claim sweep returned **empty** and was one sentence from being reported as clean.
+`pwd` was `slice/` — a `cd` from a test run six calls earlier. From the repo root the same command
+returned five matches. **That sweep exists because this repo has shipped the same false claim across
+three or more surfaces five times; a false clean would have been the sixth, produced by the check
+built to prevent it.** Hoisted to the standing block.
+
+### What shipped — the tooling half (PR #90)
+
+Five items, **nothing filed**, because none blocks a rule.
+
+⭐ **The finding: `downstream-instruction-framing` is marked MANDATORY before ANY plan, and its
+router patterns did not match the word "plan".** Tested against the live hook **negative first** —
+*"write me a plan for issue 18"* produced nothing. It had been firing on `\bADR\b`, so its correct
+behaviour earlier this session was **coincidence relative to the rule's stated purpose.** Three
+patterns added; it now fires on that probe and on *"And triage/skill tooling plan"*, the operator's
+actual message, which had produced no reminder at the time. Five probes confirm no false positive,
+including `plane` and `planner`. **A router rule moves a discipline to the hook layer only to the
+extent its predicate is complete.**
+
+`.out-of-scope/` created and seeded with the Convex refusal S025 declined to record. A `decision`
+label added — **supplementary, not a third category**, so `/triage`'s one-category invariant holds —
+because the S025 standing rule is stated over decision tickets and nothing could count them. Ten
+issues gained the `enhancement` they lacked; **16 of 16 already carried exactly one state role, which
+is the triage-label guard's output, not diligence.** `CLAUDE.md` §14 now marks every skill
+`[✓]`/`[/]`/`[off]` for reachability.
+
+⚠ **The §14 fix came from making the error.** A search for `ask-matt` at `-maxdepth 4` returned
+nothing and a present skill was reported non-existent. **Plugin skills sit at depth 7.** Twenty of
+thirty-five Pocock skills are operator-only; `/triage` and `/ask-matt` are both among them and
+neither had ever been named in §14.
 
 ### BLOCKERS
 
-**None for the build.** Three standing items, all operator-only:
-
-1. ⛔ **One `link_to_page` block pointing at `wl-dataset`, made in the Notion UI.** `references.ts`
-   line 245 reads `link_to_page.database_id`; no Markdown form produces that block, so the field is
-   **UNOBSERVED**. It cannot reverse #51's authorization, only redirect which endpoint the one method
-   calls.
-2. ⛔ **A permanent database reference in the fixture.** Still none. #51's red test needs one, and
-   adding it moves `fixture-oracle.ts`'s `references.applicable`, which must be **re-pre-registered
-   before the run and never corrected after it**.
-3. ⚠ **`findingFor(...)!` at nine call sites in `CHECK-sys001.ts`.** Reversing #50's ruling in
-   `scan.ts` takes the suite to exit 1 **by throwing at TEST 1**, before TEST 10's named ruling is
-   reached. One line now states the cause above the throw. That is a diagnostic, not a fix. Not
-   filed — it blocks no rule.
+**None for the build. Nothing blocks #58 or #59 for the first time.** The three standing
+operator-only items are hoisted into the standing block above and all three gate **#51 only**.
 
 ### EXACT NEXT STEPS
 
-**Sixteen issues open.** #50 closed this session; nothing was filed.
+**Fourteen issues open**, eight of them decision tickets. #24 and #18 closed this session.
 
-1. **#24 + #18 as ONE unit — the head.** #18 is #58's only remaining blocker. **#24 does not need its
-   own session:** its body says naming a sixth surface that gives search a role settles it
-   immediately, the five surveyed surfaces are silent, and **#18's hydration map is that sixth
-   surface.** If search is not in the map, #24 closes as a by-product with the negative *stated*.
-   ⛔ **PLAN-GATED — it writes `docs/`.** EnterPlanMode, name the file in the Files table, ExitPlanMode.
-2. **#58 — REQ001.** Then **#70 decision 1**, then **#59 — UNQ001**. That completes the four v0.1
-   rules. #70 decision 1's input is now answered: **port-widening appetite is one GET.**
-3. **#51's implementation**, once the two preconditions above are met.
+1. ⭐ **#58 — `REQ001`.** Unblocked. **Read `docs/spec/v0.1-hydration-map.md` §1.3 first** — the
+   relation/people truncation hazard is the thing this rule meets that no earlier rule did, and the
+   acquisition-route choice is marked revisable *for #58 to settle*.
+2. **#70 decision 1**, then **#59 — `UNQ001`**. That completes the four v0.1 rules.
+3. **#51's implementation**, once the two operator preconditions are met. `notion-port.ts`'s header
+   is wrong until then.
 4. **Disposition sweep — fast tier, its own session.** **#71** record and close; **#74** count the
-   broken references in "Hans".
+   broken references in "Hans". Both still `needs-triage`.
+5. **Hook tests, `skill-router.py` first** — its own session. Three of nine hooks are tested and the
+   untested router is the one §1 designates as the enforcement layer.
 
-⭐ **THE STANDING RULE ADOPTED THIS SESSION: no new decision ticket opens until four rules ship,
-unless it blocks a rule.** Two of the sixteen open issues build v0.1. The queue has been growing
-faster than the build. Nothing was filed this session under this rule — not the Convex question, not
-the baseline gap, not the nine `!` call sites.
+**Off the critical path and deliberately shut:** #8, #25, #27, #29, #69, #82, #84.
 
-**Off the critical path and deliberately shut:** #8, #25, #27, #29, #69, #71, #74, #78, #82, #84.
+**Three skills are staged in `~/.claude/skills/_quarantine/`** and need manual §1.5 review before
+promotion: `hidden-and-plugin-skill-reachability`, `router-skill-predicate-gap`,
+`bash-cwd-drift-false-clean-grep`. None is active until promoted.
 
-**NEXT-MODEL: frontier.** #18 specifies which rule hydrates what against a ~540-request budget, and
-#24 decides whether a whole endpoint enters the product. Both are irreversible-shaped and both are
-prose an ADR will be read against. **Do not straddle:** the disposition sweep is fast-tier and keeps
-its own session; #51's implementation is blocked on the operator, not on a model tier.
+**NEXT-MODEL: fast tier.** #58 is separable execution mechanics against a spec that now exists and
+names its own hazard; the decision work it depended on shipped this session. **Do not straddle:** if
+the session would also take #70 decision 1 — which is irreversible-shaped and prose an ADR will be
+read against — shrink the scope to #58 alone and give #70 its own frontier session.
 
 **NEXT-REPO/CWD:** `C:\Users\mlpgr\2026_Projects\workspace_lint` — single repo; state, plan and
 resume ritual all at the root.
 
 ### WHAT ONLY THE OPERATOR CAN DO
 
-**To launch the next session:** `/clear` (never `/compact`) → select **frontier** → `/session-start-from-state`.
+**To launch the next session:** `/clear` (never `/compact`) → select **fast tier** →
+`/session-start-from-state`.
 
-**Blocking something:** the two #51 preconditions above.
+**Blocking #51:** the `link_to_page` block and the permanent database reference, both in the Notion
+UI. Both are in the standing block above.
 
-**Blocking nothing right now:** #82 (three positions; the third needs a superseding ADR), #8 (npm
-name), #29 (`needs-info`), #25 (`ready-for-human`).
+**Worth doing when there is slack, and on no ticket by design:** back up `~/.claude/settings.json`.
+The whole hook layer exists on one machine with no reproduction path, and §1 designates that layer as
+where a discipline goes when it must survive the loop.
+
+**Promotion review** of the three quarantined skills.
 
 **Actions no agent can perform at all:** anything in Notion's developer portal, any share or
-permission change in the Notion UI (including reconnecting `wl-revoke-child`, which resets Q1), and
-anything requiring a TTY — **the `!` prefix has no TTY.**
+permission change in the Notion UI (including reconnecting `wl-revoke-child`, which resets Q1),
+merging a PR when the classifier declines it, and anything requiring a TTY — **the `!` prefix has no
+TTY.**
 
 **NO SELF-ASSESS LINE, BY OPERATOR RULING 2026-08-17.** The ritual line records `verdict=n/a`.
