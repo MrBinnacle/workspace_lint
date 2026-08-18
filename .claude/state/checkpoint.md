@@ -214,9 +214,10 @@ without a triage-role label**, reading the roles from `docs/agents/triage-labels
   first **publishable** `package.json`", which is what the shipped file already asserts about itself.
   The operative trigger is `private: true` being removed or a tree being renamed `src/`.
   Suite: `cd slice && npm run check` — **ONE command, and it typechecks first**: `npm run typecheck
-  && ` then NINE files, 38 + 56 + 92 + 124 + 89 + 50 + 76 + 56 + **29** = **610 assertions**, offline,
-  no network, no token.
-  <!-- claim: count glob="slice/CHECK-*.ts" exclude="CHECK-harness.ts,CHECK-fakes.ts" equals=9 --> ~~`npm run check` DOES NOT TYPECHECK~~ — **#60 CLOSED**, and the
+  && ` then TEN files, 38 + **64** + 56 + 92 + 124 + 89 + 50 + 76 + 56 + **31** = **676 assertions**,
+  offline, no network, no token. `CHECK-config.ts` is the tenth, added by #19; `CHECK-suite-registration.ts`
+  went 29 → 31 because two of its assertions are per-suite.
+  <!-- claim: count glob="slice/CHECK-*.ts" exclude="CHECK-harness.ts,CHECK-fakes.ts" equals=10 --> ~~`npm run check` DOES NOT TYPECHECK~~ — **#60 CLOSED**, and the
   counterfactual is recorded: `main@f42fadd` printed `ALL CHECKS PASS` at **exit 0** over a tree
   carrying a real `TS2322`. The chain is `&&`, so a type error now stops the gate before any
   assertion runs. **`tsconfig.json` is a GLOB (`*.ts`), not a

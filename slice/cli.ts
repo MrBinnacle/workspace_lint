@@ -18,7 +18,8 @@ import { dirname, join, resolve } from 'node:path';
 
 import { loadConfig } from './config.js';
 import { liveNotionPort } from './notion-port.js';
-import { scan } from './scan.js';
+import { scan, BUILT_RULES } from './scan.js';
+import { unimplementedRules } from './rule.js';
 import { buildReportDocument, renderJson, renderMarkdown, renderReport } from './report.js';
 import { checkAgainstOracle } from './fixture-oracle.js';
 
@@ -87,6 +88,18 @@ async function main(): Promise<never> {
     process.exit(4);
   }
 
+  /* A rule the DOCUMENT declares and this BINARY cannot run. The loader cannot
+   * catch it — it validates the document against a table, and the table is
+   * hand-kept — so the build is asked directly, here, before any call is made.
+   * Running anyway would publish a coverage figure that says nothing about the
+   * configured rule while the header claims the declared rules were evaluated. */
+  const missing = unimplementedRules(loaded.config.rules, BUILT_RULES);
+  if (missing.length > 0) {
+    say(`CONFIG REJECTED — configured but not implemented in this build: ${missing.join(', ')}. Nothing was called.`);
+    say('exit: 4   (The scan did not run as declared.)');
+    process.exit(4);
+  }
+
   if (!TOKEN) {
     say('NOTION_TOKEN is empty in .env. Nothing was called.');
     say('exit: 4   (The scan did not run as declared.)');
@@ -94,7 +107,7 @@ async function main(): Promise<never> {
   }
 
   say('workspace_lint — v0.1 scan slice (T3, issue #44)');
-  say(`Notion-Version: ${env.NOTION_VERSION || '2026-03-11'} · read-only · rules implemented: 2 (SYS001, REF001)`);
+  say(`Notion-Version: ${env.NOTION_VERSION || '2026-03-11'} · read-only · rules implemented: ${BUILT_RULES.length} (${BUILT_RULES.map(r => r.id).join(', ')})`);
   say('');
 
   const result = await scan({

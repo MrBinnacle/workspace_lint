@@ -54,6 +54,20 @@ Two built-in, six configured.
 
 Six of eight need configuration, so a first run reports coverage and little else until you declare an invariant. That cost is deliberate — see [ADR-0001](docs/adr/0001-linter-not-entropy-engine.md).
 
+### Configuring a rule
+
+`wl.config.example.json` carries `"rules": []`, because **this build rejects every entry that could go in it.** `SYS001` and `REF001` are built-in and take no configuration, and the six Configured rules are not built. The section is validated now so that #58 and #59 have somewhere to land:
+
+```jsonc
+"rules": [
+  { "rule": "REQ001", "scope": { "id": "…hyphenated Notion ID…" }, "property": "Owner" }
+]
+```
+
+The loader **rejects and never resolves**. A scope addressed by name, alias or URL is refused with the same message a declared root gets — identity is the stable ID. A missing scope is refused, because a required-property rule with no scope would infer applicability from nothing. A rule ID this binary cannot execute is refused rather than ignored: an accepted-but-unevaluated rule would produce a green run over a rule that never ran, which is the failure this tool exists to detect. Every refusal exits `4`.
+
+An example that the tool refuses to load is not an example, which is why the shipped file declares no rule until one is built.
+
 ## Intended command surface
 
 Provisional beyond `scan`, which exists.
