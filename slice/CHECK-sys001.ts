@@ -5,7 +5,7 @@
  * No network, no .env, no token. The clock is injected and the Notion surface is
  * the shared fake in CHECK-fakes.ts.
  *
- * THREE OF THESE TESTS ARE MUTATION CHECKS AND THEY ARE THE POINT OF THE FILE.
+ * FOUR OF THESE TESTS ARE MUTATION CHECKS AND THEY ARE THE POINT OF THE FILE.
  * A control that passes with its mechanism bypassed tested nothing (spec §4.1).
  * Each one disables a different load-bearing clause and asserts the result moves:
  *
@@ -18,10 +18,13 @@
  *            must fall from `disclaimed` to `qualified` and the byte from 2 to 3.
  *   TEST 7 — feed a gap naming a resource the manifest does not hold; the rule
  *            must report the disagreement instead of defaulting around it.
+ *   TEST 10b — apply ADR-0005 decision 2's applicability filter to the resource
+ *            this build cannot read; the ratio must reach 3/3 and the byte must
+ *            go 3 → 0. It prices the #50 ruling that TEST 10 states.
  */
 
 import { createHarness, reportSection } from './CHECK-harness.js';
-import { scan } from './scan.js';
+import { scan, BUILT_RULES } from './scan.js';
 import { renderReport } from './report.js';
 import { hyphenate } from './ids.js';
 import { anchorFor, anchorKey, coverageRow, headlineCoverage } from './finding.js';
@@ -380,9 +383,16 @@ console.log('    reported a run that made no successful call as fully covered.')
 
 head('TEST 10 — #50: a resource this build does not reach stays in the denominator');
 
-check('the data source is IN SYS001\'s applicable set', r1.verdict.applicable, 4);
-check('  the denominator is the enumerated set, not the handled subset', r1.coverage[0]!.applicable, 4);
-check('  so the ratio is 0.75 and NOT 1.0', r1.coverage[0]!.ratio, 0.75);
+/* THE TWO FOURS ARE DIFFERENT NOUNS AND ONLY THE SECOND IS THIS TEST'S SUBJECT.
+ * `verdict.applicable` is the RESOURCE FUNNEL — verdict.ts is explicit that it
+ * "is not what the byte compares" and that collapsing the two produced the #49
+ * defect. SYS001's applicable set is its coverage ROW. Labelling the funnel as
+ * the rule's applicable set would leave an assertion that cannot fail for the
+ * reason its own name gives. */
+const sys001Row = (rows: typeof r1.coverage) => rows.find(c => c.rule === SYS001_ID)!;
+check('the resource funnel counts 4 — the enumerated set, not the handled subset', r1.verdict.applicable, 4);
+check('  and SYS001\'s own coverage row has the data source in its denominator', sys001Row(r1.coverage).applicable, 4);
+check('  so the ratio is 0.75 and NOT 1.0', sys001Row(r1.coverage).ratio, 0.75);
 check('it is a GAP, not an excluded non-defect', r1.gaps.some(g => g.resource === hyphenate(DATASET)), true);
 check('  bounded — the resource is named and counted', fDataset.bounded, true);
 
@@ -409,10 +419,18 @@ const filtered: Sys001Rule = {
   coverage: (m, judged) =>
     coverageRow(SYS001_ID, SYS001_UNIT, judged.size, m.of(SYS001_UNIT).filter(e => e.key !== hyphenate(DATASET)).length),
 };
-const mutated10 = await scan({ config: cfg(), port: fakePort(THREE_CHILDREN), now: clock(), rules: [filtered, REF001] });
+/* SUBSTITUTED INTO BUILT_RULES, NOT HARDCODED BESIDE ONE OTHER RULE.
+ * `rules: [filtered, REF001]` is the same list as today's BUILT_RULES and stops
+ * being so the moment REQ001 (#58) or UNQ001 (#59) lands: the mutant would then
+ * silently drop a rule the control keeps, and the 3 → 0 byte movement would no
+ * longer be attributable to the filter. Rows are looked up by rule ID for the
+ * same reason — `coverage[0]` is SYS001's row only by accident of ordering. */
+const mutatedRules = BUILT_RULES.map(r => (r.id === SYS001_ID ? filtered : r));
+const mutated10 = await scan({ config: cfg(), port: fakePort(THREE_CHILDREN), now: clock(), rules: mutatedRules });
 
-check('with the filter ON the ratio reads 1.0 over a root the scan did not fully read', mutated10.coverage[0]!.ratio, 1);
-check('  and the row reads 3/3', `${mutated10.coverage[0]!.evaluated}/${mutated10.coverage[0]!.applicable}`, '3/3');
+check('the mutant swaps exactly one rule and keeps the rest', mutatedRules.length, BUILT_RULES.length);
+check('with the filter ON the ratio reads 1.0 over a root the scan did not fully read', sys001Row(mutated10.coverage).ratio, 1);
+check('  and the row reads 3/3', `${sys001Row(mutated10.coverage).evaluated}/${sys001Row(mutated10.coverage).applicable}`, '3/3');
 check('the shipped byte is 3 — coverage below the declared threshold', r1.verdict.exit, 3);
 check('  with the filter ON the byte is 0', mutated10.verdict.exit, 0);
 
