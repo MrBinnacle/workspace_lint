@@ -1,9 +1,9 @@
 {
   "project": "workspace_lint",
   "updated": "2026-08-18",
-  "session": "S022",
-  "phase": "BUILD. #19 built and pushed as PR #79 (OPEN, mergeable). Two of four v0.1 rules built; REQ001 (#58) now blocked only by #18.",
-  "phase_detail": "S022 built the config schema's rule-configuration section - #19's load-bearing half - and filed #78 (REQ001 configures a property by NAME and the identity rule was never extended to properties). 676 assertions across ten suites, up from 610; CHECK-config.ts is the tenth. /code-review high found three defects all introduced by this change, each fixed with the assertion that missed it. The example config was an unexecuted claim and is now loaded by the suite.",
+  "session": "S023",
+  "phase": "CANONICAL DOCUMENTS, not the build. The three operator rulings of 2026-08-18 are landed (PR #83, merged 57b8871); #19 is closed. Two of four v0.1 rules built; REQ001 (#58) blocked only by #18. The head is now #51.",
+  "phase_detail": "S023 landed #75 (the job statement claims CENSUS REMOVAL ONLY, and says in the file what it does not do), #76 (the competitor is the credit meter, with no-price / n=1 / free-means-no-meter shipping alongside it, and the enterprise half deliberately unasserted), and the zero-config -> policy-free rename. No code changed. Two plan defects were caught by scrutiny before any edit: productivity theater was about to be filed as a pain the tool CANNOT address when #75 establishes the opposite, and re-terming PRODUCT.md's contested built-in sentence alone would have laundered the contest. Filed #82 (does executive function force a repair surface Principle 7 forbids - operator's call, three positions, the third needs a superseding ADR) and #84 (map the owner's six entropy invariants onto the catalogue). THE GATE CANNOT SEE PROSE WORK: 676 assertions passed identically before and after, and the real controls were a negation grep, the non-goals read item by item, and git diff --name-only.",
   "gate_1_demand_test": {
     "status": "CLOSED 2026-08-17 on owner research, not on a five-team send. Issue #40 closed with it.",
     "what_closed_it": "docs/inputs/decay-causal-synthesis-2026-08-16.md -- the operator's own causal synthesis of workspace decay, derived from Reddit discussion no research path in this project could reach. Plus this file's own research.known_blind_spot record that the operator reaches Reddit and HAS CONVERTED A BUYER THERE, and docs/research/solo-segment-evidence.md conceding its NO 'may be a verdict on the config file, not on the segment'.",
@@ -226,7 +226,7 @@
     {
       "id": "#70-4",
       "question": "Adopt 'policy-free scan' in place of 'zero-config'?",
-      "status": "OPEN, and it is the operator's call. docs/adr/0001-linter-not-entropy-engine.md:20 rejects 'zero-config inference' while PRODUCT.md:123 names the adopted entry point the 'zero-config decay report'. One phrase, two senses, two canonical documents. Both files are plan-gated. Blast radius measured: PRODUCT.md lines 53, 69, 86, 123, 184 and CONTEXT.md line 147. ADR-0001 is NOT edited -- its sense is correct as written."
+      "status": "CLOSED 2026-08-18 in PR #83, merged as 57b8871. Two terms, not one: the entry point is the 'policy-free decay report' and 'policy-free scan' is the run mode, now a CONTEXT.md glossary row alongside Policy and Built-in rule. All five PRODUCT.md occurrences and the one in CONTEXT.md are renamed. ADR-0001 was NOT edited and must not be -- its sense of the term is correct as written. THE RENAME DID NOT DECIDE #70-1: PRODUCT.md's built-in duplicate-title sentence was re-termed AND marked contested in place, naming ADR-0001 decision 4 as the collision, because re-terming alone would have made a sentence that ADR forbids read more settled rather than less."
     },
     {
       "id": "#69",
@@ -395,7 +395,9 @@
     "Notion Workers and the PAT are not v0.1 surfaces, 2026-08-17. The PAT is ruled out by Principle 7 -- its API capability is a single bundle including create and update, with no read-only variant -- so the planned PAT fixture test in #27's DoD is NOT to be run. Workers are technically viable via an integration token and strategically premature: no exit byte, both output shapes reopen a stated boundary, Business/Enterprise only, and billed since 2026-08-11 on a per-run credit meter that charges more the more completely the scan reads.",
     {
       "date": "2026-08-18",
-      "ruling": "Agrees with #75, #76 and the zero-config -> policy-free rename. Ranks #75 and #76 ABOVE the build.",
+      "ruling": "The job statement claims CENSUS REMOVAL ONLY. Ruled in session 2026-08-18, when asked how far the rewritten statement should reach. The tool removes the part where a human has to look; it does not remove the repair. #75's own candidate wording - 'one recommendation, its evidence, and its rollback path' - was rejected as unscoped report content, and a rollback path is undefined for a tool that writes nothing. The larger question went to #82 and stays the operator's.",
+      "grounds_2": "CONTEXT.md's non-goals forbid repairing content and Principle 7 makes read-only a product boundary, so the larger claim could not be honestly made. Reversing that needs a superseding ADR.",
+      "prior_ruling": "Agrees with #75, #76 and the zero-config -> policy-free rename. Ranks #75 and #76 ABOVE the build. ALL THREE ARE NOW LANDED in PR #83.",
       "grounds": "Gate 1 closed on framing 2 as the entry point while the catalog and build are aimed at framings 1 and 3. #75 and #76 change the job statement and the competitive claim, so they change what the entry point is FOR. Confirmed by his own secondary pass over live PRODUCT.md, CONTEXT.md and checkpoint.md.",
       "scope": "The three are decided. HOW to land them is revisable by the session holding the files. The rename does NOT edit ADR-0001 (never edited in place) and does NOT decide #70-1 (UNQ001's mode still needs a superseding ADR if built-in-with-violations is taken)."
     }
