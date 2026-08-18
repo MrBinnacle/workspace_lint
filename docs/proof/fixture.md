@@ -23,6 +23,17 @@ The proof measures what the **subject** can see. The builder made the content; i
 | `wl-revoke-parent` | `…70a06142` | Holds the revocation target. Q1. |
 | `wl-revoke-child` | `…ce0fb949` | The revocation target. |
 | `wl-outside-grant` | `…bffb9742` | Top-level, never connected. Linked from the root. The contrast case. |
+| `wl-outside-grant-db` | db `…25ef8879` · ds `…f23e4b04` | Added 2026-08-18 for #51. Top-level, never connected, **never linked from anything**. The database analogue of `wl-outside-grant`: it is the only way to observe what the API returns for a database *outside* the grant. It cannot enter any manifest. |
+
+**The fixture contains no database reference, and that is still true after 2026-08-18.** #51 needed
+one to observe what `mention.database.id` carries. A temporary page `wl-dbref-probe` (`…85a6a541`)
+held three reference forms, was read once by the subject, and was then **moved out of the root** to
+workspace level. The root was re-enumerated afterwards and is unchanged: 15 blocks, same types,
+`child_database` intact. `slice/fixture-oracle.ts` constants `applicable: 4` and
+`references.applicable: 1` were not touched and still hold. Full working:
+`docs/proof/results-51-database-identity.md` §6. **A permanent database reference is still owed** —
+whoever implements #51 needs one for the red test, and adding it will move `references.applicable`,
+which must be re-pre-registered before the run and never corrected after it.
 
 `wl-outside-grant` is **not** under the root. That is deliberate. It gives the proof a link whose target the subject cannot resolve — a `REF001` finding with an `unreachable` target state, which ADR-0005 distinguishes sharply from an `unreached` Gap.
 
