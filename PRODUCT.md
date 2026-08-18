@@ -127,6 +127,8 @@ Buildability is the smaller risk. That nobody will pay for a coverage proof is t
 
    **The two limits, stated rather than left implicit.** First, the evidence is a synthesis carrying reasoning rather than URLs. The thirteen sweeps in `docs/research/`, indexed at `docs/research/INDEX.md`, carry URLs and dates, and where the two disagree on a **fact** the sweep wins; the synthesis is the better account only of **mechanism**. Its own header says so — it says it of *"the seven sweeps"*, the count at the time it was written, and there are now thirteen. The synthesis is an input and is never edited to match this file. Second, **no willingness-to-pay figure exists for any of the three framings.** This gate established which framing is the entry point. It did not establish a price, and nothing downstream may read it as having done so — `docs/research/competitive-landscape.md` still records that deterministic linters monetize at zero.
 
+   <!-- claim: count glob="docs/research/*.md" exclude="INDEX.md" equals=13 -->
+
    *Revisit if:* the built slice reaches real users and framing 2 does not return the value this synthesis predicts. That is a product finding rather than a research finding, and Gate 4 is where it surfaces.
 
    Carry forward into Gate 4: ask about trust and re-work, not tidiness. The question that finds the cost is "when did you last act on something in Notion that turned out to be wrong, and what did that cost" — not "is your workspace messy."

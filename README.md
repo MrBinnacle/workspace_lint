@@ -118,4 +118,15 @@ npm run typecheck     # tsc --noEmit alone — a shortcut, not a second gate
 
 It includes **mutation checks** — each disables a mechanism and confirms the corresponding control goes red, scored on the process exit code. A control that passes with its mechanism bypassed tested nothing. `CHECK-suite-registration.ts` applies that to the gate itself: it asserts that every suite on disk is registered, that `tsconfig.json` covers the directory by glob, and that the `check` script actually invokes a real `tsc --noEmit` ahead of the suites.
 
+**The gate also checks this project's own documentation** (`CHECK-claims.ts`, [issue #62](../../issues/62)). A documented claim can declare what would falsify it, inline, next to the sentence:
+
+```markdown
+Thirteen files.
+<!-- claim: count glob="docs/research/*.md" exclude="INDEX.md" equals=13 -->
+```
+
+The gate evaluates those and fails when one is false. It exists because the same fact went stale across five documents twice, and both times a person reading found it. The design is borrowed rather than invented: Terraform's `plan -refresh-only -detailed-exitcode` compares declared state to observed state and signals the difference with an exit code, and nuclear configuration management requires documentation "traceable to a frozen baseline" instead of recovering the link after the fact. See [`docs/research/documented-claim-drift-prior-art.md`](docs/research/documented-claim-drift-prior-art.md).
+
+**An unannotated sentence is unchecked, and most sentences are unannotated.** Counts and filesystem facts are covered; claims about the issue tracker are not, because the gate is offline by design.
+
 `.gitignore` covers Node, Python and Rust; trim it once the stack is an actual decision rather than an assumption.
