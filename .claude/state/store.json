@@ -1,9 +1,9 @@
 {
   "project": "workspace_lint",
   "updated": "2026-08-18",
-  "session": "S021",
-  "phase": "BUILD -- no product code written this session. Five expert sweeps answered #70 and #69. PR #72 open and NOT yet on main.",
-  "phase_detail": "S021 filed #69 (DOC001 proposal, recommended v0.2 behind gate 3), #70 (the demand gate chose framing 2 and the catalog builds framings 1 and 3) and #71 (Razniewski & Nutt now checked), and settled #65. Six research sweeps landed: docs/research/ 13 -> 19. 610 assertions unchanged. The claim gate caught its first real drift -- six files added with no scalar updated went RED at exit 1 with six failing claims, then green.",
+  "session": "S022",
+  "phase": "BUILD. #19 built and pushed as PR #79 (OPEN, mergeable). Two of four v0.1 rules built; REQ001 (#58) now blocked only by #18.",
+  "phase_detail": "S022 built the config schema's rule-configuration section - #19's load-bearing half - and filed #78 (REQ001 configures a property by NAME and the identity rule was never extended to properties). 676 assertions across ten suites, up from 610; CHECK-config.ts is the tenth. /code-review high found three defects all introduced by this change, each fixed with the assertion that missed it. The example config was an unexecuted claim and is now loaded by the suite.",
   "gate_1_demand_test": {
     "status": "CLOSED 2026-08-17 on owner research, not on a five-team send. Issue #40 closed with it.",
     "what_closed_it": "docs/inputs/decay-causal-synthesis-2026-08-16.md -- the operator's own causal synthesis of workspace decay, derived from Reddit discussion no research path in this project could reach. Plus this file's own research.known_blind_spot record that the operator reaches Reddit and HAS CONVERTED A BUYER THERE, and docs/research/solo-segment-evidence.md conceding its NO 'may be a verdict on the config file, not on the segment'.",
@@ -396,70 +396,36 @@
   ],
   "tracker": {
     "host": "GitHub issues, gh CLI",
+    "open_count": 18,
     "open": [
-      "#62 (declared-baseline claim check; §0.5 sweep DONE, practitioner sweep DONE, design is generate-counts + exit-code-check-status)",
-      "#61 (PRODUCT.md gate-2 marker + sweep count; plan-gated, name it in the Files table)",
-      "#60 (npm run check does not typecheck and no script does)",
-      "#59 (T7 UNQ001; blocked_by #18, #19)",
-      "#58 (T6 REQ001; blocked_by #18, #19)",
+      "#79 is a PR not an issue",
+      "#78",
+      "#76",
+      "#75",
+      "#74",
+      "#71",
+      "#70",
+      "#69",
+      "#59",
+      "#58",
       "#51",
       "#50",
       "#29",
       "#27",
       "#25",
       "#24",
-      "#19",
+      "#19 (closes when PR #79 merges)",
       "#18",
-      "#8",
-      "#7"
+      "#8"
     ],
-    "closed_S005": "#2 #3 #4 #5 #6 #9 consolidated into #16 — they were undocumented decisions, not open questions.",
-    "closed_S013": "#40 CLOSED by the Gate 1 close. Its statistics half was swept and ADR-0005 decision 3 survives; its recruitment-bias half never depended on that sweep and was visible inside PRODUCT.md all along.",
-    "phase_transition_S013": "The project left the decision phase. Eleven ADRs, five of them superseding parts of earlier ones, every supersession found by re-reading documents rather than by running the product. Across S008-S012 the board closed 7 and filed 6 -- not converging. Every open issue produced a document, a decision, or a spec, so /implement had nothing to take. Gate 1 is now closed and the next artefact is a BUILD SPEC seeded from #10's nine proof checks, not a twelfth ADR.",
-    "note": "ALL WORK MERGED. main carries ADR-0011 at 88d401e; nothing in flight. Every open issue carries a triage role, and a PreToolUse guard now enforces one at issue-creation time from the next session onward. GATE 1 IS NOT ON THIS BOARD as a gate: it advances when the operator sends, and #40 blocks the send.",
-    "closed_S006": "#13 closes on the PR #17 merge (Closes #13 in commit f8917fa).",
-    "closed_S007": "#15 and #16 closed by PR #22. #13 closed by PR #17.",
-    "closed_S008": "#21 closed by PR #23, MERGED as 280524e. #24 and #25 filed as its follow-ups.",
-    "closed_S009": "#20 (ADR-0008), #1 (ADR-0009, narrowly -- buyer half refiled as #29)",
-    "closed_S010": "#31 (closed by ADR-0010 via PR #32)",
-    "filed_S021": "#69 (DOC001 -- a Notion page declares its own falsifier), #70 (the demand gate chose framing 2 and the catalog builds framings 1 and 3), #71 (Razniewski & Nutt is no longer NOT CHECKED). PR #72 opened against main; it closes #65. SIXTEEN issues open at close.",
-    "filed_S010": "#34 -- specify REF001 link recognition: the host set, and the unrecognised outcome",
-    "closed_S011": "#34 closed by PR #37 (spec, not ADR).",
-    "closed_S012": "#14 CLOSED as ALREADY COMPLETE -- finished 2026-08-16 in cc16d63, on origin/main, every DoD element present in the issue's own wording. S010 and S011 both carried it as the Gate 1 blocker anyway. #36 CLOSED by PR #38, merged as 88d401e.",
-    "filed_S012": "#39 -- README.md contradicts ADR-0005 and ADR-0008 in four places, untouched since 2026-08-16. #40 -- PRODUCT.md's demand test and kill criterion name the auditor buyer; the only item marked blocks:Gate 1 and it had never been filed.",
-    "closed_S015": "#43 CLOSED as completed. Its DoD is met item by item and acceptance criterion 1 closed with it. #49 and #50 filed from it: #49 verdict.ts must be permitted to diverge from the frozen prototype (blocks #44 exit byte), #50 SYS001 reports unreached for a resource excluded by design (ADR-0005 decision 2 applicability filter). #42 remains OPEN although its code shipped in S014 -- nobody closed the ticket.",
-    "github_outage_S015": "GraphQL returned HTTP 503 for ~15 minutes while REST reads succeeded. gh issue comment and gh issue create both route through GraphQL. Verify a tracker write by re-reading it; a retry loop reported success on a 503 body because --jq printed the error JSON to stdout and the check tested only for non-empty.",
-    "closed_S017": [
-      "#49 (ADR-0012)",
-      "#45 (T4 reports)",
-      "#46 (T5 red test)"
-    ],
-    "commented_S017": [
-      "#45",
-      "#46",
-      "#35 (the false green, with the live reproduction)"
-    ],
-    "filed_S017": [],
-    "note_S017": "All five tracer bullets are CLOSED. The build queue is empty. The head is now #35, a decision and not a build: may a scan that cannot detect permission filtering report evidence:sufficient and exit 0.",
-    "closed_S020": [
-      "#60",
-      "#61",
-      "#62 (pending PR #68 merging to main)"
-    ],
-    "filed_S020": [
-      "#65 -- 'v0.1 rules' means eight in PRODUCT.md and four in CONTEXT.md/CLAUDE.md"
-    ],
-    "commented_S020": [
-      "#19 (half-shipped)",
-      "#27 (research half closed)",
-      "#60",
-      "#61",
-      "#62"
-    ],
-    "merge_hazard_S020": "PR #67 was stacked on #66 and merged into the base branch ten seconds AFTER #66 merged to main, so it never reached main and #62 stayed open. Closes-#N fires only on a merge to the default branch. Verify a reported merge with 'git merge-base --is-ancestor <sha> origin/main', not with the PR's MERGED badge. fix/product-md-gate-status is spent -- do not branch from it."
+    "closed_S022": "none. #19 closes when PR #79 merges.",
+    "filed_S022": "#78 - REQ001 configures a property by NAME. Two live-API facts would settle it; blocks nothing but must precede REQ001's report format.",
+    "critical_path": "PR #79 -> #18 (hydration map, now #58's ONLY blocker; check #24 first) -> #58. #59 additionally needs #70-1. #51 ranks second overall despite being off the path: REF001 is the load-bearing coverage mechanism.",
+    "operator_owes": "#75 (the job statement hands administration back), #76 (the competitor is the credit meter), and the zero-config rename. All three touch plan-gated files and all three rank above the build if he agrees with them.",
+    "note": "Seven issues carry needs-triage and none arrived from outside. By the skill map's rule /triage is for issues you did not create, so these need DISPOSITION, not triage."
   },
   "build": {
-    "branch": "main (merged via PR #56, b138063); doc corrections on fix/post-merge-doc-drift",
+    "branch": "main at 61eea7d; build/19-rule-config-schema pushed, PR #79 OPEN and mergeable",
     "commits": [
       "0ac7c2d",
       "9dcb069",
@@ -468,7 +434,8 @@
       "a633e96",
       "8dd2d36 (ADR-0012, the exit byte compares the vector minimum)",
       "37bd9e1 (T4 reports: one document, three renderings)",
-      "6b719cf (T5 red test: five live bytes, and the false green)"
+      "6b719cf (T5 red test: five live bytes, and the false green)",
+      "b6518e6 (#19 - the config declares a rule, and the loader refuses every rule this build cannot run)"
     ],
     "directory": "slice/",
     "modules": [
@@ -487,10 +454,13 @@
       "scan.ts",
       "report.ts (one document, three renderers)",
       "fixture-oracle.ts",
-      "cli.ts"
+      "cli.ts",
+      "config.ts gains RuleDecl/ResourceRef/RULE_STATUS/parseResourceRef/parseRules",
+      "rule.ts gains unimplementedRules",
+      "scan.ts exports BUILT_RULES"
     ],
-    "suite": "cd slice && npm run check -- ONE command; it typechecks first ('npm run typecheck && ...') then NINE files: 38+56+92+124+89+50+76+56+29 = 610 assertions, offline, no network, no token. #60 closed the hole where the gate ran no compiler at all.",
-    "mutation_checks": "Thirteen in S020, every one scored on the EXIT CODE because a crashed suite prints no FAIL. Three on the typecheck wiring (remove it; redefine typecheck to 'echo ok'; separator && -> ;). Six on the claim checker (falsify a real count; delete a file an exists claim names; disable the count branch; create a file an absent claim denies; remove the absent parent-directory guard; remove fence stripping). Controls green throughout.",
+    "suite": "cd slice && npm run check -- ONE command; it typechecks first ('npm run typecheck && ...') then TEN files, 38+64+56+92+124+89+50+76+56+31 = 676 assertions, offline, no network, no token.",
+    "mutation_checks": "Thirteen in S020, every one scored on the EXIT CODE because a crashed suite prints no FAIL. Three on the typecheck wiring (remove it; redefine typecheck to 'echo ok'; separator && -> ;). Six on the claim checker (falsify a real count; delete a file an exists claim names; disable the count branch; create a file an absent claim denies; remove the absent parent-directory guard; remove fence stripping). Controls green throughout. S022 added two, both scored on the exit code: bypass the scope identity rejection in parseResourceRef (CHECK-config.ts exits 1); remove tsx CHECK-config.ts from the check chain (CHECK-suite-registration.ts exits 1 naming the file). The claim gate also went red on the stale scalars before they were updated - counterfactual run, not argued.",
     "live_command": "cd slice && npx tsx make-fixture-config.ts [ENV_KEY] && npx tsx cli.ts scan --config ../wl.config.json [--oracle] [--json PATH] [--markdown PATH] [--deterministic]. THE ENV_KEY ARGUMENT is how the live exit-byte table was produced: FIXTURE_ROOT_ID, REVOKE_PARENT_ID, UNSHARED_PAGE_ID.",
     "config_generator": "npx tsx make-fixture-config.ts -- reads FIXTURE_ROOT_ID from .env and writes the gitignored wl.config.json; the config contract is ID-only and there is deliberately no ${VAR} escape in the loader",
     "toolchain": "TypeScript 7.0.2, tsx 4.23.12, @notionhq/client 5.25.2, Node 22. NO new dependency added in S017.",

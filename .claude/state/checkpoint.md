@@ -1,8 +1,13 @@
 # Checkpoint — workspace_lint
 
-Bands **S001–S020** are archived verbatim at `.claude/state/checkpoint-archive.md`. This file holds
-the standing constraints and the current band only, and as of 2026-08-18 that is true rather than
-aspirational — it said "S001–S009" while carrying seven bands.
+**Every earlier band** is archived verbatim at `.claude/state/checkpoint-archive.md`. This file holds
+the standing constraints and the current band only.
+
+⚠ **That sentence carried a band RANGE until 2026-08-18 and the range was wrong for six sessions** —
+it said "S001–S009" while the file held seven bands, then "S001–S020" the moment one more rotated.
+**ADR-0010 forbids a fingerprint containing anything volatile, and a count of bands in the one part
+of this file meant to be stable is exactly that.** The range is gone rather than corrected: the
+archive names its own bands, so this line does not need to.
 
 ## Standing constraints — always current, not session-scoped
 
@@ -14,8 +19,15 @@ was not, most recently on 2026-08-18 when five claims had to be rescued from ban
 **This instruction lives here, not in the close skill, because the close skill has no rotation step
 and the rotation was pure model habit for nine sessions before it died at S016 and went unnoticed for
 six more (#73).** It is still model-pull, now from the always-loaded surface rather than from an
-unretrieved skill — which is weaker than a control and stronger than nothing. **#73 holds the real
-fix; until it lands this line is the only thing standing between the file and the same curve.**
+unretrieved skill — which is weaker than a control and stronger than nothing. ~~#73 holds the real
+fix; until it lands this line is the only thing standing between the file and the same curve.~~
+**#73 is CLOSED and no mechanical fix landed** — it closed on the operator's own June Notion
+doctrine, which had already written the general rule: **a state file is never evidence about the
+thing it describes.** That doctrine also settles what this archive is for — G-010, *"Keep a pointer
+or use Trash. Never keep a mirror… Accurate history alone is not a keep verdict; version control,
+source history, and Trash already preserve rollback."* `checkpoint-archive.md` is a mirror of history
+`git log` already holds, and every close writes its band twice because the close commit body IS the
+band. **This line is now the only thing standing between the file and the same curve.**
 
 **This block is the authority, and it is complete on its own.** Archived bands each end with a
 "Standing cautions carried forward" paragraph pointing at the band before it. Those paragraphs are
@@ -95,6 +107,26 @@ read this block instead. Nothing here depends on a band still being present.
   three that asserted the same state differently — `README.md` named the branch, `domain.md` said
   "there is no `src/` yet". A `/code-review` pass found all three. Grep branch names, paths, and the
   negation of the claim you are about to write.
+
+**Four constraints hoisted from the S021 band on 2026-08-18 before it was archived**, because each
+governs a design decision that has not been taken yet and nothing else in this file records them.
+
+- ⛔ **Any phrasing containing "no other tool", "first" or "only" about the declared-falsifier idea
+  must be dropped.** Di Iorio, Draicchio, Vitali & Zacchiroli, *"Constrained Wiki: The WikiWay to
+  Validating Content"*, DOI `10.1155/2012/893575`, defines the predicate and prototyped it twice.
+  What survives is narrower and better: dbt, Great Expectations and Terraform all keep the assertion
+  in a repository and the data in a system elsewhere; **#69 collapses the two into one.** That is a
+  design position, not a census, so one repo cannot refute it.
+- **Resource-limit exhaustion may NEVER be reported as a refutation.** SMT-LIB 2.6 makes `unknown` a
+  first-class response carrying a machine-readable cause. Binding under Notion's ~3 req/s ceiling.
+- **Every aggregate must be arithmetically reconstructible from the per-item rows printed in the same
+  report.** That is the buildable form of the counts-are-admissible-but-scores-are-not line, and it
+  is the test #70 decision 3 turns on. An operator-set threshold is **not** a third option: Beller et
+  al., 168,214 projects, 80%+ of config files never change after creation, so a threshold set once
+  has a vendor default's authority and worse provenance.
+- **The predicted failure mode of a declared-falsifier design is FREEZING, not deletion** — a page
+  whose prose nobody edits because the claim must be re-derived. **Test any design against "does this
+  make the prose more expensive to edit", never against "will people delete the claim".**
 
 **Research method.**
 
@@ -312,201 +344,137 @@ of the close ritual still runs; the ritual line records `verdict=n/a`.
 
 ---
 
-## S021 — 2026-08-18 — five experts answered the questions, one refuted the pitch, and the claim gate caught its first real drift
+---
 
-**PHASE:** **BUILD, but no product code was written.** The session was a proposal, five expert
-sweeps, and the documentation change that landed them. **Three issues filed (#69, #70, #71), one
-PR opened (#72), six issue comments, nine new/changed documents.**
+## S022 — 2026-08-18 — the config learned to declare a rule, and refusing what it cannot run turned out to be the whole feature
 
-**TESTS:** **610 assertions, exit 0, offline** — unchanged, no suite added. **The counterfactual was
-run rather than argued:** with six files on disk and no scalar updated, `npm run check` went **red at
-exit 1 with six failing claims.** **Deref: 51 path claims checked / 10 flagged / 10 hand-verified** —
-nine are the machine-local `~/.claude/` hooks outside the checker's root, and the tenth is
-`prototypes/verdict.ts`, an **absence claim the checker correctly confirms**.
+**PHASE:** **BUILD.** #19's load-bearing half is built, reviewed, corrected and pushed. **One commit
+(`b6518e6`), one PR (#79, OPEN), one issue filed (#78), one issue comment.** No canonical doc decided
+anything new; `CLAUDE.md` and `README.md` changed only to stop asserting stale facts.
 
-**COMMITTED:** `e9bfc10`, `f4345b5` on **`docs/land-expert-sweeps`**. **OPEN: PR #72.**
+**TESTS:** **676 assertions, ten suites, exit 0, offline.** Up from 610. `CHECK-config.ts` is the
+tenth suite (64 assertions); `CHECK-suite-registration.ts` went 29 → 31 because two of its assertions
+are per-suite. **Deref: 41 path claims checked / 9 flagged / 9 hand-verified** — eight are the
+machine-local `~/.claude/` hooks outside the checker's root, the ninth is `prototypes/verdict.ts`, an
+absence claim the checker correctly confirms. Same shape as S021.
 
-### The operator proposed a pivot, and four of its load-bearing claims did not survive
+### The session opened on a state file that did not know what had happened
 
-The proposal: scale `CHECK-claims.ts` into Notion pages, so a page carries a declared falsifier next
-to its prose. Filed as **#69**. It collides with `CONTEXT.md` in four places, and the review pass
-found a fifth the issue did not name.
+**The previous session wrote no band.** It merged PR #72, mirrored the Hans doctrine into
+`docs/inputs/` as PR #77, filed #75 and #76, and closed #73 — and `checkpoint.md`'s EXACT NEXT STEPS
+still said *"Merge PR #72"*. Three of its four steps were already done. The reconciliation was done by
+reading the tracker at session start and it cost real context. **The rotation instruction at the top
+of this file survived; the band itself never got written.**
 
-**The moat claim is refuted by a 2012 paper.** Di Iorio, Draicchio, Vitali & Zacchiroli,
-*"Constrained Wiki: The WikiWay to Validating Content"*, DOI `10.1155/2012/893575`, defines the
-predicate and prototyped it twice, for MediaWiki and MoinMoin. DOI resolved against Crossref. **Any
-phrasing containing "no other tool", "first" or "only" must be dropped.** What survives is narrower
-and better: dbt, Great Expectations and Terraform all keep the assertion in a repository and the data
-in a system elsewhere; #69 collapses the two into one. That is a design position, not a census, so it
-cannot be refuted by finding one repo.
+### What shipped, and the design position inside it
 
-**The audience claim is the Gherkin promise and it was never audited.** Practitioner surveys put the
-population at 60.7% developers and **1.8% business analysts**; both papers hedge readability with
-*"in theory"* in their own abstracts; readability by end users was measured, authorship never was.
-Verdict is **unsupported, not refuted** — the one paper likely to hold a direct measurement is closed
-access.
+`parseConfig` validated `version`, `roots` and `minCoverage`, so `REQ001` had nowhere to declare its
+required property — which is why **#58 and #59 both named #19 as a blocking edge**. The section is
+`rules`, optional, empty when absent, and `REQ001` is its only member: **#70 decision 1 is open**, and
+a schema that guessed at `UNQ001`'s shape would be rewritten by whichever way that decision falls.
 
-**The predicted failure mode is FREEZING, not deletion.** *"Some teams find that parts of the system
-are effectively frozen due to the challenges of finding and modifying the examples associated with
-them."* A page whose prose nobody edits because the claim must be re-derived is the decay this
-product detects, arriving as a side effect of the fix. **Test any design against "does this make the
-prose more expensive to edit", not against "will people delete the claim".**
+**Six refusals, each exiting 4.** A scope addressed by name/alias/URL; a `REQ001` entry with no scope;
+a rule ID outside the catalog; a built-in rule (`SYS001`, `REF001` take no configuration); a
+catalogued-but-unbuilt rule (`UNQ001` names #59); and a duplicate `(rule, normalized scope ID,
+property)`. **The identity rejection is now ONE implementation** — `parseResourceRef`, called for
+declared roots and rule scopes alike. It was one edit away from being two.
 
-**Two constraints arrive from other fields.** SMT-LIB 2.6: `unknown` is a first-class response
-carrying a machine-readable cause, and **resource-limit exhaustion may never be reported as a
-refutation** — binding under Notion's ~3 req/s ceiling. And **Razniewski & Nutt (VLDB 2011) is no
-longer NOT CHECKED**; the S018 band's line stands as a dated record **in `checkpoint-archive.md`**.
-It is **free at `vldb.org`** and
-the paywall assumption was wrong. Filed as **#71**.
+**`scope` is REQUIRED on a `REQ001` entry, and the absence of a default IS the decision.** A
+required-property rule with no scope asserts the property over every enumerated resource, which infers
+applicability from nothing — the list ADR-0001 decision 4 rejects. A default scope is available to #58
+as a recorded decision; it is not available to a loader as a convenience.
 
-### The finding that outranks the pivot: the build is not aimed at the gate's own conclusion
+**No severity field, deliberately.** ESLint separates severity from options at the loader and a rule
+cannot read its own severity. This product has no severity axis: the exit byte derives from findings
+and the coverage vector (ADR-0011, ADR-0012). A severity key would be a second, contradictory route to
+the exit byte.
 
-Found while checking the operator's tickets, filed as **#70**. Gate 1 closed on **framing 2**, the
-zero-config decay report. The catalog builds framings 1 and 3. Three of framing 2's six signals have
-**no rule ID and no ticket**, and `PRODUCT.md`'s kill criterion for the entry point **cannot fire,
-because the surface it evaluates is not built.**
+### The example config exposed a hole in the design that produced it
 
-**And "zero-config" names something two canonical documents disagree about.**
-`docs/adr/0001-linter-not-entropy-engine.md:20` rejects *"zero-config inference of owner, canon,
-uniqueness, or peer status"*; `PRODUCT.md:123` names the adopted entry point the *"zero-config decay
-report"*. Recommended replacement: **`policy-free scan`** — a run with declared roots and no declared
-policy. **NOT RENAMED THIS SESSION.** It is the operator's call and both files are plan-gated.
+Writing `wl.config.example.json` is what found it. **The loader validates the document against a
+HAND-KEPT table, so it said yes to `REQ001` while `scan.ts` runs `[SYS001, REF001]`** — an accepted
+rule that nothing evaluates, which is the false green the `UNQ001` refusal exists to stop, in the
+product's own entry point.
 
-**ADR-0001 decision 4 forbids what `PRODUCT.md:86` proposes.** Making duplicate-title detection
-**built-in** is *"zero-config inference of … uniqueness"* — the identical list, in an **ADR** rather
-than a settled default. So it needs a **superseding ADR**, not a paragraph. `PRODUCT.md` carries both
-the violation at line 86 and the warning against it at line 82. **The only route that does not need a
-new ADR is the finding's KIND:** a shared title is an Observation and infers nothing; a violated
-declared-unique value is a conformity violation and needs a Policy.
+Closed by asking the **build** rather than the table: `unimplementedRules(configured, implemented)` in
+`rule.ts`, wired into `cli.ts` before any call is made, with **`BUILT_RULES` exported from `scan.ts`
+so the list has one definition**. That export also deleted a hand-written scalar — the CLI header
+printed `rules implemented: 2 (SYS001, REF001)` as a literal.
 
-### What the five sweeps settled, in one line each
+**Then the example itself shipped broken**: it declared a `REQ001` entry the CLI rejected at exit 4,
+so the only worked example in the repository was unusable. **Nothing in the suite loaded that file.**
+It does now — `CHECK-config.ts` TEST 8. **An example config is an executable claim about the product,
+and until this session nothing executed it.**
 
-- **SARIF has six `kind` values and `informational` ≠ `review`.** A shared title is `review`-shaped.
-  **SARIF contains `metric` zero times in 227 pages**; SonarQube gates on **metrics, never issues**.
-  And **every surveyed non-failing tier ships its own escalation switch** — non-failing is a default,
-  never a property. So the Observation must print the `UNQ001` stanza that promotes it.
-- **Counts and totals are admissible; scores are not.** The buildable test: **every aggregate must be
-  arithmetically reconstructible from the per-item rows printed in the same report.** Eight rules and
-  a worked pass/fail table are on #70.
-- **An operator-set threshold is not a third option.** Beller et al., **168,214 projects**: 80%+ of
-  config files never change after creation. A threshold set once has a vendor default's authority and
-  **worse provenance**. The product already has a legal home for thresholds — a configured Rule.
-- **The Maintainability Index has not been recalibrated since 1994** and is still shipped. Gate 3 runs
-  at n=1, so **nothing this product ships can be calibrated.**
-- **Google deleted the warning tier**, and its 2009 Fixit fixed **16%** of reviewed warnings while
-  **44%** became filed bugs. The counter-argument lands hardest on the metrics section.
+### Review found three defects, all introduced by this change
 
-### The claim gate caught its first real drift, and two things it structurally cannot see
+`/code-review high`, run before the commit. All three verified by repro, each fixed with the assertion
+that missed it:
 
-Six failing claims at exit 1, then green. **That is #62 working on the first change that tried to
-move past it.** In S019 the same class shipped and a person found it afterwards.
+- **`RULE_STATUS[id]` resolved through `Object.prototype`.** `{"rule":"toString"}` walked past the
+  not-in-catalog branch with `status.kind` undefined and fell through to the last return — telling the
+  operator their typo was a real catalog rule shipping later. `Object.hasOwn` now. **The suite could
+  not have caught it: every ID it tested had no prototype twin.** Four twins asserted.
+- **`property` was validated with `.trim()` and STORED RAW**, so `"Owner"` and `"Owner "` loaded as two
+  entries — the duplicate TEST 5 exists to close, one field to the right. `"Owner "` names no Notion
+  property, so it would have added a pair to `REQ001`'s denominator that no observation fills.
+- **A present-but-MALFORMED `id` got the identity message**, telling an operator who had written an
+  `id` to supply an `id`. It fired on the likeliest path there is — the worked example pairs an `id`
+  with an `alias`, so one wrong hex digit produced it.
 
-**`README.md`'s `equals=13` correctly did NOT fire.** It is inside a ```` ```markdown ```` fence,
-`CHECK-claims.ts` blanks fences before parsing, and TEST covers it — *"a claim inside a fence is
-ignored"*. **The example is documentation of the syntax and stays at 13.** Changing it would imply it
-is live.
+### Controls, all scored on the exit code
 
-**Two ordinals drifted that no claim covers**, both found by grep: `docs/agents/domain.md`'s structure
-diagram read `13 files` **127 lines from its own corrected prose** — the same surface that drifted in
-the #61 pass — and `INDEX.md` called `sweep-raw/` *"not a fourteenth entry"*, which is the exact
-ordinal drift that file records as DRIFT INSTANCE 1. **An unannotated sentence is unchecked.**
+- Bypass the scope identity rejection → `CHECK-config.ts` exits 1. Restored, exits 0.
+- Remove `tsx CHECK-config.ts` from the check chain → `CHECK-suite-registration.ts` exits 1 naming the
+  file. Restored, exits 0.
+- **The claim gate went RED before the scalars were updated** — `checkpoint.md:219 count — 10 file(s)
+  match slice/CHECK-*.ts`, exit 1. Counterfactual run rather than argued, second session running.
 
-**`INDEX.md`'s drift counter stays at ONE.** This change added files *with* their rows *and* updated
-every scalar. Recording it as a drift instance would misreport the history.
-
-### The operator's standing order fired again, and I had broken it
-
-Round 1 of the grilling put five decisions to the operator. His answer: *"Ask experts in their
-respective fields - not me."* That is the standing order in project memory and this is at least the
-second time it has needed restating. **A decision with a literature is not a values decision.** Four
-of the five had one; the fifth was scope and I decided it rather than handing it back.
+⚠ **Two NUL bytes appeared inside a template literal in `config.ts`** where spaces were written. The
+signal was `grep` reporting **"Binary file config.ts matches"** and `file` reporting `data` — the
+compiler, the tests and the diff were all clean and said nothing. Removed deliberately. **In a
+repository whose method is grepping, a file that reads as binary is a silent loss of the primary
+instrument.**
 
 ### BLOCKERS
 
-**None.** PR #72 is open and carries everything.
+**None.** PR #79 is open and mergeable and carries everything.
 
 ### EXACT NEXT STEPS
 
-**Sixteen issues open.** Three were filed this session.
+**Eighteen issues open.** #78 was filed this session. The operator ratified this ordering
+("Concur"), and items 2–6 are mine to take without checking in.
 
-1. **Merge PR #72.** It closes #65. Until it lands, `main` has thirteen sweeps and the six expert
-   files exist nowhere but the branch.
-2. **#70 needs three decisions before #59 is built** — they change its blocking edges. Is `UNQ001`
-   Configured, built-in, or **split**? Do the three decay signals become Rules or a non-Rule
-   observations section? Where is the ADR-0001 line, operationally? All three have evidence on the
-   issue; **the built-in-with-violations option is out unless an ADR supersedes ADR-0001 decision 4.**
-3. **#69 is v0.2, recommended, behind gate 3.** Its three gating items are unchanged: the carrier
-   proof (which Notion block type can hold a claim — **cheapest and most likely to invalidate the
-   design**), the Coda gap, and the Principle 6 ADR.
-4. **#18 then #19**, unchanged, then **#58 and #59**. #18 is unaffected by every #70 decision — a
-   hydration-depth map does not depend on whether a rule is configured.
-5. **#71** — record and close, or keep open as a coverage-model design input. Recommended: close it
-   and reopen against #18's request budget, since affordability is unmeasurable before the map exists.
-6. **#50 / #51 / #24 / #25 / #27 / #7 / #8 / #29** unchanged.
+1. **Merge PR #79.** It closes #19. Until it lands, `main` has no rule-configuration section and #58
+   is still double-blocked.
+2. **#51 — REF001 cannot retrieve a database target.** Highest-value item off the critical path:
+   REF001 is the load-bearing coverage mechanism, and if every database reference is a permanent gap
+   then a SHIPPED rule is producing gaps no amount of sharing can close.
+3. **#18 — the rule-to-hydration map.** Now #58's ONLY remaining blocker. Check **#24** first: whether
+   v0.1 calls `POST /v1/search` changes the request budget the map is estimated against.
+4. **#70's three decisions**, then **#58**, then **#59**. Only #70-1's ADR-supersession question is
+   the operator's.
+5. **#78** before `REQ001`'s report format is fixed. It needs two live-API facts, not an argument.
+6. **#71** — record and close. **#74** — count the broken references in "Hans".
 
-**NEXT-MODEL:** **frontier.** The next head after #72 is **#70's three decisions**, and they are
-architecture: one of them turns on whether an ADR must be superseded, and all three govern what the
-entry point is allowed to print. **Do not straddle:** merging #72 and closing #71 is fast-tier work
-and should be its own short session if that is all that happens.
+**THE OPERATOR OWES THREE RULINGS, and #75/#76 rank above the build if he agrees with them.** #75: the
+job statement in `PRODUCT.md` hands administration back to him, which his own Identity rule 3 forbids.
+#76: the competitor is the credit meter, not another linter. Both change what the entry point is for,
+so they change what #70's decisions are aimed at. Third: the **`zero-config` rename** —
+`PRODUCT.md:123` and `ADR-0001:20` use the term for opposite things, recommended replacement
+`policy-free scan`. All three touch plan-gated files.
 
-**NEXT-REPO/CWD:** `C:\Users\mlpgr\2026_Projects\workspace_lint` — single repo; state, plan and
-resume ritual all at the root. **The four guard hooks and `deref_check.py` are NOT in this repo** —
+⚠ **Seven issues carry `needs-triage` and none arrived from outside.** By the skill map's own rule
+`/triage` is for issues you did not create, so these need **disposition**, not triage. The label is
+doing nothing and the board reads as unsorted when it is not.
+
+**NEXT-MODEL:** **frontier.** The head after #79 is **#51**, which asks whether a shipped rule's
+central coverage claim survives a class of target it cannot retrieve — that is architecture, and #70's
+three decisions sit behind it. **Do not straddle:** merging #79 and closing #71 is fast-tier work and
+should be its own short session if that is all that happens.
+
+**NEXT-REPO/CWD:** `C:\Users\mlpgr\2026_Projects\workspace_lint` — single repo; state, plan and resume
+ritual all at the root. **The four guard hooks and `deref_check.py` are NOT in this repo** —
 machine-local and unversioned under `~/.claude/`, verified present on this machine this session.
 
 **NO SELF-ASSESS LINE, BY OPERATOR RULING 2026-08-17.** The ritual line records `verdict=n/a`.
-
-**POST-CLOSE ADDENDUM (S021, after `a0189fc` shipped) — the hygiene trim found a step that had
-stopped firing six sessions ago, and going to first principles refuted the fix I had drafted for it.**
-
-~~**Sixteen issues open.**~~ **Eighteen.** #73 and #74 were filed after the close.
-
-**`d3173d9` — the trim.** `checkpoint.md` 1165 → 447 lines. Bands S015–S020 archived. **Five claims
-were hoisted first and would otherwise have been lost** — the three live-run caveats, the manifest
-`(unit, key)` rule, and the `SYS001` certainty rule. They are in the standing block above. The
-standing block's own assertion that it is *"complete on its own"* was **false when tested**.
-
-**#73 — the rotation stopped at S016 and nothing noticed for six sessions.** Measured: rotation ran at
-**nine consecutive closes**, then stopped dead. `session-end-to-state` has **no rotation step** — the
-ritual appends and nothing removes, so the rotation was model habit carried by each close reading the
-previous one. The invariant is also **inexpressible**: the claim grammar has three kinds and all three
-are filesystem predicates, so no annotation could have caught it.
-
-**The first version of #73 proposed a fourth claim kind. The operator stopped it, and he was right.**
-Every drift this repository has ever recorded is a **hand-kept copy of a fact the system already
-holds**. `INDEX.md` had already concluded *"a generated index removes the scalar rather than reminding
-anyone to update it"* — and #62 built the reminder. **A claim checker is a verification answer to a
-duplication problem.** The split that matters is **re-derivable vs not**, and it is forced by the
-reader being stateless: a stateless gate can only verify what it can re-derive right now. Asserted
-claims need a dated observation with provenance, which is what `docs/proof/` is for and why it
-outranks documentation. Verified: the S018 close **commit body is the S018 band**, so every close
-writes its band twice and `checkpoint-archive.md` is 1,999 lines of the first copy.
-
-**⚠ ADR-0010 forbids a fingerprint containing anything volatile. `checkpoint.md`'s header carried
-"Bands S001–S009" — a volatile count in the one part of the file meant to be stable. The repository
-wrote the rule for findings and violated it in its own state file.**
-
-**#74 — Notion AI is stateless, so the workspace holds a boot-up document.** The operator wrote one
-roughly a year ago so a stateless Notion AI would answer with context. **This repository was bitten by
-the identical failure** — `CLAUDE.md` told every new session the project was pre-build after source
-reached `main`. `REF001` and `SYS001` are already built and are exactly what checks such a document.
-**The artifact is a page named "Hans" plus subpages, and the current build cannot reach it** — the
-integration's grant covers the fixture, `REAL_ROOT_ID` is still unexercised, and sharing real content
-is the human step #7 waits on. **Route: the Notion MCP connector, deferred to a later session by the
-operator.** ⚠ MCP is a different credential path — ADR-0004 says it *"does not clear the REST path"* —
-so a reading of "Hans" is **documented-tier**, belongs in `docs/research/`, and does **not** close #7.
-
-**EXACT NEXT STEPS, corrected in place:**
-
-1. **Merge PR #72**, unchanged. It now carries four commits including the trim.
-2. **Read "Hans" and its subpages via the Notion MCP connector** and count references that no longer
-   resolve — #74's verification step 1. Cheap, and it is the first real evidence for the boot-up-
-   document framing. File the result in `docs/research/`, never `docs/proof/`.
-3. **#73 before any further claim annotation is written.** Adding a fifth derived scalar deepens the
-   defect it names.
-4. **#70's three decisions**, then #18 → #19 → #58/#59, unchanged.
-
-**NEXT-MODEL is unchanged: frontier.** #73 and #74 are both scope-and-architecture questions and they
-join #70 at the head. **The verdict field is NOT re-opened by this addendum.**
-
----
-
