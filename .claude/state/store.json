@@ -403,7 +403,8 @@
       "prior_ruling": "Agrees with #75, #76 and the zero-config -> policy-free rename. Ranks #75 and #76 ABOVE the build. ALL THREE ARE NOW LANDED in PR #83.",
       "grounds": "Gate 1 closed on framing 2 as the entry point while the catalog and build are aimed at framings 1 and 3. #75 and #76 change the job statement and the competitive claim, so they change what the entry point is FOR. Confirmed by his own secondary pass over live PRODUCT.md, CONTEXT.md and checkpoint.md.",
       "scope": "The three are decided. HOW to land them is revisable by the session holding the files. The rename does NOT edit ADR-0001 (never edited in place) and does NOT decide #70-1 (UNQ001's mode still needs a superseding ADR if built-in-with-violations is taken)."
-    }
+    },
+    "STATE-ROLE VOCABULARY, ruled 2026-08-19 (S029). The state role answers 'whose move is it?'; needs-triage means ONLY 'not yet evaluated'. deferred answers WHEN and the state role answers WHO ACTS AT REVIVAL; deferring is itself an act of evaluation, so a deferred issue never carries needs-triage. Written into docs/agents/triage-labels.md. NOT a values decision - it was surfaced as one three times, which was deferral; the real defect was an under-specified document. Applied to #69 #74 #97 (ready-for-human) and #78 (ready-for-agent)."
   ],
   "tracker": {
     "host": "GitHub issues, gh CLI",

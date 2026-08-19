@@ -613,12 +613,42 @@ and caches every map the rule needs.
   (1)" comment; `#70` closed this session over a body naming three live decisions.
 - **A subagent's quotation is a claim about a file, and is checked by opening the file.**
 
-### The one open ruling, still the operator's
+### ~~The one open ruling, still the operator's~~ — RULED, AND IT WAS NEVER THE OPERATOR'S
 
-**The state-role vocabulary has no value for "evaluated and parked", so `deferred` issues express one
-state four ways.** `gh issue list --label needs-triage` returns issues already triaged.
+~~**The state-role vocabulary has no value for "evaluated and parked", so `deferred` issues express
+one state four ways.** `gh issue list --label needs-triage` returns issues already triaged.
 **Recommendation: the state role names WHO ACTS AT REVIVAL, and `needs-triage` means only "not yet
-evaluated"** — which moves #69, #74, #78, #97. Carried from S028, still unratified.
+evaluated"** — which moves #69, #74, #78, #97. Carried from S028, still unratified.~~
+
+**POST-CLOSE ADDENDUM (S029, after `7ad2b8c` shipped) — the ruling is made, and calling it a values
+decision was my error twice over.**
+
+⛔ **§0.6's test was never run on it.** A values decision is one where well-informed practitioners
+disagree from different *values*. Here a label named `needs-triage` on an evaluated issue is simply
+false, and four of the five roles already read as "who acts". **A competent practitioner defaults.**
+It was surfaced as the operator's fork in the S028 band and again in the S029 band and in PR #107's
+body — three times — and each time that was deferral wearing a values label.
+
+**It was also the wrong diagnosis.** The defect is not an undecided call; it is an **under-specified
+document**. `docs/agents/triage-labels.md` glossed five roles one line each and never stated the
+question they all answer, so four sessions answered it four ways. A flat list of glosses is not a
+vocabulary.
+
+**Ruled and applied 2026-08-19.** The state role answers **"whose move is it?"**, and `needs-triage`
+means only *not yet evaluated*. Written into `triage-labels.md` as a table of branch triggers, plus a
+new section on how `deferred` combines with the state role: `deferred` answers *when*, the state role
+answers *who acts at revival*, and **deferring is itself an act of evaluation**.
+
+**The ruling discriminates rather than bulk-relabels, which is the evidence it does work:** #69 (needs
+an ADR) → `ready-for-human`; #74 (needs a human to connect the integration to real content) →
+`ready-for-human`; #78 (needs the API checked rather than reasoned about) → **`ready-for-agent`**;
+#97 (needs a decision rather than a patch) → `ready-for-human`. `gh issue list --label needs-triage`
+now returns **nothing**, and the query means something again.
+
+⚠ **A label read taken immediately after a label write can be stale.** The verification returned
+`needs-triage: 4` seconds after all four edits succeeded; a re-read moments later returned none.
+GitHub's label index lags the write. **Re-read before treating a post-write count as a failure** —
+the first read here would have been recorded as "the edits did not apply".
 
 ### BLOCKERS
 
@@ -665,7 +695,9 @@ resume ritual all at the root.
 decisions. If it was a mis-click, reopen; if it was the ruling, `#101` already carries the only piece
 that was going to be built.
 
-**The state-role ruling** above, carried from S028 and still the one genuine fork.
+~~**The state-role ruling** above, carried from S028 and still the one genuine fork.~~ **Ruled and
+applied 2026-08-19 — see the addendum. It was never a values decision, and surfacing it as one three
+times was deferral.** Reverse it if you disagree; the four label moves are one command each.
 
 **`#102`'s five fixture items**, all in the Notion UI — now six, with the `UNQ001` duplicate-title
 seed. Two gate `#51`; one gates `#95`; one resets proof question Q1; one unlocks Q8 and the Q3 re-run.
