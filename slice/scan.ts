@@ -852,6 +852,34 @@ async function hydrateRequiredProperties(args: {
         continue;
       }
 
+      /* THE API RETURNED THE PROPERTY AND DID NOT SEND ITS VALUE — issue #127.
+       *
+       * A NAMED DROP-OUT, not a violation and not a value. The scan never read
+       * the value, so it has no conformity claim in either direction. Without
+       * this branch the pair stops at `enumerated` with NO CAUSE — the manifest
+       * would report it with the absence of a cause stated as the cause, which
+       * is honest and useless.
+       *
+       * ⛔ THE CAUSE DESCRIBES THE REPRESENTATION, NEVER NOTION'S COMPUTATION.
+       * The value very likely exists and renders in the UI. A cause string
+       * saying "could not be computed" would be a claim about the vendor's
+       * engine that no locator supports.
+       *
+       * IN THE DENOMINATOR, as with the database target and the data source.
+       * ADR-0005 decision 5. Taking it out would raise the ratio exactly where
+       * the tool is weakest — #50's TEST 10b priced that reversal. */
+      if (reading.state === 'unexpressed') {
+        manifest.mark({
+          id, unit: REQ001_UNIT, stage: 'enumerated',
+          loss: {
+            cause: `property-value-unexpressed — "${property}" was returned with type "unsupported", so the API sent no value for this build to read`,
+            bounded: true,
+            target: 'present',
+          },
+        });
+        continue;
+      }
+
       /* `fetched` MEANS THE PROPERTY CARRIED A VALUE. A property that is present
        * and empty stops here, judgeable and unfilled, which is the violation. */
       if (reading.state === 'value') manifest.mark({ id, unit: REQ001_UNIT, stage: 'fetched' });
@@ -1087,6 +1115,26 @@ async function hydrateUniquenessScopes(args: {
           ok: false,
           stage: 'enumerated',
           loss: { cause: `property-shape-unread — "${decl.property}" is present and this build cannot read its value`, bounded: true, target: 'present' },
+        });
+        continue;
+      }
+
+      /* THE API SENT NO VALUE — issue #127. The same ruling as REQ001's, and the
+       * site that would have failed SILENTLY: without this branch an
+       * `unexpressed` reading falls past every guard below and lands in the
+       * final `members.set({ ok: true, comparable: null })`, where it becomes an
+       * ORDINARY EMPTY MEMBER — declared, compared, never colliding, and counted
+       * toward the evaluated set. TypeScript does not catch it, because these are
+       * `if` guards rather than an exhaustive switch. */
+      if (reading.state === 'unexpressed') {
+        members.set(resource, {
+          ok: false,
+          stage: 'enumerated',
+          loss: {
+            cause: `property-value-unexpressed — "${decl.property}" was returned with type "unsupported", so the API sent no value for this build to compare`,
+            bounded: true,
+            target: 'present',
+          },
         });
         continue;
       }

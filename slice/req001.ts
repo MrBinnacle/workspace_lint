@@ -138,6 +138,32 @@ export type PropertyReading =
   | { state: 'value'; propertyId: string | null; comparable: string | null }
   | { state: 'empty'; propertyId: string | null }
   | { state: 'unreadable'; propertyId: string | null }
+  /**
+   * The API returned the property and DID NOT EXPRESS ITS VALUE — issue #127.
+   *
+   * Notion's changelog, 2026-08-05: "The API can now return formula and rollup
+   * page property values and property item values with `type` set to
+   * `"unsupported"` and an empty `unsupported` object."
+   *
+   * ⛔ THIS IS NOT "THE VALUE COULD NOT BE COMPUTED", and the distinction is the
+   * whole reason the state is named `unexpressed` rather than `uncomputed`. The
+   * type is a statement about what the REST representation can carry. The value
+   * very likely exists and renders correctly in the Notion UI. Reading it as a
+   * claim about Notion's engine is an inference past the locator — the same
+   * boundary as "a UI affordance is not an API behaviour", crossed from the
+   * other side.
+   *
+   * DISTINCT FROM `unreadable`, WHICH IS ABOUT US. `unreadable` says this build
+   * does not understand the shape. `unexpressed` says the API declined to send
+   * one. Collapsing them would blame the tool for the vendor's boundary and send
+   * the operator after the wrong remedy.
+   *
+   * DISTINCT FROM `empty`, WHICH IS AN OBSERVATION. `empty` means the scan read
+   * the value and there was none — that is REQ001's violation. `unexpressed`
+   * means the scan never read the value at all, so no conformity claim is
+   * available in either direction.
+   */
+  | { state: 'unexpressed'; propertyId: string | null }
   | { state: 'absent' };
 
 const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
@@ -207,6 +233,21 @@ export function readProperty(properties: Record<string, unknown>, name: string):
    * usable `type`, or without that key present, the scan has not read the
    * property — it has only seen that the property exists. */
   if (typeof type !== 'string' || !(type in value)) return { state: 'unreadable', propertyId };
+
+  /* THE VENDOR'S OWN "I WILL NOT SEND THIS" — issue #127, changelog 2026-08-05.
+   *
+   * It must be caught HERE, before the payload is inspected, because the payload
+   * is an EMPTY OBJECT and the catch-all at the end of this function reads any
+   * non-array, non-string, non-null payload as a present value. That is correct
+   * for `select`, `date` and `number`; it is wrong for this one, and the only
+   * thing that distinguishes them is the type name. Before this line,
+   * `{ type: 'unsupported', unsupported: {} }` returned `state: 'value'` and
+   * REQ001 counted the pair as EVALUATED — a judgement over a value nobody read.
+   *
+   * Keyed on the type name, deliberately, and not on "payload is an empty
+   * object": `{}` is a legitimate payload shape elsewhere in the union, and a
+   * structural test would sweep shapes the vendor never called unsupported. */
+  if (type === 'unsupported') return { state: 'unexpressed', propertyId };
 
   const payload = value[type];
   if (payload === null || payload === undefined) return { state: 'empty', propertyId };

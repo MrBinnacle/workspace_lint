@@ -1,0 +1,18 @@
+[
+  {
+    "file": "docs/adr/0001-linter-not-entropy-engine.md",
+    "note": "BASE BELIEF — no Evidence line. It is a product-positioning decision taken before any research file existed, so its support is the PRD and the operator's own framing rather than a document in this repository. Declared here because an ADR is never edited in place."
+  },
+  {
+    "file": "docs/adr/0011-coverage-is-measured-over-a-per-rule-coverage-item.md",
+    "note": "BASE BELIEF — no Evidence line. Its Context cites ADR-0005 and ADR-0008 in prose and a shipped 2/2 figure as the observation that forced it, but no Evidence line collects them. ⚠ This is a MISSING EDGE rather than a genuine base belief: the supports exist and were never written where a graph could read them."
+  },
+  {
+    "file": "docs/adr/0012-the-exit-byte-compares-the-vector-minimum-and-the-slice-owns-the-verdict.md",
+    "note": "BASE BELIEF — no Evidence line. It implements ADR-0011 decision 5 in code, so its real support is ADR-0011 plus slice/verdict.ts. ⚠ Also a missing edge, not a genuine base."
+  },
+  {
+    "file": "docs/adr/0013-an-unattested-enumeration-is-a-named-residual-not-a-gap.md",
+    "note": "BASE BELIEF — no Evidence line. Its header carries a Supersedes line naming six ADRs and a Closes line naming issue #35, and its reasoning rests on two named literatures, but no Evidence line collects them. ⚠ Missing edge, not a genuine base."
+  }
+]

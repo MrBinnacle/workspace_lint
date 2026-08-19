@@ -359,6 +359,26 @@ export const REQ_UNREADABLE_SHAPE = rootWithChild(
   { properties: { Title: titleProp('wl-revoke-parent'), Owner: UNREADABLE_PROP } },
 );
 
+/**
+ * The vendor's own "I will not send this value" — issue #127.
+ *
+ * Notion's changelog, 2026-08-05: "The API can now return formula and rollup
+ * page property values and property item values with `type` set to
+ * `"unsupported"` and an empty `unsupported` object."
+ *
+ * ⛔ THIS IS THE REAL SHAPE, NOT AN APPROXIMATION OF IT. The empty object is the
+ * whole hazard: it is not null, not an array and not a string, so it reached
+ * `readProperty`'s catch-all and was read as a present VALUE. A fixture that
+ * used `unsupported: null` would pass through the `empty` branch instead and
+ * would test nothing.
+ */
+export const UNSUPPORTED_PROP = { id: PROP_ID_OWNER, type: 'unsupported', unsupported: {} };
+
+export const REQ_UNSUPPORTED_TYPE = rootWithChild(
+  { Title: titleProp('wl-proof-fixture'), Owner: richTextProp('a name') },
+  { properties: { Title: titleProp('wl-revoke-parent'), Owner: UNSUPPORTED_PROP } },
+);
+
 /* The page itself is refused when the hydration stage retrieves it. */
 export const REQ_PAGE_UNREACHABLE = rootWithChild(
   { Title: titleProp('wl-proof-fixture'), Owner: richTextProp('a name') },
