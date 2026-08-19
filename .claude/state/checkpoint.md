@@ -657,17 +657,77 @@ checks the plan file's **mtime within 24h**, not intent — **if it has aged out
    proof. Creating a violating page is an operator-only Notion-UI action. **This is a fifth
    operator-only fixture item** and it belongs beside the two that gate #51.
 
-#### Three read-only scouts were dispatched and HAVE NOT REPORTED
+#### ~~Three read-only scouts were dispatched and HAVE NOT REPORTED~~ — ALL THREE REPORTED, and the cause was a dead letter
 
-⛔ **Their findings are not in this file and must not be assumed.** Dispatched against **#78**
-(property identity, name vs ID), **#70 decision 1** (built-in duplicate-title, the blocker on #59),
-and **#71 + #74** (disposition prep). All three were read-only: no file was written and nothing was
-posted to the tracker by them.
+~~Their findings are not in this file and must not be assumed. A fresh session should treat these
+three questions as open and un-researched, and re-dispatch rather than wait.~~ **Superseded within
+the hour. All three returned in full and their findings are folded in below.** Do not re-dispatch.
 
-**An empty `TaskList` is not evidence a fork finished** — it returned "No tasks found" while all
-three were live, which is the same signal that cost S025 a defect. A fresh session should treat these
-three questions as **open and un-researched**, and re-dispatch rather than wait. If a return arrives
-in the operator's terminal after this commit, it is evidence, and it lands as its own addendum.
+⚠ **The failure was mine and it was a return channel, not the research.** Three `Explore` scouts
+were dispatched over #78, #70 decision 1, and #71 + #74 **without naming how findings come back**.
+All three researched correctly and answered in plain text. **Plain text a subagent prints is not
+visible to the main session** — it is a dead letter. Four idle notifications arrived carrying no
+content, and an idle notification is indistinguishable from a finished report. Re-instructing them
+with `SendMessage` to `main` **plus one authorised scratchpad path** recovered everything.
+
+**An empty `TaskList` is still not evidence a fork finished** — it returned "No tasks found" while
+all three were live. That part stands. What it does not license is the conclusion drawn here first:
+**"has not reported" and "has nothing to report" are different claims**, and this file asserted the
+second from evidence for the first. The discipline is now in
+`~/.claude/skills/subagent-research-reliability/SKILL.md` as Check 0, with this incident as its
+worked example: **name both return routes in the dispatch prompt, every time.**
+
+#### ⭐ What the scouts found — one item corrects the approved plan
+
+**#78 — the property-identity question, and the plan was contradicting an ADR.**
+`docs/adr/0010-…` **decision 7 already specifies `REQ001`'s matchkey hierarchy**, and it has TWO
+keys: `propertyId/v1` then `propertyName/v1`, tie-broken on property ID ascending. Its reasoning:
+*"A property ID survives a rename and probably does not survive a type change; a property name
+survives a type change and does not survive a rename. **Neither identifier alone survives both**, so
+a hierarchy of two is the minimum."* ⛔ **The approved #58 plan had invented a single key family
+`req001/property@1`.** An accepted ADR binds and the plan was the defect; **the plan is corrected**.
+Both identifiers are available from the call the plan already makes — the vendored SDK types
+`properties: Record<string, PagePropertyValueWithIdResponse>` where the value carries `{ id }`, so
+the map is keyed by NAME and each value carries its ID. **Tier: a vendor type declaration, not a
+response body**, and `node_modules` is not a canonical evidence surface here — build against it,
+never cite it as observed. The live run should record whether `id` actually arrives on a scalar
+property, because `docs/research/notion-live-probe.md` § "Probe 3 — Property IDs" observed the
+opposite on the connector path (no ID for `title`, `text`, `date`). **Recommendation: keep
+`property` as a NAME in config**, and make `REQ001` print the configured name, the `id` it resolved
+to, and **an explicit finding when the configured name matches nothing in scope — never silence.**
+That is the actual fix for the flattering-direction failure and it costs nothing.
+⚠ **#78's own premise is UNSOURCED in this repository**: nothing here establishes whether a user can
+obtain a property ID from the Notion UI or a URL, so its Revisit-if is written against an unchecked
+fact.
+
+**#70 decision 1 — a split, and it needs NO superseding ADR.** The recommendation: policy-free mode
+emits a **`review`-kind result** with no conformity claim and no exit-byte contribution, and the
+**same release** ships the promotion path — the report line prints the `UNQ001` config stanza.
+Configured mode is unchanged. It is a consequence of existing decisions, named: ADR-0001 decision 4
+(a `review` result asserts no uniqueness invariant, so it infers nothing — Principle 4 satisfied by
+construction), ADR-0005 decision 1 (`conformity: null` already exists), ADR-0011 (the coverage item
+stays unordered pairs in both modes). ⛔ **A superseding ADR IS required for what `PRODUCT.md`'s
+contested sentence asserts** — a built-in mode emitting *conformity violations* — because that
+reverses ADR-0001 decision 4 on the identical noun. **One ADDITIVE ADR is still warranted**:
+`findingKind` gains a third value and the report gains a section outside the exit byte; leaving a
+third kind documented only in code comments repeats the collapse ADR-0011 exists to stop.
+Counter-evidence is live and conditional — Google enabled a Clang diagnostic as an *error* because
+developers ignored warnings, and of six tools surveyed **no informational tier is non-failing by
+construction**; the objection kills a bare observation with no upgrade path, which is exactly why
+the promotion path ships in the same release. **Unsettled and unrecorded anywhere:** whether the
+`review` result also appears in a *configured* run.
+
+**#71 and #74 — see the tracker.** #71's definition of done is met on disk. #74 is deferred **by the
+operator, in the ticket body** — `.claude/state/checkpoint.md`'s next-step 4 said "count the broken
+references in Hans" and omitted that. **The ticket corrects the checkpoint**, which is the
+deref-the-checkpoint pattern firing again.
+
+⚠ **Three of the scouts' supporting claims were false and were caught by re-running them.** A
+"checked negative" reported zero hits across five files when `docs/research/INDEX.md` hits; the
+standing rule was quoted as *"unless it blocks a gate"* where this file reads *"unless it blocks a
+rule"*, inside a draft comment about to be posted; and locators were given as line numbers where the
+citation standard requires section headings. **The dispositions survived verification; three of the
+supports did not.**
 
 #### One correction to the shipped band
 
