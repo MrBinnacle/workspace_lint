@@ -238,6 +238,7 @@ const emptyCollides: Rule = {
         isRootMiss: false,
         evidence: { object: e.unq!.participants[0], location: 'the collapsed predicate', observed: 'two absences read as one value', expected: 'a unique value' },
         link: null,
+        source: null,
         message: 'the collapsed predicate',
       }));
   },

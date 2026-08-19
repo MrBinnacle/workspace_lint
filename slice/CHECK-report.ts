@@ -28,13 +28,15 @@
 
 import { createHarness } from './CHECK-harness.js';
 import { scan } from './scan.js';
-import { buildReportDocument, renderJson, renderMarkdown, renderReport } from './report.js';
+import { buildReportDocument, renderJson, renderMarkdown, renderReport, SOURCE_NOT_APPLICABLE } from './report.js';
+import { idForm } from './ref001.js';
+import { classifyHref, extractReferences } from './references.js';
 import { canonicalize, NORMALIZATION_VERSION, VOLATILE_FIELDS } from './normalize.js';
 import { hyphenate } from './ids.js';
 import {
   ROOT, PAGE_A, DATASET, UNQ_1, TITLED_URL, TITLE_IN_URL,
   cfg, cfgUnq, clock, fakePort, page, childPage, childDb, titleProp,
-  THREE_CHILDREN, MIDSTREAM,
+  THREE_CHILDREN, MIDSTREAM, DEAD_LINK, OBSERVED_LINK,
 } from './CHECK-fakes.js';
 
 const { check, head, finish } = createHarness();
@@ -381,5 +383,77 @@ for (const e of lossy) {
   const row = termUnits.split('\n').find(l => l.includes(e.resource) && l.includes(e.unit) && l.includes(e.loss!));
   check(`  a loss never abuts its unit — ${e.unit}`, row === undefined ? 'row not found' : row.includes(`${e.unit} `), true);
 }
+
+/* =========================================================================
+ * TEST 11 — #100: the finding's SOURCE reaches all three formats
+ * =========================================================================
+ * A format that silently drops a field is this product's own defect class
+ * appearing in its own output, which is why TEST 10 above asserts every finding
+ * reaches every renderer. `source` is a new field and gets the same treatment
+ * rather than being trusted to the two emitters that were edited to carry it.
+ */
+
+head('TEST 11 — the source reaches the terminal, the Markdown AND the JSON');
+
+const rSrc = await scan({ config: cfg(ROOT, 1.0), port: fakePort(DEAD_LINK), now: clock() });
+const docSrc = buildReportDocument(rSrc, { deterministic: true });
+const srcFinding = docSrc.findings.find(f => f.source !== null);
+
+check('the fixture produced a finding carrying a source', srcFinding !== undefined, true);
+check('  and its page is a hyphenated ID', /^[0-9a-f-]{36}$/.test(srcFinding?.source?.page ?? ''), true);
+
+const termSrc = renderReport(rSrc, {}).join('\n');
+const mdSrc = renderMarkdown(docSrc);
+const jsonSrc = renderJson(docSrc);
+
+check('the TERMINAL carries the source page', termSrc.includes(srcFinding!.source!.page), true);
+check('  and the source block', termSrc.includes(srcFinding!.source!.block), true);
+check('the MARKDOWN carries the source page', mdSrc.includes(srcFinding!.source!.page), true);
+check('  and labels it, rather than dropping it into the evidence line', /- Source: page/.test(mdSrc), true);
+check('the JSON carries the source page', jsonSrc.includes(srcFinding!.source!.page), true);
+check('  as STRUCTURE, not as a rendered sentence', jsonSrc.includes('"source":'), true);
+
+/* The three must agree, which is the whole point of the single document. A
+ * per-renderer lookup would let them diverge, and did in three sections before
+ * TEST 10 existed. */
+check('all three name the same page', [termSrc, mdSrc, jsonSrc].every(x => x.includes(srcFinding!.source!.page)), true);
+
+head('TEST 11b — a null source is PRINTED with its reason, in every format');
+
+/* SYS001's subject is the resource; there is no containing page. The reason
+ * travels with the null exactly as the link-absent reason does — "no source"
+ * and "this rule has no source to give" are different facts, and a blank cell
+ * collapses them into one. */
+const nullSrc = doc1.findings.find(f => f.source === null);
+check('the standard fixture produced a finding with no source', nullSrc !== undefined, true);
+
+const term1 = renderReport(r1, {}).join('\n');
+const md1 = renderMarkdown(doc1);
+check('the TERMINAL states the reason', term1.includes(SOURCE_NOT_APPLICABLE), true);
+check('the MARKDOWN states the reason', md1.includes(SOURCE_NOT_APPLICABLE), true);
+check('  and neither prints an empty cell instead', /source: *$/m.test(term1) || /- Source: *$/m.test(md1), false);
+/* JSON carries the null itself — a serialised `null` is unambiguous where a
+ * blank string would not be, so the reason belongs to the two rendered formats
+ * and the structure belongs to JSON. */
+check('the JSON carries an explicit null, not an omitted key', renderJson(doc1).includes('"source":null'), true);
+
+head('TEST 11c — the UNRECORDED-ORIGIN fallback survives to the report');
+
+/* `references.ts` writes `'(unrecorded page)'` when a discovery route carries
+ * no origin, and `'(unknown block)'` for a block with no id. They exist so an
+ * absent origin is VISIBLY absent. A renderer that blanked them would make a
+ * missing origin indistinguishable from a page that has no name, and a
+ * normaliser that hyphenated them would mangle them.
+ *
+ * ⚠ #100's brief names the second fallback `'(unrecorded block)'`. The string in
+ * the code is `'(unknown block)'`. The code is the authority and the brief was
+ * corrected on the ticket. */
+const orphan = classifyHref(OBSERVED_LINK, 'block-9');
+check('classifyHref called without an origin uses the fallback', orphan.sourcePage, '(unrecorded page)');
+check('  and the fallback is not an ID, so hyphenate() must leave it alone', hyphenate(orphan.sourcePage), null);
+check('  which is exactly what the rule\'s idForm does — it passes through', idForm(orphan.sourcePage), '(unrecorded page)');
+check('the block fallback in extractReferences is (unknown block), not (unrecorded block)',
+  extractReferences([{ object: 'block', type: 'paragraph', paragraph: { rich_text: [{ type: 'text', text: { content: 'x' }, href: OBSERVED_LINK } ] } }], 'page-1')[0]?.sourceBlock,
+  '(unknown block)');
 
 finish('One document, three renderings. The suppressions are computed once and the type system will not let a renderer forget one.');
