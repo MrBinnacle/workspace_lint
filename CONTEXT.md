@@ -139,12 +139,13 @@ The PRD names these as out of scope. They are not built.
 
 ## Current state
 
-Building. `main` carries product source as of PR #56, merged 2026-08-17 — `slice/`, a private and unpublishable package, deliberately not `src/` until the name constraint below is settled. Two of the four v0.1 rules are **built**: `SYS001` and `REF001`. `REQ001` and `UNQ001` are specified and not built; they are issues #58 and #59, and **nothing blocks either of them any longer** — #19 closed 2026-08-18 and #18 closed with `docs/spec/v0.1-hydration-map.md`, which states each rule's minimum fetch depth, its pagination requirement, and what a partial hydration does to its evidence sufficiency. `POST /v1/search` has no role in the scan: **ADR-0014**, which answers #24 and is the sixth surface ADR-0007 decision 3 pre-registered.
+Building. `main` carries product source as of PR #56, merged 2026-08-17 — `slice/`, a private and unpublishable package, deliberately not `src/` until the name constraint below is settled. Three of the four v0.1 rules are **built**: `SYS001`, `REF001` and `REQ001`. `REQ001` is the first **configured** rule — it is where the config stops describing only the scan and starts describing a rule — and it shipped on 2026-08-18 with two live runs recorded in `docs/proof/results-58-req001.md`. `UNQ001` is specified and not built; it is issue #59, and what remains in front of it is #70 decision 1. Their two shared blockers closed first — #19 on 2026-08-18 and #18 with `docs/spec/v0.1-hydration-map.md`, which states each rule's minimum fetch depth, its pagination requirement, and what a partial hydration does to its evidence sufficiency. `POST /v1/search` has no role in the scan: **ADR-0014**, which answers #24 and is the sixth surface ADR-0007 decision 3 pre-registered.
 <!-- claim: exists path="docs/spec/v0.1-hydration-map.md" -->
 <!-- claim: exists path="docs/adr/0014-search-has-no-role-in-the-v0.1-scan.md" -->
 <!-- claim: exists path="slice/sys001.ts" -->
 <!-- claim: exists path="slice/ref001.ts" -->
-<!-- claim: absent path="slice/req001.ts" -->
+<!-- claim: exists path="slice/req001.ts" -->
+<!-- claim: exists path="docs/proof/results-58-req001.md" -->
 <!-- claim: absent path="slice/unq001.ts" -->
 
 All four are marked **Ships** in the rule catalog above, which states v0.1 *scope*; built is a separate question and this paragraph answers it.

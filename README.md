@@ -50,13 +50,13 @@ Two built-in, six configured.
 
 `SYS001` is the **finding identity for a coverage gap** and does not carry the run-failure decision. Do not restate it as "scan result is incomplete" — incompleteness is now a field on every rule and a disposition on the report (ADR-0005 decision 4, and `CONTEXT.md`'s settled defaults, which name that exact re-widening as the thing not to do).
 
-`SYS001` and `REF001` are built and running. The other six are deferred, not cut.
+`SYS001`, `REF001` and `REQ001` are built and running. The other five are deferred, not cut.
 
 Six of eight need configuration, so a first run reports coverage and little else until you declare an invariant. That cost is deliberate — see [ADR-0001](docs/adr/0001-linter-not-entropy-engine.md).
 
 ### Configuring a rule
 
-`wl.config.example.json` carries `"rules": []`, because **this build rejects every entry that could go in it.** `SYS001` and `REF001` are built-in and take no configuration, and the six Configured rules are not built. The section is validated now so that #58 and #59 have somewhere to land:
+`wl.config.example.json` carries `"rules": []`. **That is no longer because every entry is rejected — a `REQ001` entry is accepted and executed as of #58.** `SYS001` and `REF001` are built-in and take no configuration; of the six Configured rules, `REQ001` is built and the other five are not, so an entry naming one of those five is still rejected at exit 4 with a message that says which. The example ships empty because a worked entry has to name a scope ID that resolves in your workspace, not in this repository:
 
 ```jsonc
 "rules": [

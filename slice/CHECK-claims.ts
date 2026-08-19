@@ -24,7 +24,7 @@
  *
  *   <!-- claim: count glob="docs/research/*.md" exclude="INDEX.md" equals=13 -->
  *   <!-- claim: exists path="slice/sys001.ts" -->
- *   <!-- claim: absent path="slice/req001.ts" -->
+ *   <!-- claim: absent path="slice/unq001.ts" -->
  *
  * INLINE RATHER THAN A SIDECAR MANIFEST, deliberately. A manifest is a second
  * list that drifts from the first, which is #55's defect exactly. The comment
@@ -228,13 +228,28 @@ head('TEST 1 — the parser reads all three kinds, and does not quietly drop a t
  * real number is pinned by the real documents in TEST 6 and nowhere else. */
 const SWEEPS = expandGlob('docs/research/*.md', REPO).filter(f => f !== 'INDEX.md').length;
 
+/**
+ * The `absent` fixture, and it names a file NOBODY WILL EVER BUILD.
+ *
+ * THIS WAS `slice/req001.ts` AND IT ROTTED THE DAY REQ001 SHIPPED. Three
+ * assertions about the evaluator — "absent, true", "exists, false", and the
+ * observed string that goes with it — all failed at once on #58, inside the
+ * suite whose job is catching exactly that. The evaluator was correct; its
+ * fixture had become a claim about the build.
+ *
+ * A unit test of the evaluator must not depend on the repository's own state.
+ * The parent directory still exists, so the mistyped-path guard is still
+ * exercised — this is a permanently-absent path, not an unreachable one.
+ */
+const NEVER_A_FILE = 'slice/there-is-deliberately-no-such-file.ts';
+
 const FIXTURE = [
   'Thirteen files.',
   `<!-- claim: count glob="docs/research/*.md" exclude="INDEX.md" equals=${SWEEPS} -->`,
   'Source is on `main`.',
   '<!-- claim: exists path="slice/sys001.ts" -->',
-  '`REQ001` is not built.',
-  '<!-- claim: absent path="slice/req001.ts" -->',
+  'A file that is not there.',
+  `<!-- claim: absent path="${NEVER_A_FILE}" -->`,
   '<!-- claim: exsits path="slice/sys001.ts" -->',
 ].join('\n');
 
@@ -259,13 +274,13 @@ head('TEST 3 — a FALSE claim of each kind fails, and says what it observed');
  * in-suite equivalent of a mutation, and the observed string is asserted too
  * because a FAIL with no observed value cannot be acted on. */
 const falseCount = parseClaims(`<!-- claim: count glob="docs/research/*.md" exclude="INDEX.md" equals=${SWEEPS + 1} -->`)[0]!;
-const falseExists = parseClaims('<!-- claim: exists path="slice/req001.ts" -->')[0]!;
+const falseExists = parseClaims(`<!-- claim: exists path="${NEVER_A_FILE}" -->`)[0]!;
 const falseAbsent = parseClaims('<!-- claim: absent path="slice/sys001.ts" -->')[0]!;
 
 check('count, false', evaluate(falseCount, REPO).ok, false);
 check('  and reports the real number', evaluate(falseCount, REPO).observed.startsWith(`${SWEEPS} file(s)`), true);
 check('exists, false', evaluate(falseExists, REPO).ok, false);
-check('  and names the missing path', evaluate(falseExists, REPO).observed, 'slice/req001.ts does not exist');
+check('  and names the missing path', evaluate(falseExists, REPO).observed, `${NEVER_A_FILE} does not exist`);
 check('absent, false', evaluate(falseAbsent, REPO).ok, false);
 check('  and names the present path', evaluate(falseAbsent, REPO).observed, 'slice/sys001.ts exists');
 check('an unknown kind fails rather than passing', evaluate(parsed[3]!, REPO).ok, false);

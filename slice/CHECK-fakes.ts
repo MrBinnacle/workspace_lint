@@ -36,6 +36,16 @@ export type FakeResource = {
   steps?: Step[];
   /** What GET /v1/pages returns as `url`. See TITLED_URL. */
   url?: string;
+  /**
+   * What GET /v1/pages returns as `properties` — #58.
+   *
+   * ABSENT AND EMPTY ARE DIFFERENT FIXTURES AND THE DIFFERENCE IS THE RULE.
+   * `properties: undefined` models a response that carried no map at all;
+   * `properties: {}` models a map the integration can see and which holds
+   * nothing. REQ001's third and fourth rows turn on exactly that distinction,
+   * so a fake that collapsed them could not tell the two apart either.
+   */
+  properties?: Record<string, unknown>;
 };
 
 /**
@@ -66,7 +76,15 @@ export function fakePort(spec: Record<string, FakeResource>, meFails = false): N
     async retrievePage(id) {
       const r = lookup(id);
       if (!r || r.pageFail) throw new PortError(r?.pageFail?.status ?? 404, r?.pageFail?.code ?? 'object_not_found');
-      return r.url === undefined ? { id } : { id, url: r.url };
+      /* Each field is omitted rather than sent as `undefined`, because the fake
+       * is modelling a RESPONSE and a response either carries a key or does
+       * not. `{ properties: undefined }` would satisfy `'properties' in res`
+       * and make the fourth row of REQ001's table untestable. */
+      return {
+        id,
+        ...(r.url === undefined ? {} : { url: r.url }),
+        ...(r.properties === undefined ? {} : { properties: r.properties }),
+      };
     },
     async listChildren(id, cursor) {
       const r = lookup(id);
@@ -80,11 +98,20 @@ export function fakePort(spec: Record<string, FakeResource>, meFails = false): N
   };
 }
 
-/* `rules` is empty and stays empty until a Configured rule is built. Every
- * suite that drives the scan through this fixture asserts against the two
- * BUILT-IN rules, so a configured entry here would put a rule in the funnel
- * that no assertion in any suite expects. #58 adds it with REQ001's own tests. */
+/* `rules` is empty, and it STAYS empty on this helper. Every suite that drives
+ * the scan through this fixture asserts against the two BUILT-IN rules, so a
+ * configured entry here would put a rule in the funnel that no assertion in any
+ * suite expects. #58 adds REQ001 through `cfgReq` below rather than by widening
+ * this one, so the other five suites are untouched by a third rule. */
 export const cfg = (id = ROOT, minCoverage = 1.0): Config => ({ version: 1, roots: [{ id, alias: 'wl-proof-fixture' }], minCoverage, rules: [] });
+
+/** The same declared root, with ONE REQ001 entry — #58. */
+export const cfgReq = (scope: string, property: string, minCoverage = 1.0): Config => ({
+  version: 1,
+  roots: [{ id: ROOT, alias: 'wl-proof-fixture' }],
+  minCoverage,
+  rules: [{ rule: 'REQ001', scope: { id: scope }, property }],
+});
 export const clock = () => { let t = 1000; return () => (t += 7); };
 
 /* The fixture as it actually is: a declared root with three children, one of
@@ -262,6 +289,88 @@ export const EXTERNAL_ON_TWO_PAGES: Record<string, FakeResource> = {
 export const DEAD_LINK_PLUS_EXTERNAL: Record<string, FakeResource> = {
   [ROOT]: { steps: [page([linkPara('block-link', OBSERVED_LINK), linkPara('block-ext', EXTERNAL_LINK), childPage(PAGE_B, 'wl-revoke-parent')])] },
   [PAGE_B]: { steps: [page([])] },
+};
+
+/* ------------------------------------------------------------ properties -- */
+
+/* REQ001's fixtures — #58.
+ *
+ * THE PROPERTY VALUE SHAPES ARE THE API'S, NOT A CONVENIENCE. A Notion page
+ * property is an object carrying its own `id` and `type`, and the value lives
+ * under the key named by `type`. A fake that stored a bare string would let the
+ * rule read `properties[name]` directly and pass while the real response shape
+ * failed — the instrument-shaped defect the fixture header above records.
+ */
+export const PROP_ID_OWNER = 'AbC%3D';
+export const PROP_ID_TITLE = 'title';
+
+/** A rich_text property. Empty text means an EMPTY ARRAY, which is what the API returns. */
+export const richTextProp = (text: string, id = PROP_ID_OWNER) => ({
+  id, type: 'rich_text',
+  rich_text: text === '' ? [] : [{ type: 'text', text: { content: text }, plain_text: text }],
+});
+
+/** A title property. Every page in this workspace has one and it is never empty. */
+export const titleProp = (text: string) => ({
+  id: PROP_ID_TITLE, type: 'title',
+  title: [{ type: 'text', text: { content: text }, plain_text: text }],
+});
+
+/** A property object whose own `type` key is missing from it — the shape the scan cannot read. */
+export const UNREADABLE_PROP = { id: PROP_ID_OWNER, type: 'rollup' };
+
+/** Root with one readable child and no data source, so only REQ001's row can fall below the floor. */
+const rootWithChild = (rootProps: Record<string, unknown>, childProps: FakeResource): Record<string, FakeResource> => ({
+  [ROOT]: { steps: [page([childPage(PAGE_B, 'wl-revoke-parent')])], properties: rootProps },
+  [PAGE_B]: { steps: [page([])], ...childProps },
+});
+
+/* Row 1 of the table: the property is in the map and carries no value. THE VIOLATION. */
+export const REQ_PRESENT_EMPTY = rootWithChild(
+  { Title: titleProp('wl-proof-fixture'), Owner: richTextProp('a name') },
+  { properties: { Title: titleProp('wl-revoke-parent'), Owner: richTextProp('') } },
+);
+
+/* Row 2: present and non-empty. Conforms. */
+export const REQ_PRESENT_VALUE = rootWithChild(
+  { Title: titleProp('wl-proof-fixture'), Owner: richTextProp('a name') },
+  { properties: { Title: titleProp('wl-revoke-parent'), Owner: richTextProp('another name') } },
+);
+
+/* Row 3: a map the scan READ, with no such property in it. NOT a violation — the
+ * API returns the properties the integration can see, so absent means "not
+ * defined here" OR "not granted" and the scan cannot tell which. */
+export const REQ_ABSENT_FROM_MAP = rootWithChild(
+  { Title: titleProp('wl-proof-fixture'), Owner: richTextProp('a name') },
+  { properties: { Title: titleProp('wl-revoke-parent') } },
+);
+
+/* Row 4: the response carried no properties map at all. Hydration failed. */
+export const REQ_NO_MAP = rootWithChild(
+  { Title: titleProp('wl-proof-fixture'), Owner: richTextProp('a name') },
+  {},
+);
+
+/* Row 5, which the plan's table does not carry and the code must still answer:
+ * the property is in the map and its VALUE cannot be read, because the object
+ * does not carry the key its own `type` names. Undecidable, so it is a gap. */
+export const REQ_UNREADABLE_SHAPE = rootWithChild(
+  { Title: titleProp('wl-proof-fixture'), Owner: richTextProp('a name') },
+  { properties: { Title: titleProp('wl-revoke-parent'), Owner: UNREADABLE_PROP } },
+);
+
+/* The page itself is refused when the hydration stage retrieves it. */
+export const REQ_PAGE_UNREACHABLE = rootWithChild(
+  { Title: titleProp('wl-proof-fixture'), Owner: richTextProp('a name') },
+  { pageFail: { status: 429, code: 'rate_limited' } },
+);
+
+/* A data source in scope. This build does not enumerate one, so the pairs
+ * beneath it are unenumerable — a gap, never an applicability filter (#50). */
+export const REQ_WITH_DATASET: Record<string, FakeResource> = {
+  [ROOT]: { steps: [page([childPage(PAGE_B, 'wl-revoke-parent'), childDb(DATASET, 'wl-dataset')])], properties: { Title: titleProp('wl-proof-fixture'), Owner: richTextProp('a name') } },
+  [PAGE_B]: { steps: [page([])], properties: { Title: titleProp('wl-revoke-parent'), Owner: richTextProp('a name') } },
+  [DATASET]: { steps: [page([])] },
 };
 
 /* The root's enumeration dies mid-stream: one child listed, the next call 502s.

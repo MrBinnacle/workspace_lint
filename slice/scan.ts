@@ -35,13 +35,15 @@
  * now a reference the recogniser could not classify. All three are reported.
  */
 
-import type { Config } from './config.js';
+import type { Config, RuleDecl } from './config.js';
 import { attestationOf, BLOCK_CHILDREN, type NotionPort } from './notion-port.js';
-import { createObserver, listAllChildren, readBlockTree, type Call } from './observed.js';
+import { createObserver, listAllChildren, readBlockTree, type Call, type Observer } from './observed.js';
 import { Manifest, gapsFrom, residualsFrom, RESOURCES, type Enumeration, type Loss, type Residual } from './manifest.js';
 import { deriveVerdict, type Gap, type Verdict } from './verdict.js';
 import { SYS001 } from './sys001.js';
 import { REF001, REF001_UNIT, refKey } from './ref001.js';
+import { REQ001, REQ001_UNIT, pairKey, readProperty } from './req001.js';
+import { hyphenate } from './ids.js';
 import { dedupeReferences, extractReferences, redactHref, type Reference, type TargetKind } from './references.js';
 import type { Rule } from './rule.js';
 import type { CoverageRow, Finding, Outcome } from './finding.js';
@@ -183,7 +185,7 @@ function evaluateStage(manifest: Manifest, rules: Rule[]): void {
  * is the drift class this repository keeps re-finding; here it would have made
  * the report's own header lie about which rules produced the figures under it.
  */
-export const BUILT_RULES: Rule[] = [SYS001, REF001];
+export const BUILT_RULES: Rule[] = [SYS001, REF001, REQ001];
 
 export async function scan(opts: ScanOptions): Promise<ScanResult> {
   const { config, port } = opts;
@@ -199,11 +201,33 @@ export async function scan(opts: ScanOptions): Promise<ScanResult> {
   const say = (s = '') => log.push(s);
   let externalReferences = 0;
 
+  /* What the traversal learned about SHAPE, kept local — #58.
+   *
+   * The manifest records coverage, not structure: it has no parent field and no
+   * kind field, and adding either for one rule's benefit would put a second
+   * model of the tree beside the block listings that produced it. REQ001 needs
+   * two facts the traversal already holds while it runs — which resources are
+   * children of the declared root, and which of them this build cannot retrieve
+   * as a page — so they are captured here and spent in the hydration stage.
+   */
+  const keyOf = (id: string): string => hyphenate(id) ?? id;
+  const resourceKind = new Map<string, 'page' | 'data-source'>();
+  const childKeys: string[] = [];
+  /** Property maps already returned by the traversal. The root's retrieve is not repeated. */
+  const propertiesOf = new Map<string, Record<string, unknown> | undefined>();
+
   const finish = (didNotRunAsDeclared = false): ScanResult => {
     /* THE RULES RUN HERE, NOT AT THE END OF THE TRAVERSAL, because every early
      * return above is also a scan whose coverage has to be judged. An
      * unreachable declared root is SYS001's headline finding, and it leaves
      * through the second return in this function. */
+
+    /* AND SO IS REQ001'S APPLICABLE SET. Three paths return before the
+     * hydration stage; on each of them a configured rule had no pairs, left the
+     * coverage vector, and produced a run indistinguishable from one with no
+     * rule configured. This declares the pairs that were never enumerated,
+     * and it is a no-op once the hydration stage has declared any. */
+    declarePairsNeverEnumerated(manifest, config.rules);
     evaluateStage(manifest, rules);
 
     const gaps = deriveGaps(manifest);
@@ -318,6 +342,12 @@ export async function scan(opts: ScanOptions): Promise<ScanResult> {
     stage: 'resolved',
     link: page.value.url ? redactHref(page.value.url) : null,
   });
+  /* THE ROOT'S PROPERTY MAP ARRIVES ON THIS RESPONSE and is kept, so REQ001
+   * over the root costs no second request. `has` is what the hydration stage
+   * tests, so a root that carried NO map is recorded as such — storing
+   * `undefined` here is a fact, not an absence of one. */
+  resourceKind.set(keyOf(root.id), 'page');
+  propertiesOf.set(keyOf(root.id), page.value.properties);
   say('declared root resolved.');
 
   /* -- enumerate the root ------------------------------------------------- */
@@ -383,6 +413,13 @@ export async function scan(opts: ScanOptions): Promise<ScanResult> {
     .filter((b): b is ChildBlock => b !== null && (b.type === 'child_page' || b.type === 'child_database'));
 
   say(`child resources under the declared root: ${children.length}`);
+  /* Recorded from the BLOCK TYPE the listing returned, which is the only place
+   * the kind is stated. A REQ001 scope naming a data source is a gap with a
+   * named cause, and this is where the scan learns which resources those are. */
+  for (const c of children) {
+    childKeys.push(keyOf(c.id));
+    resourceKind.set(keyOf(c.id), c.type === 'child_database' ? 'data-source' : 'page');
+  }
   for (const c of children) manifest.mark({ id: c.id, alias: titleOf(c), stage: 'declared' });
   for (const c of children) manifest.mark({ id: c.id, alias: titleOf(c), stage: 'resolved' });
 
@@ -489,6 +526,12 @@ export async function scan(opts: ScanOptions): Promise<ScanResult> {
 
     if (target.state !== 'unreachable') {
       manifest.mark({ id: key, unit: REF001_UNIT, stage: 'fetched' });
+      /* THE SAME RESPONSE THE HYDRATION STAGE WOULD OTHERWISE PAY FOR AGAIN. A
+       * page that is both a child of the declared root and the target of a link
+       * was retrieved twice — once here, once by REQ001 — and under a ~3 req/s
+       * ceiling the pages most likely to be in scope are exactly the ones that
+       * doubled. A 429 on the second call turns a conforming pair into a gap. */
+      propertiesOf.set(keyOf(targetId), target.value.properties);
       continue;
     }
 
@@ -505,9 +548,236 @@ export async function scan(opts: ScanOptions): Promise<ScanResult> {
     });
   }
 
+  /* -- REQ001: the pairs, and the hydration they need ---------------------- */
+  await hydrateRequiredProperties({
+    manifest, observer, port,
+    decls: config.rules,
+    rootKey: keyOf(root.id),
+    childKeys,
+    resourceKind,
+    propertiesOf,
+    say,
+  });
+
   /* The traversal ends here. Judgement belongs to the rules and happens in
    * finish(), which every exit path above goes through. */
   return finish();
+}
+
+/* ----------------------------------------------------- property hydration -- */
+
+/**
+ * Declare one (resource, property) pair. The facts are STRUCTURE, written by
+ * the site that knows them.
+ *
+ * MODULE-LEVEL, because two callers need it and they run at different times:
+ * the hydration stage, and `finish()` on a scan that ended before hydration.
+ */
+function declarePair(manifest: Manifest, resource: string, property: string, loss: Loss | null = null): void {
+  manifest.mark({
+    id: pairKey(resource, property),
+    unit: REQ001_UNIT,
+    stage: 'declared',
+    /* The resource ID and the CONFIGURED property name. Neither is a page
+     * title, so this label is safe on every rendered line. */
+    alias: `${resource} · "${property}"`,
+    safeLabel: `${resource} · "${property}"`,
+    req: { resource, property, propertyId: null },
+    ...(loss ? { loss } : {}),
+  });
+}
+
+/**
+ * A configured REQ001 rule that never reached the hydration stage.
+ *
+ * ⛔ WITHOUT THIS, A CONFIGURED RULE VANISHES FROM THE REPORT ON EVERY EARLY
+ * RETURN. The hydration stage runs after the traversal, and three paths return
+ * before it: a failed auth, an unreachable declared root, and a failed root
+ * enumeration. On all three the pairs were never declared, so REQ001 had an
+ * empty applicable set, LEFT the coverage vector under ADR-0011 decision 6, and
+ * the run was byte-identical to one where no rule had been configured at all.
+ * The floor the operator declared was silently not applied.
+ *
+ * The run is already exiting 2 or 4 on those paths, so this was never a false
+ * green. It was a MISSING DISCLOSURE: CONTEXT.md's Gap entry says a drop-out
+ * "produces a gap in every rule whose coverage items depended on it", and this
+ * is that gap for the rule that depended on the whole traversal.
+ *
+ * Idempotent by construction: it declares nothing when the hydration stage
+ * already declared something, so the normal path never reaches it.
+ */
+function declarePairsNeverEnumerated(manifest: Manifest, decls: RuleDecl[]): void {
+  if (decls.length === 0 || manifest.count(REQ001_UNIT) > 0) return;
+  for (const decl of decls) {
+    const scope = hyphenate(decl.scope.id) ?? decl.scope.id;
+    declarePair(manifest, scope, decl.property, {
+      cause: 'scan-ended-before-hydration — the scan returned before this scope could be enumerated, so its (resource, property) pairs were never listed',
+      /* Bounded: the scope is named. What is unknown is how many resources sit
+       * under it, and that is the traversal's own gap, reported there. */
+      bounded: true,
+      target: 'unreachable',
+    });
+  }
+}
+
+/**
+ * Register REQ001's pairs and read the property maps they need — #58.
+ *
+ * WHY THERE IS A SECOND RETRIEVE AT ALL. The traversal issues `GET /v1/pages`
+ * for the declared root and for nothing else: every descendant arrives as a
+ * `child_page` BLOCK inside its parent's listing, and a block carries no
+ * properties. So a rule about properties needs a stage the scan did not have,
+ * and `docs/spec/v0.1-hydration-map.md` §1.3 priced it as one retrieve per
+ * in-scope resource. The root's own map is reused rather than re-fetched,
+ * because it was already returned by the retrieve the traversal made.
+ *
+ * EVERY FAILURE HERE IS A GAP AND NONE OF THEM IS A VIOLATION. That is not
+ * generosity toward the workspace; it is the only sound reading. A page the
+ * hydration could not retrieve, a response with no property map, and a map with
+ * no such property are all consistent with a grant that is narrower than the
+ * config, and none of them proves anything about the operator's content.
+ */
+async function hydrateRequiredProperties(args: {
+  manifest: Manifest;
+  observer: Observer;
+  port: NotionPort;
+  decls: RuleDecl[];
+  rootKey: string;
+  childKeys: string[];
+  resourceKind: Map<string, 'page' | 'data-source'>;
+  /** Maps already returned by the traversal, so the root is not retrieved twice. */
+  propertiesOf: Map<string, Record<string, unknown> | undefined>;
+  say: (s?: string) => void;
+}): Promise<void> {
+  const { manifest, observer, port, decls, rootKey, childKeys, resourceKind, propertiesOf, say } = args;
+  if (decls.length === 0) return;
+
+  const toHydrate: { resource: string; property: string }[] = [];
+
+  for (const decl of decls) {
+    const scope = hyphenate(decl.scope.id) ?? decl.scope.id;
+    /* Spec §1.1 descends ONE level, so a scope is either the declared root —
+     * which selects the root and its children — or one enumerated child, which
+     * selects itself. A scope naming anything else selected nothing, and that
+     * is reported rather than skipped. */
+    const inScope = scope === rootKey ? [rootKey, ...childKeys] : childKeys.includes(scope) ? [scope] : [];
+
+    if (inScope.length === 0) {
+      /* THE PAIRS UNDER AN UNENUMERATED SCOPE ARE UNENUMERABLE, WHICH IS A GAP
+       * AND NOT AN EMPTY SET. Registering nothing would take the whole
+       * declaration out of the denominator, and a rule that counts nothing
+       * reports a ratio of 1.0 over the pairs it did manage to check. */
+      declarePair(manifest, scope, decl.property, {
+        cause: 'scope-not-enumerated — the configured scope is not a resource this scan enumerated, so the pairs beneath it cannot be listed',
+        bounded: true,
+        target: 'unreachable',
+      });
+      continue;
+    }
+
+    for (const resource of inScope) {
+      if (resourceKind.get(resource) === 'data-source') {
+        /* Same ruling as REF001's database target and #50's data source: the
+         * tool's inability to enumerate one kind of object is DISCLOSED as a
+         * gap, never converted into a defect in the workspace and never taken
+         * out of the denominator. */
+        declarePair(manifest, resource, decl.property, { cause: DATA_SOURCE_CAUSE, bounded: true, target: 'present' });
+        continue;
+      }
+      declarePair(manifest, resource, decl.property);
+      toHydrate.push({ resource, property: decl.property });
+    }
+  }
+
+  /* One retrieve per resource, however many properties are required of it.
+   * Grouping is what keeps the request budget linear in resources rather than
+   * in (resource, property) pairs. */
+  const byResource = new Map<string, string[]>();
+  for (const { resource, property } of toHydrate) byResource.set(resource, [...(byResource.get(resource) ?? []), property]);
+
+  for (const [resource, properties] of byResource) {
+    let map = propertiesOf.get(resource);
+
+    if (!propertiesOf.has(resource)) {
+      const fetched = await observer.observe(`GET /v1/pages/${resource}`, () => port.retrievePage(resource));
+      if (fetched.state === 'unreachable') {
+        for (const property of properties) {
+          manifest.mark({
+            id: pairKey(resource, property), unit: REQ001_UNIT, stage: 'declared',
+            /* UNREACHABLE, not present: the call about the resource itself
+             * failed, and a 404 is access failure or object absence with no way
+             * to tell which. */
+            loss: { cause: `property hydration failed — ${fetched.cause}`, bounded: true, target: 'unreachable' },
+          });
+        }
+        continue;
+      }
+      map = fetched.value.properties;
+      propertiesOf.set(resource, map);
+    }
+
+    if (map === undefined) {
+      for (const property of properties) {
+        manifest.mark({
+          id: pairKey(resource, property), unit: REQ001_UNIT, stage: 'declared',
+          /* PRESENT: the page itself was retrieved. What is missing is the map. */
+          loss: { cause: 'property hydration incomplete — the page response carried no properties map', bounded: true, target: 'present' },
+        });
+      }
+      continue;
+    }
+
+    for (const property of properties) {
+      const id = pairKey(resource, property);
+      /* The map was READ. That fact is recorded whatever the property turns out
+       * to be, because it is what separates "the scan could not look" from "the
+       * scan looked and the property was not there". */
+      manifest.mark({ id, unit: REQ001_UNIT, stage: 'resolved' });
+
+      const reading = readProperty(map, property);
+      if (reading.state === 'absent') {
+        /* ⛔ NOT A VIOLATION, AND THIS IS THE ONE LINE THE RULE TURNS ON. The
+         * API returns the properties the integration can SEE, so an absent
+         * property is "not defined here" OR "not granted" and the scan cannot
+         * tell which. Reporting it as a violation reports a defect in the
+         * operator's workspace that is really a defect in the grant. */
+        manifest.mark({
+          id, unit: REQ001_UNIT, stage: 'resolved',
+          loss: {
+            cause: `property-not-in-map — "${property}" is not in the property map this connection can see, which is either an undefined property or an ungranted one`,
+            bounded: true,
+            target: 'present',
+          },
+        });
+        continue;
+      }
+
+      /* The property was LOCATED, and the ID observed on it is recorded here —
+       * the other half of ADR-0010 decision 7's matchkey hierarchy. */
+      manifest.mark({
+        id, unit: REQ001_UNIT, stage: 'enumerated',
+        req: { resource, property, propertyId: reading.propertyId },
+      });
+
+      if (reading.state === 'unreadable') {
+        manifest.mark({
+          id, unit: REQ001_UNIT, stage: 'enumerated',
+          loss: {
+            cause: `property-shape-unread — "${property}" is present and this build cannot read its value`,
+            bounded: true,
+            target: 'present',
+          },
+        });
+        continue;
+      }
+
+      /* `fetched` MEANS THE PROPERTY CARRIED A VALUE. A property that is present
+       * and empty stops here, judgeable and unfilled, which is the violation. */
+      if (reading.state === 'value') manifest.mark({ id, unit: REQ001_UNIT, stage: 'fetched' });
+    }
+  }
+
+  say(`required properties: ${manifest.count(REQ001_UNIT)} (resource, property) pair(s) declared.`);
 }
 
 /* ------------------------------------------------------ reference recording -- */

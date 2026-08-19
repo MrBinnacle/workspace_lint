@@ -97,6 +97,53 @@ export const FIXTURE_ORACLE = {
     /** No unrecognised candidate is expected: the only observed host is in the allow-list. */
     unrecognised: 0,
   },
+
+  /**
+   * REQ001's applicable set, PRE-REGISTERED FOR #58'S LIVE RUN — written before
+   * the run and never corrected after it.
+   *
+   * TWO EXPECTATIONS, BECAUSE TWO RUNS ARE PLANNED AND THEY PROVE DIFFERENT
+   * PATHS. Neither proves the violation path: every readable page in this
+   * fixture carries a non-empty `title`, and the only resources with arbitrary
+   * properties are rows inside `wl-dataset`, which this build does not
+   * enumerate. Producing a violating page is an operator-only action in the
+   * Notion UI. `docs/proof/` must say so rather than imply a fuller proof.
+   *
+   * BOTH ROWS CARRY A NAMED RISK, and a mismatch is a FACT ABOUT THE FIXTURE OR
+   * THE API rather than a defect in the rule:
+   *
+   *   - The property KEY on a standalone page is expected to be `title`. This
+   *     repository has never observed a page's property map — the port
+   *     discarded it until #58 — so the expectation comes from the vendored SDK
+   *     types and the API reference, not from an observation.
+   *   - `docs/research/notion-live-probe.md` § "Probe 3 — Property IDs" observed
+   *     NO property ID for `title`, `text` and `date` on the CONNECTOR path. If
+   *     the REST path agrees, `propertyId/v1` is empty on every finding and
+   *     ADR-0010 decision 7's first key is dead weight in practice. The run
+   *     records which happened; it does not settle the ADR.
+   */
+  requiredProperties: {
+    source: 'docs/proof/fixture.md "What exists" + the #58 plan, both written before the run',
+    /* Root + three children, scoped at the declared root. The data source is IN
+     * the denominator as a named gap — #50, and never an applicability filter. */
+    applicable: 4,
+    expectations: [
+      {
+        property: 'title',
+        /** The three page resources carry a non-empty title; the data source cannot be hydrated. */
+        evaluated: 3,
+        findings: 0,
+        why: 'the conforming path plus one disclosed gap. A page title is never empty in this fixture.',
+      },
+      {
+        property: 'Owner',
+        /** No such property exists on any of these pages, so every pair is a gap. */
+        evaluated: 0,
+        findings: 0,
+        why: 'the gap path. An undefined property and an ungranted one are the same response, so NO finding may be produced.',
+      },
+    ],
+  },
 } as const;
 
 export type OracleVerdict = { ok: boolean; lines: string[] };
@@ -192,6 +239,41 @@ export function checkAgainstOracle(r: ScanResult): OracleVerdict {
     say(f.certainty === 'confirmed' && f.targetState === 'unreachable',
       `the finding is certainty=${f.certainty} about target state=${f.targetState}` +
       ' (criterion 4 requires confirmed / unreachable)');
+  }
+
+  /* -- REQ001, pre-registered for #58's run ------------------------------- */
+  const pairs = r.manifest.of('resource–property pairs');
+  if (pairs.length === 0) {
+    lines.push('  NOTE     REQ001 declared no pairs in this run, so its oracle row was not exercised.');
+  } else {
+    const req = FIXTURE_ORACLE.requiredProperties;
+    lines.push(`  required-property oracle source: ${req.source}`);
+
+    /* THE PROPERTY IS READ OFF THE RUN, not passed in. The oracle holds one row
+     * per planned run and the run says which one it is; an oracle that had to
+     * be told what to expect could be told the answer. */
+    const property = pairs[0]?.req?.property ?? '(unrecorded)';
+    const expectation = req.expectations.find(e => e.property === property);
+
+    if (!expectation) {
+      say(false, `REQ001 ran over property "${property}", which this oracle did not pre-register. ` +
+        'Add the row BEFORE the run that needs it; do not read one off a result.');
+    } else {
+      say(pairs.length === req.applicable,
+        `REQ001's applicable set is ${pairs.length} (resource, property) pair(s), oracle says ${req.applicable}`);
+      const evaluated = pairs.filter(e => e.stages.has('evaluated')).length;
+      say(evaluated === expectation.evaluated,
+        `${evaluated} pair(s) reached evaluated over "${property}", oracle says ${expectation.evaluated}`);
+      const req001 = r.findings.filter(f => f.rule === 'REQ001');
+      say(req001.length === expectation.findings,
+        `REQ001 produced ${req001.length} finding(s), oracle says ${expectation.findings} — ${expectation.why}`);
+      /* THE OBSERVATION THE RUN EXISTS TO MAKE, reported whichever way it goes.
+       * Whether a property ID arrives on the REST path is unobserved in this
+       * repository and the connector path observed the opposite. */
+      const withId = pairs.filter(e => e.req?.propertyId).length;
+      lines.push(`  OBSERVED ${withId} of ${pairs.length} pair(s) carried a property ID from the response ` +
+        '(ADR-0010 decision 7 key 1; unobserved on the REST path before this run).');
+    }
   }
 
   lines.push(`  ${ok ? 'ORACLE MATCHED' : 'ORACLE MISMATCH — the run and the hand-written manifest disagree'}`);
