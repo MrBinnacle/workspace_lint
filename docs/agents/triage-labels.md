@@ -125,6 +125,30 @@ it blocks a rule.*
 > rule is unbuilt. *Unless it blocks a rule*, which is unchanged and now correctly gates
 > **scheduling** rather than **recording**.
 
+### ⭐ THE WIP LIMIT LAPSED ON 2026-08-19, BY ITS OWN TERMS
+
+The clause reads **"while any v0.1 rule is unbuilt."** `UNQ001` shipped in PR #108 on 2026-08-19,
+completing the catalog: `SYS001`, `REF001`, `REQ001`, `UNQ001` all exist in `slice/`. **The condition
+the limit was written against is no longer true, so the limit is no longer in force.**
+
+This is recorded because a lapsed constraint is more dangerous than an active one. It went unnoticed
+for the whole session in which the triggering rule shipped, and the failure mode is a later session
+reading the sentence, applying it, and refusing to schedule a decision on the authority of a
+condition that expired.
+
+**What is still in force, and it is the important half:** *record always.* Every decision question is
+filed, with `decision`. That was never conditional on the build state and does not lapse.
+
+⚠ **Do not read the lapse as "the queue is now open."** The limit existed because the queue was
+growing faster than the build. The build has caught up **on the v0.1 catalog only**; the first
+real-workspace run then established a new ceiling — half a live hub unreadable
+(`docs/proof/results-first-real-workspace.md` §6). **A decision ticket scheduled now should still
+name why it does not wait behind #51.** The right successor test is that question, not a count.
+
+*Revisit if:* a v0.2 catalog is declared with unbuilt rules in it. The clause's condition would
+become true again on its own wording, and this note should be struck rather than deleted — the
+record of it having lapsed once is what stops the next session applying it blind.
+
 **Why the original was wrong, stated so a later session does not restore it by instinct.** Its
 purpose was that *the queue was growing faster than the build* — a SCHEDULING problem. It solved that
 by suppressing RECORDING. Three consequences, and the third is fatal:
