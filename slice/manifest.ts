@@ -157,6 +157,39 @@ export type ReqFacts = {
   propertyId: string | null;
 };
 
+/**
+ * What a UNIQUENESS PAIR entry knows about itself — #59, UNQ001.
+ *
+ * ⛔ THE OBSERVED VALUE IS NOT IN THIS TYPE AND MUST NEVER BE ADDED TO IT. A
+ * property value is workspace content. `Entry` is read by three renderers and a
+ * JSON artifact that outlives the terminal, so a value stored here is a value
+ * that will eventually be printed — which is precisely how #42 shipped a page
+ * title into a call log four lines under a report claiming titles were
+ * redacted. UNQ001 compares values in memory and records only the ANSWER. Same
+ * discipline ADR-0010 decision 6 applies to matchkeys: comparison is allowed,
+ * publication is not.
+ *
+ * TWO PARTICIPANTS, LEXICALLY SORTED, because the coverage item is an UNORDERED
+ * pair (ADR-0011 decision 2). Sorting at the point of construction is what makes
+ * `(A,B)` and `(B,A)` one manifest entry rather than two, and two would double
+ * the denominator.
+ *
+ * `propertyIds` IS PER PARTICIPANT AND POSITIONAL — index 0 belongs to
+ * `participants[0]`. The finding anchors on a RESOURCE, not on the pair
+ * (ADR-0010 decision 7 line 145), so the matchkey needs the ID observed on that
+ * resource and not on its co-participant.
+ */
+export type UnqFacts = {
+  /** The two participant resource IDs, lexically sorted. */
+  participants: [string, string];
+  /** The property name AS CONFIGURED. Operator-supplied, never a page title. */
+  property: string;
+  /** The property ID observed on each participant, in `participants` order. */
+  propertyIds: [string | null, string | null];
+  /** Did the two participants carry the same value? THE ANSWER, never the value. */
+  duplicate: boolean;
+};
+
 export type Entry = {
   key: ResourceKey;
   /**
@@ -191,6 +224,8 @@ export type Entry = {
   ref: RefFacts | null;
   /** Present on (resource, property) pair entries only. */
   req: ReqFacts | null;
+  /** Present on uniqueness pair entries only. Never carries the observed value. */
+  unq: UnqFacts | null;
   /** Null unless an enumeration call was made for this resource. ADR-0013 decision 2. */
   enumeration: Enumeration | null;
 };
@@ -210,6 +245,7 @@ export type MarkArgs = {
   isRoot?: boolean;
   ref?: RefFacts;
   req?: ReqFacts;
+  unq?: UnqFacts;
   /** ALREADY REDACTED by the caller. See Entry.link. */
   link?: string | null;
   /** Recorded by the site that made the enumeration call. See Entry.enumeration. */
@@ -240,13 +276,14 @@ export class Manifest {
     const slot = Manifest.slot(unit, key);
     const e =
       this.entries.get(slot) ??
-      { key, unit, alias: args.alias || key, safeLabel: args.safeLabel || key, stages: new Set<Stage>(), loss: null, link: null, isRoot: false, ref: null, req: null, enumeration: null };
+      { key, unit, alias: args.alias || key, safeLabel: args.safeLabel || key, stages: new Set<Stage>(), loss: null, link: null, isRoot: false, ref: null, req: null, unq: null, enumeration: null };
     if (args.alias) e.alias = args.alias;
     if (args.safeLabel) e.safeLabel = args.safeLabel;
     if (args.link) e.link = args.link;
     if (args.isRoot) e.isRoot = true;
     if (args.ref) e.ref = args.ref;
     if (args.req) e.req = args.req;
+    if (args.unq) e.unq = args.unq;
     if (args.enumeration) e.enumeration = args.enumeration;
     e.stages.add(args.stage);
     if (args.loss) e.loss = args.loss;

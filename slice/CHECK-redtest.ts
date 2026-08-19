@@ -220,20 +220,31 @@ head('TEST 5 — the fixture is narrower than #10 specified, and the code says s
  * so on this fixture — which holds no links — REF001 produces an outcome pair
  * and no coverage row. The first version of this check counted vector rows and
  * read 1, which is the model working, not a missing rule. */
-/* THREE SINCE #58, AND THE THIRD ONE IS WHY THIS COUNT IS WORTH ASSERTING. This
- * line read `2` and `no REQ001 ran` until REQ001 shipped. The claim it makes has
- * not changed — the fixture is narrower than #10 specified — but the reason
- * REQ001 contributes nothing has: it is no longer absent, it is present with an
- * empty applicable set, because `cfg()` configures no rule. The two states look
- * identical in a report and are not the same fact. */
-check('three rules ran, not eight', Object.keys(r3.outcomes).length, 3);
+/* FOUR SINCE #59, AND THE COUNT IS WORTH ASSERTING BECAUSE OF HOW IT MOVES. It
+ * read `2` and `no REQ001 ran` until REQ001 shipped, then `3` and `no UNQ001
+ * ran` until UNQ001 shipped. The claim has never changed — the fixture is
+ * narrower than #10 specified — but the reason each rule contributes nothing
+ * does: a rule goes from ABSENT to PRESENT WITH AN EMPTY APPLICABLE SET, and
+ * `cfg()` configures neither. The two states look identical in a report and are
+ * not the same fact.
+ *
+ * ⭐ FOUR IS THE WHOLE v0.1 CATALOG. The remaining four IDs are deferred, so
+ * this number cannot move again without a rule shipping outside v0.1. */
+check('four rules ran, not eight', Object.keys(r3.outcomes).length, 4);
 check('  REF001 ran and reported an outcome', r3.outcomes[REF001_ID] !== undefined, true);
 check('  but it LEFT the vector, having no applicable subject here', r3.coverage.some(c => c.rule === REF001_ID), false);
 check('  which is ADR-0011 decision 6, not a missing rule', r3.outcomes[REF001_ID]?.evidence, null);
 check('  REQ001 ran and reported an outcome', r3.outcomes.REQ001 !== undefined, true);
 check('  and it too LEFT the vector — this config declares no required property', r3.coverage.some(c => c.rule === 'REQ001'), false);
 check('  its conformity is ABSENT, never `conforms`', r3.outcomes.REQ001?.conformity, null);
-check('  no UNQ001 ran', r3.outcomes.UNQ001 === undefined, true);
+check('  UNQ001 ran and reported an outcome', r3.outcomes.UNQ001 !== undefined, true);
+check('  and it too LEFT the vector — this config declares no uniqueness scope', r3.coverage.some(c => c.rule === 'UNQ001'), false);
+check('  its conformity is ABSENT, never `conforms`', r3.outcomes.UNQ001?.conformity, null);
+/* THE DENOMINATOR IS QUADRATIC AND THIS FIXTURE PROVES NOTHING ABOUT IT. Three
+ * children would be three pairs IF a scope were declared, and none is. Stated
+ * here so a reader does not take an empty vector row as evidence the pair
+ * arithmetic ran — CHECK-unq001.ts is where that is scored. */
+check('  and it counted no pairs, because no scope was configured', r3.coverage.filter(c => c.rule === 'UNQ001').length, 0);
 check('the data source is a named drop-out, not an evaluated resource', r3.gaps.some(g => /data-source enumeration is not implemented/.test(g.cause)), true);
 console.log('  ^ a result reported as closing #10 would be a coverage claim over an unrun');
 console.log('    set, which is the defect class this product exists to detect. Spec §1.3.');

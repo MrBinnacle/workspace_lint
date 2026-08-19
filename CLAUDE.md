@@ -4,12 +4,12 @@ A local, read-only CLI that tests a Notion workspace against explicit structural
 
 **Read `CONTEXT.md` before proposing anything** — the glossary, the principles, the v0.1 rule catalog and the non-goals. This repository is canonical, and its decision surfaces are `CONTEXT.md`, `PRODUCT.md`, `docs/adr/` and `docs/spec/`. A Notion page, memo or draft is an input and never overrides one.
 
-Building. Source is on `main` in `slice/` — a private, unpublishable package, deliberately not `src/` until #8 settles the npm name. Three of the four v0.1 rules are built: `SYS001`, `REF001` and `REQ001`.
+Building. Source is on `main` in `slice/` — a private, unpublishable package, deliberately not `src/` until #8 settles the npm name. **All four v0.1 rules are built**: `SYS001`, `REF001`, `REQ001` and `UNQ001`. Two of them are configured — `REQ001` and `UNQ001` — and the other four catalog IDs are deferred.
 <!-- claim: exists path="slice/scan.ts" -->
 <!-- claim: exists path="slice/sys001.ts" -->
 <!-- claim: exists path="slice/ref001.ts" -->
 <!-- claim: exists path="slice/req001.ts" -->
-<!-- claim: absent path="slice/unq001.ts" -->
+<!-- claim: exists path="slice/unq001.ts" -->
 <!-- claim: absent path="slice/src" -->
 
 Gate, and it is one command: `cd slice && npm run check`. Offline, no network, no token. The typecheck runs first and the chain is `&&`, so a type error stops the gate before any assertion runs. It was not always so — until #60 closed, `npm run check` ran no compiler and a tree that did not compile printed `ALL CHECKS PASS` at exit 0. `CHECK-suite-registration.ts` TEST 4 is the control that keeps the compiler in the chain.
