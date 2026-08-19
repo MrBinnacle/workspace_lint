@@ -373,6 +373,55 @@ export const REQ_WITH_DATASET: Record<string, FakeResource> = {
   [DATASET]: { steps: [page([])] },
 };
 
+/* ------------------------------------------------------------ uniqueness -- */
+
+/* UNQ001's fixtures — #59.
+ *
+ * A UNIQUENESS SCOPE NEEDS MORE THAN THREE RESOURCES, which is why these IDs
+ * exist rather than reusing PAGE_A and PAGE_B. The rule's coverage item is
+ * unordered PAIRS, so the interesting arithmetic starts at four members: three
+ * resources are three pairs and so are three of anything, which is exactly the
+ * coincidence that lets a resource-shaped denominator pass unnoticed. Five
+ * members are ten pairs and no other reading produces ten.
+ */
+export const UNQ_1 = '11111111aabbccdd01010101eeff0011';
+export const UNQ_2 = '22222222aabbccdd02020202eeff0011';
+export const UNQ_3 = '33333333aabbccdd03030303eeff0011';
+export const UNQ_4 = '44444444aabbccdd04040404eeff0011';
+export const UNQ_5 = '55555555aabbccdd05050505eeff0011';
+
+/**
+ * A declared root with `children` beneath it, each carrying the properties
+ * given. The root itself carries none and is therefore a scope member whose
+ * property is ABSENT FROM THE MAP — which is a gap, and it would silently
+ * lower every ratio these fixtures assert.
+ *
+ * So the root's properties are REQUIRED here, unlike `rootWithChild` above. A
+ * fixture whose root is a permanent gap cannot show a clean run, and a suite
+ * that never sees a clean run cannot tell a real gap from its own scaffolding.
+ */
+export const unqFixture = (rootTitle: string, children: Array<[string, FakeResource]>): Record<string, FakeResource> => ({
+  [ROOT]: {
+    steps: [page(children.map(([id]) => childPage(id, 'a child')))],
+    properties: { Title: titleProp(rootTitle) },
+  },
+  ...Object.fromEntries(children.map(([id, r]) => [id, { steps: [page([])], ...r }])),
+});
+
+/** A child carrying one Title. The ordinary member. */
+export const titled = (text: string): FakeResource => ({ properties: { Title: titleProp(text) } });
+
+/** A child whose Title is present in the map and empty — decision 1's subject. */
+export const untitled = (): FakeResource => ({ properties: { Title: { id: PROP_ID_TITLE, type: 'title', title: [] } } });
+
+/** The same declared root, with ONE UNQ001 entry — #59. */
+export const cfgUnq = (scope: string, property: string, minCoverage = 1.0): Config => ({
+  version: 1,
+  roots: [{ id: ROOT, alias: 'wl-proof-fixture' }],
+  minCoverage,
+  rules: [{ rule: 'UNQ001', scope: { id: scope }, property }],
+});
+
 /* The root's enumeration dies mid-stream: one child listed, the next call 502s.
  * The remainder cannot be counted OR named, so the gap is unbounded. */
 export const MIDSTREAM: Record<string, FakeResource> = {

@@ -22,7 +22,7 @@
  * code, never on grepping for FAIL; a suite that crashes prints no FAIL at all.
  */
 
-import { parseConfig, loadConfig, type RuleDecl } from './config.js';
+import { parseConfig, loadConfig, ruleCatalog, type RuleDecl } from './config.js';
 import { unimplementedRules, type Rule } from './rule.js';
 import { fileURLToPath } from 'node:url';
 import { hyphenate } from './ids.js';
@@ -132,16 +132,45 @@ check('and the message says built-in rather than unknown', /built-in/i.test(reas
 const builtInRef = parseConfig(withRules([{ rule: 'REF001', scope: { id: DATASET } }]));
 check('REF001 is built-in too', builtInRef.ok, false);
 
-/* The class that matters most. UNQ001 is Configured and ships in v0.1 and is
- * NOT in this build — accepting it silently is exactly the false green above. */
-const notBuilt = parseConfig(withRules([{ rule: 'UNQ001', scope: { id: DATASET }, property: 'Title' }]));
-check('a configured rule this build does not run is rejected', notBuilt.ok, false);
-check('and the message names the issue that would build it', /#59/.test(reasonOf(notBuilt)), true);
-check('and it is NOT reported as unknown', /catalog/i.test(reasonOf(notBuilt)), false);
-
 const deferred = parseConfig(withRules([{ rule: 'SCH001', scope: { id: DATASET } }]));
 check('a deferred catalog rule is rejected', deferred.ok, false);
 check('and named as deferred rather than as a typo', /deferred/i.test(reasonOf(deferred)), true);
+
+/* THE CONFIGURED RULES ARE ACCEPTED, and this half is what the suite was
+ * missing. It asserted three rejections and no acceptance by ID, so the gate
+ * that classifies a rule was only ever scored on its refusals. */
+const unqAccepted = parseConfig(withRules([{ rule: 'UNQ001', scope: { id: DATASET }, property: 'Title' }]));
+check('UNQ001 is configurable and is ACCEPTED', unqAccepted.ok, true);
+check('and it is carried as UNQ001, not folded into REQ001', unqAccepted.ok && unqAccepted.config.rules[0]!.rule, 'UNQ001');
+
+/* ⭐ THE CATALOG ITSELF, NOT ONE ID AT A TIME — #59.
+ *
+ * This block replaces a test that configured UNQ001 and asserted it was
+ * rejected as `not-built`. That test died the day UNQ001 shipped, which is the
+ * correct outcome and also the warning: a per-ID test only covers the IDs
+ * someone remembered to write down, and the failure mode is a catalog rule
+ * nobody added. The `not-built` CLASS was removed with it — once UNQ001 shipped
+ * it had no member and its branch was unreachable, and "is this rule built?" is
+ * `unimplementedRules`' question, not the loader's. See RULE_STATUS's header.
+ *
+ * The list below is CONTEXT.md's rule catalog, transcribed. It is a second
+ * hand-kept list, and it is worth its weight only because it is kept in a
+ * different file from the one it checks: the two go stale independently, and
+ * this assertion is what makes that visible. */
+const CATALOG = ['SYS001', 'REF001', 'REQ001', 'UNQ001', 'SCH001', 'REL001', 'DEP001', 'CAN001'];
+const classified = ruleCatalog();
+for (const id of CATALOG) check(`  ${id} is classified by the loader`, Object.hasOwn(classified, id), true);
+/* Joined to a string, because the harness compares with `Object.is` and two
+ * arrays are never the same object — an array here passes only by printing
+ * `got= want=` and asserting nothing, which is the vacuous-negative shape. */
+check('the loader classifies no ID the catalog does not name', Object.keys(classified).filter(id => !CATALOG.includes(id)).join(','), '');
+check('and every one of the four v0.1 rules is now built-in or configurable',
+  ['SYS001', 'REF001', 'REQ001', 'UNQ001'].every(id => classified[id] === 'built-in' || classified[id] === 'configurable'), true);
+/* The empty class, asserted rather than assumed. If a later rule reintroduces
+ * one, this line fails and sends the reader to the header that explains why the
+ * kind was removed — which is the conversation worth having at that moment. */
+check('no rule is classified with a kind this build cannot act on',
+  Object.values(classified).every(k => k === 'built-in' || k === 'configurable' || k === 'deferred'), true);
 
 const missingRuleKey = parseConfig(withRules([{ scope: { id: DATASET }, property: 'Owner' }]));
 check('an entry with no "rule" key is rejected', missingRuleKey.ok, false);
@@ -238,12 +267,17 @@ check('property names differing only in case are two entries', caseDistinct.ok, 
 
 head('TEST 6 — a rejection carries a reason an operator can act on');
 
-const rejections = [scopeByName, scopeByAlias, noScope, unknownRule, builtIn, notBuilt, deferred, noProperty, dup];
+/* `notBuilt` LEFT THIS LIST WITH THE CLASS IT EXERCISED — #59. It configured
+ * UNQ001 and asserted a rejection, and UNQ001 is now a rule the loader accepts. */
+const rejections = [scopeByName, scopeByAlias, noScope, unknownRule, builtIn, deferred, noProperty, dup];
 check('every rejection above returned ok:false', rejections.every(r => !r.ok), true);
 check('and every one carries a non-empty reason', rejections.every(r => reasonOf(r).length > 20), true);
 /* The offending entry is locatable. "rules[2] is invalid" sends an operator to
- * the right line; "invalid rule configuration" sends them to the whole file. */
-check('and every one names its entry by index', rejections.slice(0, 8).every(r => /rules\[\d\]/.test(reasonOf(r))), true);
+ * the right line; "invalid rule configuration" sends them to the whole file.
+ * EVERY rejection, not a prefix of them: the list was sliced to exclude `dup`
+ * while it sat last, and a slice that tracks a list's length by hand is one
+ * append away from silently dropping the newest case. */
+check('and every one names its entry by index', rejections.every(r => /rules\[\d\]/.test(reasonOf(r))), true);
 
 /* =========================================================================
  * TEST 7 — a rule the document declares and the BUILD cannot run

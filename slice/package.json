@@ -5,7 +5,7 @@
   "type": "module",
   "description": "The v0.1 scan slice. PRIVATE and unpublishable — this is NOT the npm name, which is issue #8 and must land before the first publishable package.json (CONTEXT.md, 'Name constraint').",
   "scripts": {
-    "check": "npm run typecheck && tsx CHECK-verdict.ts && tsx CHECK-config.ts && tsx CHECK-scan-scaffold.ts && tsx CHECK-sys001.ts && tsx CHECK-ref001.ts && tsx CHECK-req001.ts && tsx CHECK-report.ts && tsx CHECK-redtest.ts && tsx CHECK-residuals.ts && tsx CHECK-claims.ts && tsx CHECK-suite-registration.ts",
+    "check": "npm run typecheck && tsx CHECK-verdict.ts && tsx CHECK-config.ts && tsx CHECK-scan-scaffold.ts && tsx CHECK-sys001.ts && tsx CHECK-ref001.ts && tsx CHECK-req001.ts && tsx CHECK-unq001.ts && tsx CHECK-report.ts && tsx CHECK-redtest.ts && tsx CHECK-residuals.ts && tsx CHECK-claims.ts && tsx CHECK-suite-registration.ts",
     "check:config": "tsx CHECK-config.ts",
     "check:redtest": "tsx CHECK-redtest.ts",
     "check:residuals": "tsx CHECK-residuals.ts",
@@ -15,6 +15,7 @@
     "check:sys001": "tsx CHECK-sys001.ts",
     "check:ref001": "tsx CHECK-ref001.ts",
     "check:req001": "tsx CHECK-req001.ts",
+    "check:unq001": "tsx CHECK-unq001.ts",
     "typecheck": "tsc --noEmit",
     "scan": "tsx cli.ts scan"
   },

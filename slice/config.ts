@@ -35,29 +35,50 @@ export type RootDecl = ResourceRef;
 /**
  * One configured rule.
  *
- * `REQ001` is the only member because it is the only Configured rule this build
- * executes. The union will gain a member per rule rather than a bag of optional
- * keys, so that a rule's own fields are required where that rule is named and
- * absent everywhere else — `property` is not optional on REQ001, and it does not
- * exist on anything else.
+ * A MEMBER PER RULE, NOT A BAG OF OPTIONAL KEYS, so that a rule's own fields are
+ * required where that rule is named and absent everywhere else. `property` is
+ * not optional on either member, and a third rule that takes no property will
+ * not be able to carry one.
+ *
+ * ⚠ THE TWO MEMBERS ARE FIELD-IDENTICAL TODAY AND THAT IS A COINCIDENCE, NOT A
+ * SHARED SHAPE. Collapsing them to `{ rule: 'REQ001' | 'UNQ001'; ... }` would
+ * read as a decision that configured rules take one field set, and the first
+ * rule that needs a second property — a composite uniqueness key, say — would
+ * have to unpick it. They are written out.
  */
-export type RuleDecl = {
-  rule: 'REQ001';
-  /** Which resources the rule is applicable to. Never inferred — see RULE_STATUS. */
-  scope: ResourceRef;
-  /**
-   * The property that must carry a value.
-   *
-   * A NAME, AND THE HAZARD IS RECORDED RATHER THAN GUESSED AT. A Notion property
-   * carries a stable `id` as well as this mutable `name`, so the argument that
-   * makes a resource's identity its ID reaches a property too: renaming the
-   * property silently changes what REQ001 evaluates. It is not settled here
-   * because property IDs are opaque strings the Notion UI does not surface, so
-   * requiring one may be unusable rather than merely strict. Filed as #78 with
-   * the two live-API questions that would settle it. Not decided here.
-   */
-  property: string;
-};
+export type RuleDecl =
+  | {
+      rule: 'REQ001';
+      /** Which resources the rule is applicable to. Never inferred — see RULE_STATUS. */
+      scope: ResourceRef;
+      /**
+       * The property that must carry a value.
+       *
+       * A NAME, AND THE HAZARD IS RECORDED RATHER THAN GUESSED AT. A Notion property
+       * carries a stable `id` as well as this mutable `name`, so the argument that
+       * makes a resource's identity its ID reaches a property too: renaming the
+       * property silently changes what REQ001 evaluates. It is not settled here
+       * because property IDs are opaque strings the Notion UI does not surface, so
+       * requiring one may be unusable rather than merely strict. Filed as #78 with
+       * the two live-API questions that would settle it. Not decided here.
+       */
+      property: string;
+    }
+  | {
+      rule: 'UNQ001';
+      /**
+       * Which resources the uniqueness claim is made over — #59.
+       *
+       * THE SCOPE IS THE COMPARISON SET AND ITS SIZE IS THE DENOMINATOR'S INPUT.
+       * UNQ001's coverage item is unordered PAIRS of the resources in this scope
+       * (ADR-0011 decision 2), so `n` resources here are `n(n−1)/2` coverage
+       * items. Widening a scope is quadratic, which is why `scan.ts` refuses
+       * above a stated size rather than degrading to a resource-shaped figure.
+       */
+      scope: ResourceRef;
+      /** The property whose value must not repeat within the scope. Same #78 hazard. */
+      property: string;
+    };
 
 export type Config = {
   version: 1;
@@ -89,18 +110,43 @@ const NAME_KEYS = ['name', 'title', 'page', 'url', 'link'];
  * not run — the exact false green this product exists to detect, in this
  * product's own loader. So every ID is classified and every class but
  * `configurable` is a rejection with its own message: an operator who typed
- * `REQ002` has a different problem from one who configured `UNQ001` before #59
- * shipped, and one message for both tells neither of them what to do.
+ * `REQ002` has a different problem from one who configured a deferred rule, and
+ * one message for both tells neither of them what to do.
+ *
+ * ⛔ THERE IS NO `not-built` CLASS, AND ITS REMOVAL IS A DECISION — #59. The
+ * table carried `UNQ001: { kind: 'not-built', issue: '#59' }` until UNQ001
+ * shipped, at which point the class had no member and its branch was
+ * unreachable: a rejection path no assertion could score. It is not kept for a
+ * future rule, because **"is this rule built?" is not a question this file can
+ * answer.** `rule.ts`'s own header says so — the loader validates the DOCUMENT
+ * against a table, and whether a rule was compiled into this binary is a
+ * question about the BUILD. `unimplementedRules` asks the build directly and
+ * `cli.ts` rejects on it at exit 4 before any call is made. A `not-built` entry
+ * here would be a hand-kept mirror of `BUILT_RULES` that goes stale the way this
+ * one did, one release behind, in the file whose whole job is refusing to guess.
  */
-const RULE_STATUS: Record<string, { kind: 'built-in' | 'not-built' | 'deferred'; issue?: string }> = {
+const RULE_STATUS: Record<string, { kind: 'built-in' | 'configurable' | 'deferred' }> = {
   SYS001: { kind: 'built-in' },
   REF001: { kind: 'built-in' },
-  UNQ001: { kind: 'not-built', issue: '#59' },
+  REQ001: { kind: 'configurable' },
+  UNQ001: { kind: 'configurable' },
   SCH001: { kind: 'deferred' },
   REL001: { kind: 'deferred' },
   DEP001: { kind: 'deferred' },
   CAN001: { kind: 'deferred' },
 };
+
+/**
+ * The catalog, as data, so a control can assert over it — #59.
+ *
+ * EXPORTED BECAUSE THE TABLE IS A CLAIM ABOUT THE CATALOG AND CLAIMS GET
+ * CHECKED. `CHECK-config.ts` reads it to assert that every ID `CONTEXT.md`'s
+ * rule catalog names is classified here, which is the half a per-ID test cannot
+ * cover: a test names the IDs it knows about, and the failure mode is a rule
+ * nobody remembered to add.
+ */
+export const ruleCatalog = (): Record<string, 'built-in' | 'configurable' | 'deferred'> =>
+  Object.fromEntries(Object.entries(RULE_STATUS).map(([id, s]) => [id, s.kind]));
 
 /**
  * The identity rejection, in ONE place, for roots and for rule scopes alike.
@@ -217,36 +263,47 @@ function parseRules(value: unknown): { ok: true; rules: RuleDecl[] } | { ok: fal
 
     /* Case-sensitive, and deliberately. Upper-casing the input would accept a
      * spelling CONTEXT.md does not use, and every report line would then print
-     * an ID the operator cannot find in their own file. */
-    if (id !== 'REQ001') {
-      /* `Object.hasOwn`, NOT a bare lookup. An object literal inherits from
-       * Object.prototype, so `RULE_STATUS['toString']` is a truthy function and
-       * `RULE_STATUS['__proto__']` is an object: a typo like `toString` walked
-       * straight past the not-in-catalog branch, arrived with `status.kind`
-       * undefined, and fell through to the last return — which told the operator
-       * their typo was a real catalog rule that ships later. */
-      const status = Object.hasOwn(RULE_STATUS, id) ? RULE_STATUS[id] : undefined;
-      if (!status) {
-        return {
-          ok: false,
-          reason: `${where}.rule is ${JSON.stringify(id)}, which is not a rule ID in this catalog. The catalog is CONTEXT.md, "Rule catalog", and IDs are upper case.`,
-        };
-      }
-      if (status.kind === 'built-in') {
-        return {
-          ok: false,
-          reason: `${where}.rule is ${id}, which is a built-in rule and takes no configuration. It runs on every scan; remove the entry.`,
-        };
-      }
-      if (status.kind === 'not-built') {
-        return {
-          ok: false,
-          reason: `${where}.rule is ${id}, which ships in v0.1 and is not built in this slice (issue ${status.issue}). Remove the entry — a configured rule that nothing evaluates would report a green run over a rule that never ran.`,
-        };
-      }
+     * an ID the operator cannot find in their own file.
+     *
+     * ⭐ THE GATE READS THE TABLE. It was `id !== 'REQ001'` — a hardcoded ID
+     * beside a table of every other ID, which is two declarations of one
+     * catalog. The second configured rule is what made them disagree: adding
+     * UNQ001 to the table without touching the string would have left it
+     * rejected as not-configurable while the table said otherwise. */
+    /* `Object.hasOwn`, NOT a bare lookup. An object literal inherits from
+     * Object.prototype, so `RULE_STATUS['toString']` is a truthy function and
+     * `RULE_STATUS['__proto__']` is an object: a typo like `toString` walked
+     * straight past the not-in-catalog branch, arrived with `status.kind`
+     * undefined, and fell through to the last return — which told the operator
+     * their typo was a real catalog rule that ships later. */
+    const status = Object.hasOwn(RULE_STATUS, id) ? RULE_STATUS[id] : undefined;
+    if (!status) {
+      return {
+        ok: false,
+        reason: `${where}.rule is ${JSON.stringify(id)}, which is not a rule ID in this catalog. The catalog is CONTEXT.md, "Rule catalog", and IDs are upper case.`,
+      };
+    }
+    if (status.kind === 'built-in') {
+      return {
+        ok: false,
+        reason: `${where}.rule is ${id}, which is a built-in rule and takes no configuration. It runs on every scan; remove the entry.`,
+      };
+    }
+    if (status.kind === 'deferred') {
       return {
         ok: false,
         reason: `${where}.rule is ${id}, which is deferred in the v0.1 catalog and is not built. Remove the entry — a configured rule that nothing evaluates would report a green run over a rule that never ran.`,
+      };
+    }
+    /* Configurable. `id` is narrowed by the assertion below rather than by this
+     * branch, because the table is a runtime record and TypeScript cannot see
+     * that its `configurable` members are exactly the RuleDecl tags. The two
+     * lists are kept in step by CHECK-config.ts TEST 3, not by the compiler,
+     * and that gap is stated here rather than hidden behind a cast. */
+    if (id !== 'REQ001' && id !== 'UNQ001') {
+      return {
+        ok: false,
+        reason: `${where}.rule is ${id}, which the catalog classifies as configurable and this build has no declaration shape for. This is a defect in workspace_lint, not in the config file.`,
       };
     }
 
@@ -255,18 +312,24 @@ function parseRules(value: unknown): { ok: true; rules: RuleDecl[] } | { ok: fal
      * every resource the scan enumerated, which infers applicability from
      * nothing — the list ADR-0001 decision 4 rejects, and Principle 4 with it.
      * A default scope is available to #58 as a recorded decision; it is not
-     * available to a loader as a convenience. */
+     * available to a loader as a convenience.
+     *
+     * THE ARGUMENT IS STRONGER FOR UNQ001, NOT WEAKER. A default scope there
+     * would assert that every resource the scan happened to enumerate belongs
+     * in one comparison set, and the resulting denominator is quadratic in a
+     * number nobody declared. */
     if (rec.scope === undefined) {
       return {
         ok: false,
-        reason: `${where}.scope is missing. REQ001 must declare which resources it is applicable to — a rule with no scope would infer applicability from nothing, which ADR-0001 decision 4 rejects.`,
+        reason: `${where}.scope is missing. ${id} must declare which resources it is applicable to — a rule with no scope would infer applicability from nothing, which ADR-0001 decision 4 rejects.`,
       };
     }
     const scope = parseResourceRef(rec.scope, `${where}.scope`);
     if (!scope.ok) return { ok: false, reason: scope.reason };
 
     if (typeof rec.property !== 'string' || rec.property.trim() === '') {
-      return { ok: false, reason: `${where}.property must name the property that is required, as a non-empty string` };
+      const what = id === 'UNQ001' ? 'whose value must not repeat within the scope' : 'that is required';
+      return { ok: false, reason: `${where}.property must name the property ${what}, as a non-empty string` };
     }
     /* TRIMMED, AND THE TRIMMED VALUE IS WHAT IS STORED AND KEYED. It was
      * validated trimmed and stored raw, which let "Owner" and "Owner " through
@@ -287,14 +350,22 @@ function parseRules(value: unknown): { ok: true; rules: RuleDecl[] } | { ok: fal
      * one key. A property name may contain anything else. */
     const key = `${id} ${scope.ref.id} ${property}`;
     if (seen.has(key)) {
+      /* Both rules inflate on a duplicate and they inflate differently, so the
+       * message names the rule's own coverage item. UNQ001's is the worse of
+       * the two: a repeated declaration re-registers every pair in the scope,
+       * which is quadratic in the scope size rather than linear in it. */
+      const item =
+        id === 'UNQ001'
+          ? 'unordered pairs of resources in the scope, so a duplicate re-registers every pair'
+          : '(resource, property) pairs, so a duplicate inflates the denominator';
       return {
         ok: false,
-        reason: `${where} repeats an earlier entry — REQ001 over ${property} in the same scope. Its coverage item is (resource, property) pairs, so a duplicate inflates the denominator and nothing ever fills it.`,
+        reason: `${where} repeats an earlier entry — ${id} over ${property} in the same scope. Its coverage item is ${item} and nothing ever fills it.`,
       };
     }
     seen.add(key);
 
-    rules.push({ rule: 'REQ001', scope: scope.ref, property });
+    rules.push({ rule: id, scope: scope.ref, property });
   }
 
   return { ok: true, rules };

@@ -412,7 +412,7 @@ The check: `gh issue list --label decision --state open --json number,labels --j
   while the gate ran 696 across ten suites — one term, `CHECK-claims.ts`, was stale at 56 for 59 and
   the total was wrong by three. **Re-derive it, never re-quote it:**
   `for f in slice/CHECK-*.ts; do npx tsx $f | grep -cE '^(PASS|FAIL)'; done`.
-  <!-- claim: count glob="slice/CHECK-*.ts" exclude="CHECK-harness.ts,CHECK-fakes.ts" equals=11 --> ~~`npm run check` DOES NOT TYPECHECK~~ — **#60 CLOSED**, and the
+  <!-- claim: count glob="slice/CHECK-*.ts" exclude="CHECK-harness.ts,CHECK-fakes.ts" equals=12 --> ~~`npm run check` DOES NOT TYPECHECK~~ — **#60 CLOSED**, and the
   counterfactual is recorded: `main@f42fadd` printed `ALL CHECKS PASS` at **exit 0** over a tree
   carrying a real `TS2322`. The chain is `&&`, so a type error now stops the gate before any
   assertion runs. **`tsconfig.json` is a GLOB (`*.ts`), not a
@@ -665,9 +665,15 @@ the first read here would have been recorded as "the edits did not apply".
    `id !== 'REQ001'` gate at line 221 becomes a set) · `scan.ts` (`BUILT_RULES`, pair registration) ·
    `CHECK-unq001.ts` (new) · `package.json` and `CHECK-suite-registration.ts` to register it.
 2. ⛔ **`CLAUDE.md` AND `CONTEXT.md` GO FALSE IN THE SAME COMMIT AS THE BUILD.** `CLAUDE.md` carries
-   `<!-- claim: absent path="slice/unq001.ts" -->` and "three of the four"; `CONTEXT.md:142` carries
-   both plus the refuted `#70` blocker claim. Both are hook-guarded — **the plan's FILES TABLE must
+   an `absent` claim over `slice/unq001.ts` and "three of the four"; `CONTEXT.md:142` carries both
+   plus the refuted `#70` blocker claim. Both are hook-guarded — **the plan's FILES TABLE must
    name them.** A red gate here is the mechanism working.
+   ⚠ **THIS LINE QUOTED THE CLAIM COMMENT VERBATIM AND THEREFORE MADE IT, in the one document
+   outside the two it was warning about.** The S030 build turned the gate red on THREE surfaces, not
+   two: `CLAUDE.md`, `CONTEXT.md`, and this next-step describing them. Inline backticks do not
+   protect a claim — `CHECK-claims.ts` blanks fenced BLOCKS only, and `README.md`'s `equals=13`
+   example is safe because it sits in a ```` ```markdown ```` fence. **Name a claim's kind and path
+   in prose, or fence it. Never reproduce the comment.**
 3. **`docs/spec/UNQ001-uniqueness.md`** — **new file, does not exist yet**; records the three
    decisions. Canonical dir, plan-gated.
 4. **The fixture seeds no `UNQ001` case.** Take the DoD's second branch — record which criterion

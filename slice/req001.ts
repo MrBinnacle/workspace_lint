@@ -112,9 +112,30 @@ export const pairKey = (resource: string, property: string): ResourceKey => `req
  * on, and `unreadable` is the third thing that actually happens: a property
  * whose object does not carry the key its own `type` names. Folding that into
  * `empty` would report a violation the scan did not prove.
+ *
+ * `comparable` IS FOR UNQ001 AND REQ001 NEVER READS IT — #59. REQ001 asks
+ * whether a value was present; UNQ001 asks whether two values are the same one,
+ * and that second question needs the value itself. The field is added here
+ * rather than in a second reader because two readers of one property map is two
+ * declarations of one contract, and they would drift on exactly the shapes that
+ * are hard to read.
+ *
+ * ⛔ IT IS NULLABLE, AND A NULL IS A REFUSAL RATHER THAN AN EMPTY STRING. This
+ * build renders a comparable for two payload shapes — a plain string, and a
+ * rich-text array every span of which carries `plain_text`. A number, a
+ * checkbox, a relation and a select carry a value REQ001 correctly calls
+ * present, and no comparable this build is willing to assert: `String(1.0)` and
+ * `String(1)` differ, and `JSON.stringify` over a select object would make
+ * property order the comparison. UNQ001 reads a null as UNDECIDABLE and reports
+ * a gap — the rule is short, not the workspace, which is the ruling REQ001
+ * already makes for `unreadable`. An empty string here would instead collide
+ * every unreadable value with every other one.
+ * Revisit if: a real configuration needs uniqueness over a numeric or select
+ * property. The answer is a per-shape comparable stated in the spec, not a
+ * `String()` reached for at the call site.
  */
 export type PropertyReading =
-  | { state: 'value'; propertyId: string | null }
+  | { state: 'value'; propertyId: string | null; comparable: string | null }
   | { state: 'empty'; propertyId: string | null }
   | { state: 'unreadable'; propertyId: string | null }
   | { state: 'absent' };
@@ -133,6 +154,29 @@ const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'obj
  */
 const allSpansBlank = (items: unknown[]): boolean =>
   items.every(i => isRecord(i) && typeof i.plain_text === 'string' && i.plain_text.trim() === '');
+
+/**
+ * The comparable string for a rich-text-shaped array, or null — #59, UNQ001.
+ *
+ * EVERY element must carry a `plain_text` string. One span the reader does not
+ * understand makes the whole array uncomparable, because a join that skipped it
+ * would compare a value the page does not hold. That is the same direction
+ * `allSpansBlank` takes and for the same reason: the conservative answer is the
+ * one that does not invent an observation.
+ *
+ * The spans are joined in order and the result is trimmed once, at the end. A
+ * title split across two spans by an inline mention is one string in the
+ * editor, and comparing it span-by-span would call it different from the same
+ * title typed in one go.
+ */
+const richTextComparable = (items: unknown[]): string | null => {
+  const parts: string[] = [];
+  for (const i of items) {
+    if (!isRecord(i) || typeof i.plain_text !== 'string') return null;
+    parts.push(i.plain_text);
+  }
+  return parts.join('').trim();
+};
 
 /**
  * Read one property out of a page's property map.
@@ -166,9 +210,17 @@ export function readProperty(properties: Record<string, unknown>, name: string):
 
   const payload = value[type];
   if (payload === null || payload === undefined) return { state: 'empty', propertyId };
-  if (Array.isArray(payload)) return { state: payload.length === 0 || allSpansBlank(payload) ? 'empty' : 'value', propertyId };
-  if (typeof payload === 'string') return { state: payload.trim() === '' ? 'empty' : 'value', propertyId };
-  return { state: 'value', propertyId };
+  if (Array.isArray(payload)) {
+    if (payload.length === 0 || allSpansBlank(payload)) return { state: 'empty', propertyId };
+    return { state: 'value', propertyId, comparable: richTextComparable(payload) };
+  }
+  if (typeof payload === 'string') {
+    const trimmed = payload.trim();
+    return trimmed === '' ? { state: 'empty', propertyId } : { state: 'value', propertyId, comparable: trimmed };
+  }
+  /* A value REQ001 reads as present and UNQ001 cannot compare. See the
+   * `comparable` note on PropertyReading: null is a refusal, not a blank. */
+  return { state: 'value', propertyId, comparable: null };
 }
 
 /**
