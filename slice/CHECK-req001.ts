@@ -32,10 +32,10 @@ import {
   PROPERTY_ID_KEY, PROPERTY_NAME_KEY, REQ001, REQ001_ID, REQ001_UNIT, pairKey, readProperty,
 } from './req001.js';
 import {
-  ROOT, PAGE_B, DATASET, PROP_ID_OWNER, UNREADABLE_PROP,
+  ROOT, PAGE_B, DATASET, PROP_ID_OWNER, UNREADABLE_PROP, UNSUPPORTED_PROP,
   cfgReq, clock, fakePort, richTextProp, titleProp,
   REQ_PRESENT_EMPTY, REQ_PRESENT_VALUE, REQ_ABSENT_FROM_MAP, REQ_NO_MAP,
-  REQ_UNREADABLE_SHAPE, REQ_PAGE_UNREACHABLE, REQ_WITH_DATASET,
+  REQ_UNREADABLE_SHAPE, REQ_UNSUPPORTED_TYPE, REQ_PAGE_UNREACHABLE, REQ_WITH_DATASET,
 } from './CHECK-fakes.js';
 
 const { check, head, finish } = createHarness();
@@ -161,7 +161,49 @@ check('  it WAS located, which is what separates it from TEST 3', unreadablePair
 check('  the cause says the build is short, not the page', unreadablePair?.loss?.cause.startsWith('property-shape-unread') ?? false, true);
 check('  and the remedy is a rule change, not more access', unreadable.outcomes[REQ001_ID]?.evidence ?? '', 'undecidable');
 
+/* =========================================================================
+ * TEST 5b — the API returned the property and sent no value (#127)
+ * ========================================================================= */
+
+head('TEST 5b — "unsupported" is the API declining to SEND a value, not the page lacking one');
+
+const unexpressed = await run(REQ_UNSUPPORTED_TYPE, PAGE_B, 'Owner');
+const unexpressedPair = pairEntry(unexpressed, PAGE_B_ID, 'Owner');
+
+check('no finding — the scan never read the value, so it claims nothing either way', req001Findings(unexpressed).length, 0);
+check('  it WAS located, which separates it from TEST 3', unexpressedPair?.stages.has('enumerated') ?? false, true);
+check('  the cause names the representation, not the workspace', unexpressedPair?.loss?.cause.startsWith('property-value-unexpressed') ?? false, true);
+/* ⛔ THE CAUSE MAY NEVER CLAIM NOTION COULD NOT COMPUTE THE VALUE. `unsupported`
+ * is a statement about what the REST representation carries; the value very
+ * likely exists and renders in the UI. Asserted rather than trusted, because the
+ * first draft of #127 made exactly this error and the operator caught it. */
+check('  and it does NOT claim the value could not be computed', unexpressedPair?.loss?.cause.includes('comput') ?? true, false);
+check('  bounded — the pair is named and counted', unexpressedPair?.loss?.bounded ?? false, true);
+check('  the RESOURCE is present; it is the value that was not sent', unexpressedPair?.loss?.target ?? '', 'present');
+
+/* ⭐ THE REGRESSION THIS TICKET IS ABOUT. Before the fix the pair reached
+ * `fetched`, was judged, and counted toward the evaluated set — a judgement over
+ * a value nobody read, and an inflated numerator under ADR-0011. */
+check('the pair never reaches evaluated', unexpressedPair?.stages.has('evaluated') ?? true, false);
+check('  so it LOWERS the ratio rather than inflating it', `${req001Row(unexpressed)?.evaluated}/${req001Row(unexpressed)?.applicable}`, '0/1');
+check('  conformity is ABSENT, never `conforms`', unexpressed.outcomes[REQ001_ID]?.conformity === null, true);
+check('  the byte is 3 — a coverage shortfall, not a violation', unexpressed.verdict.exit, 3);
+
+/* THE MUTATION, scored on the reader's own verdict rather than on a printed
+ * string — a crashed suite prints no FAIL. Restoring the old behaviour means
+ * reading `unsupported` as a value; if that still produced a gap, this branch
+ * would be dead code rather than a fix. */
+const mutantReading = readProperty({ Owner: { id: 'p', type: 'select', select: {} } }, 'Owner');
+check('MUTATION — a NON-unsupported object payload still reads as a value', mutantReading.state, 'value');
+check('  so the new state is keyed on the type name and nothing else',
+  readProperty({ Owner: UNSUPPORTED_PROP }, 'Owner').state === mutantReading.state, false);
+
 /* The reader itself, at its own seam. Each row is one observation. */
+check('readProperty — an unsupported type is unexpressed', readProperty({ Owner: UNSUPPORTED_PROP }, 'Owner').state, 'unexpressed');
+check('readProperty — and the property ID still comes back with it',
+  (r => (r.state === 'absent' ? '' : r.propertyId ?? ''))(readProperty({ Owner: UNSUPPORTED_PROP }, 'Owner')), PROP_ID_OWNER);
+check('readProperty — "unsupported" WITHOUT its key is unreadable, not unexpressed',
+  readProperty({ Owner: { id: 'p', type: 'unsupported' } }, 'Owner').state, 'unreadable');
 check('readProperty — a missing key is absent', readProperty({}, 'Owner').state, 'absent');
 check('readProperty — an empty rich_text is empty', readProperty({ Owner: richTextProp('') }, 'Owner').state, 'empty');
 check('readProperty — a filled rich_text is a value', readProperty({ Owner: richTextProp('x') }, 'Owner').state, 'value');

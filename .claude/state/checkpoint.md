@@ -430,7 +430,7 @@ The check: `gh issue list --label decision --state open --json number,labels --j
   ⚠ That loop's exclusions are NOT the gate's: it counts `CHECK-harness.ts` and `CHECK-fakes.ts`,
   which are helpers that assert nothing and print nothing, so they contribute zero and the total is
   right by accident. The claim comment below excludes them deliberately.
-  <!-- claim: count glob="slice/CHECK-*.ts" exclude="CHECK-harness.ts,CHECK-fakes.ts" equals=13 --> ~~`npm run check` DOES NOT TYPECHECK~~ — **#60 CLOSED**, and the
+  <!-- claim: count glob="slice/CHECK-*.ts" exclude="CHECK-harness.ts,CHECK-fakes.ts" equals=14 --> ~~`npm run check` DOES NOT TYPECHECK~~ — **#60 CLOSED**, and the
   counterfactual is recorded: `main@f42fadd` printed `ALL CHECKS PASS` at **exit 0** over a tree
   carrying a real `TS2322`. The chain is `&&`, so a type error now stops the gate before any
   assertion runs. **`tsconfig.json` is a GLOB (`*.ts`), not a

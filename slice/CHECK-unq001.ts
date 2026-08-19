@@ -36,7 +36,7 @@ import type { Manifest } from './manifest.js';
 import { UNQ001, UNQ001_ID, UNQ001_UNIT, collides, orderPair, unqPairKey } from './unq001.js';
 import { PROPERTY_NAME_KEY } from './req001.js';
 import {
-  ROOT, DATASET, UNQ_1, UNQ_2, UNQ_3, UNQ_4, UNQ_5,
+  ROOT, DATASET, UNQ_1, UNQ_2, UNQ_3, UNQ_4, UNQ_5, UNSUPPORTED_PROP,
   cfgUnq, clock, fakePort, page, childPage, childDb, titleProp, titled, untitled, unqFixture,
   type FakeResource,
 } from './CHECK-fakes.js';
@@ -451,6 +451,39 @@ check('  named as uncomparable rather than as missing',
 console.log('  ^ two nulls do not collide, so a build that compared numbers by');
 console.log('    stringifying them would call 1.0 and 1 different and 1 and 1 the');
 console.log('    same. It refuses instead, and discloses the refusal.');
+
+/* ⭐ THE SITE THAT WOULD HAVE FAILED SILENTLY — issue #127.
+ *
+ * `unsupported` is the API declining to SEND a value. Before the fix it read as
+ * `state: 'value'` with a null comparable, which is indistinguishable HERE from
+ * the numeric case above — but the remedy is not the same, and neither is the
+ * truth. A number is a value the page really holds and this build will not
+ * compare. An `unsupported` payload is a value this build NEVER RECEIVED.
+ *
+ * ⛔ And the worse half: had the new state been added WITHOUT a branch here, an
+ * `unexpressed` reading would have fallen past every guard into the final
+ * `members.set({ ok: true, comparable: null })` and become an ORDINARY EMPTY
+ * MEMBER — declared, compared, never colliding, and COUNTED AS EVALUATED.
+ * TypeScript does not catch it: these are `if` guards, not an exhaustive switch.
+ * That was verified by compiling the new union member with no branch and getting
+ * a clean `tsc --noEmit`. */
+const unexpressedUnq = await run(unqFixture('root title', [
+  [UNQ_1, { properties: { Title: UNSUPPORTED_PROP } }],
+  [UNQ_2, { properties: { Title: UNSUPPORTED_PROP } }],
+]), ROOT);
+check('a value the API never sent is a GAP, not a duplicate', unqFindings(unexpressedUnq).length, 0);
+check('  and NOT an ordinary empty member — the pair is not evaluated', unqRow(unexpressedUnq)?.evaluated ?? -1, 0);
+/* THREE, NOT ONE — the root is a scope member too, so C(3,2) = 3. Every pair
+ * touches at least one member the API sent no value for, so all three are gaps
+ * and none is dropped from the denominator. ADR-0005 decision 5. */
+check('  the pairs are still DECLARED, so they stay in the denominator', unqRow(unexpressedUnq)?.applicable ?? -1, 3);
+check('  named as unexpressed rather than as uncomparable or missing',
+  unexpressedUnq.gaps.some(g => /property-value-unexpressed/.test(g.cause)), true);
+/* The cause may never claim Notion failed to compute the value. */
+check('  and it makes no claim about the vendor computing anything',
+  unexpressedUnq.gaps.some(g => /property-value-unexpressed/.test(g.cause) && /comput/.test(g.cause)), false);
+check('  undecidable — a wider grant does not help, and neither does a re-run',
+  unexpressedUnq.outcomes[UNQ001_ID]?.evidence, 'undecidable');
 
 /* =========================================================================
  * TEST 10 — a configured rule survives an early return

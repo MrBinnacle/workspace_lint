@@ -1,5 +1,17 @@
 [
   {
+    "digest": "fbf16fae1277",
+    "file": "docs/adr/0015-the-declared-roots-requirement-rests-on-non-guarantee-not-non-enumeration.md",
+    "note": "assumptions checked against the vendor and four reversals, every one toward *\"cannot\"*.",
+    "disposition": "FALSE POSITIVE 2026-08-19 — the detector is lexical and matched the word \"cannot\" appearing as a QUOTED TOKEN in meta-commentary about the direction of past errors. It asserts nothing about Notion. Recorded rather than suppressed: negation.ts's header states that false positives land in the baseline, which is the safe direction, and this is the first one."
+  },
+  {
+    "digest": "2e20ec1f51b1",
+    "file": "docs/adr/0015-the-declared-roots-requirement-rests-on-non-guarantee-not-non-enumeration.md",
+    "note": "***Revisit if:*** a vendor sentence appears asserting that no endpoint enumerates the grant.",
+    "disposition": "FALSE POSITIVE 2026-08-19 — a HYPOTHETICAL condition, not an assertion. The sentence describes evidence that would overturn decision 1; it does not claim the negative. ⚠ A lexical detector cannot distinguish a Revisit-if from a claim, and every ADR that follows the framing discipline will produce these. If a third appears, the fix is a rule for the Revisit-if construction, not more baseline entries."
+  },
+  {
     "digest": "6f02ed665638",
     "file": "CONTEXT.md",
     "note": "**A rule's applicable set is derived from what the API returned, never from the subset the tool knows how to handle.** A denominator built from recognised inputs silently excludes everything the tool does not support, so it reports the highest coverage exactly where the tool is weakest."
