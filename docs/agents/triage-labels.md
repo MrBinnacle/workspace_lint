@@ -1,19 +1,37 @@
 # Triage Labels
 
-The skills speak in terms of five canonical triage roles. This file maps those roles to the actual label strings used in this repo's issue tracker.
+The skills speak in terms of five canonical triage roles. This file is the single source of truth for
+what each one means here.
 
-| Label in mattpocock/skills | Label in our tracker | Meaning                                  |
-| -------------------------- | -------------------- | ---------------------------------------- |
-| `needs-triage`             | `needs-triage`       | Maintainer needs to evaluate this issue  |
-| `needs-info`               | `needs-info`         | Waiting on reporter for more information |
-| `ready-for-agent`          | `ready-for-agent`    | Fully specified, ready for an AFK agent  |
-| `ready-for-human`          | `ready-for-human`    | Requires human implementation            |
-| `wontfix`                  | `wontfix`            | Will not be actioned                     |
+## ⭐ The state role answers ONE question: WHO ACTS NEXT
 
-When a skill mentions a role (e.g. "apply the AFK-ready triage label"), use the corresponding label string from this table.
+Ruled 2026-08-19. **Read every state role as the answer to "whose move is it?"** — not as a
+description of the issue's quality, its difficulty, or how far along it is.
 
-Every string is identical to its canonical role. That is deliberate, not an unedited scaffold: this
-tracker was created after the roles were adopted, so there was no existing vocabulary to map onto.
+| State role | Whose move | Select it when |
+| --- | --- | --- |
+| `needs-triage` | **nobody yet** | The issue has **not been evaluated**. This is the only thing it means. |
+| `needs-info` | the reporter | Evaluated, and the next act is someone supplying a fact the issue lacks. |
+| `ready-for-agent` | an agent | Evaluated, and the next act is one an AFK agent can perform end to end. |
+| `ready-for-human` | a human | Evaluated, and the next act needs a person — a scope call, a UI step, a judgement. |
+| `wontfix` | nobody, ever | Evaluated and declined. |
+
+When a skill mentions a role (e.g. "apply the AFK-ready triage label"), use the label string from
+this table. Every string is identical to its canonical role — deliberate, not an unedited scaffold:
+this tracker was created after the roles were adopted, so there was no vocabulary to map onto.
+
+**Why this ruling was needed, and it is a documentation defect rather than a hard call.** Until
+2026-08-19 the table glossed `needs-triage` as *"Maintainer needs to evaluate this issue"* and said
+nothing about what the five roles have in common. So nine `deferred` issues expressed one state
+**four different ways**, and `gh issue list --label needs-triage` returned issues that had been
+evaluated six times over — the query stopped meaning anything. A flat list of five glosses is not a
+vocabulary; the question they all answer is what makes it one.
+
+⛔ **A label named `needs-triage` on an evaluated issue is the failure this ruling exists to stop.**
+Evaluated-and-parked is `deferred` plus the role that will apply at revival — see below.
+
+*Revisit if:* a state arises where the next act belongs to someone outside these five — an external
+vendor, a scheduled job. That is a sixth role, not a re-reading of `needs-triage`.
 
 ## Category roles
 
@@ -74,6 +92,26 @@ deferred-defect entry, not a silence.
 ⛔ **A `deferred` issue MUST name what would make it active** — the `Revisit if:` shape the ADRs
 already use. A deferral with no trigger is a drop wearing a label, and it is the shape this
 repository loses things in.
+
+### How `deferred` combines with the state role
+
+The two axes answer different questions and neither substitutes for the other:
+
+- **`deferred` answers *when*** — not now, and here is the trigger.
+- **The state role answers *who acts at revival*** — the move that becomes available the moment the
+  trigger fires.
+
+So a `deferred` issue carries the role that will apply **when it wakes up**, not `needs-triage`.
+Deferring is an act of evaluation; an issue cannot be both evaluated-and-parked and un-evaluated.
+
+**Applied 2026-08-19 to the four issues carrying `needs-triage` + `deferred`.** The ruling
+discriminates rather than bulk-relabels, which is the evidence it is doing work: **#69** (needs an
+ADR) → `ready-for-human`; **#74** (needs a human to connect the integration to real content) →
+`ready-for-human`; **#78** (needs the API checked rather than reasoned about) → **`ready-for-agent`**;
+**#97** (needs a decision rather than a patch) → `ready-for-human`.
+
+Per the abstention lesson above, treat that sentence as a claim about the tracker that is due
+re-checking, not as history. The durable part is the test, not the four numbers.
 
 ## The standing rule, as amended
 

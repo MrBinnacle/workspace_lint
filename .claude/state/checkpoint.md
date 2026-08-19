@@ -524,211 +524,184 @@ is a standing fact and nothing else in this file records it.
   directory holds 22 entries, not four** — the rest come from other projects. Do not read the
   quarantine as this project's queue.
 
-
 ---
 
----
+## S029 — 2026-08-19 — the front door was audited, and the defects fell along what the gate can check
 
----
+**PHASE:** **BUILD.** No product code shipped. One documentation PR merged and one design phase
+closed. **`#59` — `UNQ001`, the fourth and last v0.1 rule — is unblocked, fully specified, and is the
+next build.** `main` carries `a8d6b18`.
 
-## S028 — 2026-08-19 — #70 decision 1 resolved, and the rule it blocked was never blocked
+**TESTS:** **794 assertions, ELEVEN suites, exit 0, offline.** Run three times this session — at
+start, after the line-7 correction, and after the audit rewrite. Thirteen `CHECK-*.ts` files exist;
+eleven are registered in the `check` chain, and `CHECK-harness.ts` and `CHECK-fakes.ts` are the two
+helpers the `slice/CHECK-*.ts` count claim excludes.
 
-**PHASE:** **BUILD.** No code shipped. This was a decision-and-audit session. **`#59` — `UNQ001`, the
-fourth and last v0.1 rule — is UNBLOCKED and is the next build.** `main` carries `2e5ec8a`.
+**TRACKER:** 18 open. **The operator closed `#70` himself** at 2026-08-19T02:45Z as `COMPLETED`,
+after S028's close was written — so the active decision count is **0** and decisions 2–4 are shut.
+⚠ `#70`'s title and last comment still say those three decisions remain; the closure was read as the
+ruling. **Say so if that was a mis-click.**
 
-**TESTS:** **794 assertions, ELEVEN suites, exit 0, offline.** Verified at session start, re-derived
-per suite rather than quoted: 61+64+52+124+89+92+76+56+33+109+38. Unchanged — no code was touched.
+### ⭐ The finding: the defects fell exactly along what the claims gate can falsify
 
-**TRACKER:** 15 open at start, **19 at close**. Four filed: `#100`, `#101`, `#102`, `#103`. Active
-decision count **1** (`#70`), read back from the tracker.
+`CLAUDE.md`'s `exists`/`absent` path claims have **never** gone stale — building a file turns the
+gate red. The **unchecked status prose rotted twice in the same sentence slot**: *"no source code
+exists yet"* after PR #56, which is the reason `guard-canonical-doc-edit.py` covers `CLAUDE.md` at
+all, and then *"`#59` is blocked on `#70` decision 1"*, found this session.
 
-### ⭐ The finding that reorders the queue: the blocker was self-imposed
+⭐ **An always-loaded document is not audited by reading it for wrongness — every line reads fine. It
+is audited by asking which lines a mechanism can falsify, and treating the rest as a mirror with a
+canonical owner.** Written up as the memory `a-checked-claim-does-not-rot`.
 
-**`#59` was carried as "blocked on #70 decision 1" by this file, by `CLAUDE.md` and by the critical
-path, and the claim was false.** `#59` is written against the **Configured** reading of `UNQ001`,
-which `CONTEXT.md` already states and which no ADR contradicts. `#70` decision 1 governs whether a
-**second, policy-free mode** ships *in addition*. The last of the four v0.1 rules sat behind a
-decision it did not depend on.
+### What shipped — PR #106, seven findings, 40 lines to 34
 
-⚠ **Neither existing dereference check finds this shape.** `#59`'s two *stated* blockers, `#18` and
-`#19`, were closed — that check would have fired. `#70` decision 1 was genuinely open — that check
-passes. **Ask whether the ticket's own deliverable needs the decision's OUTPUT, not whether the
-decision is open.**
+**The factual defect was the one nobody was looking for.** The canonical list named `CONTEXT.md`,
+`PRODUCT.md` and `docs/adr/` and **omitted `docs/spec/`**, which `guard-canonical-doc-edit.py` sets in
+`CANONICAL_DIRS` and blocks edits to. Three specs exist. The file every session boots from named one
+fewer canonical surface than the hook enforces.
 
-### Decision 1, resolved — five SME seats, all `nominal`
+**Two mirrors deleted** under the operator's own **G-010** (`docs/inputs/hans-gotchas-register-2026-07-29.md:208`),
+*"Do not keep a page merely because it is accurate history"*: the `#59` blocker clause, and
+*"794 offline assertions across eleven suites"* + *"both pre-build gates closed on 2026-08-17"*. The
+assertion count was due to go stale the moment `#59` lands.
 
-`role-council` no-ops on this project (no `.claude/role-council/`). Route used: five isolated
-subagent seats under `parallel-review-disposition-schema`, each with a named return channel
-(`SendMessage` to `main` plus one scratchpad path). The adversarial seat was told to default to
-refuted and **failed to refute**.
+**Six lines restating `docs/agents/domain.md` replaced with a pointer naming its branch triggers.**
+The inline copy was added on 2026-08-17 after two files went unread, and it says the mechanism was
+*"neither directory was named here."* ⭐ **That root cause was fixed IN `domain.md`** — `docs/research/`
+and `docs/proof/` became steps 5 and 6 of its reading list in the same rewrite — so the copy had been
+redundant since. **Sharpen the pointer first; inline only if sharpening fails.** Sharpening was never
+tried. Every removed meaning was grepped for in `domain.md` before deletion.
 
-**Out:** a built-in rule emitting conformity violations. It infers uniqueness from a title, and a
-title is a label — Principle 4's own wording, `ADR-0001` decision 4's own list.
+⚠ **PR #105 was opened and then closed unmerged.** It *corrected* the blocker clause; the audit found
+the clause should be **deleted**. A narrow fix taken before asking whether the sentence belongs at all.
 
-**In:** a third finding kind making no conformity claim, with the `UNQ001` config stanza printed
-beside it. Full synthesis is the 2026-08-19 comment on `#70`; the buildable form is **`#101`**.
+⛔ **`CONTEXT.md:142` STILL CARRIES THE REFUTED BLOCKER CLAIM** — *"what remains in front of it is #70
+decision 1"* — and also says three of four rules are built. It is canonical and hook-guarded. **Third
+surface, as always.**
 
-Six amendments, all verified at `file:line` by the synthesiser before being written:
+### `#59` — three design questions settled, posted to the ticket
 
-1. ⛔ **It is a separate AXIS, not a third `Conformity` value.** `ADR-0005` decision 1: *"Conformity
-   is absent when the evaluated set is empty. It is not a third enum value."* `slice/finding.ts:66`
-   is `Conformity = 'conforms' | 'violates' | null`. An undeclared rule has a **non-empty** evaluated
-   set and no conformity, so a third value puts `null` on two incompatible routes. **As an axis the
-   ADR supersedes nothing; as a Conformity value it becomes superseding** — a second ADR's cost
-   bought by a naming choice.
-2. ⛔ **Name it `undeclared-invariant`, NOT `review`.** `review` is SARIF's word for an axis
-   conflating three of this repository's distinctions. `Observation` is taken by `CONTEXT.md`. Map to
-   SARIF at the exporter edge only.
-3. ⛔ **TWO exit-byte channels break, not one.** `slice/scan.ts:275` — `newUnsuppressedFindings:
-   findings.length` reads array length, never kind, so every observation increments the sole input to
-   exit `1`. And `slice/scan.ts:194` — `const rules = opts.rules ?? BUILT_RULES`, ungated by config;
-   rows push at `249-250`, `verdict.ts:112` takes the vector **minimum**, `verdict.ts:144` compares
-   it to the threshold, **so the rule reaches exit `3` with no finding at all.** `scan.ts:248` is
-   already kind-guarded and is safe. `slice/rule.ts:41` is the `tsc` enforcement point.
-4. **Two seats disagreed about the coverage row, and the synthesis ruled: KEEP THE ROW, NARROW THE
-   PROMISE.** `rule.ts:51` defines `coverage() → null` as *"applicable set is empty"*, and an
-   undeclared rule's pairs are not empty — they are undeclared. **"Contributes nothing to the exit
-   byte" is true of the FINDING and false of the RULE.** *Revisit if:* a run reaches exit `3` from
-   this rule on a workspace whose coverage is otherwise complete.
-5. **Scope-relative emission**, which is ESLint's merge semantics: observations everywhere **except**
-   inside a declared `UNQ001` scope.
-6. **A `--review` reveal flag has NO prior art and is dropped.** Every escalation flag in the field —
-   `--max-warnings`, `--warn-error`, `--error`, `-warnings-as-errors` — promotes an **already-emitted**
-   result. Not one reveals a withheld one. The invariant is emit-always / opt-in-to-enforce.
+Full text is the 2026-08-19 comment on `#59`. Every `file:line` was opened before being written.
 
-### ⭐ The counter-evidence survived and bought a timing constraint
+1. **An empty value is NOT a value for uniqueness.** No finding, and it **stays in the denominator** —
+   the resource was read and its pairs were genuinely evaluated. **Emptiness changes the comparison
+   predicate, never the coverage arithmetic.**
+2. **One finding per offending RESOURCE.** `ADR-0010:145` already anchors `UNQ001` on "The page";
+   `:153` states the table presumes per-resource emission and that per-**group** needs a group anchor
+   the ADR does not supply; `:211` delegates the choice here. **Per-resource costs no ADR, per-group
+   costs one**, and this ticket states it needs none. Five identical rows are **five findings over ten
+   evaluated pairs**. ⚠ **Correcting the ticket:** its own comment says the denominator follows from
+   granularity. It does not — `ADR-0011` decision 2 fixes it independently.
+3. ⭐ **NOT NAMED BY THE TICKET — the pairs must be materialised.** `scan.ts:170-174` marks `evaluated`
+   by iterating `manifest.of(rule.unit)`, so entries under a pair-shaped unit have to **be** pairs.
+   `C(n,2)`, with a **refusing** scope guard rather than a silent degrade to a resource denominator.
+   Proposed ceiling 1,000 resources = 499,500 pairs.
 
-**Escalation-flag uptake was MEASURED, not assumed.** `GET /search/code`, 2026-08-19, ten
-tooling-mature orgs: ESLint `--max-warnings` **231 / 2,989 = 7.7%**; dbt `--warn-error` **≈0.5%**.
-**Beller et al. 2016 opened directly** — `https://azaidman.github.io/publications/bellerSANER2016.pdf`,
-§VI RQ 3: *"A little over 80% of all configuration files are never changed after their creation"*, and
-of the changes that happen **18% land the same day, 33.5% within the first week**, no later day above 1%.
+**Hazard 2 answered: the duplicated value is never printed, in any mode, including `--show-titles`.**
+The finding names the **co-participants by ID**. Comparison is by trimmed string and is **not**
+case-folded — case-folding is inferred policy, which `ADR-0001` decision 4 rejects.
 
-⭐ **So the promotion stanza MUST print on the FIRST run, while the operator is still writing the
-config. Offered on run 40 it is decoration.** An invitation is not a forcing function.
+**The hydration is already built.** `docs/spec/v0.1-hydration-map.md` §1.4 puts `UNQ001` at page
+properties, identical to `REQ001`, so `hydrateRequiredProperties` (`scan.ts:624`) already retrieves
+and caches every map the rule needs.
 
-**The base-rate attack failed on its own measurement.** Five live data sources, 996 rows: 8
-duplicate-title groups, 9 excess rows, **~1 in 8 legitimate**. Warning fatigue is a volume effect and
-eight lines is not a volume. ⚠ **Documented-tier, NOT proof-tier** — it ran through the Notion MCP
-connector and `ADR-0004` holds the connector does not clear the REST path. n=1, the operator's own
-workspace.
+### Lessons hoisted out of the S028 band before it was archived
 
-**Strongest adverse precedent, and it belongs in the ADR:** SonarQube is retiring Security Hotspots,
-the largest review tier in the industry — *"we are gradually transitioning security hotspots to
-vulnerabilities"*, classification confusion, not false positives.
+- ⛔ **Ask whether a ticket's own deliverable needs a decision's OUTPUT, not whether the decision is
+  open.** Neither dereference check finds the self-imposed-blocker shape.
+- ⛔ **Do not inherit completion from a closure.** `#7` closed `COMPLETED` over its own "Blocked on
+  (1)" comment; `#70` closed this session over a body naming three live decisions.
+- **A subagent's quotation is a claim about a file, and is checked by opening the file.**
 
-**GitHub code scanning ignores `result.kind`** — nine result properties listed, `kind` not among them,
-established by enumerating every occurrence of the substring across the whole 1,013,712-byte page. So
-**the product must not delegate the distinction to `result.kind` alone in emitted SARIF.**
+### ~~The one open ruling, still the operator's~~ — RULED, AND IT WAS NEVER THE OPERATOR'S
 
-**One prior-sweep row was BROKEN:** Great Expectations *does* ship a severity tier
-(`critical`/`warning`/`info`), but `success` is computed with no reference to it. Corrected
-generalisation: **non-failing is never a permanent property of a finding; it is always a disposition
-the operator controls — though the declaration may attach to the check rather than to the run.**
-⚠ GE's docs name `get_maximum_severity_failure`; the source defines `get_max_severity_failure`. **Do
-not paste that identifier into an ADR.** clang-tidy verified from source: ordinary warnings **exit 0**.
+~~**The state-role vocabulary has no value for "evaluated and parked", so `deferred` issues express
+one state four ways.** `gh issue list --label needs-triage` returns issues already triaged.
+**Recommendation: the state role names WHO ACTS AT REVIVAL, and `needs-triage` means only "not yet
+evaluated"** — which moves #69, #74, #78, #97. Carried from S028, still unratified.~~
 
-### The first full board audit, and what it says about the claims gate
+**POST-CLOSE ADDENDUM (S029, after `7ad2b8c` shipped) — the ruling is made, and calling it a values
+decision was my error twice over.**
 
-Two read-only agents over all 17 open issues. Invariants 1–3 pass. **Invariant 4 — state role matches
-readiness — failed on five.**
+⛔ **§0.6's test was never run on it.** A values decision is one where well-informed practitioners
+disagree from different *values*. Here a label named `needs-triage` on an evaluated issue is simply
+false, and four of the five roles already read as "who acts". **A competent practitioner defaults.**
+It was surfaced as the operator's fork in the S028 band and again in the S029 band and in PR #107's
+body — three times — and each time that was deferral wearing a values label.
 
-⭐ **EVERY COUNT THE AUDIT CHECKED WAS TRUE.** `Finding` has exactly ten fields; nineteen research
-files; three `NotionPort` methods; the 80.9% figure; all six of `#101`'s `file:line` sites, re-opened
-individually. **The claims gate hardened counts and the rot moved to STATUS claims** — blocker state,
-quoted document text, gate wording. **None of the ten findings is expressible in the gate's three
-kinds (`count` / `exists` / `absent`).** Filed as **`#103`**, with `claim: absent` over retired
-phrasing as the cheapest live option.
+**It was also the wrong diagnosis.** The defect is not an undecided call; it is an **under-specified
+document**. `docs/agents/triage-labels.md` glossed five roles one line each and never stated the
+question they all answer, so four sessions answered it four ways. A flat list of glosses is not a
+vocabulary.
 
-⛔ **`CLAUDE.md` line 7 is FALSE as of this session** — *"`UNQ001` is #59, and it is blocked on #70
-decision 1."* It is hook-blocked and carries no annotation, so neither I nor the gate can touch it.
-**Every new session boots from that sentence.** Fixing it is next session's first act and needs the
-plan gate.
+**Ruled and applied 2026-08-19.** The state role answers **"whose move is it?"**, and `needs-triage`
+means only *not yet evaluated*. Written into `triage-labels.md` as a table of branch triggers, plus a
+new section on how `deferred` combines with the state role: `deferred` answers *when*, the state role
+answers *who acts at revival*, and **deferring is itself an act of evaluation**.
 
-⚠ **A SUBAGENT'S "VERBATIM" WAS AN ELISION, AND IT SHIPPED INTO A TICKET BEFORE THE DEREF STEP
-CAUGHT IT.** The audit seat reported `docs/research/notion-developer-platform.md` line 56 as stating
-verbatim *"the PAT fixture run in #27's own Definition of Done is no longer decision-relevant…"*. The
-file says *"Consequence for #27's own scope: the PAT fixture run in **its** Definition of Done…"* and
-carries a middle sentence the ellipsis swallowed. The **substance was right and the quotation was
-not**, and I relayed it into `#27`'s correction banner as a receipt. Corrected in place. **A
-subagent's quotation is a claim about a file, and it is checked the same way any other is — by
-opening the file.** The seats' `file:line` claims about `slice/` were all re-opened; this one was in
-`docs/research/` and slipped the same discipline.
+**The ruling discriminates rather than bulk-relabels, which is the evidence it does work:** #69 (needs
+an ADR) → `ready-for-human`; #74 (needs a human to connect the integration to real content) →
+`ready-for-human`; #78 (needs the API checked rather than reasoned about) → **`ready-for-agent`**;
+#97 (needs a decision rather than a patch) → `ready-for-human`. `gh issue list --label needs-triage`
+now returns **nothing**, and the query means something again.
 
-**Six bodies corrected with dated banners** (`#59` `#27` `#29` `#51` `#70` `#8`), `#70` retitled,
-three correction comments (`#69` `#84` `#74`). ⭐ **Banners go in the BODY, not a comment** — `#59`'s
-correction had sat in a comment since 2026-08-18 and the body went on saying "Blocked by #19 and #18".
-
-**The three worst instances:** `#27`'s Definition of Done would have made someone run a PAT fixture
-test `docs/research/notion-developer-platform.md` line 56 explicitly says to drop. `#51` said
-*"Decision required"* for a decision granted the day before, and its precision limit is refuted by
-proof-tier — a readable database returns **400 `validation_error`**, not 404. **`#7` was closed
-COMPLETED while its own last comment reads "Blocked on (1)"**, and `REAL_ROOT_ID` is still
-unexercised — two tickets inherited that closure as a completion claim. **Do not inherit completion
-from a closure.**
-
-### The one open ruling, and it is the operator's
-
-**The state-role vocabulary has no value for "evaluated and parked", so nine `deferred` issues express
-one state four different ways** — `ready-for-human` (#8 #25 #82 #101 #103), `needs-triage` (#69 #74
-#78 #97), `ready-for-agent` (#27), `needs-info` (#29). Consequence: `gh issue list --label
-needs-triage` returns issues already triaged. **Recommendation: the state role names WHO ACTS AT
-REVIVAL, and `needs-triage` means only "not yet evaluated"** — which moves #69, #74, #78, #97.
-
-**Also unratified:** eight of the nine revisit triggers were written in one bulk pass on 2026-08-18,
-each prefaced as *a proposal from a session that did not re-read this issue's full history*. **Three
-— #69, #74, #82 — carry a DIFFERENT trigger in their own body and nobody reconciled the two.** The
-deferred-issue invariant passes on the letter while the record says two contradictory things.
+⚠ **A label read taken immediately after a label write can be stale.** The verification returned
+`needs-triage: 4` seconds after all four edits succeeded; a re-read moments later returned none.
+GitHub's label index lags the write. **Re-read before treating a post-write count as a failure** —
+the first read here would have been recorded as "the edits did not apply".
 
 ### BLOCKERS
 
-**None for the build.** `#59` is unblocked and needs no ADR.
+**None.** `#59` is unblocked, fully specified, and needs no ADR.
 
 ### EXACT NEXT STEPS
 
-**Nineteen issues open** — 8, 25, 27, 29, 51, 59, 69, 70, 74, 78, 82, 84, 95, 96, 97, 100, 101, 102, 103.
+**Eighteen issues open** — 8, 25, 27, 29, 51, 59, 69, 74, 78, 82, 84, 95, 96, 97, 100, 101, 102, 103.
 
-1. ⛔ **FIRST ACT: fix `CLAUDE.md` line 7.** It asserts `#59` is blocked on `#70` decision 1 and it is
-   not. **`EnterPlanMode` → the plan's FILES TABLE must name `CLAUDE.md`** (a mention in background
-   prose authorises the write but is not authorisation) → `ExitPlanMode`. While the plan is open,
-   also correct anything else in that file written against the pre-resolution state. **There is
-   deliberately no environment-variable escape.**
-2. ⛔ **CONTEXT HYGIENE, per §1.6 and §9.** S028 ran deep. **`/clear` entirely, then
-   `/session-start-from-state` — NEVER `/compact`** (summarisation sediment). Fold at the boundary,
-   not mid-phase.
-3. **`#59` — `UNQ001` configured.** The fourth and last v0.1 rule. Needs no ADR, no research.
-   **Settle two design questions BEFORE writing `findingsFrom`**, both recorded on the ticket:
-   does an empty title count as a value, and are five identical rows one finding or ten pairs? The
-   second bears on `ADR-0010`'s anchor, because a duplicate-group finding has *n* resources, not one.
-4. **`#100`** — `ready-for-agent`, agent brief posted. `README.md` only; it is not hook-blocked.
-5. **`#96`** — a worked `REQ001` entry in `wl.config.example.json`.
-6. **`#101`** — the `undeclared-invariant` tier. **Blocked on `#59`**, and its ADR needs the plan gate.
-7. **`#102`** — the five operator-only fixture items, gathered. Operator-only by construction.
+1. ⛔ **`#59` — build `UNQ001` configured.** The design is done and on the ticket; the build is
+   mechanical. Files: `slice/unq001.ts` (new) · `req001.ts` (extend `PropertyReading`'s `'value'`
+   state to carry the trimmed value, additive) · `manifest.ts` (a `unq` facts slot, **never the
+   value**) · `config.ts` (`RuleDecl` union member; `RULE_STATUS.UNQ001` off `not-built`; the
+   `id !== 'REQ001'` gate at line 221 becomes a set) · `scan.ts` (`BUILT_RULES`, pair registration) ·
+   `CHECK-unq001.ts` (new) · `package.json` and `CHECK-suite-registration.ts` to register it.
+2. ⛔ **`CLAUDE.md` AND `CONTEXT.md` GO FALSE IN THE SAME COMMIT AS THE BUILD.** `CLAUDE.md` carries
+   `<!-- claim: absent path="slice/unq001.ts" -->` and "three of the four"; `CONTEXT.md:142` carries
+   both plus the refuted `#70` blocker claim. Both are hook-guarded — **the plan's FILES TABLE must
+   name them.** A red gate here is the mechanism working.
+3. **`docs/spec/UNQ001-uniqueness.md`** — **new file, does not exist yet**; records the three
+   decisions. Canonical dir, plan-gated.
+4. **The fixture seeds no `UNQ001` case.** Take the DoD's second branch — record which criterion
+   could not be exercised — and file the seed on `#102`. Seeding is Notion-UI, operator-only.
+5. **`#100`** — `ready-for-agent`, agent brief posted. `README.md` only; not hook-blocked.
+6. **`#96`** — a worked `REQ001` entry in `wl.config.example.json`.
+7. **`#101`** — the `undeclared-invariant` tier. Blocked on `#59`; its ADR needs the plan gate.
 8. **Hook tests, `skill-router.py` first.** Three of nine hooks are tested. Its own session.
 
-**Off the critical path and deliberately shut:** #8, #25, #27, #29, #69, #74, #78, #82, #84, #97, #103.
+**Off the critical path and deliberately shut:** #8, #25, #27, #29, #69, #74, #78, #82, #84, #95, #97, #103.
 
-**NEXT-MODEL: fast tier.** Steps 1–3 are mechanical — a plan-gated one-line correction, a context
-fold, and a build ticket whose research is complete and whose two open questions are stated. **Do not
-straddle:** if the next session instead takes `#70` decisions 2–4 or `#103`, that is frontier work and
-gets its own session.
+**NEXT-MODEL: fast tier.** Step 1 is a mechanical build against a design that is fully settled and
+written down, with the file list, the seams and the three decisions all on the ticket. **Do not
+straddle:** `#103` (how the claims gate covers STATUS claims) and the state-role ruling are frontier
+work and get their own session.
 
 **NEXT-REPO/CWD:** `C:\Users\mlpgr\2026_Projects\workspace_lint` — single repo; state, plan and
 resume ritual all at the root.
 
 ### WHAT ONLY THE OPERATOR CAN DO
 
-**Merging this close's PR**, and every PR — see the standing block.
+**Merging this close's PR**, and every PR.
 
-**The state-role ruling** above. It is the one genuine fork this session leaves.
+**Confirming `#70`'s closure was intended** — its title and last comment still name three live
+decisions. If it was a mis-click, reopen; if it was the ruling, `#101` already carries the only piece
+that was going to be built.
 
-**`#102`'s five fixture items**, all in the Notion UI. Two of them gate `#51`; one gates `#95`;
-one resets proof question Q1; one unlocks Q8 and the Q3 re-run.
+~~**The state-role ruling** above, carried from S028 and still the one genuine fork.~~ **Ruled and
+applied 2026-08-19 — see the addendum. It was never a values decision, and surfacing it as one three
+times was deferral.** Reverse it if you disagree; the four label moves are one command each.
 
-**Whether to reverse `#70`'s recorded decision** and build the four policy-free counting surfaces
-inside v0.1. The adversarial seat argued for it. **Recommendation: hold the recorded decision until
-`#59` ships.** This is v0.1 scope and is not the agent's.
+**`#102`'s five fixture items**, all in the Notion UI — now six, with the `UNQ001` duplicate-title
+seed. Two gate `#51`; one gates `#95`; one resets proof question Q1; one unlocks Q8 and the Q3 re-run.
 
-**Promotion review** of the four quarantined skills — see the standing block.
+**Promotion review** of the quarantined skills — see the standing block.
 
 **NO SELF-ASSESS LINE, BY OPERATOR RULING 2026-08-17.** The ritual line records `verdict=n/a`.

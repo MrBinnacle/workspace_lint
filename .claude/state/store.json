@@ -1,7 +1,7 @@
 {
   "project": "workspace_lint",
   "updated": "2026-08-19",
-  "session": "S028",
+  "session": "S029",
   "phase": "BUILD. No code shipped in S028; it was a decision-and-audit session. #70 DECISION 1 RESOLVED from five isolated SME seats, and the resolution is that it was two decisions wearing one label: UNQ001 ships CONFIGURED (#59) and the policy-free observation tier ships separately (#101, one additive ADR, named undeclared-invariant NOT review). #59 IS UNBLOCKED AND WAS NEVER BLOCKED - it is written against the Configured reading, which CONTEXT.md already states and no ADR contradicts; #70 decision 1 governs only whether a second mode ships in addition. #59 is the fourth and last v0.1 rule and is the next build; it needs no ADR. Gate unchanged at 794 assertions across eleven suites, exit 0, offline. main carries 2e5ec8a. First full board audit ran: invariants 1-3 pass, invariant 4 failed on five issues, ten staleness findings, six issue bodies corrected with dated banners. CLAUDE.md line 7 is FALSE as of this session and is hook-blocked - fixing it is next session's first act and needs the plan gate.",
   "standing_rule_adopted_S025": "AMENDED 2026-08-18 on the operator's instruction to scrutinise it. ORIGINAL: no new decision ticket opens until four rules ship, unless it blocks a rule. It limited RECORDING where the problem was SCHEDULING, which pushed decisions into prose in a state file - the one medium this project has proven six times it cannot trust - and made the `decision` label expensive, corrupting the instrument the rule was counted with. AMENDED FORM: record always, schedule never. Every decision question is FILED. At most ONE decision ticket may be active (labelled `decision` and NOT `deferred`) while any v0.1 rule is unbuilt; 'unless it blocks a rule' is unchanged and now gates scheduling rather than recording. `deferred` is a new supplementary label and a deferred issue MUST name what would make it active. Prior art, unanimous across three domains and none of it consulted when the rule was written: Kanban/theory-of-constraints put WIP limits on work in progress and never on the backlog; aviation's Minimum Equipment List permits deferring a defect only by logging it; ordinary defect triage answers backlog pressure with severity plus an explicit deferred resolution. Full reasoning in docs/agents/triage-labels.md 'The standing rule, as amended'. Check: gh issue list --label decision --state open, minus those labelled deferred, must be <= 1. Measured at S027 close: ONE active (#70 decision 1, which genuinely blocks #59), nine deferred.",
   "phase_detail_s024": "S024: EVIDENCE, then a decision. #51 worked to a recorded decision; PR #86 merged as 818aba0.",
@@ -214,7 +214,7 @@
     {
       "id": "#70-1",
       "question": "Is UNQ001 Configured, built-in, or split into a policy-free observation mode plus a configured violation mode?",
-      "status": "OPEN. The built-in-with-conformity-violations option is FORBIDDEN by ADR-0001 decision 4, which rejects zero-config inference of owner, canon, UNIQUENESS or peer status -- the identical list as Principle 4, but in an ADR. Taking it needs a superseding ADR. The Observation route needs none, because 'these two pages share a title' infers nothing. Changes #59's blocking edges: a mode needing no rule configuration is not blocked by #19."
+      "status": "RESOLVED 2026-08-19 (S028), from five SME seats. UNQ001 ships CONFIGURED; the policy-free observation tier is #101 on its own additive ADR. #70 itself was then closed COMPLETED by the operator on 2026-08-19, shutting decisions 2-4."
     },
     {
       "id": "#70-2",
@@ -403,11 +403,12 @@
       "prior_ruling": "Agrees with #75, #76 and the zero-config -> policy-free rename. Ranks #75 and #76 ABOVE the build. ALL THREE ARE NOW LANDED in PR #83.",
       "grounds": "Gate 1 closed on framing 2 as the entry point while the catalog and build are aimed at framings 1 and 3. #75 and #76 change the job statement and the competitive claim, so they change what the entry point is FOR. Confirmed by his own secondary pass over live PRODUCT.md, CONTEXT.md and checkpoint.md.",
       "scope": "The three are decided. HOW to land them is revisable by the session holding the files. The rename does NOT edit ADR-0001 (never edited in place) and does NOT decide #70-1 (UNQ001's mode still needs a superseding ADR if built-in-with-violations is taken)."
-    }
+    },
+    "STATE-ROLE VOCABULARY, ruled 2026-08-19 (S029). The state role answers 'whose move is it?'; needs-triage means ONLY 'not yet evaluated'. deferred answers WHEN and the state role answers WHO ACTS AT REVIVAL; deferring is itself an act of evaluation, so a deferred issue never carries needs-triage. Written into docs/agents/triage-labels.md. NOT a values decision - it was surfaced as one three times, which was deferral; the real defect was an under-specified document. Applied to #69 #74 #97 (ready-for-human) and #78 (ready-for-agent)."
   ],
   "tracker": {
     "host": "GitHub issues, gh CLI",
-    "open_count": 19,
+    "open_count": 18,
     "open": [
       "#8",
       "#25",
@@ -416,7 +417,6 @@
       "#51",
       "#59",
       "#69",
-      "#70",
       "#74",
       "#78",
       "#82",
@@ -463,10 +463,11 @@
     "pr_98": "MERGED as 277dfa5 at 2026-08-19T01:36Z, by the operator. Carried d964448 (the amended standing decision-ticket rule) and f5b1a92 (the S027 close). A commit made AFTER a branch is pushed does not join the PR already open on it - that is why S027 needed two PRs.",
     "filed_S028": "#100 (README promises a repair action no finding carries), #101 (the undeclared-invariant tier + additive ADR), #102 (the five operator-only fixture items, gathered), #103 (decide how the claims gate covers STATUS claims). #103 is decision+deferred; #70 still holds the one active decision slot.",
     "label_state_S028": "Invariant 1 PASS on all 19 - exactly one state role and one category role each, machine-checked. Active decision count 1 (#70), read back. Four state-role swaps applied: #70 and #101 and #51 to ready-for-human, #100 to ready-for-agent. #51's previous ready-for-agent was hazardous - its body asks for a CLAUDE.md section 3 ASK-FIRST decision, so an AFK agent would breach or stall. OPEN RULING: the state-role vocabulary has no value for 'evaluated and parked', so nine deferred issues express one state four ways; recommendation is that the state role names who acts at revival and needs-triage means only 'not yet evaluated', which would move #69 #74 #78 #97.",
-    "audit_2026_08_19": "First full-board audit, two read-only agents over 17 issues. EVERY COUNT CHECKED WAS TRUE - Finding has ten fields, nineteen research files, three NotionPort methods, all six of #101's file:line sites. What rotted was STATUS: blocker state, quoted document text, gate wording. None of the ten findings is expressible in the claims gate's three kinds. Filed as #103."
+    "audit_2026_08_19": "First full-board audit, two read-only agents over 17 issues. EVERY COUNT CHECKED WAS TRUE - Finding has ten fields, nineteen research files, three NotionPort methods, all six of #101's file:line sites. What rotted was STATUS: blocker state, quoted document text, gate wording. None of the ten findings is expressible in the claims gate's three kinds. Filed as #103.",
+    "closed_S029": "#70 closed COMPLETED by the operator at 2026-08-19T02:45Z, after S028's close was written. Its title and last comment still name decisions 2, 3 and 4 as remaining; the closure is read as the ruling that they are shut. Active decision count is now 0. Do not inherit completion from a closure - confirm with the operator."
   },
   "build": {
-    "branch": "main at 063b0a2 (PR #90). Working branch chore/close-s026 for this close.",
+    "branch": "main at a8d6b18 (PR #106). Working branch chore/s029-close for this close.",
     "commits": [
       "0ac7c2d",
       "9dcb069",
@@ -559,6 +560,16 @@
     "gate_note": "794 = 38+64+56+109+124+92+89+52+76+61+33, re-derived per suite at S027 and never quoted. The hand-kept sum in the checkpoint was wrong by three before this close.",
     "req001_live_proof": "Two read-only runs 2026-08-18 against the proof fixture, both matching an oracle pre-registered in slice/fixture-oracle.ts and committed BEFORE either run. Over \"title\": 4 pairs, 3 evaluated, 0 findings, exit 3. Over \"Owner\": 4 pairs, 0 evaluated, 0 findings, REQ001 sets the headline at 0/4, exit 3. Nine requests each. THE VIOLATION PATH IS PROVEN OFFLINE ONLY - no readable fixture page can carry an empty required property. That is issue #95 and its first step is operator-only. docs/proof/results-58-req001.md.",
     "req001_hazard": "An absent property is NEVER a violation. The API returns the properties the integration can see, so absent means undefined-here OR not-granted and the scan cannot tell which. Only present-and-empty is a violation. CHECK-req001.ts TEST 3 is the control, TEST 9 prices the reversal at byte 3 -> 1.",
-    "property_id_observed_on_rest_path": "GET /v1/pages/{id} DOES return a property id - 3 of 4 pairs carried one on the 2026-08-18 run - where docs/research/notion-live-probe.md Probe 3 observed none over the OAuth connector. ADR-0010 decision 7's first matchkey propertyId/v1 is populated in practice. It does NOT settle that decision's Revisit-if, which asks about an id surviving a TYPE CHANGE; no run changed a property type."
+    "property_id_observed_on_rest_path": "GET /v1/pages/{id} DOES return a property id - 3 of 4 pairs carried one on the 2026-08-18 run - where docs/research/notion-live-probe.md Probe 3 observed none over the OAuth connector. ADR-0010 decision 7's first matchkey propertyId/v1 is populated in practice. It does NOT settle that decision's Revisit-if, which asks about an id surviving a TYPE CHANGE; no run changed a property type.",
+    "S029": "No product code. PR #105 opened and CLOSED UNMERGED - it corrected the CLAUDE.md blocker clause, and the audit found the clause should be deleted. PR #106 merged: CLAUDE.md audited as an agent-consumed document, 40 lines to 34, seven findings. UNQ001 remains unbuilt; #59's three design questions are settled and posted to the ticket."
+  },
+  "unq001_design_S029": {
+    "where": "Full text is the 2026-08-19 comment on issue #59. Every file:line was opened before being written.",
+    "q1_empty_value": "An empty value is NOT a value for uniqueness. No finding, and it STAYS IN THE DENOMINATOR - the resource was read and its pairs were genuinely evaluated. Emptiness changes the comparison predicate, never the coverage arithmetic. Revisit if a scope needs two blanks to collide (a slug, an external key): a per-declaration flag, not a default change.",
+    "q2_granularity": "ONE FINDING PER OFFENDING RESOURCE. ADR-0010:145 already anchors UNQ001 on 'The page'; :153 states the table presumes per-resource emission and that per-group needs a group anchor the ADR does not supply; :211 delegates the choice to this ticket. Per-resource costs no ADR, per-group costs one, and #59 states it needs none. Five identical rows are FIVE findings over TEN evaluated pairs. The ticket's own comment claiming the denominator follows from granularity is WRONG - ADR-0011 decision 2 fixes it independently.",
+    "q3_materialisation": "NOT NAMED BY THE TICKET. scan.ts:170-174 marks evaluated by iterating manifest.of(rule.unit), so entries under a pair-shaped unit have to BE pairs. Materialise C(n,2), and REFUSE a scope above a stated ceiling rather than silently degrade to a resource denominator. Proposed ceiling 1000 resources = 499500 pairs. Revisit if a real config exceeds it: a streaming counter, which means changing the evaluated intersection - a blast radius #59 should not carry.",
+    "hazard_2_value_redaction": "The duplicated value is NEVER printed, in any mode, including --show-titles. The finding names the co-participants by ID. REQ001 sets the precedent at req001.ts:229-233. Comparison is by TRIMMED string and is NOT case-folded - case-folding is inferred policy, which ADR-0001 decision 4 rejects.",
+    "baseline_on_deletion": "A and B share a value; each carries its own finding under its own anchor. Delete B: A is unique so its finding is absent, B's anchor is gone so its finding is absent. Both resolve independently, matching never crosses an anchor (ADR-0010 decision 1), and no transitive closure is taken over the group.",
+    "hydration_already_built": "docs/spec/v0.1-hydration-map.md 1.4 puts UNQ001 at page properties, identical to REQ001, so hydrateRequiredProperties (scan.ts:624) already retrieves and caches every map the rule needs via propertiesOf."
   }
 }
