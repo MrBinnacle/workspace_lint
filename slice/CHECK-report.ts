@@ -429,8 +429,20 @@ check('the standard fixture produced a finding with no source', nullSrc !== unde
 
 const term1 = renderReport(r1, {}).join('\n');
 const md1 = renderMarkdown(doc1);
+
+/* ⛔ THE EMPTY-STRING GUARD COMES FIRST, and it is not ceremony. `x.includes('')`
+ * is TRUE for every x, so blanking SOURCE_NOT_APPLICABLE would satisfy both
+ * assertions below while the report printed `source: ` and nothing else. That
+ * mutation was run against this file and stayed green here — it was caught by a
+ * LITERAL regex in CHECK-ref001 TEST 10e, not by anything in this section. A
+ * control whose subject can go empty is the substitutable control again, in the
+ * test written to prove a field is rendered. */
+check('the reason string is non-empty, so the two assertions below cannot pass vacuously', SOURCE_NOT_APPLICABLE.length > 0, true);
 check('the TERMINAL states the reason', term1.includes(SOURCE_NOT_APPLICABLE), true);
 check('the MARKDOWN states the reason', md1.includes(SOURCE_NOT_APPLICABLE), true);
+/* Independent of the constant, so a future edit to it cannot take these with it. */
+check('  and the terminal line is recognisable without reading the constant', /source: none — /.test(term1), true);
+check('  as is the Markdown line', /- Source: _none — /.test(md1), true);
 check('  and neither prints an empty cell instead', /source: *$/m.test(term1) || /- Source: *$/m.test(md1), false);
 /* JSON carries the null itself — a serialised `null` is unambiguous where a
  * blank string would not be, so the reason belongs to the two rendered formats
@@ -445,15 +457,29 @@ head('TEST 11c — the UNRECORDED-ORIGIN fallback survives to the report');
  * missing origin indistinguishable from a page that has no name, and a
  * normaliser that hyphenated them would mangle them.
  *
- * ⚠ #100's brief names the second fallback `'(unrecorded block)'`. The string in
- * the code is `'(unknown block)'`. The code is the authority and the brief was
- * corrected on the ticket. */
+ * ⛔ THERE ARE TWO FALLBACK SITES AND THEY WRITE DIFFERENT STRINGS. Both are
+ * real, and finding only one of them produced a false correction on the ticket.
+ *
+ *   references.ts:240  '(unknown block)'     — the API returned a block with no id
+ *   scan.ts:1211       '(unrecorded block)'  — the manifest entry carries no ref facts at all
+ *
+ * They name DIFFERENT conditions, so two strings is right and two SYNONYMS is
+ * not: nothing in either phrase tells a reader which one they are looking at,
+ * and "unknown" and "unrecorded" read as the same word. Each now names its own
+ * cause. Asserted here rather than described, because the reason a brief could
+ * cite one and a grep find the other is that no test held either. */
 const orphan = classifyHref(OBSERVED_LINK, 'block-9');
 check('classifyHref called without an origin uses the fallback', orphan.sourcePage, '(unrecorded page)');
 check('  and the fallback is not an ID, so hyphenate() must leave it alone', hyphenate(orphan.sourcePage), null);
 check('  which is exactly what the rule\'s idForm does — it passes through', idForm(orphan.sourcePage), '(unrecorded page)');
-check('the block fallback in extractReferences is (unknown block), not (unrecorded block)',
-  extractReferences([{ object: 'block', type: 'paragraph', paragraph: { rich_text: [{ type: 'text', text: { content: 'x' }, href: OBSERVED_LINK } ] } }], 'page-1')[0]?.sourceBlock,
-  '(unknown block)');
+
+const noId = extractReferences([{ object: 'block', type: 'paragraph', paragraph: { rich_text: [{ type: 'text', text: { content: 'x' }, href: OBSERVED_LINK }] } }], 'page-1')[0];
+check('a block returned with no id names THAT condition', noId?.sourceBlock, '(block returned with no id)');
+check('  and it is not an ID either, so it survives idForm untouched', idForm(noId!.sourceBlock), '(block returned with no id)');
+
+/* THE TWO FALLBACKS MUST NOT BE SYNONYMS. This is the assertion that would have
+ * stopped a brief citing one string and a grep finding the other. */
+check('the two fallback conditions render differently', noId!.sourceBlock === '(no origin recorded for this reference)', false);
+check('  and neither is a bare blank', [orphan.sourcePage, noId!.sourceBlock].every(s => s.trim().length > 2), true);
 
 finish('One document, three renderings. The suppressions are computed once and the type system will not let a renderer forget one.');

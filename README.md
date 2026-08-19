@@ -92,10 +92,14 @@ workspace rather than in this repository. Shipping a worked entry anyway is [iss
 
 Provisional beyond `scan`, which exists.
 
+> **Corrected 2026-08-19.** This block named `workspace-lint.yml` in two of four lines and showed a
+> bare `scan` with no config. Neither is real: `cli.ts` requires `--config <path.json>`, `loadConfig`
+> parses JSON, and there is no YAML path anywhere in the build. Same defect class as the opening
+> paragraph — the entry document describing a surface the code does not have.
+
 ```bash
-workspace-lint scan                                  # coverage + built-in checks
-workspace-lint scan --config workspace-lint.yml      # full policy scan
-workspace-lint baseline create --config workspace-lint.yml
+workspace-lint scan --config wl.config.json          # the only command that exists
+workspace-lint baseline create --config wl.config.json
 workspace-lint explain REQ001
 ```
 
