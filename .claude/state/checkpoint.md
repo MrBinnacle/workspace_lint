@@ -359,10 +359,14 @@ adopted in S026. Each governs work that is not done, and nothing else in this fi
   first **publishable** `package.json`", which is what the shipped file already asserts about itself.
   The operative trigger is `private: true` being removed or a tree being renamed `src/`.
   Suite: `cd slice && npm run check` — **ONE command, and it typechecks first**: `npm run typecheck
-  && ` then TEN files, 38 + **64** + 56 + **109** + 124 + 89 + 50 + 76 + 56 + **31** = **693 assertions**,
-  offline, no network, no token. `CHECK-config.ts` is the tenth, added by #19; `CHECK-suite-registration.ts`
-  went 29 → 31 because two of its assertions are per-suite.
-  <!-- claim: count glob="slice/CHECK-*.ts" exclude="CHECK-harness.ts,CHECK-fakes.ts" equals=10 --> ~~`npm run check` DOES NOT TYPECHECK~~ — **#60 CLOSED**, and the
+  && ` then ELEVEN files, 38 + 64 + 56 + 109 + 124 + **92** + 89 + **52** + 76 + **61** + **33** =
+  **794 assertions**, offline, no network, no token. `CHECK-req001.ts` is the eleventh, added by #58;
+  `CHECK-suite-registration.ts` went 31 → 33 because two of its assertions are per-suite.
+  ⚠ **THIS SUM IS HAND-KEPT AND THE CLAIM GATE DOES NOT COVER IT.** It read `693` and ten terms
+  while the gate ran 696 across ten suites — one term, `CHECK-claims.ts`, was stale at 56 for 59 and
+  the total was wrong by three. **Re-derive it, never re-quote it:**
+  `for f in slice/CHECK-*.ts; do npx tsx $f | grep -cE '^(PASS|FAIL)'; done`.
+  <!-- claim: count glob="slice/CHECK-*.ts" exclude="CHECK-harness.ts,CHECK-fakes.ts" equals=11 --> ~~`npm run check` DOES NOT TYPECHECK~~ — **#60 CLOSED**, and the
   counterfactual is recorded: `main@f42fadd` printed `ALL CHECKS PASS` at **exit 0** over a tree
   carrying a real `TS2322`. The chain is `&&`, so a type error now stops the gate before any
   assertion runs. **`tsconfig.json` is a GLOB (`*.ts`), not a

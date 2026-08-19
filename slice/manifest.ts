@@ -132,6 +132,31 @@ export type RefFacts = {
   resolveCause: string | null;
 };
 
+/**
+ * What a (resource, property) pair entry knows about itself — #58, REQ001.
+ *
+ * SAME RULE AS `Loss` AND `RefFacts`: the site that observed the fact records
+ * it as structure. The pair's manifest key is `req:<resource>#<property>`, and
+ * a later reader that recovered the property name by splitting that string
+ * would be the third instance of the pattern-matching this repository has
+ * already been wrong about twice — and property names may contain `#`.
+ *
+ * `propertyId` IS THE OTHER HALF OF ADR-0010 DECISION 7 AND IT IS NULLABLE.
+ * The matchkey hierarchy is `propertyId/v1` then `propertyName/v1`, because
+ * neither identifier alone survives both a rename and a type change. The ID is
+ * read off the response — the vendored SDK types a property value as carrying
+ * its own `id` — and it is null when no map was read or the property was not in
+ * it. A null ID drops that pass rather than inventing a value for it.
+ */
+export type ReqFacts = {
+  /** The hyphenated resource ID the pair is about. The finding anchors here. */
+  resource: string;
+  /** The property name AS CONFIGURED. Operator-supplied, never a page title. */
+  property: string;
+  /** Observed on the response. Null when the map was never read or lacks the property. */
+  propertyId: string | null;
+};
+
 export type Entry = {
   key: ResourceKey;
   /**
@@ -164,6 +189,8 @@ export type Entry = {
   isRoot: boolean;
   /** Present on reference entries only. */
   ref: RefFacts | null;
+  /** Present on (resource, property) pair entries only. */
+  req: ReqFacts | null;
   /** Null unless an enumeration call was made for this resource. ADR-0013 decision 2. */
   enumeration: Enumeration | null;
 };
@@ -182,6 +209,7 @@ export type MarkArgs = {
   loss?: Loss | null;
   isRoot?: boolean;
   ref?: RefFacts;
+  req?: ReqFacts;
   /** ALREADY REDACTED by the caller. See Entry.link. */
   link?: string | null;
   /** Recorded by the site that made the enumeration call. See Entry.enumeration. */
@@ -212,12 +240,13 @@ export class Manifest {
     const slot = Manifest.slot(unit, key);
     const e =
       this.entries.get(slot) ??
-      { key, unit, alias: args.alias || key, safeLabel: args.safeLabel || key, stages: new Set<Stage>(), loss: null, link: null, isRoot: false, ref: null, enumeration: null };
+      { key, unit, alias: args.alias || key, safeLabel: args.safeLabel || key, stages: new Set<Stage>(), loss: null, link: null, isRoot: false, ref: null, req: null, enumeration: null };
     if (args.alias) e.alias = args.alias;
     if (args.safeLabel) e.safeLabel = args.safeLabel;
     if (args.link) e.link = args.link;
     if (args.isRoot) e.isRoot = true;
     if (args.ref) e.ref = args.ref;
+    if (args.req) e.req = args.req;
     if (args.enumeration) e.enumeration = args.enumeration;
     e.stages.add(args.stage);
     if (args.loss) e.loss = args.loss;

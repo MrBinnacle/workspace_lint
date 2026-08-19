@@ -78,7 +78,25 @@ export interface NotionPort {
    * Writing this value into a report unredacted is the #42 title leak through a
    * new door. `redactHref()` in references.ts is the only safe renderer of it.
    */
-  retrievePage(id: string): Promise<{ id: string; url?: string }>;
+  /**
+   * `properties` IS A FIELD AND NOT A SECOND METHOD — #58. REQ001's entire
+   * input is the page's property map, which this seam discarded until now:
+   * `GET /v1/pages/{id}` has always returned it and the declared return type
+   * threw it away. Keeping more of one response is not a new endpoint, so the
+   * three-endpoint surface in this file's header is unchanged and #51's
+   * ASK-FIRST precedent for adding an endpoint does not apply here.
+   *
+   * OPTIONAL, AND THE OPTIONALITY IS LOAD-BEARING. A response carrying no map
+   * and a map carrying nothing are different observations: the first is a
+   * failed hydration, the second is a page with no properties this integration
+   * can see. REQ001 maps them to different outcomes and NEITHER is a violation.
+   *
+   * VALUES ARE `unknown`, DELIBERATELY. A property value is a tagged union of
+   * nineteen shapes and this slice reads two facts off it — its `id`, and
+   * whether it carries a value. Declaring that union here would put a copy of
+   * the vendor's type in this file, and the copy is what drifts.
+   */
+  retrievePage(id: string): Promise<{ id: string; url?: string; properties?: Record<string, unknown> }>;
   listChildren(id: string, cursor?: string): Promise<BlockListResponse>;
 }
 
@@ -111,7 +129,8 @@ export function liveNotionPort(auth: string, notionVersion: string): NotionPort 
 
   return {
     whoami: () => translate(() => client.users.me({})) as Promise<{ name?: string; type?: string }>,
-    retrievePage: id => translate(() => client.pages.retrieve({ page_id: id })) as Promise<{ id: string; url?: string }>,
+    retrievePage: id =>
+      translate(() => client.pages.retrieve({ page_id: id })) as Promise<{ id: string; url?: string; properties?: Record<string, unknown> }>,
     listChildren: (id, cursor) =>
       translate(() => client.blocks.children.list({ block_id: id, page_size: 100, start_cursor: cursor })) as Promise<BlockListResponse>,
   };
