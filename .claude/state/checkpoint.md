@@ -587,8 +587,9 @@ is a standing fact and nothing else in this file records it.
 ## S030 — 2026-08-19 — the v0.1 rule catalog is complete, and the pair denominator moved a real headline
 
 **PHASE:** **BUILD, and the build is done.** `UNQ001` shipped — **all four v0.1 rules are built**:
-`SYS001`, `REF001`, `REQ001`, `UNQ001`. Two are configured. **PR #108 is OPEN and the operator
-merges.** `main` carries `f03d8a0`; the branch is `build/s030-unq001` at `575570e`.
+`SYS001`, `REF001`, `REQ001`, `UNQ001`. Two are configured. ~~**PR #108 is OPEN and the operator
+merges.** `main` carries `f03d8a0`; the branch is `build/s030-unq001` at `575570e`.~~ **MERGED — see
+the addendum at the foot of this band.** `main` carries `f16eca2`.
 
 **TESTS:** **TWELVE suites, exit 0, offline.** Re-derived, never quoted — the per-term assertion sum
 is gone from this file and the reason is in the standing block.
@@ -649,11 +650,12 @@ rule is catalogued but unbuilt **and** `unimplementedRules` turns out not to cov
 
 ### EXACT NEXT STEPS
 
-**Seventeen issues open after #108 merges** — 8, 25, 27, 29, 51, 69, 74, 78, 82, 84, 95, 96, 97, 100,
-101, 102, 103.
+**Seventeen issues open** — 8, 25, 27, 29, 51, 69, 74, 78, 82, 84, 95, 96, 97, 100, 101, 102, 103.
+Counted from the tracker after the merge, not predicted.
 
-1. ⛔ **Verify #108 merged before anything else** — with a merge-base ancestor check against
-   `origin/main`, never the MERGED badge. If it is not merged, do not branch new work off `main`.
+1. ~~⛔ **Verify #108 merged before anything else.**~~ **DONE — verified by ancestry 2026-08-19, not
+   by the MERGED badge.** `main` carries `f16eca2`; `#59` closed at 05:11Z. Branch new work off
+   `origin/main`. **Start at step 2.**
 2. **`#96`** — a worked `REQ001` entry in `wl.config.example.json`. ⭐ **Its scope grew this session
    and the ticket does not know it**: `UNQ001` is now configurable too, so the only worked example in
    the repository is one rule short as well as empty. `CHECK-config.ts` TEST 8 executes that file, so
@@ -676,9 +678,27 @@ and `#103` (how the claims gate covers STATUS claims) are frontier work and each
 **NEXT-REPO/CWD:** the `workspace_lint` repository root — single repo; state, plan and resume ritual
 all live there.
 
+### POST-CLOSE ADDENDUM (S030, after `8ba40e1` shipped) — #108 is merged, and the catalog is on `main`
+
+The operator merged PR #108 immediately after the close was written. **Verified by ancestry, not by
+the badge:** `575570e` is an ancestor of `origin/main`, merge commit `f16eca2`. `#59` closed
+automatically at 2026-08-19T05:11:03Z. The tracker returns **17 open**, which is what the band
+predicted — the prediction is now a count.
+
+**So `UNQ001` and the completed v0.1 catalog are on `main`**, along with this close itself
+(`8ba40e1`). Nothing in the band's substance changes: the rule is built, and its
+conformity-violation path is still **not proven live**.
+
+⚠ **This is the third close in a row the operator has merged mid-ritual or immediately after it** —
+PR #38 during S026, PR #94 during S027, and now #108. The standing constraint says to re-read
+external state immediately before committing a close; that is not sufficient here, because the merge
+landed *after* the commit. **A close's own PR status is stale the moment it is written, so write it
+as a pointer — "the operator merges every PR" — rather than as a state, and put the verification in
+the next session's step 1 where it already is.**
+
 ### WHAT ONLY THE OPERATOR CAN DO
 
-**Merging PR #108**, and every PR.
+~~**Merging PR #108**~~ — **done.** Every future PR, unchanged.
 
 **`#102`'s fixture backlog, now SEVEN items**, all in the Notion UI. The newest is the
 duplicate-title seed for `UNQ001`, filed this session with the three oracle numbers it moves — and
