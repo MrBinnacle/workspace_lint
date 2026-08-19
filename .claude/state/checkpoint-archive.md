@@ -3308,3 +3308,205 @@ on one machine with no reproduction path.
 **Promotion review** of the four quarantined skills.
 
 **NO SELF-ASSESS LINE, BY OPERATOR RULING 2026-08-17.** The ritual line records `verdict=n/a`.
+
+## S028 — 2026-08-19 — #70 decision 1 resolved, and the rule it blocked was never blocked
+
+**PHASE:** **BUILD.** No code shipped. This was a decision-and-audit session. **`#59` — `UNQ001`, the
+fourth and last v0.1 rule — is UNBLOCKED and is the next build.** `main` carries `2e5ec8a`.
+
+**TESTS:** **794 assertions, ELEVEN suites, exit 0, offline.** Verified at session start, re-derived
+per suite rather than quoted: 61+64+52+124+89+92+76+56+33+109+38. Unchanged — no code was touched.
+
+**TRACKER:** 15 open at start, **19 at close**. Four filed: `#100`, `#101`, `#102`, `#103`. Active
+decision count **1** (`#70`), read back from the tracker.
+
+### ⭐ The finding that reorders the queue: the blocker was self-imposed
+
+**`#59` was carried as "blocked on #70 decision 1" by this file, by `CLAUDE.md` and by the critical
+path, and the claim was false.** `#59` is written against the **Configured** reading of `UNQ001`,
+which `CONTEXT.md` already states and which no ADR contradicts. `#70` decision 1 governs whether a
+**second, policy-free mode** ships *in addition*. The last of the four v0.1 rules sat behind a
+decision it did not depend on.
+
+⚠ **Neither existing dereference check finds this shape.** `#59`'s two *stated* blockers, `#18` and
+`#19`, were closed — that check would have fired. `#70` decision 1 was genuinely open — that check
+passes. **Ask whether the ticket's own deliverable needs the decision's OUTPUT, not whether the
+decision is open.**
+
+### Decision 1, resolved — five SME seats, all `nominal`
+
+`role-council` no-ops on this project (no `.claude/role-council/`). Route used: five isolated
+subagent seats under `parallel-review-disposition-schema`, each with a named return channel
+(`SendMessage` to `main` plus one scratchpad path). The adversarial seat was told to default to
+refuted and **failed to refute**.
+
+**Out:** a built-in rule emitting conformity violations. It infers uniqueness from a title, and a
+title is a label — Principle 4's own wording, `ADR-0001` decision 4's own list.
+
+**In:** a third finding kind making no conformity claim, with the `UNQ001` config stanza printed
+beside it. Full synthesis is the 2026-08-19 comment on `#70`; the buildable form is **`#101`**.
+
+Six amendments, all verified at `file:line` by the synthesiser before being written:
+
+1. ⛔ **It is a separate AXIS, not a third `Conformity` value.** `ADR-0005` decision 1: *"Conformity
+   is absent when the evaluated set is empty. It is not a third enum value."* `slice/finding.ts:66`
+   is `Conformity = 'conforms' | 'violates' | null`. An undeclared rule has a **non-empty** evaluated
+   set and no conformity, so a third value puts `null` on two incompatible routes. **As an axis the
+   ADR supersedes nothing; as a Conformity value it becomes superseding** — a second ADR's cost
+   bought by a naming choice.
+2. ⛔ **Name it `undeclared-invariant`, NOT `review`.** `review` is SARIF's word for an axis
+   conflating three of this repository's distinctions. `Observation` is taken by `CONTEXT.md`. Map to
+   SARIF at the exporter edge only.
+3. ⛔ **TWO exit-byte channels break, not one.** `slice/scan.ts:275` — `newUnsuppressedFindings:
+   findings.length` reads array length, never kind, so every observation increments the sole input to
+   exit `1`. And `slice/scan.ts:194` — `const rules = opts.rules ?? BUILT_RULES`, ungated by config;
+   rows push at `249-250`, `verdict.ts:112` takes the vector **minimum**, `verdict.ts:144` compares
+   it to the threshold, **so the rule reaches exit `3` with no finding at all.** `scan.ts:248` is
+   already kind-guarded and is safe. `slice/rule.ts:41` is the `tsc` enforcement point.
+4. **Two seats disagreed about the coverage row, and the synthesis ruled: KEEP THE ROW, NARROW THE
+   PROMISE.** `rule.ts:51` defines `coverage() → null` as *"applicable set is empty"*, and an
+   undeclared rule's pairs are not empty — they are undeclared. **"Contributes nothing to the exit
+   byte" is true of the FINDING and false of the RULE.** *Revisit if:* a run reaches exit `3` from
+   this rule on a workspace whose coverage is otherwise complete.
+5. **Scope-relative emission**, which is ESLint's merge semantics: observations everywhere **except**
+   inside a declared `UNQ001` scope.
+6. **A `--review` reveal flag has NO prior art and is dropped.** Every escalation flag in the field —
+   `--max-warnings`, `--warn-error`, `--error`, `-warnings-as-errors` — promotes an **already-emitted**
+   result. Not one reveals a withheld one. The invariant is emit-always / opt-in-to-enforce.
+
+### ⭐ The counter-evidence survived and bought a timing constraint
+
+**Escalation-flag uptake was MEASURED, not assumed.** `GET /search/code`, 2026-08-19, ten
+tooling-mature orgs: ESLint `--max-warnings` **231 / 2,989 = 7.7%**; dbt `--warn-error` **≈0.5%**.
+**Beller et al. 2016 opened directly** — `https://azaidman.github.io/publications/bellerSANER2016.pdf`,
+§VI RQ 3: *"A little over 80% of all configuration files are never changed after their creation"*, and
+of the changes that happen **18% land the same day, 33.5% within the first week**, no later day above 1%.
+
+⭐ **So the promotion stanza MUST print on the FIRST run, while the operator is still writing the
+config. Offered on run 40 it is decoration.** An invitation is not a forcing function.
+
+**The base-rate attack failed on its own measurement.** Five live data sources, 996 rows: 8
+duplicate-title groups, 9 excess rows, **~1 in 8 legitimate**. Warning fatigue is a volume effect and
+eight lines is not a volume. ⚠ **Documented-tier, NOT proof-tier** — it ran through the Notion MCP
+connector and `ADR-0004` holds the connector does not clear the REST path. n=1, the operator's own
+workspace.
+
+**Strongest adverse precedent, and it belongs in the ADR:** SonarQube is retiring Security Hotspots,
+the largest review tier in the industry — *"we are gradually transitioning security hotspots to
+vulnerabilities"*, classification confusion, not false positives.
+
+**GitHub code scanning ignores `result.kind`** — nine result properties listed, `kind` not among them,
+established by enumerating every occurrence of the substring across the whole 1,013,712-byte page. So
+**the product must not delegate the distinction to `result.kind` alone in emitted SARIF.**
+
+**One prior-sweep row was BROKEN:** Great Expectations *does* ship a severity tier
+(`critical`/`warning`/`info`), but `success` is computed with no reference to it. Corrected
+generalisation: **non-failing is never a permanent property of a finding; it is always a disposition
+the operator controls — though the declaration may attach to the check rather than to the run.**
+⚠ GE's docs name `get_maximum_severity_failure`; the source defines `get_max_severity_failure`. **Do
+not paste that identifier into an ADR.** clang-tidy verified from source: ordinary warnings **exit 0**.
+
+### The first full board audit, and what it says about the claims gate
+
+Two read-only agents over all 17 open issues. Invariants 1–3 pass. **Invariant 4 — state role matches
+readiness — failed on five.**
+
+⭐ **EVERY COUNT THE AUDIT CHECKED WAS TRUE.** `Finding` has exactly ten fields; nineteen research
+files; three `NotionPort` methods; the 80.9% figure; all six of `#101`'s `file:line` sites, re-opened
+individually. **The claims gate hardened counts and the rot moved to STATUS claims** — blocker state,
+quoted document text, gate wording. **None of the ten findings is expressible in the gate's three
+kinds (`count` / `exists` / `absent`).** Filed as **`#103`**, with `claim: absent` over retired
+phrasing as the cheapest live option.
+
+⛔ **`CLAUDE.md` line 7 is FALSE as of this session** — *"`UNQ001` is #59, and it is blocked on #70
+decision 1."* It is hook-blocked and carries no annotation, so neither I nor the gate can touch it.
+**Every new session boots from that sentence.** Fixing it is next session's first act and needs the
+plan gate.
+
+⚠ **A SUBAGENT'S "VERBATIM" WAS AN ELISION, AND IT SHIPPED INTO A TICKET BEFORE THE DEREF STEP
+CAUGHT IT.** The audit seat reported `docs/research/notion-developer-platform.md` line 56 as stating
+verbatim *"the PAT fixture run in #27's own Definition of Done is no longer decision-relevant…"*. The
+file says *"Consequence for #27's own scope: the PAT fixture run in **its** Definition of Done…"* and
+carries a middle sentence the ellipsis swallowed. The **substance was right and the quotation was
+not**, and I relayed it into `#27`'s correction banner as a receipt. Corrected in place. **A
+subagent's quotation is a claim about a file, and it is checked the same way any other is — by
+opening the file.** The seats' `file:line` claims about `slice/` were all re-opened; this one was in
+`docs/research/` and slipped the same discipline.
+
+**Six bodies corrected with dated banners** (`#59` `#27` `#29` `#51` `#70` `#8`), `#70` retitled,
+three correction comments (`#69` `#84` `#74`). ⭐ **Banners go in the BODY, not a comment** — `#59`'s
+correction had sat in a comment since 2026-08-18 and the body went on saying "Blocked by #19 and #18".
+
+**The three worst instances:** `#27`'s Definition of Done would have made someone run a PAT fixture
+test `docs/research/notion-developer-platform.md` line 56 explicitly says to drop. `#51` said
+*"Decision required"* for a decision granted the day before, and its precision limit is refuted by
+proof-tier — a readable database returns **400 `validation_error`**, not 404. **`#7` was closed
+COMPLETED while its own last comment reads "Blocked on (1)"**, and `REAL_ROOT_ID` is still
+unexercised — two tickets inherited that closure as a completion claim. **Do not inherit completion
+from a closure.**
+
+### The one open ruling, and it is the operator's
+
+**The state-role vocabulary has no value for "evaluated and parked", so nine `deferred` issues express
+one state four different ways** — `ready-for-human` (#8 #25 #82 #101 #103), `needs-triage` (#69 #74
+#78 #97), `ready-for-agent` (#27), `needs-info` (#29). Consequence: `gh issue list --label
+needs-triage` returns issues already triaged. **Recommendation: the state role names WHO ACTS AT
+REVIVAL, and `needs-triage` means only "not yet evaluated"** — which moves #69, #74, #78, #97.
+
+**Also unratified:** eight of the nine revisit triggers were written in one bulk pass on 2026-08-18,
+each prefaced as *a proposal from a session that did not re-read this issue's full history*. **Three
+— #69, #74, #82 — carry a DIFFERENT trigger in their own body and nobody reconciled the two.** The
+deferred-issue invariant passes on the letter while the record says two contradictory things.
+
+### BLOCKERS
+
+**None for the build.** `#59` is unblocked and needs no ADR.
+
+### EXACT NEXT STEPS
+
+**Nineteen issues open** — 8, 25, 27, 29, 51, 59, 69, 70, 74, 78, 82, 84, 95, 96, 97, 100, 101, 102, 103.
+
+1. ⛔ **FIRST ACT: fix `CLAUDE.md` line 7.** It asserts `#59` is blocked on `#70` decision 1 and it is
+   not. **`EnterPlanMode` → the plan's FILES TABLE must name `CLAUDE.md`** (a mention in background
+   prose authorises the write but is not authorisation) → `ExitPlanMode`. While the plan is open,
+   also correct anything else in that file written against the pre-resolution state. **There is
+   deliberately no environment-variable escape.**
+2. ⛔ **CONTEXT HYGIENE, per §1.6 and §9.** S028 ran deep. **`/clear` entirely, then
+   `/session-start-from-state` — NEVER `/compact`** (summarisation sediment). Fold at the boundary,
+   not mid-phase.
+3. **`#59` — `UNQ001` configured.** The fourth and last v0.1 rule. Needs no ADR, no research.
+   **Settle two design questions BEFORE writing `findingsFrom`**, both recorded on the ticket:
+   does an empty title count as a value, and are five identical rows one finding or ten pairs? The
+   second bears on `ADR-0010`'s anchor, because a duplicate-group finding has *n* resources, not one.
+4. **`#100`** — `ready-for-agent`, agent brief posted. `README.md` only; it is not hook-blocked.
+5. **`#96`** — a worked `REQ001` entry in `wl.config.example.json`.
+6. **`#101`** — the `undeclared-invariant` tier. **Blocked on `#59`**, and its ADR needs the plan gate.
+7. **`#102`** — the five operator-only fixture items, gathered. Operator-only by construction.
+8. **Hook tests, `skill-router.py` first.** Three of nine hooks are tested. Its own session.
+
+**Off the critical path and deliberately shut:** #8, #25, #27, #29, #69, #74, #78, #82, #84, #97, #103.
+
+**NEXT-MODEL: fast tier.** Steps 1–3 are mechanical — a plan-gated one-line correction, a context
+fold, and a build ticket whose research is complete and whose two open questions are stated. **Do not
+straddle:** if the next session instead takes `#70` decisions 2–4 or `#103`, that is frontier work and
+gets its own session.
+
+**NEXT-REPO/CWD:** `C:\Users\mlpgr\2026_Projects\workspace_lint` — single repo; state, plan and
+resume ritual all at the root.
+
+### WHAT ONLY THE OPERATOR CAN DO
+
+**Merging this close's PR**, and every PR — see the standing block.
+
+**The state-role ruling** above. It is the one genuine fork this session leaves.
+
+**`#102`'s five fixture items**, all in the Notion UI. Two of them gate `#51`; one gates `#95`;
+one resets proof question Q1; one unlocks Q8 and the Q3 re-run.
+
+**Whether to reverse `#70`'s recorded decision** and build the four policy-free counting surfaces
+inside v0.1. The adversarial seat argued for it. **Recommendation: hold the recorded decision until
+`#59` ships.** This is v0.1 scope and is not the agent's.
+
+**Promotion review** of the four quarantined skills — see the standing block.
+
+**NO SELF-ASSESS LINE, BY OPERATOR RULING 2026-08-17.** The ritual line records `verdict=n/a`.
