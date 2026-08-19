@@ -46,7 +46,21 @@ question, or the words *decide* / *declare* / *whether*.
 Seeded 2026-08-18 across `#8 #25 #27 #29 #69 #70 #78 #82`. Two open issues were left unlabelled as
 genuinely ambiguous rather than guessed at: **#84** (mapping the owner's entropy invariants onto the
 catalogue) and **#74** (counting broken references in the boot-up document). Both could produce a
-decision or a report. Neither claim is made.
+decision or a report. ~~Neither claim is made.~~
+
+⚠ **HALF OF THAT ABSTENTION LAPSED AND THE SENTENCE WENT ON ASSERTING IT.** **`#74` gained
+`decision` and `deferred` on 2026-08-18**, so the claim *was* made for one of the two and this
+paragraph said otherwise until a board audit on 2026-08-19 dereferenced it. **`#84` is still
+unlabelled and that is still correct** — its body states *"Not a commitment to build any of them.
+The deliverable is a mapping … Whether any gap becomes a rule is a separate scope decision"*, which
+is the "document that records work already decided" this section excludes.
+
+The durable part is not the correction. **A recorded abstention is a claim about the tracker, and
+the tracker moves.** An abstention that names specific issue numbers rots the moment either one is
+relabelled, and nothing dereferences it, because it reads as a settled note rather than as a live
+assertion. Prefer stating the *test* that produced the abstention over listing the issues it applied
+to; where issue numbers are unavoidable, treat the sentence as a claim due re-checking, not as
+history.
 
 ## `deferred` — recorded, not scheduled
 
