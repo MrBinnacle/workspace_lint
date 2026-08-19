@@ -1,0 +1,112 @@
+[
+  {
+    "digest": "6f02ed665638",
+    "file": "CONTEXT.md",
+    "note": "**A rule's applicable set is derived from what the API returned, never from the subset the tool knows how to handle.** A denominator built from recognised inputs silently excludes everything the tool does not support, so it reports the highest coverage exactly where the tool is weakest."
+  },
+  {
+    "digest": "2afa7e2a6681",
+    "file": "PRODUCT.md",
+    "note": "This section replaces an earlier claim that the report states *\"exactly what the scan could not see.\"* That claim was wider than the API supports."
+  },
+  {
+    "digest": "0f2302100d39",
+    "file": "PRODUCT.md",
+    "note": "They cannot perform the eighth, and the reason is structural: an agent cannot certify the boundary of what it did not read, and Notion grants agents access per object rather than workspace-wide."
+  },
+  {
+    "digest": "6601e37ceafc",
+    "file": "PRODUCT.md",
+    "note": "Every agent Notion ships makes \"what is stale, and what could you not read\" worth more — and the second half is the question an agent structurally cannot answer about itself."
+  },
+  {
+    "digest": "c1ad405847c1",
+    "file": "PRODUCT.md",
+    "note": "- The API cannot prove scan completeness **against declared roots**."
+  },
+  {
+    "digest": "186f7debfd9a",
+    "file": "docs/adr/0001-linter-not-entropy-engine.md",
+    "note": "The proof gate fails: the API cannot produce a complete coverage manifest and stable findings without write access or an LLM."
+  },
+  {
+    "digest": "70da8ea84cbe",
+    "file": "docs/adr/0002-coverage-is-measured-against-declared-roots.md",
+    "note": "**No endpoint enumerates a connection's grant.** Search, `/v1/users`, `/v1/users/me`, `/v1/oauth/introspect`, and the complete public endpoint index were checked."
+  },
+  {
+    "digest": "d66eb982f3fc",
+    "file": "docs/adr/0002-coverage-is-measured-against-declared-roots.md",
+    "note": "Nothing returns the set of objects an integration may read."
+  },
+  {
+    "digest": "55e77cb83e11",
+    "file": "docs/adr/0003-sarif-and-sonarqube-replace-eslint-as-the-anchor.md",
+    "note": "| Suppression | inline comments in the analysed artifact | you cannot write `/* eslint-disable */` into someone's Notion page; suppressions must be external and durable |"
+  },
+  {
+    "digest": "0a366dc60593",
+    "file": "docs/adr/0005-outcome-splits-into-conformity-and-evidence-sufficiency.md",
+    "note": "**The funnel's stage boundaries do not correspond to anything the Notion API distinguishes.** If enumeration and fetching cannot be separated in practice, condition (b) of the pervasiveness predicate loses its input and the disposition needs a different trigger."
+  },
+  {
+    "digest": "6b6f070b38c2",
+    "file": "docs/adr/0006-truncation-is-detected-by-a-positive-test-on-one-endpoint-family.md",
+    "note": "`has_more: false` is precisely the value that lied at the data-source cap before 2026-04-20, and there is no documented reason to believe the block-children endpoint is immune."
+  },
+  {
+    "digest": "98eea6dd6b5b",
+    "file": "docs/adr/0007-search-carries-a-truncation-signal.md",
+    "note": "**No code path needs revision.** There is no scan code yet, and when there is, decision 1 covers this endpoint already."
+  },
+  {
+    "digest": "f6540bdc6617",
+    "file": "docs/adr/0009-the-integration-is-the-primary-credential-and-the-operator-owns-the-boundary.md",
+    "note": "- **Depends on:** ADR-0002 decision 1 (no endpoint enumerates a connection's grant), which is what makes decision 4 necessary rather than merely cautious."
+  },
+  {
+    "digest": "b3993dbb4a08",
+    "file": "docs/adr/0009-the-integration-is-the-primary-credential-and-the-operator-owns-the-boundary.md",
+    "note": "**The tool cannot see either event.** ADR-0002 finding 1 established that no endpoint enumerates a connection's grant, and the overview page re-confirms it today: it describes no endpoint that lists the content a token can reach, for any connection type."
+  },
+  {
+    "digest": "b0358687b558",
+    "file": "docs/adr/0009-the-integration-is-the-primary-credential-and-the-operator-owns-the-boundary.md",
+    "note": "There is no endpoint returning a user's accessible set, so there is no before and no after to compare."
+  },
+  {
+    "digest": "92e6bcf8bf3b",
+    "file": "docs/adr/0009-the-integration-is-the-primary-credential-and-the-operator-owns-the-boundary.md",
+    "note": "ADR-0002 decision 4 was refuted for exactly this shape of error — a capability assumed from documentation, absent from every real response — and asserting a detection the API cannot perform would repeat it in the credential layer."
+  },
+  {
+    "digest": "faa307b771a5",
+    "file": "docs/adr/0009-the-integration-is-the-primary-credential-and-the-operator-owns-the-boundary.md",
+    "note": "- **Non-negotiable — decision 4's split between detected and disclosed.** Claiming a detection the API cannot perform is Non-goal 4 of `CONTEXT.md`."
+  },
+  {
+    "digest": "08e101c74810",
+    "file": "docs/adr/0010-baseline-matching-is-a-matchkey-hierarchy-over-a-resource-anchor.md",
+    "note": "**`REF001` has a one-key hierarchy and that is not a defect.** There is no second axis to vary: if the target ID churns, no key composed of Notion identifiers survives."
+  },
+  {
+    "digest": "81a20802296f",
+    "file": "docs/adr/0010-baseline-matching-is-a-matchkey-hierarchy-over-a-resource-anchor.md",
+    "note": "New evidence about the API cannot make a non-transitive relation define a partition."
+  },
+  {
+    "digest": "0657d06e3945",
+    "file": "docs/adr/0014-search-has-no-role-in-the-v0.1-scan.md",
+    "note": "reopened: the operator supplies the denominator because no endpoint enumerates a connection's grant,"
+  },
+  {
+    "digest": "8fe03331398b",
+    "file": "docs/spec/REF001-link-recognition.md",
+    "note": "A Notion page can therefore be served from a domain **Notion does not own and this project cannot"
+  },
+  {
+    "digest": "39bdb0d9eeeb",
+    "file": "docs/spec/v0.1-hydration-map.md",
+    "note": "Because `GET /v1/blocks/{id}/children` is `unattested`, the scan cannot know it happened, and by"
+  }
+]

@@ -1,7 +1,8 @@
 # `docs/research/` — index
 
-Twenty files. **One line per file: the question it answers, and what it refutes.**
-<!-- claim: count glob="docs/research/*.md" exclude="INDEX.md" equals=20 -->
+**One line per file: the question it answers, and what it refutes.** The count is carried by the
+claim below and is deliberately not written out in prose — see "Keeping this honest".
+<!-- claim: count glob="docs/research/*.md" exclude="INDEX.md" equals=21 -->
 
 
 This exists because a reading list that names a directory does not tell you which file answers your
@@ -36,10 +37,14 @@ assertion and it is beaten by `docs/proof/`. Two exceptions are called out below
 | `executable-spec-adoption-prior-art.md` | Who authors executable specifications, and do inline assertions survive? | **Two questions, see the note below.** The Gherkin promise was never audited — surveys show 60.7% developers, 1.8% business analysts. Suppression false-positive rate is **4–5%**; a third of suppressions silence a claim the team agrees with. The failure mode is **freezing, not deletion**. Behind **#69**. |
 | `inconclusive-verdict-prior-art.md` | Does any assertion system distinguish "failed" from "could not be evaluated"? | **Closes half of the checkpoint's standing NOT CHECKED** — Razniewski & Nutt (VLDB 2011) is free at `vldb.org` and now read. SMT-LIB's `unknown` + `:reason-unknown` is the design; **budget exhaustion may never return a refutation**. Does not contradict `static-analysis-prior-art.md`. Behind **#69** and **#71**. |
 | `non-notion-tool-fit-2026-08-19.md` | Which non-Notion tools best fit the current coverage-verifier shape? | Settles the practical pivot order: Jira first, then GitHub/Linear, with Slack and document stores as evidence connectors rather than primary products. |
+| `vendor-assumption-drift-prior-art.md` | Our written model of a vendor API drifts, nothing detects it, and the errors ran one direction. What exists? | **Refutes contract testing as the frame** — Pact's own FAQ excludes public APIs, and BDCT and Spring Cloud Contract were chased and excluded too. **Refutes "make the agent cite sources" as sufficient** — 51.5% of cited sentences fully supported, and abstention fails ~40% of the time. **Nothing covers negative capability claims**, which all four of our reversals were. AGM is semantics; **TMS is the mechanism**, and 9 locators in ~180 assertions is why retraction never propagated. Directional bias is a separate literature (Cooke seed questions). Behind **#124**, **#125**, and the SME instrument. |
 
-`sweep-raw/` holds the verbatim scout reports and the two verification reports behind
-`coverage-artifact-prior-art.md`, including every scout's dissent section. It is evidence for that
-file, not a twenty-first entry.
+`sweep-raw/` holds verbatim scout reports — the two verification reports behind
+`coverage-artifact-prior-art.md` including every scout's dissent section, and the three behind
+`vendor-assumption-drift-prior-art.md` (`contract-testing.md`, `grounded-claim-verification.md`,
+`belief-revision-and-calibration.md`) including every blocked-route table. **It is evidence for the
+files above, never an entry of its own** — the ordinal that used to end this sentence was a hand-kept
+scalar of exactly the kind DRIFT INSTANCE 1 records, and it is removed rather than incremented.
 
 ## Four files whose tier or scope needs a word
 
@@ -87,6 +92,13 @@ number** — and was corrected in the #61 pass.
 add a row when you add a file — **held**. A hand-kept count that duplicates a fact the table already
 carries is what broke, and it broke silently because nothing reads the header against the table.
 A generated index removes the scalar rather than reminding anyone to update it.
+
+**2026-08-19 — the two hand-kept scalars in this file are GONE, not updated.** Adding
+`vendor-assumption-drift-prior-art.md` would have required editing three numbers: the claim, the
+header's "Twenty files", and the `sweep-raw/` ordinal. Only the **claim** is checked by the gate; the
+other two were the unchecked mirrors that produced DRIFT INSTANCE 1. Both are deleted and the claim
+now carries the count alone — G-010, *keep a pointer, never a mirror*. **This is not a second drift
+instance; the counter stays at one.**
 
 ***Revisit if:*** this file drifts from the directory **a second time**. At two, the honest fix is a
 generated index or a check in the suite, not a hand-maintained list — the same conclusion issue #55

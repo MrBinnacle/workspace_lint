@@ -188,8 +188,9 @@ governs a design decision that has not been taken yet and the code alone does no
   updating it would assert that it is live. Verified 2026-08-18 when the count went 13 → 19 and
   README's example correctly stayed silent.
 - **`docs/research/` has an INDEX.md as of 2026-08-17 (#54). Start there, not at the directory.**
-  Twenty files, one line each: the question it answers and what it refutes.
-  <!-- claim: count glob="docs/research/*.md" exclude="INDEX.md" equals=20 -->
+  One line each: the question it answers and what it refutes. The count is claim-gated below and is
+  deliberately not written out here.
+  <!-- claim: count glob="docs/research/*.md" exclude="INDEX.md" equals=21 -->
   **Four** entries carry notes
   rather than rows — `notion-live-probe.md` holds **observations** but is documented-tier and that is
   **not** a misfiling (it ran through an OAuth connector and ADR-0004 says it "does not clear the REST
@@ -429,7 +430,7 @@ The check: `gh issue list --label decision --state open --json number,labels --j
   ⚠ That loop's exclusions are NOT the gate's: it counts `CHECK-harness.ts` and `CHECK-fakes.ts`,
   which are helpers that assert nothing and print nothing, so they contribute zero and the total is
   right by accident. The claim comment below excludes them deliberately.
-  <!-- claim: count glob="slice/CHECK-*.ts" exclude="CHECK-harness.ts,CHECK-fakes.ts" equals=12 --> ~~`npm run check` DOES NOT TYPECHECK~~ — **#60 CLOSED**, and the
+  <!-- claim: count glob="slice/CHECK-*.ts" exclude="CHECK-harness.ts,CHECK-fakes.ts" equals=13 --> ~~`npm run check` DOES NOT TYPECHECK~~ — **#60 CLOSED**, and the
   counterfactual is recorded: `main@f42fadd` printed `ALL CHECKS PASS` at **exit 0** over a tree
   carrying a real `TS2322`. The chain is `&&`, so a type error now stops the gate before any
   assertion runs. **`tsconfig.json` is a GLOB (`*.ts`), not a
