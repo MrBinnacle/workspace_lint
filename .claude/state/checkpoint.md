@@ -575,6 +575,20 @@ operator-only items are hoisted into the standing block above and all three gate
    if it has aged past 24h** — the guard checks mtime, not intent. Read
    `docs/spec/v0.1-hydration-map.md` §1.3 alongside it.
 2. **#70 decision 1**, then **#59 — `UNQ001`**. That completes the four v0.1 rules.
+   ⭐ **OPERATOR DIRECTIVE 2026-08-19: consult expert domain SMEs on the decision work.** Applies to
+   #70 decision 1, #78 and #82 — the three open decisions where a competent practitioner in a named
+   role would have a view the code cannot supply. **Do not ask the operator which roles**;
+   `CLAUDE.md` §0.7 supplies the roster and says to cover them from the role's perspective,
+   researching where the role's domain requires it.
+   ⛔ **`role-council` SILENTLY NO-OPS ON THIS PROJECT.** Verified 2026-08-19: it requires
+   `<project-root>/.claude/role-council/config.md` and this repo has no `.claude/role-council/`
+   directory at all. The skill treats that absence as opt-out and costs nothing — **including
+   costing you the council.** Two working routes: **(a)** write the config, which is itself a real
+   task and needs the role roster and tree match-sets this project would supply; or **(b)** run SME
+   seats as subagents, using `parallel-review-disposition-schema` so the seats join cleanly, and
+   **`subagent-research-reliability` Check 0 for the return contract** — name `SendMessage` to
+   `main` plus one authorised scratchpad path in every dispatch, or the seats' findings are a dead
+   letter. Route (b) is what worked this session.
 3. **#51's implementation**, once the two operator preconditions are met. `notion-port.ts`'s header
    is wrong until then.
 4. **Disposition sweep — fast tier, its own session.** **#71** record and close; **#74** count the
@@ -738,3 +752,47 @@ the next session rather than being a dated record.
 
 **Nothing else in the S026 band is superseded.** The gate figure (696), the merge SHAs, the
 `findingFor(...)!` correction to three, and every hoisted constraint stand as written.
+
+#### SECOND ADDENDUM (S026, same close `2487ab5`) — the SME directive, and the council skill it would have reached is off
+
+**Operator directive, 2026-08-19: consult expert domain SMEs next session.** Recorded in EXACT NEXT
+STEPS above, in place, because that block is read forward. It applies to the three open decisions —
+**#70 decision 1, #78, #82** — and not to #58, which is a build against a written plan.
+
+⛔ **The obvious instrument does not work here, and it fails silently.** `role-council` requires
+`<project-root>/.claude/role-council/config.md` and treats its absence as opt-out. **This repository
+has no `.claude/role-council/` directory** — verified 2026-08-19; `.claude/` holds only
+`settings.local.json` and `state/`. A session that reaches for the council gets a clean no-op and no
+signal that it got one. **That is the same defect class as a skill named without its reachability**
+and as the dead letter below: an instrument that is present, correct, and unreachable.
+
+The routes that do work are named in next-step 2. Route (b) — SME seats as subagents — is the one
+this session actually exercised, and it exercised the failure mode too.
+
+#### The escalation was audited, and the bound held
+
+A **bounded write escalation** was granted to three read-only scouts: exactly one file each, at one
+named absolute path in the scratchpad, with the repository and the tracker explicitly out of scope.
+Audited after return rather than assumed:
+
+- **Three files written, one per scout, none elsewhere.**
+- **Repository working tree clean** — no scout write reached `slice/` or `docs/`.
+- **#71, #74 and #78 carry zero comments.** #70's five comments are all the operator's and the
+  latest predates the dispatch by two hours.
+
+**Autonomy is earned per segment through audited evidence, and this is the evidence.** The bounded
+form is the redundant return route from here; the unbounded read-only default stays the norm.
+
+#### `subagent-research-reliability` was patched, and it lives outside this repository
+
+`~/.claude/skills/subagent-research-reliability/SKILL.md`. **Machine-local and gitignored**, like
+every other hook and skill — the risk already recorded in the standing block. It gained:
+
+- **Check 0 — name the return channel in the dispatch**, with *dead letter* as its leading word and
+  this session as its worked example. Two routes, `SendMessage` to `main` plus one authorised path.
+- **A widened Check 2.** It covered citations and web sources; this session's returns carried no
+  URLs at all and three supporting claims were still false. It now covers **checked negatives first**
+  — a false negative is the one error that looks like a clean result — plus quoted rules and
+  locators, each with its own re-run.
+
+**No verdict is re-opened by this addendum** and none is solicited. One session, one close.
