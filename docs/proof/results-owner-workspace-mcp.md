@@ -36,9 +36,23 @@ long-lived workspace: six calls.**
 **Two refuted, two confirmed, two unmet.** The two unmet ones are unmet because the run stopped at
 an existence finding; they are not silently marked passed.
 
-⚠ **A prior belief was also refuted and is not in the table.** Project memory recorded this workspace
-as "352+ flat top-level pages". The enumeration returns **57**. The memory has been corrected. A count
-carried across sessions and never dereferenced is the fastest-rotting claim there is.
+⚠ **A prior belief was also refuted, and the way it was refuted is worth more than the number.**
+Project memory recorded this workspace as "352+ flat top-level pages". The enumeration returns **57**.
+
+⛔ **THE "352" CAME FROM READING A PAGINATION CURSOR AS A COUNT.** `list-private-pages` with
+`limit=10` returns `nextCursor: "offset:221"`. Continuing from that cursor returns the remaining 46
+items and stops. `221` is an **opaque** cursor — the tool's own schema says so — and it indexes
+nothing a caller may interpret. `limit=200` returns all 57 in one page with no cursor at all.
+
+⚠ **This session nearly made the same error in the opposite direction.** On seeing `offset:221` after
+having recorded 57, the first move was to assume the 57-item response had been silently truncated and
+that the scoring above was invalid. **It was not.** Both readings were inferences from an opaque
+value; only paginating to exhaustion and counting rows settled it.
+
+**The lesson is this project's own, arriving from outside:** an enumeration's completeness may be
+read from its termination behaviour, never from a number inside its cursor. That is `ADR-0013`'s
+attestation rule — *no call, no residual* — applied to a paginator, and it is the second time a
+count carried across sessions and never dereferenced has been wrong.
 
 ## The finding
 
