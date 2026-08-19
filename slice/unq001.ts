@@ -300,6 +300,10 @@ export const UNQ001: Rule = {
            * entry. Null for a resource the scan staged from a parent's block
            * listing, which has no url to capture. */
           link: links.get(anchor.resource) ?? null,
+          /* NULL, for REQ001's reason. The subject is the resource's own
+           * property value; the co-participants are already named in the
+           * evidence, and the anchor is the address. */
+          source: null,
           message: `property "${o.property}" carries a value shared with ${others.length} other resource(s) in the declared uniqueness scope`,
         };
       })

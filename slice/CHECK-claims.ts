@@ -344,6 +344,19 @@ head('TEST 6 — every claim in the annotated documents holds at HEAD');
  * every .md in the repository — would sweep `docs/inputs/` and `docs/proof/`,
  * which are dated records that must NOT be corrected to match the present. */
 const ANNOTATED = [
+  /* ADDED 2026-08-19, issue #100. The entry document went false in its opening
+   * paragraph and stayed false until an external reviewer transcribed the clause
+   * back to us — the first case of an unannotated sentence in README.md being
+   * caught against the code rather than by a reader.
+   *
+   * ⚠ REGISTERING IT RAISES THE FLOOR AND DOES NOT CLOSE THAT HOLE, and saying
+   * so is the point. The three implemented kinds are `count`, `exists` and
+   * `absent`; none of them can express "the report carries a repair action",
+   * which is a claim about behaviour. What they DO cover is the rule-build
+   * status the file restates in three places — the shape that has stood false in
+   * three or more surfaces on five occasions. Extending the kinds to status
+   * claims is issue #103. */
+  'README.md',
   'PRODUCT.md',
   'CONTEXT.md',
   'CLAUDE.md',

@@ -300,6 +300,7 @@ const collapsed: Rule = {
         isRootMiss: false,
         evidence: { object: e.req?.resource ?? e.key, location: 'the collapsed mapping', observed: 'no value', expected: 'a property carrying a value' },
         link: null,
+        source: null,
         message: `required property "${e.req?.property ?? ''}" is present and carries no value`,
       }));
   },

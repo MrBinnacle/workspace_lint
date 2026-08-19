@@ -57,8 +57,30 @@ import {
   type Finding,
 } from './finding.js';
 import { redactHref } from './references.js';
+import { hyphenate } from './ids.js';
 
 export const REF001_ID = 'REF001';
+
+/**
+ * The rendered form of a source ID — full and hyphenated, or the fallback string
+ * verbatim.
+ *
+ * ⛔ THE TWO FORMS IN ONE REPORT ARE A DEFECT, not a cosmetic difference.
+ * `scan.ts` hands `extractReferences` the raw page ID it read from the traversal,
+ * so `RefFacts.sourcePage` is BARE while `targetId`, every anchor and every
+ * manifest row are hyphenated. A reader given a bare source page cannot match it
+ * against the manifest row for the same page by eye, and Notion IDs are
+ * time-ordered — resources created in one session share their leading hex, which
+ * is the standing constraint that made #42's run read like a double-count.
+ *
+ * `hyphenate` returns null for anything that is not 32 hex digits, which is
+ * exactly the behaviour the fallbacks need: `'(unrecorded page)'` and
+ * `'(unknown block)'` pass through untouched rather than being mangled or
+ * blanked. Normalising here rather than in `references.ts` keeps the capture
+ * site recording what it observed and leaves the rendering convention to the
+ * rule, which is where every other ID on this finding is already put in form.
+ */
+export const idForm = (raw: string): string => hyphenate(raw) ?? raw;
 
 /**
  * ADR-0011 decision 2: REF001's coverage item is an internal reference, NOT a
@@ -174,6 +196,15 @@ export const REF001: Rule = {
          * page title. Null for a Route A structural reference, which carries an
          * ID and no URL at all. */
         link: facts?.href ? redactHref(facts.href) : null,
+        /* THE ADDRESS. Read straight off the facts the discovering site
+         * recorded — never recovered by parsing `e.key`, which is the shape
+         * `RefFacts`' own docstring exists to forbid and which this repository
+         * has recovered structure from prose and been wrong about twice.
+         * The fallbacks travel verbatim; `references.ts` writes them precisely
+         * so an absent origin is visibly absent rather than blank. Null only
+         * when the entry carried no facts at all, which is the same condition
+         * every other field on this finding already degrades under. */
+        source: facts ? { page: idForm(facts.sourcePage), block: idForm(facts.sourceBlock) } : null,
         /* No title, and no verbatim href: both can carry workspace content into
          * every consumer of this finding, redaction flag or not. */
         message: `internal reference does not resolve — the target is unreachable (${facts?.via ?? 'unrecorded route'})${kindQualifier}`,

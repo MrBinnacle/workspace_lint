@@ -2,7 +2,9 @@
 
 A local, read-only CLI that tests a Notion workspace against explicit structural rules.
 
-Run one command. Get a reproducible report: which declared rules no longer hold, the evidence for each defect, a direct link to the affected resource, and one plain repair action.
+Run one command. Get a reproducible report: which declared rules no longer hold, what the scan could not see, the evidence for each defect, and where the defect is — the page and the block that carry it.
+
+> **Until 2026-08-19 this sentence promised a fourth output: one plain repair, per defect, stated as an action. No finding carried one** ([issue #100](../../issues/100)). The finding type has no such field, and `PRODUCT.md` withdrew the promise in [PR #83](../../pull/83): the product removes the **census**, not the fix. The false clause reached a third party's description of the product on first contact, which is the consequence — not the drift itself. What replaced it is what the report now actually emits: `REF001` findings render the source page and block, so a dead reference carries an address instead of being an alarm. The phrase is described here rather than quoted, because this ticket's falsifier greps for it.
 
 Working tagline: *CI for Notion workspaces.*
 
@@ -35,7 +37,16 @@ Stop condition, unchanged and not triggered: stop the project if the scan cannot
 
 ## Rules in v0.1
 
-Two built-in, six configured.
+Two built-in, six configured. **All four v0.1 rules are built** — `SYS001`, `REF001`, `REQ001` and
+`UNQ001`. The other four catalog IDs are deferred, not cut.
+<!-- claim: exists path="slice/sys001.ts" -->
+<!-- claim: exists path="slice/ref001.ts" -->
+<!-- claim: exists path="slice/req001.ts" -->
+<!-- claim: exists path="slice/unq001.ts" -->
+<!-- claim: absent path="slice/sch001.ts" -->
+<!-- claim: absent path="slice/rel001.ts" -->
+<!-- claim: absent path="slice/dep001.ts" -->
+<!-- claim: absent path="slice/can001.ts" -->
 
 | ID | Checks | Mode |
 | --- | --- | --- |
@@ -50,13 +61,18 @@ Two built-in, six configured.
 
 `SYS001` is the **finding identity for a coverage gap** and does not carry the run-failure decision. Do not restate it as "scan result is incomplete" — incompleteness is now a field on every rule and a disposition on the report (ADR-0005 decision 4, and `CONTEXT.md`'s settled defaults, which name that exact re-widening as the thing not to do).
 
-`SYS001`, `REF001` and `REQ001` are built and running. The other five are deferred, not cut.
+`SYS001`, `REF001`, `REQ001` and `UNQ001` are built and running. The other four are deferred, not cut.
+**Built is not proven:** `UNQ001`'s conformity-violation path has never run against the live API,
+because every readable title in the fixture is distinct — a live run exercises the *conforming*
+path. Six of its criteria are recorded as offline-only in
+[`docs/spec/UNQ001-uniqueness.md`](docs/spec/UNQ001-uniqueness.md) §6, and `REQ001` has the identical
+limitation. Both are released by the same operator action, [issue #102](../../issues/102).
 
 Six of eight need configuration, so a first run reports coverage and little else until you declare an invariant. That cost is deliberate — see [ADR-0001](docs/adr/0001-linter-not-entropy-engine.md).
 
 ### Configuring a rule
 
-`wl.config.example.json` carries `"rules": []`. **That is no longer because every entry is rejected — a `REQ001` entry is accepted and executed as of #58.** `SYS001` and `REF001` are built-in and take no configuration; of the six Configured rules, `REQ001` is built and the other five are not, so an entry naming one of those five is still rejected at exit 4 with a message that says which. The example ships empty because a worked entry has to name a scope ID that resolves in your workspace, not in this repository:
+`wl.config.example.json` carries `"rules": []`. **That is no longer because every entry is rejected — a `REQ001` entry is accepted and executed as of #58.** `SYS001` and `REF001` are built-in and take no configuration; of the six Configured rules, `REQ001` and `UNQ001` are built and the other four are not, so an entry naming one of those four is still rejected at exit 4 with a message that says which. The example ships empty because a worked entry has to name a scope ID that resolves in your workspace, not in this repository:
 
 ```jsonc
 "rules": [
@@ -66,16 +82,24 @@ Six of eight need configuration, so a first run reports coverage and little else
 
 The loader **rejects and never resolves**. A scope addressed by name, alias or URL is refused with the same message a declared root gets — identity is the stable ID. A missing scope is refused, because a required-property rule with no scope would infer applicability from nothing. A rule ID this binary cannot execute is refused rather than ignored: an accepted-but-unevaluated rule would produce a green run over a rule that never ran, which is the failure this tool exists to detect. Every refusal exits `4`.
 
-An example that the tool refuses to load is not an example, which is why the shipped file declares no rule until one is built.
+An example that the tool refuses to load is not an example. That was the original reason the shipped
+file declared nothing, and it **no longer holds** — two Configured rules are built and an entry for
+either one loads and executes. The remaining reason is the scope ID, which must resolve in your
+workspace rather than in this repository. Shipping a worked entry anyway is [issue #96](../../issues/96);
+`CHECK-config.ts` TEST 8 executes that file, so whatever is added has to load.
 
 ## Intended command surface
 
 Provisional beyond `scan`, which exists.
 
+> **Corrected 2026-08-19.** This block named `workspace-lint.yml` in two of four lines and showed a
+> bare `scan` with no config. Neither is real: `cli.ts` requires `--config <path.json>`, `loadConfig`
+> parses JSON, and there is no YAML path anywhere in the build. Same defect class as the opening
+> paragraph — the entry document describing a surface the code does not have.
+
 ```bash
-workspace-lint scan                                  # coverage + built-in checks
-workspace-lint scan --config workspace-lint.yml      # full policy scan
-workspace-lint baseline create --config workspace-lint.yml
+workspace-lint scan --config wl.config.json          # the only command that exists
+workspace-lint baseline create --config wl.config.json
 workspace-lint explain REQ001
 ```
 

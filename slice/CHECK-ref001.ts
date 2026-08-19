@@ -16,7 +16,7 @@
 
 import { createHarness, reportSection, requiredSection } from './CHECK-harness.js';
 import { scan } from './scan.js';
-import { renderReport } from './report.js';
+import { renderReport, SOURCE_NOT_APPLICABLE } from './report.js';
 import { hyphenate } from './ids.js';
 import { headlineCoverage } from './finding.js';
 import { REF001, REF001_ID, refKey } from './ref001.js';
@@ -450,5 +450,87 @@ const UNIT_WORDS = /resources|references|rules|blocks|pages|ms|requests|threshol
 const deadReport = renderReport(rDead, {}).join('\n');
 const bare = deadReport.split('\n').filter(l => /\d+\/\d+/.test(l) && !UNIT_WORDS.test(l));
 check('no line prints a ratio without naming its unit', bare.join(' | '), '');
+
+/* =========================================================================
+ * TEST 10 — #100: the finding names WHERE the link is, not only what it points at
+ * =========================================================================
+ * The first run against a real workspace reported two unresolvable references
+ * and named neither containing page (docs/proof/results-first-real-workspace.md
+ * §5). On a twenty-resource fixture the reader can find them by opening twenty
+ * pages; on several hundred they cannot, and the finding degrades to an alarm
+ * with no address.
+ *
+ * The data was never missing. `references.ts` recorded it at the point of
+ * discovery and `report.ts` rendered it zero times.
+ */
+
+head('TEST 10 — a REF001 finding names its source page and block');
+
+check('the finding carries a source at all', dead.source !== null, true);
+check('  and the source page is the page whose block content held the link', dead.source!.page, hyphenate(ROOT));
+check('  and the block is the one the recogniser read it out of', dead.source!.block, 'block-link');
+
+/* ⛔ THE ID FORM IS THE ASSERTION, not a formatting preference. scan.ts hands
+ * extractReferences the BARE page ID, so this field arrived unhyphenated while
+ * every anchor and manifest row beside it was hyphenated. Notion IDs are
+ * time-ordered and share leading hex, so a reader cannot match two forms of the
+ * same ID by eye — the standing constraint #42's run established. */
+check('  the source page is FULL and HYPHENATED, like every other ID in the report', /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(dead.source!.page), true);
+check('  and it is the same form the anchor uses, so the two can be matched', dead.source!.page.length, dead.anchor.resource.length);
+
+/* The address is USABLE: it names a page the manifest also holds, so the reader
+ * can go from the finding to the row. A source naming a page absent from the
+ * manifest would be an address to nowhere. */
+check('  and the manifest holds that page, so the address resolves to a row',
+  rDead.manifest.all().some(e => e.key === hyphenate(ROOT)), true);
+
+head('TEST 10b — the source reaches the rendered report, on its own line');
+
+const deadTerm = renderReport(rDead, {}).join('\n');
+check('the terminal report prints the source page', deadTerm.includes(hyphenate(ROOT)!), true);
+check('  labelled, so a bare ID is not left to be guessed at', /source: page [0-9a-f-]{36} · block /.test(deadTerm), true);
+
+/* NOT a substitutable control: the assertion must be able to fail. Before #100
+ * `grep -c sourcePage slice/report.ts` returned 0 and the line below was absent
+ * from every format. */
+check('  and the FINDINGS section is where it appears, not some other section',
+  requiredSection(deadTerm, 'FINDINGS').includes('source: page'), true);
+
+head('TEST 10c — the source is IDs only, and no title reaches any line of it');
+
+/* Origin's invariant, asserted rather than trusted: both halves are IDs. The
+ * fixture's child page carries the title `wl-revoke-parent`, so a source field
+ * that had picked up an alias anywhere would show it. */
+const SOURCE_LINES = deadTerm.split('\n').filter(l => l.includes('source: page'));
+check('there is at least one source line to test — the check is not vacuous', SOURCE_LINES.length > 0, true);
+check('  and no source line carries the fixture\'s page title', SOURCE_LINES.some(l => l.includes('wl-revoke-parent')), false);
+check('  nor any non-ID text beyond the labels', SOURCE_LINES.every(l => /^ *source: page [0-9a-f-]+ · block [0-9a-z-]+$/.test(l)), true);
+
+head('TEST 10d — MUTATION: put an alias in the source and the leak assertions fire');
+
+/* The control for TEST 10c. Substitute the title for the ID in a rendered
+ * source line and confirm both assertions that passed above now fail. A
+ * redaction check that cannot fail is the substitutable control spec §6 names,
+ * and this repository has shipped one: #42 printed a page title four lines
+ * under a report asserting titles were redacted. */
+const MUTATED_SOURCE_LINE = '      source: page wl-revoke-parent · block block-link';
+check('the mutated line DOES carry the title', MUTATED_SOURCE_LINE.includes('wl-revoke-parent'), true);
+check('  so TEST 10c\'s title assertion would have failed on it', [MUTATED_SOURCE_LINE].some(l => l.includes('wl-revoke-parent')), true);
+check('  and its ID-shape assertion would have failed too', [MUTATED_SOURCE_LINE].every(l => /^ *source: page [0-9a-f-]+ · block [0-9a-z-]+$/.test(l)), false);
+check('  while the real report still passes both', SOURCE_LINES.some(l => l.includes('wl-revoke-parent')) === false && SOURCE_LINES.length > 0, true);
+
+head('TEST 10e — a finding whose rule has no source says so, and never goes blank');
+
+/* SYS001's subject IS the resource; #100's brief puts a source for it out of
+ * scope explicitly. The null must be PRINTED with its reason, for the same
+ * reason the null link is: "no source" and "this rule has no source to give"
+ * are different facts, and a blank cell collapses them. */
+const rGapForSource = await scan({ config: cfg(ROOT, 1.0), port: fakePort(NESTED_UNREADABLE), now: clock() });
+const sysFinding = rGapForSource.findings.find(f => f.rule === 'SYS001');
+check('the fixture produced a SYS001 finding to test', sysFinding !== undefined, true);
+check('  and it carries no source', sysFinding?.source ?? null, null);
+const gapTerm = renderReport(rGapForSource, {}).join('\n');
+check('  the report still prints a source line for it', /source: none —/.test(gapTerm), true);
+check('  and the line states the REASON, not a dash or a blank', gapTerm.includes(SOURCE_NOT_APPLICABLE), true);
 
 finish('The residue path is the mechanism. The host list is an optimisation, and it can never be complete.');
