@@ -524,6 +524,16 @@ governs work not yet done and nothing else in this file records them.
   blocked for four sessions by a dependency it had imposed on itself.
 - ⛔ **Do not inherit completion from a closure.** `#7` closed `COMPLETED` over its own "Blocked on
   (1)" comment; `#70` closed over a body naming three live decisions.
+  ⭐ **THE OBSERVATION WAS RIGHT AND THE CAUSE WAS WRONG, established 2026-08-19.** Neither was
+  closed by a person. **GitHub's parser closed both**, reading `<keyword> #<number>` out of narrative
+  prose in a merged state-file commit body — `resolved #70` in `71d26ed`, from the true sentence
+  *"Five isolated SME seats resolved #70 decision 1"*. **Four issues went this way: #7, #10, #70,
+  #73**, each one to two seconds after a merge, each `COMPLETED`, each credited to the merger.
+  ⛔ **`actor` CANNOT TELL YOU WHICH IT WAS.** Every actor here is `MrBinnacle` — the operator's
+  account, the identity `gh` writes as, and the merger. Reading it as "the operator decided" put a
+  non-question on the operator-only list for three sessions. **The tell is the lag: compare
+  `closedAt` against the merge times in the same minute.** Full doctrine and the pre-merge grep are
+  in `docs/agents/issue-tracker.md` → "A commit body can close an issue by accident".
 - **A subagent's quotation is a claim about a file, and is checked by opening the file.**
 - ⚠ **A label read taken immediately after a label write can be stale.** GitHub's label index lags;
   a post-write count that looks like a failure should be re-read before it is recorded as one.
@@ -705,8 +715,17 @@ duplicate-title seed for `UNQ001`, filed this session with the three oracle numb
 ⛔ **the oracle must be re-pre-registered BEFORE that run, never corrected after it.** Two of the
 seven gate `#51`; one gates `#95`; one resets proof question Q1; one unlocks Q8 and the Q3 re-run.
 
-**Confirming `#70`'s closure was intended** — carried from S029, still open. Its title and last
-comment still name three live decisions.
+~~**Confirming `#70`'s closure was intended** — carried from S029, still open. Its title and last
+comment still name three live decisions.~~ ⛔ **RETIRED 2026-08-19 — IT WAS NEVER A QUESTION FOR THE
+OPERATOR.** Nobody closed `#70`; GitHub's parser did, on `resolved #70` in `71d26ed`'s body, two
+seconds after PR #104 merged. **`#70` is REOPENED** and the mechanism is on the ticket. See the
+corrected standing lesson above. §0.6's test was not run on this for three sessions, which is the
+second time in two sessions that a determinate question was carried as the operator's.
+
+**What IS the operator's, and it is decision 2's second half only:** whether to build the three
+policy-free decay signals **inside v0.1** while the catalog is freshly complete. The research half —
+that they are not Rules — is settled. Decision 4 is substantively answered on the ticket and is
+recorded in **no canonical document**, which is its own defect.
 
 **Promotion review** of the quarantined skills — see the standing block.
 
