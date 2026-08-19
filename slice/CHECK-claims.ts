@@ -206,6 +206,46 @@ export function evaluate(claim: Claim, repo: string): Verdict {
         const there = existsSync(join(repo, p));
         return { ok: !there, observed: `${p} ${there ? 'exists' : 'does not exist'}` };
       }
+      /**
+       * A vendor-attested fact: a URL, a verbatim quote, and the date it was fetched.
+       *
+       * ⛔ THIS CHECKS FORM ONLY AND DOES NOT FETCH. The suite is offline — no
+       * network, no `.env`, no token — and that property is worth more than this
+       * class of check. A network call here would also make the gate
+       * non-deterministic and would redden it on a transient 503, which is the
+       * opposite of a falsifier. The byte-for-byte re-fetch against the live page
+       * is a separate opt-in script.
+       *
+       * FORM IS NOT NOTHING, AND THAT IS A MEASURED CLAIM RATHER THAN A
+       * CONSOLATION. `docs/research/vendor-assumption-drift-prior-art.md` §3.6
+       * records that the mechanical half of a citation control — does the URL
+       * resolve, does the quote match byte for byte, is the date stamped — has no
+       * measured error rate, because it performs no inference. The judgement half
+       * tops out near 80% macro-F1 and fabricated-reference rates run 11.4–56.8%.
+       * Requiring the three fields eliminates the fabricated locator outright.
+       * It does NOT test whether the quote supports the sentence; nothing offline can.
+       *
+       * STALENESS IS DELIBERATELY NOT CHECKED HERE. A gate that reddens on a
+       * calendar tick, with no code change and no network route to fix it, is a
+       * time bomb rather than a control. Staleness is the refresh script's job —
+       * 10 CFR 50.71(e) puts the maximum interval on the DOCUMENT, not on each
+       * claim, and that is the affordable shape.
+       */
+      case 'vendor': {
+        const { url, fetched, quote } = claim.attrs;
+        if (!url) return { ok: false, observed: 'claim is missing url=' };
+        if (!/^https?:\/\/\S+$/.test(url)) return { ok: false, observed: `url is not an http(s) locator: ${url}` };
+        if (!fetched) return { ok: false, observed: 'claim is missing fetched=' };
+        /* ISO 8601 date, and the value must be a real one. `2026-02-31` parses in
+         * some readings and names no day; round-tripping catches it. */
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(fetched) || new Date(fetched).toISOString().slice(0, 10) !== fetched) {
+          return { ok: false, observed: `fetched= is not a real ISO date: ${fetched}` };
+        }
+        /* A QUOTE IS THE WHOLE POINT AND AN EMPTY ONE IS THE VACUOUS PASS. Without
+         * it the claim asserts only that a page exists, which no negative needs. */
+        if (!quote || quote.trim() === '') return { ok: false, observed: 'claim is missing a non-empty quote=' };
+        return { ok: true, observed: `form is well-shaped; NOT fetched — ${url} as of ${fetched}` };
+      }
       default:
         return { ok: false, observed: `unknown claim kind "${claim.kind}"` };
     }
@@ -285,6 +325,27 @@ check('absent, false', evaluate(falseAbsent, REPO).ok, false);
 check('  and names the present path', evaluate(falseAbsent, REPO).observed, 'slice/sys001.ts exists');
 check('an unknown kind fails rather than passing', evaluate(parsed[3]!, REPO).ok, false);
 check('  and says which kind it did not recognise', evaluate(parsed[3]!, REPO).observed, 'unknown claim kind "exsits"');
+
+head('TEST 3b — the `vendor` kind checks FORM, and every field is load-bearing');
+
+const V = (attrs: string) => evaluate(parseClaims(`<!-- claim: vendor ${attrs} -->`)[0]!, REPO);
+const GOOD = 'url="https://developers.notion.com/reference/query-a-data-source" fetched="2026-08-19" quote="requires a connection to have read content capabilities"';
+
+check('a well-formed vendor claim passes', V(GOOD).ok, true);
+check('  and it says plainly that it did NOT fetch', V(GOOD).observed.includes('NOT fetched'), true);
+
+/* EACH FIELD REMOVED IN TURN. A form check whose fields are not individually
+ * load-bearing is three decorations wearing one name. */
+check('no url fails', V('fetched="2026-08-19" quote="x"').ok, false);
+check('a non-http url fails', V('url="developers.notion.com/x" fetched="2026-08-19" quote="x"').ok, false);
+check('no fetched date fails', V('url="https://x.invalid/y" quote="x"').ok, false);
+check('no quote fails', V('url="https://x.invalid/y" fetched="2026-08-19"').ok, false);
+check('an EMPTY quote fails rather than passing vacuously', V('url="https://x.invalid/y" fetched="2026-08-19" quote="   "').ok, false);
+
+/* A DATE THAT LOOKS LIKE A DATE AND NAMES NO DAY. The shape test alone accepts
+ * it; the round trip is what rejects it. */
+check('a well-shaped but impossible date fails', V('url="https://x.invalid/y" fetched="2026-02-31" quote="x"').ok, false);
+check('  and says so rather than reporting a generic malformation', V('url="https://x.invalid/y" fetched="2026-02-31" quote="x"').observed.includes('not a real ISO date'), true);
 
 head('TEST 4 — a malformed claim throws rather than matching nothing');
 
