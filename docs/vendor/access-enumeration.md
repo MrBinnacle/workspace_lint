@@ -1,5 +1,22 @@
 # Access enumeration — what routes exist for discovering what a connection can reach
 
+> ⭐ **ADDENDUM 2026-08-19 — the `llms.txt` Revisit-if is CLOSED, and it does not change the
+> conclusion.** `https://developers.notion.com/llms.txt` was fetched and read for enumeration routes.
+> Across **300+ entries**, no endpoint enumerates a connection's accessible objects other than
+> `POST /v1/search`. Keyword-matching entries checked and eliminated: List all users, List data source
+> templates, List views, List comments, List file uploads, List custom emojis, and three
+> `admin/`-scoped ones (MCP client connections, personal access tokens, legal holds), which are
+> organisation-scoped rather than connection-scoped.
+>
+> ⛔ **THIS IS NEGATION AS FAILURE AND IS RECORDED AS SUCH.** Absence from an index is absence of
+> evidence. The honest form is *"no enumeration route other than search is currently believed to
+> exist"*. It strengthens the narrower claim; it does not convert it into a strong negation. The rule
+> applies to our own findings or it is decoration.
+>
+> ⚠ **One endpoint surfaced that this repository does not know about:** `List views` — *"List all
+> views in a database"*, `developers.notion.com/reference/list-views`. Not an enumeration route for
+> the grant, but a database-scoped listing endpoint nobody here has read. **Unassessed.**
+
 - **Fetched:** 2026-08-19. **Notion-Version in force in this repository:** `2026-03-11`.
 - **Why this file exists:** `#123` asked whether ADR-0002 finding 1 — *"Nothing returns the set of
   objects an integration may read."* — still holds. It does not. A vendor sentence contradicts it,
