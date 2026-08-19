@@ -521,10 +521,12 @@ so this band was drafted claiming ~~PR #94 OPEN AND UNMERGED~~ and ~~`main` is u
 occurrence** — S026 shipped a stale band the same way when PR #38 merged mid-close. Verified the
 right way rather than by the MERGED badge: `git merge-base --is-ancestor fba8a61 origin/main` passes.
 
-⛔ **ONE COMMIT DID NOT TRAVEL. `d964448` — the triage-rule amendment — was committed locally AFTER
-the branch was pushed, so the merge took `fba8a61` only.** `git merge-base --is-ancestor d964448
-origin/main` FAILS. The amended standing rule and this checkpoint are **not on `main`** and need
-their own PR.
+~~⛔ **ONE COMMIT DID NOT TRAVEL.** `d964448` … the amended standing rule and this checkpoint are
+**not on `main`** and need their own PR.~~ **RESOLVED THE SAME NIGHT.** PR #98 merged as `277dfa5`
+at 01:36Z. `git merge-base --is-ancestor` passes for `d964448` and `f5b1a92`. **Every commit of S027
+is on `main`.** The dated claim stays struck rather than deleted, because the reason it happened is
+the durable part: a commit made after the branch was pushed does not join the PR that was already
+open on it.
 
 **TESTS:** **794 assertions, ELEVEN suites, exit 0, offline.** Up from 696. Re-derived per suite, not
 quoted.
@@ -602,8 +604,8 @@ decision count is now ONE — #70 decision 1 — read back from the tracker.**
 decision tickets, nine of those `deferred`. (The band said sixteen, arithmetic from a stale list; the
 deref step counted them.)
 
-1. ⛔ **Get `d964448` onto `main`.** It carries the amended standing rule and this checkpoint, and
-   it missed the #94 merge by minutes. Everything else in this band IS on `main`.
+1. ~~⛔ **Get `d964448` onto `main`.**~~ **DONE — PR #98 merged as `277dfa5`.** Nothing from S027 is
+   outstanding. Confirmed by `git merge-base`, not by a badge.
 2. **#70 decision 1**, then **#59 — `UNQ001`**, which completes the four v0.1 rules. The researched
    recommendation for #70 is in the standing block; it needs no superseding ADR for the recommended
    shape, and one ADDITIVE ADR for the third `findingKind`.
@@ -631,8 +633,9 @@ resume ritual all at the root.
 
 ### WHAT ONLY THE OPERATOR CAN DO
 
-**Merge the follow-up PR** carrying `d964448`. `gh pr merge` is denied to the agent by the auto-mode
-classifier; #94 was merged this way and this one needs the same.
+**Merging any PR.** `gh pr merge` is denied to the agent by the auto-mode classifier — both of
+S027's PRs, #94 and #98, were merged by the operator. Nothing is outstanding from S027; this is a
+standing constraint, not a task.
 
 **#95's first step:** create a page under the proof fixture root carrying a property that is present
 and empty, and record it in `docs/proof/fixture.md`.
