@@ -3956,3 +3956,268 @@ never evidence about the thing it describes. Promoting it needs the plan gate.
 **Promotion review** of the quarantined skills — see the standing block.
 
 **NO SELF-ASSESS LINE, BY OPERATOR RULING 2026-08-17.** The ritual line records `verdict=n/a`.
+
+## S031 — 2026-08-19 — the finding got an address, and the strategy got its dependency order reversed
+
+**PHASE:** **POST-BUILD.** All four v0.1 rules are on `main`. This session shipped one ticket end to
+end and then spent the rest of itself on why shipping tickets is not currently producing evidence.
+
+**TESTS:** **TWELVE suites, exit 0, offline.** Re-derived, never quoted.
+
+**TRACKER:** 22 open. Two filed this session — `#117` and `#118`.
+
+### ⭐ The finding: the n=1 problem is distribution, not access, and the operator named it
+
+Hoisted to the standing block. The short form: the repository has spent four sessions treating "no
+second workspace" as an access problem to be solved by someone granting a share. It is a
+**distribution** problem — nobody grants access to a tool with nothing to show — and `#29` has been
+asking the operator to declare a buyer for a thing that has no result worth pitching.
+
+`#29` is retargeted rather than answered, with the operator's own two sentences on the ticket.
+`#117` now owns the upstream half.
+
+### ⭐ Nineteen research files and not one denominator
+
+`docs/research/INDEX.md` was read line by line against the question *"how often does the defect this
+product detects actually occur?"* **Nothing answers it.** Eleven files are prior art on design
+problems, three are stated-preference evidence about what users say, one is competitive, one is
+naming/legal. `docs/proof/results-first-real-workspace.md` is the only measurement and it is n=1
+supporting an **existence** claim.
+
+Three routes to a denominator are on `#117` in cost order: the owner's own workspace at full width
+(one click, blocked under `#51`), a public-page corpus (sweep first — §0.5 hard trigger, four things
+unsettled including terms of service and whether the measurement even transfers from rendered HTML
+to API objects), and one consultant's client workspaces (the payoff, not the first move).
+
+### ⛔ `PRODUCT.md` says the field is empty and one segment is not
+
+`PRODUCT.md`'s counter-argument against consultants — *"a consultant billing hourly has an incentive
+against a tool that mechanizes billable hours"* — is refuted by the file it cites.
+`docs/research/notion-user-pain.md` §3 records **three** billing models: hourly, fixed builds
+($1k–$25k+), and retainers. Under the last two the incentive **inverts**. The same section grades the
+segment STRONG EVIDENCE / multiple sources, and two of those sources are not opinions — a
+practitioner who hand-authors structural rules **and publishes them**, and a read-only structural
+audit **already sold as a fixed-scope product** by Notion Rescue.
+
+Filed as `#118`. ⚠ **It needs the §5 plan gate**, because `PRODUCT.md` is hook-blocked and the
+authorisation token is the plan's **Files table**, not a mention in prose.
+
+⛔ **This does NOT name a buyer.** No price tested, nobody contacted, `#29`'s DoD untouched.
+
+### #100 shipped, and its own commit had to be corrected by the next one
+
+`REF001` findings now carry `source` — the page and block that hold the link. It was a render
+change: `references.ts` had recorded the data at discovery and `report.ts` rendered it zero times.
+
+Three things worth carrying:
+
+- ⭐ **A defect not in the ticket:** `scan.ts` passes the **bare** page ID, so `sourcePage` would have
+  rendered unhyphenated beside hyphenated anchors and manifest rows. Two forms of one time-ordered ID
+  in one report is the `#42` double-count shape. `idForm` normalises; `hyphenate` returning null for
+  non-IDs is exactly what the fallback strings need.
+- ⛔ **The first commit filed a false correction** against `#100`'s brief, and the second commit
+  retracted it. Hoisted to the standing block as the first-hit-sweep constraint.
+- ⛔ **The first commit shipped two defects it had named in its own prose** — a vacuous
+  `includes('')` assertion and a README block promising a YAML config the binary cannot read. **A
+  note that names a defect and ships it is worse than silence, because it reads as handled.** Both
+  fixed in `02bea07`.
+
+⚠ **FORWARD REFERENCE — everything in this section is on PR #116 and is NOT on `main` at the time
+this band was written.** It resolves when the operator merges; until then a deref check will
+correctly flag it, and that is the mechanism working rather than a stale claim.
+
+`README.md` is now claim-gated (eight `exists`/`absent` annotations). ⚠ **That raises the floor and
+does not close `#100`'s hole** — `count`/`exists`/`absent` cannot express a claim about behaviour,
+which is what the opening sentence got wrong. `#103` owns the extension.
+
+### BLOCKERS
+
+**None mechanical.** The gate is green and the build is done. The blocker is evidential and it is
+named: there is no measured rate of the defect anywhere in the repository.
+
+### EXACT NEXT STEPS
+
+**Twenty-two issues open** — 8, 25, 27, 29, 51, 69, 70, 74, 78, 82, 84, 95, 96, 97, 100, 101, 102,
+103, 111, 113, 117, 118.
+
+1. ⛔ **Merge state first, and by ancestry, never the badge.** `main` carries `bfdd449`. **PR #116 was
+   open at close** — the `#100` work, two commits. `git merge-base --is-ancestor 02bea07 origin/main`
+   before branching. The operator has merged mid-ritual or immediately after it on the last **four**
+   closes; assume it is already merged and verify rather than reading this line as state.
+2. ⭐ **`#51` IS THE CRITICAL PATH AND ITS FRAMING CHANGED.** It was "the ceiling". It is now the
+   **precondition for the only evidence route that costs nothing** — widening the grant to a real
+   root makes the ten-of-twenty ratio worse, not better, because the added resources are
+   disproportionately data sources. Decision granted; implementation left. Two operator-only
+   Notion-UI steps gate the live run.
+3. **`#117`'s Route 2 sweep, and it is a research session not a build session.** ⛔ §0.5's hard
+   trigger: **prior-art first, instrument second.** The web-decay literature — link rot, reference
+   rot in scholarly citation — is the equivalent problem in another domain and has **not been
+   opened**. It may hand over the method, the expected rate, or the finding that the number is
+   already published, which collapses `#117` to a citation.
+4. **`#111`** — `www.notion.so` is an OBSERVED internal-link host, so `REF001` under-reports today.
+   ⛔ **Do not close it by extending the allow-list**; the host set is unbounded and the residue path
+   is the soundness mechanism.
+5. **`#96`** — a worked entry in `wl.config.example.json`. `UNQ001` is configurable too now.
+   `CHECK-config.ts` TEST 8 executes that file, so whatever is added must load.
+6. **`#118`** — needs `EnterPlanMode` with `PRODUCT.md` in the Files table. Small edit, gated
+   process.
+7. **Hook tests, `skill-router.py` first.** Three of nine tested. Its own session.
+
+**⚠ THE DECISION WIP LIMIT IS LAPSED, AND THE COUNT WILL LOOK LIKE A VIOLATION.** Three active
+decision tickets — `#113`, `#70`, `#117`. The limit read *"while any v0.1 rule is unbuilt"* and
+`UNQ001` completed the catalogue on 2026-08-19. **This is not a breach.** `docs/agents/triage-labels.md`
+records the lapse, written to be struck rather than deleted if a v0.2 catalogue revives the
+condition. *Record always* is unaffected.
+
+**NEXT-MODEL: frontier tier**, and this is a change from S030's recommendation. `#117` Route 2 and
+`#51` are both ambiguity-heavy — one is a prior-art sweep whose framing decides what gets built, the
+other is a port widening with a pre-registered oracle that must not be corrected after the run.
+`#111` and `#96` remain fast-tier execution against settled briefs and can be straddled with each
+other, nothing else.
+
+**NEXT-REPO/CWD:** the `workspace_lint` repository root. ⚠ **Absolute-`cd` every verification
+command** — shell cwd drifted into `slice/` twice this session and produced one falsely clean grep.
+Carry a positive control so an empty result proves the search ran.
+
+### POST-CLOSE ADDENDUM (S031) — the session outran its close, and the last hour reversed the project's own map
+
+Everything below happened after the S031 close was written and merged. **The next-steps block above is
+superseded where it conflicts**; this addendum is the dated record.
+
+#### ⭐ THE SESSION'S REAL FINDING: THE ASSUMPTION SET LEANS ONE WAY
+
+Four assumptions about Notion were checked against the vendor's own endpoint pages. **Four reversals,
+all in the same direction — toward "cannot".** Zero errors the other way. Filed as `#125`.
+
+- ⛔ **`GET /v1/data_sources/{data_source_id}` EXISTS.** `#51` — carried for four sessions as
+  **"THE CEILING"**, the thing making ten of twenty resources permanently invisible — **is an
+  unimplemented method on `notion-port.ts`, not a platform limit.** The absence of a method on our
+  own port was written down as a property of Notion and then cited as the constraint gating the
+  project's only cheap evidence route. Re-scoped on the ticket.
+- **Search returns the connection-accessible set**, vendor's words: *"The results adhere to any
+  limitations related to a connection's capabilities."* `ADR-0002` finding 1 says *"Nothing returns
+  the set of objects an integration may read."* → `#123`.
+- **`request_status` / `query_result_limit_reached` is documented.** Never observed, which stays true
+  — but the repository states a trustworthy denominator is unobtainable while documenting an endpoint
+  that reports its own incompleteness. The two facts have never been composed.
+- **Three result caps, none on the vendor page.** `10,000` is called *vendor-documented* and is not
+  there; `ADR-0002` says `~11,200` from a third-party issue. Neither has a locator.
+
+⛔ **THE MEASUREMENT: ~180 assertions about Notion across the ADRs, NINE followable locators.**
+`ADR-0002` — foundational, closed the enterprise path — has eight Notion claims and **zero**.
+`ADR-0014` has twenty-six and zero. `ADR-0013` has twenty-three and zero. → `#124`.
+
+⚠ **THE AUDIT METHOD HAS THE SAME BIAS AS THE CORPUS.** Every check this session was *"is this claim
+true?"*, which finds overstatement only when someone looks at the right sentence. **Not one reversal
+came from asking "what can this API actually do?"** That question found `data_sources` in a single
+fetch — and it was asked because the operator said so, not because the method prompted it.
+
+#### The self-imposed gate, and the run it was blocking
+
+`slice/references.ts` has **zero imports** and takes `blocks: unknown[]`. The recogniser was never
+coupled to the API, the token or the grant. **"Someone must share a workspace" gated all evidence for
+four sessions and was never true.** Six calls through the MCP connector produced a confirmed dead
+reference in a live workspace — pre-registered at `b761931` before the first fetch, scored honestly
+(two refuted, two confirmed, two unmet). `docs/proof/results-owner-workspace-mcp.md`, PR `#122`.
+
+⭐ **An agent sweep on that same surface logged "No unauthorized move candidates found."** It ran over
+the dead reference and reported clean. It could not have found it — an LLM reads the link's label,
+not its target.
+
+⛔ **AND THE PRODUCT WAS NOT INVOLVED IN FINDING IT.** That is a Null arm and it passed. One page, so
+it settles nothing — but the effect has never been separated from the ceiling. `#121` holds the
+Full-vs-Null design. By the standard `skill-harness` already published, the verdict is **UNMEASURED**.
+
+#### Two more corrections to this file's own claims
+
+- **"352+ top-level pages" was a pagination cursor read as a count.** It is **57**. `limit=200`
+  returns all 57 with no cursor; `limit=10` returns `nextCursor: "offset:221"`, which indexes nothing
+  a caller may interpret. ⚠ **This session then nearly inverted its own scoring on the same bad
+  inference** — assuming the 57-item response had been truncated. Only paginating to exhaustion
+  settled it. **An enumeration is complete because it terminated, never because of a number in its
+  cursor.**
+- **The first `#100` commit filed a FALSE correction** against the ticket's brief, claiming a fallback
+  string did not exist. Two sites wrote two different strings; the grep found one and stopped.
+  **"A refuted claim is never in one place" running in reverse** — and worse, because a missed
+  surface is a silent gap while a first-hit sweep reads as thorough.
+
+#### External review arrived
+
+`PR #120` (Codex) proposes leaving Notion for Jira/Linear/GitHub. Reviewed: the abstraction is right
+and matches the zero-imports finding; **zero URLs in 180 lines** filed into `docs/research/`, whose
+INDEX declares every file "what a primary source states"; and its top three targets are the segment
+`PRODUCT.md` rules out *by capability*, unaddressed. ⭐ **Its best line is buried: Jira has a native
+declared denominator — project, board, JQL filter, fix version — and Notion has none.** That is the
+strongest argument for leaving, and `#123` may weaken it, because Notion's denominator problem is
+recorded as larger than the vendor's own docs support.
+
+### BLOCKERS
+
+**None mechanical.** Gate green, working tree clean, 967 assertions.
+
+The blocker is that **the map is not trustworthy**. Four of four checked assumptions were wrong in one
+direction, and nothing mechanical can find the rest.
+
+### EXACT NEXT STEPS — SUPERSEDES THE LIST ABOVE
+
+**Twenty-five issues open** — 8, 25, 27, 29, 51, 69, 70, 74, 78, 82, 84, 95, 96, 97, 101, 102, 103,
+111, 113, 117, 118, 121, 123, 124, 125.
+
+1. ⛔ **Merge state by ancestry, never the badge.** `main` carries `735c150`. **PRs `#122` and `#120`
+   were open at close.** `git merge-base --is-ancestor 85958cb origin/main`.
+2. ⭐ **`#51`, and it is now cheap.** Check first whether a read-only internal integration holds the
+   capability `GET /v1/data_sources/{id}` requires — **one call**, and it is the way R1 could still be
+   wrong. If it holds, implement `retrieveDataSource`. The ten-of-twenty ratio is not a platform fact.
+3. ⭐ **`#125` — sweep the remaining negatives.** Every `cannot` / `no endpoint` / `impossible` in
+   `docs/adr/` and `CONTEXT.md`, each marked verified-with-fetch-date or unverified. **Ask what the
+   API can do, not whether the sentence is true.** The list may be long; countable is the goal.
+4. **`#124`** — the `vendor` claim kind, **staleness check only** to start. No network, no fixtures.
+5. **`#121`** — Full vs. Null. Cheap, and it either justifies the product or retires it.
+6. **`#123`** — superseding ADR for `ADR-0002` finding 1. Never edit in place.
+7. **`#120`** — merge after the relabel; do not build on it until `#123` lands.
+
+⛔ **DO NOT DECIDE THE PIVOT YET.** The case for leaving Notion rests partly on constraints that four
+hours of checking showed are overstated. Settle `#123` and `#125` first.
+
+**NEXT-MODEL: frontier tier.** `#125` and `#123` are ambiguity-heavy and reverse standing decisions.
+`#51` and `#124` are execution once their one open check is answered.
+
+**NEXT-REPO/CWD:** the `workspace_lint` repository root. ⚠ **Absolute-`cd` every verification** — cwd
+drifted into `slice/` twice this session and produced one falsely clean grep.
+
+### WHAT ONLY THE OPERATOR CAN DO
+
+**Merging `#122`.** `gh pr merge` is denied to the agent. ⚠ **`#122` CONFLICTED with `main` after
+`#120` merged** — both rewrote this file — and the conflict was resolved here, in this section, by
+keeping both sides. A close that says "safe to merge" without checking `mergeable` is not a check.
+
+~~**SHARING ONE REAL HUB WITH THE INTEGRATION IS THE HIGHEST-VALUE ACTION AVAILABLE** — its value is
+gated on `#51`. Land `#51` first, then share, then measure.~~ ⛔ **BOTH HALVES SUPERSEDED THE SAME
+DAY.** The grant is **not needed for measurement**: the connector reaches the workspace and
+`references.ts` has zero imports. And `#51` is **not a gate** — `GET /v1/data_sources/{data_source_id}`
+exists and is documented, so the "ceiling" is an unimplemented method on our own port. See the
+addendum above.
+
+**`#102`'s fixture backlog, seven items**, all in the Notion UI. Two gate `#51`'s *live oracle run* —
+one `link_to_page` block pointing at `wl-dataset`, and a permanent database reference whose addition
+moves `fixture-oracle.ts`'s `references.applicable` and ⛔ **must be re-pre-registered before the run,
+never corrected after it.** One gates `#95`; one resets proof question Q1; one unlocks Q8 and the Q3
+re-run.
+
+**`#29` still needs contact with one person who is not the operator** — but **scheduled after `#117`
+produces a denominator**, not before. That reordering came from the operator, not from the analysis.
+
+**`#118` needs a plan-gated `PRODUCT.md` edit.** The agent cannot start it without `EnterPlanMode`
+naming that file in the plan's **Files table**. ⚠ **A stashed `PRODUCT.md` edit from 2026-08-17 sits in
+`stash@{1}`**, reverted pending plan approval, invisible to every check this repo runs. Inspect or drop
+it before starting.
+
+⭐ **`skill-harness` is the stronger project and the comparison is not close.** It has a pre-registered
+null result published against its own product, a cost number, an admission gate that retired four of
+its own skills, named competitors already assessed, and a live market signal. This repository has one
+dead link and an unmeasured effect. **That is an observation from the operator's own workspace, not a
+recommendation** — `#121` is the test that would make it one.
+
+**Promotion review** of the quarantined skills — see the standing block.
+
+**NO SELF-ASSESS LINE, BY OPERATOR RULING 2026-08-17.** The ritual line records `verdict=n/a`.
