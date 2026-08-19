@@ -2780,3 +2780,390 @@ permission change in the Notion UI (including reconnecting `wl-revoke-child`, wh
 anything requiring a TTY — **the `!` prefix has no TTY.**
 
 **NO SELF-ASSESS LINE, BY OPERATOR RULING 2026-08-17.** The ritual line records `verdict=n/a`.
+
+---
+
+## S026 — 2026-08-18 — the endpoint was decided out rather than left silent, and the hook that enforces "always frame a plan" did not know the word "plan"
+
+**PHASE:** **BUILD.** #24 and #18 taken as ONE unit and both shipped. **Four commits, TWO PRs merged
+(#89 as `846cd64`, #90 as `063b0a2`), three issues CLOSED (#24, #18, and #19 the day before),
+nothing filed.** `main` is green at `063b0a2`.
+
+**TESTS:** **696 assertions, ten suites, exit 0, offline.** Up from 693 — `CHECK-claims.ts` TEST 6
+emits one assertion per claim comment and three were added. Verified on merged `main`.
+
+**LIVE:** none. No API call was made this session, and none was needed: both artifacts decide what
+the product does, not what the API does.
+
+### What shipped — #24, as ADR-0014
+
+**`POST /v1/search` has no role in the v0.1 scan, and the reason is not that search is broken.**
+ADR-0007 decision 3 opened five design surfaces, found every one silent, refused to read that
+silence as a negative, and pre-registered its falsifier: *a decision that assigns search a role
+falsifies the enumeration.* **ADR-0014 is that decision and the role it assigns is none.**
+
+It answers #24's four requirements in order. Root discovery is not in v0.1, and search would be the
+wrong instrument even if it were: ADR-0002 findings 1–3 make it non-exhaustive, blind to inherited
+access, and dead at ~11,200 objects, so a suggestion list is **a partial enumeration the tool cannot
+attest** — a named residual under ADR-0013 decision 2, which decision 3 forbids rendering as a
+number. **A first run that under-suggests looks like a small workspace.** ADR-0006 decision 5's
+disclosure resolves to its unchanged branch. ADR-0007's search row is marked accurate-and-unexercised
+so a fourth session does not re-derive it.
+
+⭐ **Supersedes nothing, and that is the point.** It decides what an ADR declined to decide, which is
+the first time this project has closed a scope question by *stating* a negative rather than by
+leaving surfaces silent.
+
+**A seventh surface exists and it executes.** `slice/notion-port.ts` already declares `SEARCH`,
+classifies it `attested`, and comments *"Not called by this slice."* The ADR names which of the two
+is enforcement — **the port's classification table, which fires when a call is added** — and which is
+a rule that must be remembered. Do not let a later session read the ADR as the mechanism.
+
+### What shipped — #18, as `docs/spec/v0.1-hydration-map.md`
+
+Per rule: fetch depth, pagination requirement, endpoint attestation, and what a partial hydration
+does to that rule's evidence sufficiency. The four deferred rules get a line each and **are assigned
+no coverage item**. The one slice-scoping choice is marked revisable: `REQ001`'s acquisition route,
+N page retrieves versus one paginated data-source query, unexercised either way.
+
+⭐ **THE FINDING: the request budget is bound by block-tree SHAPE, not by workspace SIZE.** The
+estimate is a formula and it **reproduces this project's only call log at exactly 7 requests**;
+everything larger is labelled extrapolation from n=1 rather than presented as an estimate. At 150
+resources: **~315 requests at 8% block nesting, ~495 at 20%**, against 540. The resource count
+contributes one request each; the recursive descent contributes one per block with children and is
+unbounded in the *shape* of the content. A tier-(C) third-party figure agrees from outside: one
+250-block page with 50 toggles costs **103 calls — 19% of the budget, on one page.**
+
+**Consequence not yet decided:** `PRODUCT.md`'s warm-scan kill criterion **cannot be predicted from a
+resource count**, so a first run cannot warn an operator before exceeding it. Whether that warning is
+owed is a product question the spec deliberately does not decide.
+
+**Two ceilings the map prints.** `POST /v1/data_sources/{id}/query` caps at 10,000 and returns
+`has_more: false` at exactly 10,000. And **`REQ001` over a relation or people property can read a
+value truncated at 100 inside an otherwise SUCCESSFUL response** — a residual under ADR-0013, not a
+violation, and **#58 meets it first.**
+
+### The claim system was mutation-tested, and the sweep that followed nearly shipped a false clean
+
+Moving the spec out of the tree takes the suite to **exit 1** with both claims failing by name and
+path; moving it back returns exit 0. **A claim comment that cannot fail is not a check.**
+
+⚠ Then the stale-claim sweep returned **empty** and was one sentence from being reported as clean.
+`pwd` was `slice/` — a `cd` from a test run six calls earlier. From the repo root the same command
+returned five matches. **That sweep exists because this repo has shipped the same false claim across
+three or more surfaces five times; a false clean would have been the sixth, produced by the check
+built to prevent it.** Hoisted to the standing block.
+
+### What shipped — the tooling half (PR #90)
+
+Five items, **nothing filed**, because none blocks a rule.
+
+⭐ **The finding: `downstream-instruction-framing` is marked MANDATORY before ANY plan, and its
+router patterns did not match the word "plan".** Tested against the live hook **negative first** —
+*"write me a plan for issue 18"* produced nothing. It had been firing on `\bADR\b`, so its correct
+behaviour earlier this session was **coincidence relative to the rule's stated purpose.** Three
+patterns added; it now fires on that probe and on *"And triage/skill tooling plan"*, the operator's
+actual message, which had produced no reminder at the time. Five probes confirm no false positive,
+including `plane` and `planner`. **A router rule moves a discipline to the hook layer only to the
+extent its predicate is complete.**
+
+`.out-of-scope/` created and seeded with the Convex refusal S025 declined to record. A `decision`
+label added — **supplementary, not a third category**, so `/triage`'s one-category invariant holds —
+because the S025 standing rule is stated over decision tickets and nothing could count them. Ten
+issues gained the `enhancement` they lacked; **16 of 16 already carried exactly one state role, which
+is the triage-label guard's output, not diligence.** `CLAUDE.md` §14 now marks every skill
+`[✓]`/`[/]`/`[off]` for reachability.
+
+⚠ **The §14 fix came from making the error.** A search for `ask-matt` at `-maxdepth 4` returned
+nothing and a present skill was reported non-existent. **Plugin skills sit at depth 7.** Twenty of
+thirty-five Pocock skills are operator-only; `/triage` and `/ask-matt` are both among them and
+neither had ever been named in §14.
+
+### BLOCKERS
+
+**None for the build. Nothing blocks #58 or #59 for the first time.** The three standing
+operator-only items are hoisted into the standing block above and all three gate **#51 only**.
+
+### EXACT NEXT STEPS
+
+**Thirteen issues open**, **nine** of them decision tickets. #24, #18 and #71 closed this session;
+#74 dispositioned as deferred and labelled `decision`.
+
+1. ⭐ **#58 — `REQ001`. THE PLAN IS WRITTEN AND APPROVED. Execute it, do not re-plan it.**
+   `~/.claude/plans/steady-seeking-rocket.md`, approved 2026-08-18. It carries the Files table that
+   is the `guard-canonical-doc-edit.py` authorisation token, so **re-approve it via `EnterPlanMode`
+   if it has aged past 24h** — the guard checks mtime, not intent. Read
+   `docs/spec/v0.1-hydration-map.md` §1.3 alongside it.
+2. **#70 decision 1**, then **#59 — `UNQ001`**. That completes the four v0.1 rules.
+   ⭐ **OPERATOR DIRECTIVE 2026-08-19: consult expert domain SMEs on the decision work.** Applies to
+   #70 decision 1, #78 and #82 — the three open decisions where a competent practitioner in a named
+   role would have a view the code cannot supply. **Do not ask the operator which roles**;
+   `CLAUDE.md` §0.7 supplies the roster and says to cover them from the role's perspective,
+   researching where the role's domain requires it.
+   ⛔ **`role-council` SILENTLY NO-OPS ON THIS PROJECT.** Verified 2026-08-19: it requires
+   `<project-root>/.claude/role-council/config.md` and this repo has no `.claude/role-council/`
+   directory at all. The skill treats that absence as opt-out and costs nothing — **including
+   costing you the council.** Two working routes: **(a)** write the config, which is itself a real
+   task and needs the role roster and tree match-sets this project would supply; or **(b)** run SME
+   seats as subagents, using `parallel-review-disposition-schema` so the seats join cleanly, and
+   **`subagent-research-reliability` Check 0 for the return contract** — name `SendMessage` to
+   `main` plus one authorised scratchpad path in every dispatch, or the seats' findings are a dead
+   letter. Route (b) is what worked this session.
+3. **#51's implementation**, once the two operator preconditions are met. `notion-port.ts`'s header
+   is wrong until then.
+4. ~~**Disposition sweep — fast tier, its own session.** #71 record and close; #74 count the broken
+   references in "Hans". Both still `needs-triage`.~~ **DONE 2026-08-19.** #71 **CLOSED** — its DoD
+   was already met on disk and #18 closing satisfied the second half of its own recommendation.
+   **#74 DEFERRED, not closed**: ⛔ **this next-step was WRONG and the ticket corrected it** — #74's
+   body already read *"Deferred to a later session by the operator, 2026-08-18"* and this block told
+   a session to go count anyway. **Deref the checkpoint against the ticket; the ticket wins.** The
+   count remains producible via the Notion MCP connector, is **documented-tier only** (ADR-0004: an
+   OAuth connector run "does not clear the REST path"), lands in `docs/research/` never
+   `docs/proof/`, and **cannot close #7**.
+5. **Hook tests, `skill-router.py` first** — its own session. Three of nine hooks are tested and the
+   untested router is the one §1 designates as the enforcement layer.
+
+**Off the critical path and deliberately shut:** #8, #25, #27, #29, #69, #82, #84.
+
+**Three skills are staged in `~/.claude/skills/_quarantine/`** and need manual §1.5 review before
+promotion: `hidden-and-plugin-skill-reachability`, `router-skill-predicate-gap`,
+`bash-cwd-drift-false-clean-grep`. None is active until promoted.
+
+**NEXT-MODEL: fast tier.** #58 is separable execution mechanics against a spec that now exists and
+names its own hazard; the decision work it depended on shipped this session. **Do not straddle:** if
+the session would also take #70 decision 1 — which is irreversible-shaped and prose an ADR will be
+read against — shrink the scope to #58 alone and give #70 its own frontier session.
+
+**NEXT-REPO/CWD:** `C:\Users\mlpgr\2026_Projects\workspace_lint` — single repo; state, plan and
+resume ritual all at the root.
+
+### WHAT ONLY THE OPERATOR CAN DO
+
+**To launch the next session:** `/clear` (never `/compact`) → select **fast tier** →
+`/session-start-from-state`.
+
+**Blocking #51:** the `link_to_page` block and the permanent database reference, both in the Notion
+UI. Both are in the standing block above.
+
+**Worth doing when there is slack, and on no ticket by design:** back up `~/.claude/settings.json`.
+The whole hook layer exists on one machine with no reproduction path, and §1 designates that layer as
+where a discipline goes when it must survive the loop.
+
+**Promotion review** of the three quarantined skills.
+
+**Actions no agent can perform at all:** anything in Notion's developer portal, any share or
+permission change in the Notion UI (including reconnecting `wl-revoke-child`, which resets Q1),
+merging a PR when the classifier declines it, and anything requiring a TTY — **the `!` prefix has no
+TTY.**
+
+**NO SELF-ASSESS LINE, BY OPERATOR RULING 2026-08-17.** The ritual line records `verdict=n/a`.
+
+### POST-CLOSE ADDENDUM (S026, after `2487ab5` shipped) — #58 was planned, not built, and reading the code moved four things the plan had to absorb
+
+The close shipped, PR #91 merged as `49bfcc0`, and the session continued. **No deliverable landed
+after the close**, so this is an addendum rather than a second band: what follows is a plan, four
+design findings, and three dispatches whose results have not arrived.
+
+**The operator's direction, verbatim in effect:** run #58 in a **fresh session** with clean context.
+The plan is the handoff.
+
+#### The plan exists and is approved — `~/.claude/plans/steady-seeking-rocket.md`
+
+⛔ **Execute it. Do not re-plan it.** It carries the Files table that is
+`guard-canonical-doc-edit.py`'s authorisation token for `CONTEXT.md` and `PRODUCT.md`. The guard
+checks the plan file's **mtime within 24h**, not intent — **if it has aged out, re-approve through
+`EnterPlanMode` before touching either file.** That is a mechanical re-approval, not a re-decision.
+
+#### Four findings from reading `slice/`, none of which were known at close
+
+1. ⭐ **`slice/notion-port.ts` DISCARDS `properties`.** `retrievePage` is typed
+   `Promise<{ id: string; url?: string }>` and the adapter casts the SDK response to it. `REQ001`'s
+   entire input is thrown away at the seam. The fix is a **field, not a method** — `properties?` on
+   the same return — so `GET /v1/pages/{id}` stays the same call and #51's ASK-FIRST precedent for a
+   *new endpoint* does not apply.
+2. ⭐ **The scan retrieves ONLY the declared root.** Descendants arrive as `child_page` blocks inside
+   a parent's listing and are never fetched as pages, so there is no property data for any resource
+   below the root. **`REQ001` needs a hydration stage that does not exist**, which is exactly the
+   cost `docs/spec/v0.1-hydration-map.md` §1.3 priced as route 1.
+3. ⭐ **The rule turns on one mapping, and it is forced away from the flattering direction.** A
+   property **absent from the page's property map** is **NOT a violation** — the API returns the
+   properties the integration can see, so absent means *not defined here* OR *not granted*, and the
+   scan cannot tell which. Only *present-and-empty* is a violation. Collapsing the two reports a
+   defect in the operator's workspace that is really a defect in the grant. This is #58's own
+   hazard 1 and it is marked **non-negotiable** in the plan.
+4. ⚠ **A live `REQ001` VIOLATION cannot be produced against the current fixture.** The readable pages
+   carry `title`, which is non-empty; the only resources with arbitrary properties are rows inside
+   `wl-dataset`, which this build does not enumerate. **The live run proves the conforming path and
+   the gap path, not the violation path**, and `docs/proof/` must say so rather than imply a fuller
+   proof. Creating a violating page is an operator-only Notion-UI action. **This is a fifth
+   operator-only fixture item** and it belongs beside the two that gate #51.
+
+#### ~~Three read-only scouts were dispatched and HAVE NOT REPORTED~~ — ALL THREE REPORTED, and the cause was a dead letter
+
+~~Their findings are not in this file and must not be assumed. A fresh session should treat these
+three questions as open and un-researched, and re-dispatch rather than wait.~~ **Superseded within
+the hour. All three returned in full and their findings are folded in below.** Do not re-dispatch.
+
+⚠ **The failure was mine and it was a return channel, not the research.** Three `Explore` scouts
+were dispatched over #78, #70 decision 1, and #71 + #74 **without naming how findings come back**.
+All three researched correctly and answered in plain text. **Plain text a subagent prints is not
+visible to the main session** — it is a dead letter. Four idle notifications arrived carrying no
+content, and an idle notification is indistinguishable from a finished report. Re-instructing them
+with `SendMessage` to `main` **plus one authorised scratchpad path** recovered everything.
+
+**An empty `TaskList` is still not evidence a fork finished** — it returned "No tasks found" while
+all three were live. That part stands. What it does not license is the conclusion drawn here first:
+**"has not reported" and "has nothing to report" are different claims**, and this file asserted the
+second from evidence for the first. The discipline is now in
+`~/.claude/skills/subagent-research-reliability/SKILL.md` as Check 0, with this incident as its
+worked example: **name both return routes in the dispatch prompt, every time.**
+
+#### ⭐ What the scouts found — one item corrects the approved plan
+
+**#78 — the property-identity question, and the plan was contradicting an ADR.**
+`docs/adr/0010-…` **decision 7 already specifies `REQ001`'s matchkey hierarchy**, and it has TWO
+keys: `propertyId/v1` then `propertyName/v1`, tie-broken on property ID ascending. Its reasoning:
+*"A property ID survives a rename and probably does not survive a type change; a property name
+survives a type change and does not survive a rename. **Neither identifier alone survives both**, so
+a hierarchy of two is the minimum."* ⛔ **The approved #58 plan had invented a single key family
+`req001/property@1`.** An accepted ADR binds and the plan was the defect; **the plan is corrected**.
+Both identifiers are available from the call the plan already makes — the vendored SDK types
+`properties: Record<string, PagePropertyValueWithIdResponse>` where the value carries `{ id }`, so
+the map is keyed by NAME and each value carries its ID. **Tier: a vendor type declaration, not a
+response body**, and `node_modules` is not a canonical evidence surface here — build against it,
+never cite it as observed. The live run should record whether `id` actually arrives on a scalar
+property, because `docs/research/notion-live-probe.md` § "Probe 3 — Property IDs" observed the
+opposite on the connector path (no ID for `title`, `text`, `date`). **Recommendation: keep
+`property` as a NAME in config**, and make `REQ001` print the configured name, the `id` it resolved
+to, and **an explicit finding when the configured name matches nothing in scope — never silence.**
+That is the actual fix for the flattering-direction failure and it costs nothing.
+⚠ **#78's own premise is UNSOURCED in this repository**: nothing here establishes whether a user can
+obtain a property ID from the Notion UI or a URL, so its Revisit-if is written against an unchecked
+fact.
+
+**#70 decision 1 — a split, and it needs NO superseding ADR.** The recommendation: policy-free mode
+emits a **`review`-kind result** with no conformity claim and no exit-byte contribution, and the
+**same release** ships the promotion path — the report line prints the `UNQ001` config stanza.
+Configured mode is unchanged. It is a consequence of existing decisions, named: ADR-0001 decision 4
+(a `review` result asserts no uniqueness invariant, so it infers nothing — Principle 4 satisfied by
+construction), ADR-0005 decision 1 (`conformity: null` already exists), ADR-0011 (the coverage item
+stays unordered pairs in both modes). ⛔ **A superseding ADR IS required for what `PRODUCT.md`'s
+contested sentence asserts** — a built-in mode emitting *conformity violations* — because that
+reverses ADR-0001 decision 4 on the identical noun. **One ADDITIVE ADR is still warranted**:
+`findingKind` gains a third value and the report gains a section outside the exit byte; leaving a
+third kind documented only in code comments repeats the collapse ADR-0011 exists to stop.
+Counter-evidence is live and conditional — Google enabled a Clang diagnostic as an *error* because
+developers ignored warnings, and of six tools surveyed **no informational tier is non-failing by
+construction**; the objection kills a bare observation with no upgrade path, which is exactly why
+the promotion path ships in the same release. **Unsettled and unrecorded anywhere:** whether the
+`review` result also appears in a *configured* run.
+
+**#71 and #74 — see the tracker.** #71's definition of done is met on disk. #74 is deferred **by the
+operator, in the ticket body** — `.claude/state/checkpoint.md`'s next-step 4 said "count the broken
+references in Hans" and omitted that. **The ticket corrects the checkpoint**, which is the
+deref-the-checkpoint pattern firing again.
+
+⚠ **Three of the scouts' supporting claims were false and were caught by re-running them.** A
+"checked negative" reported zero hits across five files when `docs/research/INDEX.md` hits; the
+standing rule was quoted as *"unless it blocks a gate"* where this file reads *"unless it blocks a
+rule"*, inside a draft comment about to be posted; and locators were given as line numbers where the
+citation standard requires section headings. **The dispositions survived verification; three of the
+supports did not.**
+
+#### One correction to the shipped band
+
+The band's next-step 1 said to read the hydration map "first". ~~That was the whole of the
+instruction.~~ It is now insufficient: the instruction is to **execute the approved plan**, and the
+map is read alongside it. Corrected in place in EXACT NEXT STEPS above, because that block is read by
+the next session rather than being a dated record.
+
+**Nothing else in the S026 band is superseded.** The gate figure (696), the merge SHAs, the
+`findingFor(...)!` correction to three, and every hoisted constraint stand as written.
+
+#### SECOND ADDENDUM (S026, same close `2487ab5`) — the SME directive, and the council skill it would have reached is off
+
+**Operator directive, 2026-08-19: consult expert domain SMEs next session.** Recorded in EXACT NEXT
+STEPS above, in place, because that block is read forward. It applies to the three open decisions —
+**#70 decision 1, #78, #82** — and not to #58, which is a build against a written plan.
+
+⛔ **The obvious instrument does not work here, and it fails silently.** `role-council` requires
+`<project-root>/.claude/role-council/config.md` and treats its absence as opt-out. **This repository
+has no `.claude/role-council/` directory** — verified 2026-08-19; `.claude/` holds only
+`settings.local.json` and `state/`. A session that reaches for the council gets a clean no-op and no
+signal that it got one. **That is the same defect class as a skill named without its reachability**
+and as the dead letter below: an instrument that is present, correct, and unreachable.
+
+The routes that do work are named in next-step 2. Route (b) — SME seats as subagents — is the one
+this session actually exercised, and it exercised the failure mode too.
+
+#### The escalation was audited, and the bound held
+
+A **bounded write escalation** was granted to three read-only scouts: exactly one file each, at one
+named absolute path in the scratchpad, with the repository and the tracker explicitly out of scope.
+Audited after return rather than assumed:
+
+- **Three files written, one per scout, none elsewhere.**
+- **Repository working tree clean** — no scout write reached `slice/` or `docs/`.
+- **#71, #74 and #78 carry zero comments.** #70's five comments are all the operator's and the
+  latest predates the dispatch by two hours.
+
+**Autonomy is earned per segment through audited evidence, and this is the evidence.** The bounded
+form is the redundant return route from here; the unbounded read-only default stays the norm.
+
+#### `subagent-research-reliability` was patched, and it lives outside this repository
+
+`~/.claude/skills/subagent-research-reliability/SKILL.md`. **Machine-local and gitignored**, like
+every other hook and skill — the risk already recorded in the standing block. It gained:
+
+- **Check 0 — name the return channel in the dispatch**, with *dead letter* as its leading word and
+  this session as its worked example. Two routes, `SendMessage` to `main` plus one authorised path.
+- **A widened Check 2.** It covered citations and web sources; this session's returns carried no
+  URLs at all and three supporting claims were still false. It now covers **checked negatives first**
+  — a false negative is the one error that looks like a clean result — plus quoted rules and
+  locators, each with its own re-run.
+
+**No verdict is re-opened by this addendum** and none is solicited. One session, one close.
+
+#### THIRD ADDENDUM (S026, same close `2487ab5`) — the disposition sweep ran, and the skill patch went to quarantine
+
+**#71 CLOSED, #74 DEFERRED.** Both carry a triage comment with the mandatory
+`> *This was generated by AI during triage.*` disclaimer, both read back from the tracker rather
+than trusted from `gh`'s own output. **Thirteen issues open, nine now labelled `decision`.**
+
+⚠ **Three claims in the scouts' drafts were corrected before posting**, and the corrections are what
+the published comments say: a "checked negative" reporting zero hits across five files when
+`docs/research/INDEX.md` hits — benignly, it says the paper *is* read; the standing rule quoted as
+*"unless it blocks a gate"* where this file reads **"unless it blocks a rule"**; and line numbers
+supplied where the citation standard requires section headings. **A draft comment is not evidence
+either.**
+
+⚠ **A label count read STALE immediately after the write.** `gh issue list --label decision` returned
+8 straight after the ninth was added. Reading `#74`'s labels directly showed `decision` present, and
+re-listing returned all nine. **The write was fine and the first read was wrong** — the inverse of
+the S015 GraphQL failure, and the same remedy: read it back, and read it back again when the number
+surprises you.
+
+#### The skill patch is in QUARANTINE, not live — the operator will resurrect it
+
+⛔ **`~/.claude/skills/` is a symlink farm, and this was not known before today.**
+`subagent-research-reliability` resolves to
+`C:\Users\mlpgr\2026_Projects\skills\skills\orchestration\subagent-research-reliability` — a
+**version-controlled canonical repo**. Editing "the skill" edited that repo directly, on `main`,
+bypassing the quarantine-first review gate. **A session that believes it is patching a local copy is
+patching the canonical one**, and `git status` in `~/.claude/skills` does not show it: the path is
+beyond a symlink and git reports `fatal: pathspec ... is beyond a symbolic link`.
+
+Resolved on operator instruction. The patch is staged at
+`~/.claude/skills/_quarantine/subagent-research-reliability/` with a `PROVENANCE.md` naming the
+canonical target, the resurrect command and the review notes. The canonical file was reverted with
+**`git stash`** — `git checkout --` is blocked by CC Safety Net as destructive, correctly, and the
+stash is a second recoverable copy. The patch now exists in **two recoverable places and zero live
+ones.**
+
+**Four skills sit in `_quarantine/` awaiting §1.5 review**: `hidden-and-plugin-skill-reachability`,
+`router-skill-predicate-gap`, `bash-cwd-drift-false-clean-grep`, and this patch to
+`subagent-research-reliability`. **None is active.**
+
+⭐ **The general rule, worth more than the incident:** before editing anything under
+`~/.claude/skills/<name>/`, resolve it — `readlink -f` or `os.path.realpath`. If it leaves
+`~/.claude/`, you are editing a canonical repo and the quarantine gate applies.
