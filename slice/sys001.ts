@@ -154,6 +154,11 @@ function sys001Finding(args: {
      * retrieved, and report.ts prints LINK_NOT_CAPTURED as the reason — "no
      * link" and "we did not look" are different facts about the same field. */
     link: args.link ?? null,
+    /* NULL, AND #100'S BRIEF PUTS THIS OUT OF SCOPE EXPLICITLY: a SYS001
+     * finding's subject IS the resource. "This resource was not evaluated" has
+     * no containing page to send a reader to, and one invented here would be an
+     * address the rule never observed. */
+    source: null,
     message: args.message,
   };
 }

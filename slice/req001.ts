@@ -308,6 +308,11 @@ export const REQ001: Rule = {
            * entry. Null for a resource the scan staged from a parent's block
            * listing, which has no url to capture. */
           link: links.get(anchor.resource) ?? null,
+          /* NULL, AND THE NULL IS THE ANSWER. A source is where a reader goes
+           * that is not the subject. REQ001's subject is the resource's own
+           * property map — the reader is already at the address, and inventing
+           * a second one would send them somewhere the rule never looked. */
+          source: null,
           message: `required property "${property}" is present and carries no value`,
         };
       })

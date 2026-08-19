@@ -237,7 +237,12 @@ export function extractReferences(blocks: unknown[], sourcePage: string): Refere
   for (const raw of blocks) {
     const b = raw as Record<string, any> | null;
     if (!b || typeof b !== 'object') continue;
-    const sourceBlock = String(b.id ?? '(unknown block)');
+    /* NAMES ITS OWN CAUSE. `scan.ts` writes a different fallback for a different
+     * condition — an entry carrying no ref facts at all — and the two read as
+     * synonyms unless each says which one it is. A reader who cannot tell them
+     * apart cannot tell a block the API described without an id from a
+     * reference whose origin was never recorded. */
+    const sourceBlock = String(b.id ?? '(block returned with no id)');
     const where: Origin = { sourcePage, sourceBlock };
 
     /* -- Route A: structural, no host parsing ------------------------------ */

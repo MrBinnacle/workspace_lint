@@ -12,7 +12,7 @@
 
 import { STAGES, type Residual, type Stage } from './manifest.js';
 import type { Attestation } from './notion-port.js';
-import { anchorKey, formatRow, headlineCoverage, LINK_NOT_CAPTURED, type CoverageRow } from './finding.js';
+import { anchorKey, formatRow, headlineCoverage, LINK_NOT_CAPTURED, type CoverageRow, type FindingSource } from './finding.js';
 import { canonicalize, NORMALIZATION_VERSION, VOLATILE_FIELDS } from './normalize.js';
 import type { ScanResult } from './scan.js';
 
@@ -113,7 +113,17 @@ export type ReportDocument = {
     rule: string; resource: string; discriminator: Record<string, string>;
     certainty: string; targetState: string; bounded: boolean; isRootMiss: boolean;
     evidence: { object: string; location: string; observed: string; expected: string };
-    link: string | null; linkAbsentReason: string | null; message: string;
+    link: string | null; linkAbsentReason: string | null;
+    /**
+     * WHERE THE DEFECT IS — #100. Null for a rule whose subject is the resource
+     * itself; the finding type carries the reason at each site. It is on the
+     * DOCUMENT rather than computed per renderer, for the same reason every
+     * other decision here is: three emitters each remembering to look it up is
+     * three chances for one to drop it, and a format that silently omits a
+     * field is this product's own defect class appearing in its own output.
+     */
+    source: FindingSource | null;
+    message: string;
   }[];
   disclosures: string[];
   /** ADR-0004. Omitted entirely under `deterministic`; never merely emptied. */
@@ -382,6 +392,10 @@ export function buildReportDocument(r: ScanResult, opts: DocumentOptions = {}): 
         /* The REASON travels with the null, because "no link" and "we did not
          * look" are different facts about the same field. */
         linkAbsentReason: f.link === null ? LINK_NOT_CAPTURED : null,
+        /* Carried through verbatim, fallback strings included. Substituting a
+         * blank or a dash here would delete the distinction `references.ts`
+         * wrote them to preserve. */
+        source: f.source,
         message: f.message,
       }))
       .sort((a, b) => {
@@ -493,6 +507,12 @@ export function renderReport(r: ScanResult, opts: RenderOptions = {}): string[] 
     );
     out.push(`      evidence: expected ${f.evidence.expected}, observed ${f.evidence.observed} (${f.evidence.location})`);
     out.push(`      link: ${f.link ?? f.linkAbsentReason ?? LINK_NOT_CAPTURED}`);
+    /* #100. WHERE THE DEFECT IS, not what it is about. Without this line a
+     * REF001 finding names an unreachable target and no place to go, and the
+     * operator's next move is a search of the whole workspace. Both halves are
+     * IDs — see FindingSource — so no redaction transform is applied and none
+     * is needed; CHECK-ref001 asserts that over every rendered line. */
+    out.push(`      source: ${f.source ? `page ${f.source.page} · block ${f.source.block}` : SOURCE_NOT_APPLICABLE}`);
   }
   out.push('  no baseline state is printed: this slice computes none (spec §1.2).');
 
@@ -640,6 +660,18 @@ export function renderJson(doc: ReportDocument): string {
  */
 const md = (s: string) => s.replace(/([|`*\\])/g, '\\$1');
 
+/**
+ * The reason a finding carries no source, printed rather than left blank.
+ *
+ * SAME INSTRUMENT AS `LINK_NOT_CAPTURED`: "no source" and "this rule has no
+ * source to give" are different facts about the same field, and a renderer that
+ * printed an empty cell would collapse them. Every rule that writes `null`
+ * states its own reason at the construction site; this is the one line the
+ * report prints for all of them.
+ */
+export const SOURCE_NOT_APPLICABLE =
+  'none — this rule\'s subject is the resource itself, so there is no separate containing page';
+
 export function renderMarkdown(doc: ReportDocument): string {
   const L: string[] = [];
 
@@ -739,6 +771,10 @@ export function renderMarkdown(doc: ReportDocument): string {
     L.push(`- Certainty: \`${f.certainty}\` · target state: \`${f.targetState}\` · gap: ${f.bounded ? 'bounded' : '**UNBOUNDED**'}${f.isRootMiss ? ' · **declared root never reached**' : ''}`);
     L.push(`- Evidence: expected ${md(f.evidence.expected)}, observed ${md(f.evidence.observed)} (${md(f.evidence.location)})`);
     L.push(`- Link: ${f.link ? `\`${md(f.link)}\`` : `_${md(f.linkAbsentReason ?? 'none')}_`}`);
+    /* #100, and it must say the same thing the terminal renderer says. The two
+     * emitters disagreeing about what a run found is the defect T4's review
+     * found in three sections of this file. */
+    L.push(`- Source: ${f.source ? `page \`${md(f.source.page)}\` · block \`${md(f.source.block)}\`` : `_${md(SOURCE_NOT_APPLICABLE)}_`}`);
     L.push('');
   }
   /* Spec §1.2: this slice computes no baseline state. Printing one would look

@@ -3698,3 +3698,261 @@ seed. Two gate `#51`; one gates `#95`; one resets proof question Q1; one unlocks
 **Promotion review** of the quarantined skills — see the standing block.
 
 **NO SELF-ASSESS LINE, BY OPERATOR RULING 2026-08-17.** The ritual line records `verdict=n/a`.
+
+---
+
+## S030 — 2026-08-19 — the v0.1 rule catalog is complete, and the pair denominator moved a real headline
+
+**PHASE:** **BUILD, and the build is done.** `UNQ001` shipped — **all four v0.1 rules are built**:
+`SYS001`, `REF001`, `REQ001`, `UNQ001`. Two are configured. ~~**PR #108 is OPEN and the operator
+merges.** `main` carries `f03d8a0`; the branch is `build/s030-unq001` at `575570e`.~~ **MERGED — see
+the addendum at the foot of this band.** `main` carries `f16eca2`.
+
+**TESTS:** **TWELVE suites, exit 0, offline.** Re-derived, never quoted — the per-term assertion sum
+is gone from this file and the reason is in the standing block.
+
+**TRACKER:** 17 open once #108 merges and closes #59. Two comments filed and read back: the build
+result on #59, and the duplicate-title fixture seed on #102 with the three oracle numbers it moves.
+
+### ⭐ The finding: the pair denominator changed the headline on a real workspace
+
+One unreadable resource in a four-member scope — `wl-dataset`, a data source this slice does not
+enumerate.
+
+| rule | coverage item | figure |
+|---|---|---|
+| `SYS001` | resources | 3/4 — **75%** |
+| `UNQ001` | unordered resource pairs | 3/6 — **50%** |
+
+Same single drop-out. `UNQ001`'s item is pairs, so it removes **three of six**, and 50% became the
+report's headline as the minimum of the vector. **ADR-0011's argument observed rather than argued** —
+the collapse it forbids had already shipped a `2/2 — 100%` figure over a root with three children,
+and here it would have overstated coverage by half again. Oracle pre-registered and committed before
+the run, MATCHED on all three assertions. `docs/proof/results-59-unq001.md`.
+
+### ⛔ What is NOT proven, and must not be described as proven
+
+**`UNQ001`'s conformity-violation path has never run against the live API.** Every readable title in
+the fixture is distinct, so zero findings on the live run is the *conforming* path. Six criteria are
+recorded as offline-only in `docs/spec/UNQ001-uniqueness.md` §6 and the proof file §3, each named
+against the suite test that covers it. **Say the catalog is BUILT, never that it is PROVEN.**
+Seeding a duplicate is operator-only and is on #102.
+
+### Two defects the suite caught, and one it did not
+
+- ⛔ **The placeholder guard was ambiguous for a quadratic item** — hoisted to the standing block.
+- ⛔ **`hydrateRequiredProperties` took `config.rules` whole**, so a `UNQ001` declaration would have
+  been registered under `REQ001`'s unit and reported under its name. It filters by rule now, inside
+  the stage rather than at the call site, so a third configured rule cannot reach that loop by being
+  handed the whole list.
+- ⚠ **The report's unit-column padding was found by the LIVE RUN and by no assertion.** There is a
+  test now — and ⭐ **the test I first wrote for it was VACUOUS**: the fixture it ran over carries one
+  unit, so the loop asserted nothing and passed. It now builds a run carrying both the shortest unit
+  and the longest, and asserts the fixture has two before asserting anything about them. **The
+  empty-set hole, inside the test written to close a different hole.**
+
+### The `not-built` loader class was removed, and that is a decision
+
+`UNQ001` was its only member; the branch became unreachable the moment it shipped. It is **not kept
+for a future rule**, because *"is this rule built?"* is a question about the BUILD —
+`unimplementedRules` asks it and `cli.ts` rejects on it at exit 4 — and a `not-built` table in
+`config.ts` is a hand-kept mirror of `BUILT_RULES` that goes stale exactly as this one did. The gate
+that classifies a rule now reads the table rather than a hardcoded `'REQ001'` beside it, and
+`CHECK-config.ts` asserts over the whole catalog instead of one ID at a time. *Revisit if:* a future
+rule is catalogued but unbuilt **and** `unimplementedRules` turns out not to cover it.
+
+### BLOCKERS
+
+**None.** The v0.1 rule catalog is built and the gate is green.
+
+### EXACT NEXT STEPS
+
+⚠ **REWRITTEN 2026-08-19 AFTER THE POST-CLOSE WORK.** The list below supersedes the one written at
+first close; the addendum at the foot of this band records what changed. **Twenty issues open** —
+8, 25, 27, 29, 51, 69, 70, 74, 78, 82, 84, 95, 96, 97, 100, 101, 102, 103, 111, 113.
+
+1. ⛔ **Merge state first, and by ancestry, never the badge.** `main` carries `a417f4d`. **TWO PRs
+   were open at close — #112 (the first real-workspace proof) and #114 (the WIP-limit lapse) — plus
+   the close PR itself.** All three touch disjoint files and merge in any order. Verify with
+   `git merge-base --is-ancestor <sha> origin/main` before branching new work.
+2. ⭐ **`#100` — the highest-value small fix, and it was re-scoped on live evidence.** An agent brief
+   is on the ticket. `sourcePage` and `sourceBlock` are captured in the manifest and rendered **zero**
+   times, so no finding carries an address. **It is a render change, not a capture change.** Until it
+   lands, every `REF001` finding is an alarm without a location.
+3. **`#111`** — `www.notion.so` is an OBSERVED internal-link host, so `REF001` under-reports today.
+   ⛔ **Do not close it by extending the allow-list** — the host set is unbounded and the residue path
+   is the soundness mechanism. The ticket says so.
+4. **`#96`** — a worked entry in `wl.config.example.json`. Its scope grew: `UNQ001` is configurable
+   too, so the only worked example is one rule short as well as empty. `CHECK-config.ts` TEST 8
+   executes that file, so whatever is added must load.
+5. **`#95`** — `REQ001`'s violation path is offline only, and **`UNQ001` now has the identical
+   limitation**. Both are released by the same operator action on `#102`. Consider one ticket.
+6. **`#101`** — the `undeclared-invariant` tier. Its `#59` block is released. Its ADR needs the plan
+   gate.
+7. **Hook tests, `skill-router.py` first.** Three of nine are tested. Its own session.
+
+⭐ **THE CEILING IS #51 AND DATA-SOURCE ENUMERATION, AND IT IS NOW MEASURED.** The first real-workspace
+run read **ten of twenty resources**; the other ten are data sources and all ten are bounded gaps.
+Both surviving buyer paths — attestation and CI — run through it. **Any plan that treats the buyer
+question as the blocker has the order wrong.**
+
+**Off the critical path and deliberately shut:** #8, #25, #27, #69, #74, #78, #82, #84, #97, #103.
+
+**NEXT-MODEL: fast tier.** #100, #111 and #96 are separable execution mechanics against settled
+briefs — one or two files each, every one with an executing test already in place. **Do not
+straddle:** `#101` (an additive ADR), `#103` (status claims in the gate) and `#113` (which buyer
+stack is overhead) are frontier work and each gets its own session.
+
+**NEXT-REPO/CWD:** the `workspace_lint` repository root — single repo; state, plan and resume ritual
+all live there.
+
+### POST-CLOSE ADDENDUM (S030, after `8ba40e1` shipped) — #108 is merged, and the catalog is on `main`
+
+The operator merged PR #108 immediately after the close was written. **Verified by ancestry, not by
+the badge:** `575570e` is an ancestor of `origin/main`, merge commit `f16eca2`. `#59` closed
+automatically at 2026-08-19T05:11:03Z. The tracker returns **17 open**, which is what the band
+predicted — the prediction is now a count.
+
+**So `UNQ001` and the completed v0.1 catalog are on `main`**, along with this close itself
+(`8ba40e1`). Nothing in the band's substance changes: the rule is built, and its
+conformity-violation path is still **not proven live**.
+
+⚠ **This is the third close in a row the operator has merged mid-ritual or immediately after it** —
+PR #38 during S026, PR #94 during S027, and now #108. The standing constraint says to re-read
+external state immediately before committing a close; that is not sufficient here, because the merge
+landed *after* the commit. **A close's own PR status is stale the moment it is written, so write it
+as a pointer — "the operator merges every PR" — rather than as a state, and put the verification in
+the next session's step 1 where it already is.**
+
+### POST-CLOSE ADDENDUM 2 (S030, after `d0ed61a`) — the session continued well past its close, and produced the first real evidence the project has
+
+The first close covered the `UNQ001` build. Everything below happened after it. **The next-steps
+block above was rewritten in place** because it is read as instructions; this addendum is the dated
+record of why.
+
+#### ⭐ Nobody closed `#70`. GitHub's parser did — and it did it four times
+
+Carried for three sessions as *"confirm the closure was intended."* It was never a question for the
+operator. Commit `71d26ed` contained a closing keyword immediately before an issue reference inside a
+true, careful sentence naming **one** of four decisions; the parser cannot see the qualifier that
+follows. **`#70` closed `COMPLETED` two seconds after PR #104 merged. Four issues went this way:
+`#7`, `#10`, `#70`, `#73`.**
+
+⛔ **`actor` cannot distinguish a human decision from a parser accident** — every actor here is the
+same account, which is also the identity `gh` writes as and the merger GitHub credits for an
+auto-close. **The tell is the lag.** Doctrine and the pre-merge grep are in
+`docs/agents/issue-tracker.md`; the standing lesson above was corrected in place. **`#70` is
+REOPENED.**
+
+⚠ **The commit that shipped that doctrine quoted the offending phrase verbatim** and would have
+re-closed the ticket. The grep caught it only when finally run against the real message — an earlier
+run against a synthetic string passed and proved nothing. **Check the artifact, not a stand-in.**
+
+#### ⭐ The tool ran against a real workspace and found two references that resolve for nobody
+
+Full record, deliberately identifier-free: `docs/proof/results-first-real-workspace.md`.
+⚠ **FORWARD REFERENCE — that file is on PR #112 and is NOT on `main` at the time this band was
+written.** It resolves once #112 merges; until then a deref check will correctly flag it as missing,
+and that is the mechanism working rather than a stale claim. Same for the `triage-labels.md`
+WIP-lapse text, which is on PR #114.
+85 requests, 23 s, policy-free, one declared root.
+
+**Five predictions were registered before the run. Two were refuted, and the refuted pair is the
+result** — the prediction that findings would be grant-boundary noise telling the owner nothing new
+was wrong; one of three was. One unresolved target is referenced **from the declared root, in the
+callout that tells a reader how to begin work.**
+
+**The control is the finding.** Both targets failed through a second independently-authenticated
+identity, whose **positive control** — a page known to exist outside the scanned subtree — was
+retrieved successfully in the same session. Without it the two 404s prove nothing.
+
+⚠ **The wording was NOT strengthened.** `REF001` says *"absent or inaccessible, indistinguishable"*
+and that stays the honest claim. Deletion is the strong reading, not a proved one.
+
+**Two unprompted findings.** `www.notion.so` is an **observed** internal-link host where the record
+said no locator existed, so **`REF001` under-reports today** — `#111`. And `sourcePage` is captured
+in the manifest and **rendered zero times**, so no finding carries an address — `#100`, re-scoped
+from a feature to a render change.
+
+**The ceiling, measured: ten of twenty resources invisible**, all data sources. `#51` and spec §1.2
+are the shared blocker for every remaining path.
+
+#### ⭐ There is no evidenced buyer, and one evidenced user
+
+`#29` was rewritten rather than answered — it asked *"auditor or engineer?"* and routed the answer to
+a five-team demand test that no longer exists. Split into the half the repository can settle and the
+half that needs a second person:
+
+- **Enterprise / admin census: STRUCTURALLY CLOSED.** `ADR-0002` finding 1 — no endpoint enumerates a
+  connection's grant; unshared subtrees are *unnameable*. ⚠ One check is owed and could overturn it:
+  the sweep covered the **public** endpoint index, and the reading that Enterprise SCIM and audit-log
+  export are identity/event surfaces rather than content enumeration is an **inference**. Routed to
+  `#27`.
+- **Scoped attestation: OPEN**, and the same constraint that closes the admin path is what makes an
+  audit shape work.
+- **CI gate: OPEN.**
+
+⛔ **Every segment in `PRODUCT.md` is ruled out or unestablished.** The natural assumption — *an
+engineer at the company maintaining the workspace* — is the segment ruled out **by capability**
+(*"That segment writes the tool"*), has no external audience where the primary is defined by having
+one, is priced at behavioural-but-not-monetary willingness, and faces a free CI-shaped competitor.
+
+**The cost is already in the code.** `ADR-0005`'s attestation stack and `ADR-0008`/`ADR-0012`'s exit
+byte are **both built and one is overhead**, at a per-rule cost `UNQ001` just paid. Filed as `#113`,
+framed on **reversibility rather than on a buyer bet** — betting on a buyer is the error `#29` was
+rewritten to stop.
+
+#### The decision WIP limit lapsed, unnoticed, on the day it was triggered
+
+It reads *"while any v0.1 rule is unbuilt"*; `UNQ001` completed the catalogue. **A lapsed constraint
+is more dangerous than an active one** — the sentence still reads as a rule. Recorded in
+`docs/agents/triage-labels.md` (PR #114), written to be **struck rather than deleted** if a v0.2
+catalogue revives the condition. *Record always* is unaffected and does not lapse. **Not a licence:**
+a decision scheduled now should name why it does not wait behind `#51`.
+
+#### `/triage` found all three discovery buckets empty
+
+Nothing unlabelled, nothing `needs-triage`, and the one `needs-info` had no reply. **The queue was
+formally clean and substantively stale** — four already-triaged issues had been overtaken by the
+day's evidence. A discovery query keyed on labels cannot see that, which is worth knowing before
+trusting an empty board.
+
+### WHAT ONLY THE OPERATOR CAN DO
+
+~~**Merging PR #108**~~ — **done.** Every future PR, unchanged.
+
+**`#102`'s fixture backlog, now SEVEN items**, all in the Notion UI. The newest is the
+duplicate-title seed for `UNQ001`, filed this session with the three oracle numbers it moves — and
+⛔ **the oracle must be re-pre-registered BEFORE that run, never corrected after it.** Two of the
+seven gate `#51`; one gates `#95`; one resets proof question Q1; one unlocks Q8 and the Q3 re-run.
+
+~~**Confirming `#70`'s closure was intended** — carried from S029, still open. Its title and last
+comment still name three live decisions.~~ ⛔ **RETIRED 2026-08-19 — IT WAS NEVER A QUESTION FOR THE
+OPERATOR.** Nobody closed `#70`; GitHub's parser did, on `resolved #70` in `71d26ed`'s body, two
+seconds after PR #104 merged. **`#70` is REOPENED** and the mechanism is on the ticket. See the
+corrected standing lesson above. §0.6's test was not run on this for three sessions, which is the
+second time in two sessions that a determinate question was carried as the operator's.
+
+**TWO PRs WERE OPEN AT CLOSE, PLUS THE CLOSE ITSELF.** `#112` — the first real-workspace proof.
+`#114` — the WIP-limit lapse. All three touch disjoint files and merge in any order. **Verify by
+ancestry, never the badge.**
+
+⭐ **SHARING A REAL PAGE WITH THE INTEGRATION IS THE HIGHEST-VALUE OPERATOR ACTION AVAILABLE, and it
+is one click.** The integration's entire grant is the fixture. Sharing one real hub in the Notion UI
+is what produced the only genuine product evidence this project has. **A second, different root
+would be worth more than any amount of further reasoning** — the current evidence is n=1 and supports
+an existence claim, never a rate.
+
+~~**What IS the operator's, and it is decision 2's second half only:** whether to build the three
+policy-free decay signals **inside v0.1**.~~ **SUPERSEDED by `#29`'s rewrite.** `#70` decision 2's
+research half is settled and its scope half is unanswerable while there is no evidenced buyer. **The
+one thing only the operator can do here is make contact with ONE person who is not him** — that is
+`#29`'s Definition of Done, and no reasoning substitutes for it.
+
+⚠ **`#70` decision 4 is substantively answered on the ticket and recorded in NO canonical document.**
+The reconstructibility gate test lives in a ticket comment and a state file, and a state file is
+never evidence about the thing it describes. Promoting it needs the plan gate.
+
+**Promotion review** of the quarantined skills — see the standing block.
+
+**NO SELF-ASSESS LINE, BY OPERATOR RULING 2026-08-17.** The ritual line records `verdict=n/a`.

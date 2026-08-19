@@ -1208,7 +1208,11 @@ type ResolutionTarget = { targetId: string; targetKind: TargetKind };
 /** Read back what discovery recorded, so the resolution step adds to it rather than replacing it. */
 function referenceFacts(manifest: Manifest, key: string) {
   const e = manifest.of(REF001_UNIT).find(x => x.key === key);
-  return e?.ref ?? { targetId: null, targetKind: 'unknown' as TargetKind, href: null, via: 'unrecorded route', sourcePage: '(unrecorded page)', sourceBlock: '(unrecorded block)', resolveCause: null };
+  /* THE FALLBACKS NAME THIS SITE'S OWN CONDITION — the entry carries no ref
+   * facts at all — and not references.ts's, which is a block the API returned
+   * without an id. Two conditions, two strings; they were near-synonyms and a
+   * reader could not tell which had happened. */
+  return e?.ref ?? { targetId: null, targetKind: 'unknown' as TargetKind, href: null, via: 'unrecorded route', sourcePage: '(no origin recorded for this reference)', sourceBlock: '(no origin recorded for this reference)', resolveCause: null };
 }
 
 /**

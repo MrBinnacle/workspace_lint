@@ -102,6 +102,37 @@ export type Evidence = {
   expected: string;
 };
 
+/**
+ * WHERE THE DEFECT IS, as opposed to what it is about.
+ *
+ * A REF001 finding names an unresolvable TARGET. The target is not a place the
+ * operator can go — it is the thing that is not there. The address is the page
+ * whose block content carried the link, and without it the finding is an alarm
+ * with no location: the first run against a real workspace reported two dead
+ * references and named neither containing page, which on a workspace of several
+ * hundred top-level pages is not actionable (#100,
+ * `docs/proof/results-first-real-workspace.md` §5).
+ *
+ * BOTH HALVES ARE IDs AND NEITHER IS A TITLE, which is why this field needs no
+ * redaction transform where `link` does. `Entry.link` is redacted at the point
+ * of entry because a Notion URL carries the page title in its path; a
+ * hyphenated ID carries nothing. `references.ts`'s `Origin` states the same
+ * invariant at the capture site, and `CHECK-ref001.ts` asserts it over every
+ * rendered line rather than over one section — #42 shipped a title into a call
+ * log four lines under a report claiming titles were redacted.
+ *
+ * THE FALLBACK STRINGS ARE LOAD-BEARING AND ARE NOT EMPTY CELLS. Some discovery
+ * routes carry no origin, so `references.ts` writes `'(unrecorded page)'` and
+ * `'(unknown block)'`. A renderer that printed a blank would make a missing
+ * origin indistinguishable from a page with no name.
+ */
+export type FindingSource = {
+  /** The page whose block content carried the reference. An ID, never a title. */
+  page: string;
+  /** The block within it. An ID, never a title. */
+  block: string;
+};
+
 export type Finding = {
   rule: string;
   anchor: Anchor;
@@ -115,6 +146,14 @@ export type Finding = {
   evidence: Evidence;
   /** Null in this slice. The reason is `LINK_NOT_CAPTURED`, and the report prints it. */
   link: string | null;
+  /**
+   * REQUIRED AND NULLABLE, NOT OPTIONAL, so the compiler makes every rule answer
+   * the question rather than letting one forget it. `null` is the honest value
+   * for a rule whose subject IS the resource — SYS001 says "this resource was
+   * not evaluated" and there is no second place to send the reader. Each rule
+   * that writes `null` says why at the site.
+   */
+  source: FindingSource | null;
   /** One line a human reads. Carries no page title. */
   message: string;
 };
