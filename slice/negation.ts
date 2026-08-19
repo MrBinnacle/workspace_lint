@@ -227,7 +227,19 @@ export function scannedFiles(repo: string): string[] {
   return out;
 }
 
-export type Baseline = { digest: string; file: string; note: string }[];
+/**
+ * Accepted debt, one entry per flagged sentence.
+ *
+ * `disposition` IS OPTIONAL AND IT CARRIES THE DISTINCTION THAT MATTERS. NASA's
+ * Configuration Status Accounting separates a KNOWN, accepted gap from an
+ * UNNOTICED one (SE Handbook Rev 2 §6.5.1.2.3, deviation and waiver), and this
+ * repository could not tell them apart. An entry with no disposition is
+ * unchecked. An entry marked `refuted` is a sentence we have since proved wrong
+ * and CANNOT edit, because it stands in an ADR and ADRs are never edited in
+ * place — the correction lives in a superseding record, and this field is the
+ * pointer to it. Those two states must never render identically.
+ */
+export type Baseline = { digest: string; file: string; note: string; disposition?: string }[];
 
 export function loadBaseline(repo: string): Baseline {
   const p = join(repo, 'slice', 'negation-baseline.json');

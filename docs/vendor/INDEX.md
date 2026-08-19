@@ -33,6 +33,7 @@ that checkable.
 | `data-source-endpoints.md` | Retrieve and query a data source; the read-content requirement; the 10,000 cap | 2026-08-19 |
 | `integration-capabilities.md` | What "Read content" grants, and what the page does not say | 2026-08-19 |
 | `link-domains.md` | The `app.notion.com/p/{id}` migration, and what it did NOT migrate | 2026-08-19 |
+| `access-enumeration.md` | What routes enumerate a connection's reachable objects; the search-limitations page in full; ADR-0002 finding 1 refuted | 2026-08-19 |
 | `WATCH.md` | Changelog reconciliation record | 2026-08-19 |
 
 ## How to add an entry

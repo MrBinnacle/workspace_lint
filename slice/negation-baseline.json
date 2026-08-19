@@ -32,12 +32,14 @@
   {
     "digest": "70da8ea84cbe",
     "file": "docs/adr/0002-coverage-is-measured-against-declared-roots.md",
-    "note": "**No endpoint enumerates a connection's grant.** Search, `/v1/users`, `/v1/users/me`, `/v1/oauth/introspect`, and the complete public endpoint index were checked."
+    "note": "**No endpoint enumerates a connection's grant.** Search, `/v1/users`, `/v1/users/me`, `/v1/oauth/introspect`, and the complete public endpoint index were checked.",
+    "disposition": "CONTESTED 2026-08-19 — POST /v1/search does enumerate shared objects, and its optimizations half states directly-shared pages and databases \"are guaranteed to be returned\". The residual true claim is the narrower one: no endpoint GUARANTEES COMPLETE enumeration, which remains UNLOCATABLE — the vendor asserts a non-guarantee for search only. Also: developers.notion.com/llms.txt is the complete endpoint index and reference/intro does not render one, so \"the complete public endpoint index was checked\" may not have reached it. See #123."
   },
   {
     "digest": "d66eb982f3fc",
     "file": "docs/adr/0002-coverage-is-measured-against-declared-roots.md",
-    "note": "Nothing returns the set of objects an integration may read."
+    "note": "Nothing returns the set of objects an integration may read.",
+    "disposition": "REFUTED 2026-08-19 — POST /v1/search: \"Searches all parent or child pages and data_sources that have been shared with a connection.\" Verified byte-for-byte against developers.notion.com/reference/post-search. The ADR is not edited; see #123 and docs/vendor/access-enumeration.md. ADR-0002 finding 2, one line below, is CORRECT and is what the declared-roots decision actually rests on."
   },
   {
     "digest": "55e77cb83e11",

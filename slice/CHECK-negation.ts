@@ -91,11 +91,24 @@ check('  and it reaches the ADRs, not only the two root documents',
 check('  and the detector finds negatives in it at all', result.hits.length > 0, true);
 check('the baseline is non-empty, so its stale-entry check is not vacuous', baseline.length > 0, true);
 
+/* A DISPOSITIONED ENTRY MUST NOT RENDER AS AN UNCHECKED ONE. A sentence proved
+ * wrong and frozen in an un-editable ADR is a different state from one nobody has
+ * looked at, and collapsing them is the failure NASA's deviation/waiver split
+ * exists to prevent. This asserts the two states are distinguishable AT ALL —
+ * without it the field can be added, never populated, and never noticed. */
+check('at least one baseline entry carries a disposition', baseline.some(b => b.disposition), true);
+check('  and an undispositioned entry is still distinguishable from it', baseline.some(b => !b.disposition), true);
+
 console.log(`\n   scanned ${scannedFiles(REPO).length} decision surfaces`);
 console.log(`   ${result.hits.length} negative-capability sentence(s) found`);
 console.log(`   ${result.hits.filter(h => h.marked === 'vendor').length} typed as STRONG NEGATION (vendor-attested)`);
 console.log(`   ${result.hits.filter(h => h.marked === 'nmf').length} typed as NEGATION AS FAILURE`);
 console.log(`   ${baseline.length} in the baseline — accepted debt, still visible`);
+console.log(`   ${baseline.filter(b => b.disposition).length} of those carry a DISPOSITION — checked since, and frozen in a document that cannot be edited`);
+
+for (const b of baseline.filter(b => b.disposition)) {
+  console.log(`\n   ${b.disposition!.split(' ')[0]}  ${b.file}  [${b.digest}]\n     ${b.note.slice(0, 110)}\n     → ${b.disposition!.slice(0, 150)}`);
+}
 
 for (const h of result.unaccounted) {
   console.log(`\n   UNTYPED  ${h.file}:${h.line}  [${h.digest}]\n     ${h.sentence.slice(0, 140)}`);
