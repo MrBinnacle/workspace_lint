@@ -10,8 +10,10 @@
 - **Written after the code, not before it.** Unlike `REF001-link-recognition.md`, every claim below
   was executed before it was written. §5 lists which assertion scores each one. The one exception
   is §6, which is a limitation of the fixture and is marked as unexercised.
-- **Observed evidence:** none against the live API. **This rule has never run against a real
-  Notion workspace**, because the proof fixture seeds no duplicate. See §6.
+- **Observed evidence:** `docs/proof/results-59-unq001.md` — one live run, 2026-08-19, nine
+  read-only calls, oracle pre-registered before the run and MATCHED. It exercised the **conforming**
+  path and the data-source gap. ⛔ **It did NOT exercise the violation path**, because the fixture
+  seeds no duplicate. See §6.
 - **Documented evidence:** the measurement in #59's 2026-08-19T02:03Z comment — five data sources,
   996 rows, run through the Notion MCP connector, finding 8 duplicate-title groups and 9 excess
   rows. **Documented-tier, not proof-tier**: ADR-0004 holds that the connector does not clear the
@@ -222,8 +224,14 @@ Every mutation is scored on the figures and the exit code, never by grepping a r
 
 ## 6. What the fixture cannot exercise
 
-**The proof fixture seeds no `UNQ001` case, so this rule has never produced a finding against the
-live API.** Seeding one is a Notion-UI action and is operator-only; it is filed on **#102**.
+**The rule ran live on 2026-08-19 and matched its pre-registered oracle. It has still never
+produced a finding against the live API**, because the fixture seeds no duplicate. Seeding one is a
+Notion-UI action and is operator-only; it is filed on **#102**.
+
+⭐ **What the live run did establish is the thing this rule is for.** One unreadable resource in a
+four-member scope removed **three of six pairs**, so `UNQ001` reported 50% where the resource-shaped
+funnel reported 75% — and 50% became the report's headline, being the minimum of the vector. The
+25-point gap is ADR-0011's argument, observed. Full record: `docs/proof/results-59-unq001.md`.
 
 Per #59's Definition of Done, this build takes the second branch — record which criterion the
 fixture could not exercise — rather than claiming a proof that did not run. Unexercised live:
@@ -236,7 +244,7 @@ fixture could not exercise — rather than claiming a proof that did not run. Un
   is retrieved with `GET /v1/pages`, and a child staged from a parent's block listing has no url.
 
 What a live run **can** exercise today is the clean path — pairs declared, compared, and reported
-conforming — and the data-source gap.
+conforming — and the data-source gap. Both were exercised on 2026-08-19.
 
 ## 7. Revisit-ifs, collected
 

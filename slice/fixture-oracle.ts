@@ -144,6 +144,53 @@ export const FIXTURE_ORACLE = {
       },
     ],
   },
+
+  /**
+   * UNQ001's applicable set, PRE-REGISTERED FOR #59'S LIVE RUN — written before
+   * the run and never corrected after it.
+   *
+   * ⭐ THE DENOMINATOR IS QUADRATIC AND THAT IS WHAT THIS ROW IS FOR. The scope
+   * is the declared root, which selects the root and its three children: FOUR
+   * resources, and therefore `C(4,2)` = SIX unordered pairs. A run reporting
+   * four here has collapsed the coverage item into a resource, which is the
+   * defect ADR-0011 exists to stop and the one this rule is most likely to
+   * exhibit.
+   *
+   * `wl-dataset` IS ONE OF THE FOUR, and this build does not enumerate a data
+   * source, so every pair containing it is a gap: three of the six. The three
+   * pairs among the three readable pages are the evaluated set.
+   *
+   * ⛔ ZERO FINDINGS, AND THE FIXTURE CANNOT PROVE OTHERWISE. Every readable
+   * resource in this fixture carries a distinct title — `wl-proof-fixture`,
+   * `wl-pagination`, `wl-revoke-parent` — so the violation path is NOT
+   * exercised by this run and `docs/proof/` must say so rather than imply a
+   * fuller proof. Seeding a duplicate is an operator-only action in the Notion
+   * UI and is filed on #102.
+   *
+   * THE ROW CARRIES THREE NAMED RISKS, and a mismatch on any of them is a FACT
+   * ABOUT THE FIXTURE OR THE API rather than a defect in the rule:
+   *
+   *   - The property KEY is expected to be `title`, inherited from
+   *     `requiredProperties`' first risk and observed by #58's live run.
+   *   - If two of the three readable pages turn out to share a title, `findings`
+   *     is wrong and the run has found a real duplicate in the fixture. That
+   *     would be the violation path proving itself by accident, and it must be
+   *     recorded as such rather than by editing this constant.
+   *   - `evaluated` assumes the data source fails to hydrate exactly as it does
+   *     for REQ001. If it hydrates, this reads 6 and #51 has changed.
+   */
+  uniqueness: {
+    source: 'docs/proof/fixture.md "What exists" + this file\'s own `children` list, both older than the rule',
+    /** C(4,2) over root + three children. NOT four. */
+    applicable: 6,
+    /** C(3,2) over the three readable pages. The data source removes three pairs, not one. */
+    evaluated: 3,
+    /** The property the uniqueness claim is made over. */
+    property: 'title',
+    /** Every readable title in this fixture is distinct. */
+    findings: 0,
+    why: 'the conforming path plus three disclosed gaps. ONE unreadable resource removes THREE of six pairs, which is the quadratic arithmetic the rule exists to report honestly.',
+  },
 } as const;
 
 export type OracleVerdict = { ok: boolean; lines: string[] };
@@ -273,6 +320,43 @@ export function checkAgainstOracle(r: ScanResult): OracleVerdict {
       const withId = pairs.filter(e => e.req?.propertyId).length;
       lines.push(`  OBSERVED ${withId} of ${pairs.length} pair(s) carried a property ID from the response ` +
         '(ADR-0010 decision 7 key 1; unobserved on the REST path before this run).');
+    }
+  }
+
+  /* -- UNQ001, pre-registered for #59's run -------------------------------- */
+  const unqPairs = r.manifest.of('resource pairs in a uniqueness scope');
+  if (unqPairs.length === 0) {
+    lines.push('  NOTE     UNQ001 declared no pairs in this run, so its oracle row was not exercised.');
+  } else {
+    const unq = FIXTURE_ORACLE.uniqueness;
+    lines.push(`  uniqueness oracle source: ${unq.source}`);
+
+    /* THE PROPERTY IS READ OFF THE RUN, for the reason REQ001's is: an oracle
+     * that has to be told what to expect can be told the answer. A pair whose
+     * members were never located carries no facts, so the first entry that has
+     * any is the one asked. */
+    const property = unqPairs.find(e => e.unq)?.unq?.property ?? '(unrecorded)';
+    if (property !== unq.property) {
+      say(false, `UNQ001 ran over property "${property}", which this oracle did not pre-register ` +
+        `(it holds "${unq.property}"). Add the row BEFORE the run that needs it; do not read one off a result.`);
+    } else {
+      /* ⭐ THE ASSERTION THIS ROW EXISTS FOR. Four resources, six pairs. A run
+       * reporting four has collapsed the coverage item into a resource. */
+      say(unqPairs.length === unq.applicable,
+        `UNQ001's applicable set is ${unqPairs.length} resource pair(s), oracle says ${unq.applicable} — ` +
+        `C(${FIXTURE_ORACLE.applicable},2), NOT ${FIXTURE_ORACLE.applicable}`);
+      const evaluated = unqPairs.filter(e => e.stages.has('evaluated')).length;
+      say(evaluated === unq.evaluated,
+        `${evaluated} pair(s) reached evaluated over "${property}", oracle says ${unq.evaluated} — ` +
+        'one unreadable resource removes THREE pairs, not one');
+      const unq001 = r.findings.filter(f => f.rule === 'UNQ001');
+      say(unq001.length === unq.findings,
+        `UNQ001 produced ${unq001.length} finding(s), oracle says ${unq.findings} — ${unq.why}`);
+      /* ⛔ THE LIMITATION, PRINTED BY THE RUN ITSELF rather than left to the
+       * proof file. A reader of this output must not take zero findings as
+       * evidence the violation path works. */
+      lines.push('  NOTE     the fixture seeds NO duplicate value, so the VIOLATION path is not ' +
+        'exercised by this run. Offline only, CHECK-unq001.ts TEST 5. Seeding is operator-only (#102).');
     }
   }
 

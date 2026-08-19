@@ -426,11 +426,23 @@ export function renderReport(r: ScanResult, opts: RenderOptions = {}): string[] 
    * reviewing this change against its own claim, not by a failing test. */
   const doc = buildReportDocument(r, opts);
   const width = Math.max(20, ...doc.manifest.map(e => e.resource.length));
+  /* ⚠ COMPUTED, NOT `padEnd(20)`. The unit column was a hardcoded 20 beside a
+   * resource column measured from the data, and it held only because every unit
+   * name then in the union was shorter than 20 characters. `resource pairs in a
+   * uniqueness scope` is 36, so UNQ001's rows padded to nothing and their loss
+   * text ran straight into the unit with no separator:
+   * `…uniqueness scopedata-source enumeration is not implemented…`. Observed in
+   * #59's live run. Same defect as the `heading.length + 20` offset in
+   * CHECK-harness.ts — a width written as a constant beside one that is
+   * measured, correct until the data outgrows the guess.
+   *
+   * The `+ 1` is the separator, so a loss never abuts the widest unit. */
+  const unitWidth = Math.max(20, ...doc.manifest.map(e => e.unit.length)) + 1;
 
   out.push('');
   out.push('──────── COVERAGE MANIFEST ────────');
   for (const e of doc.manifest)
-    out.push(`  ${e.resource.padEnd(width)} ${STAGES.map((st: Stage) => (e.stages.includes(st) ? '●' : '○')).join(' ')}  ${e.unit.padEnd(20)}${e.loss ?? ''}`);
+    out.push(`  ${e.resource.padEnd(width)} ${STAGES.map((st: Stage) => (e.stages.includes(st) ? '●' : '○')).join(' ')}  ${e.unit.padEnd(unitWidth)}${e.loss ?? ''}`);
   out.push(`  ${''.padEnd(width)} ${STAGES.map(s => s[0]).join(' ')}   (declared resolved enumerated fetched evaluated)`);
   /* ADR-0011 decision 4 and spec criterion 6: no figure without its unit. The
    * manifest is where the figures come from, so the unit is on every row —

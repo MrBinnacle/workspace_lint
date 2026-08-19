@@ -32,8 +32,8 @@ import { buildReportDocument, renderJson, renderMarkdown, renderReport } from '.
 import { canonicalize, NORMALIZATION_VERSION, VOLATILE_FIELDS } from './normalize.js';
 import { hyphenate } from './ids.js';
 import {
-  ROOT, PAGE_A, DATASET, TITLED_URL, TITLE_IN_URL,
-  cfg, clock, fakePort, page, childPage, childDb,
+  ROOT, PAGE_A, DATASET, UNQ_1, TITLED_URL, TITLE_IN_URL,
+  cfg, cfgUnq, clock, fakePort, page, childPage, childDb, titleProp,
   THREE_CHILDREN, MIDSTREAM,
 } from './CHECK-fakes.js';
 
@@ -345,5 +345,41 @@ for (const f of docAll.findings) {
 /* The link-absent REASON is one string, not one per renderer. */
 const dsAll = docAll.findings.find(f => f.link === null);
 if (dsAll) check('the terminal prints the document\'s own link-absent reason', termAll.includes(dsAll.linkAbsentReason ?? '#'), true);
+
+/* ⚠ THE MANIFEST'S UNIT COLUMN IS MEASURED, NOT GUESSED — #59.
+ *
+ * It was `padEnd(20)`, which held only while every member of the CoverageUnit
+ * union was shorter than 20 characters. `resource pairs in a uniqueness scope`
+ * is 36, so UNQ001's rows padded to nothing and the loss text ran into the unit
+ * with no separator. Observed in #59's live run, not by any assertion — which is
+ * why this one exists.
+ *
+ * ASSERTED OVER THE LONGEST UNIT PRESENT, so a future unit longer still fails
+ * here rather than in a report someone is reading. */
+/* A run carrying BOTH the shortest unit and the longest one, with a loss on the
+ * longest. `docAll` holds one unit, so the assertion below would have passed
+ * vacuously over it — the empty-set hole, in the test written to close a
+ * different hole. */
+const rUnits = await scan({
+  config: cfgUnq(ROOT, 'Title'),
+  port: fakePort({
+    [ROOT]: { steps: [page([childPage(UNQ_1, 'a child'), childDb(DATASET, 'wl-dataset')])], properties: { Title: titleProp('root title') } },
+    [UNQ_1]: { steps: [page([])], properties: { Title: titleProp('alpha') } },
+    [DATASET]: { steps: [page([])] },
+  }),
+  now: clock(),
+});
+const termUnits = renderReport(rUnits, {}).join('\n');
+const docUnits = buildReportDocument(rUnits, {});
+const unitsInDoc = [...new Set(docUnits.manifest.map(e => e.unit))];
+
+check('the manifest carries more than one unit, so the column is exercised', unitsInDoc.length > 1, true);
+check('  and one of them is the longest in the union', unitsInDoc.includes('resource pairs in a uniqueness scope'), true);
+const lossy = docUnits.manifest.filter(e => e.loss);
+check('  and at least one row has a loss to abut', lossy.length > 0, true);
+for (const e of lossy) {
+  const row = termUnits.split('\n').find(l => l.includes(e.resource) && l.includes(e.unit) && l.includes(e.loss!));
+  check(`  a loss never abuts its unit — ${e.unit}`, row === undefined ? 'row not found' : row.includes(`${e.unit} `), true);
+}
 
 finish('One document, three renderings. The suppressions are computed once and the type system will not let a renderer forget one.');

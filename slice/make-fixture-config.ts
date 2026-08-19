@@ -43,7 +43,42 @@ if (propertyFlag >= 0 && (!property || property.startsWith('--'))) {
   process.exit(4);
 }
 
-const positional = args.filter((_, i) => i !== propertyFlag && i !== propertyFlag + 1).filter(a => !a.startsWith('--'));
+/* WHICH configured rule the property belongs to — #59.
+ *
+ *   npx tsx make-fixture-config.ts FIXTURE_ROOT_ID --property title --rule UNQ001
+ *
+ * Defaults to REQ001, which is what every recorded run before 2026-08-19 used,
+ * so an existing command line keeps producing the file it produced. The flag is
+ * a PAIR and both halves leave before the positional is read, for the reason
+ * `--property` does — that bug was fixed twice here already.
+ */
+const ruleFlag = args.indexOf('--rule');
+const rule = ruleFlag >= 0 ? args[ruleFlag + 1] : 'REQ001';
+if (ruleFlag >= 0 && (!rule || rule.startsWith('--'))) {
+  console.log('--rule needs a rule ID. Nothing was written.');
+  process.exit(4);
+}
+/* VALIDATED HERE, NOT LEFT TO THE LOADER. The loader would reject a bad ID at
+ * exit 4 with a good message, but only after this tool had already overwritten
+ * a working config with an unusable one. */
+if (rule !== 'REQ001' && rule !== 'UNQ001') {
+  console.log(`--rule is ${JSON.stringify(rule)}; this tool writes REQ001 or UNQ001 entries. Nothing was written.`);
+  process.exit(4);
+}
+if (ruleFlag >= 0 && property === undefined) {
+  console.log('--rule needs --property: both configured rules name a property. Nothing was written.');
+  process.exit(4);
+}
+
+/* ⚠ ONE PASS OVER THE ORIGINAL INDICES, NOT TWO CHAINED FILTERS. Chaining
+ * `.filter((_, i) => i !== propertyFlag …)` and then a second index filter reads
+ * the SECOND flag's position in the ALREADY-SHORTENED array, so removing
+ * `--property title` shifts `--rule` two places left and the positional picked
+ * up is whatever landed there. This is the third variant of the same bug in
+ * this file; the fix is to compute the removed positions first. */
+const consumed = new Set<number>();
+for (const at of [propertyFlag, ruleFlag]) if (at >= 0) consumed.add(at).add(at + 1);
+const positional = args.filter((a, i) => !consumed.has(i) && !a.startsWith('--'));
 const key = positional[0] ?? 'FIXTURE_ROOT_ID';
 const id = hyphenate(env[key]);
 if (!id) {
@@ -69,11 +104,11 @@ writeFileSync(
       version: 1,
       roots: [{ id, alias: 'wl-proof-fixture' }],
       minCoverage: 1.0,
-      ...(property ? { rules: [{ rule: 'REQ001', scope: { id }, property }] } : {}),
+      ...(property ? { rules: [{ rule, scope: { id }, property }] } : {}),
     },
     null,
     2,
   ) + '\n',
   'utf8',
 );
-console.log(`wrote wl.config.json — root ${id.slice(0, 8)}… from ${key}${property ? ` · REQ001 over "${property}"` : ''}`);
+console.log(`wrote wl.config.json — root ${id.slice(0, 8)}… from ${key}${property ? ` · ${rule} over "${property}"` : ''}`);
