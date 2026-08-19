@@ -151,7 +151,7 @@ Building. `main` carries product source as of PR #56, merged 2026-08-17 — `sli
 
 All four are marked **Ships** in the rule catalog above, which states v0.1 *scope*; built is a separate question and this paragraph answers it.
 
-`PRODUCT.md` holds the user, the job, the gates, and the kill criteria. This file is the glossary. Both are canonical. Nineteen research sweeps sit in `docs/research/`, indexed at `docs/research/INDEX.md` — start at the index, not the directory. <!-- claim: count glob="docs/research/*.md" exclude="INDEX.md" equals=19 --> The Notion PRD that seeded this file is mirrored at `docs/inputs/prd-2026-08-16.md` and is an input, not an authority.
+`PRODUCT.md` holds the user, the job, the gates, and the kill criteria. This file is the glossary. Both are canonical. Twenty research sweeps sit in `docs/research/`, indexed at `docs/research/INDEX.md` — start at the index, not the directory. <!-- claim: count glob="docs/research/*.md" exclude="INDEX.md" equals=20 --> The Notion PRD that seeded this file is mirrored at `docs/inputs/prd-2026-08-16.md` and is an input, not an authority.
 
 Both pre-build gates closed on 2026-08-17 and nothing gates the build. Gate 1, the demand test, closed on owner research rather than on a five-team send: it chose an entry point — the policy-free decay report, renamed from "zero-config decay report" on 2026-08-18 and unchanged in substance — and did not establish a price, so no willingness-to-pay figure exists for any framing. Gate 2, the 72-hour proof, closed as circular as filed, six of its nine checks requiring the build it existed to gate; those checks are build-acceptance criteria, not pre-build gates. See `PRODUCT.md` and `README.md`.
 

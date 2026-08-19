@@ -1,7 +1,7 @@
 # `docs/research/` — index
 
-Nineteen files. **One line per file: the question it answers, and what it refutes.**
-<!-- claim: count glob="docs/research/*.md" exclude="INDEX.md" equals=19 -->
+Twenty files. **One line per file: the question it answers, and what it refutes.**
+<!-- claim: count glob="docs/research/*.md" exclude="INDEX.md" equals=20 -->
 
 
 This exists because a reading list that names a directory does not tell you which file answers your
@@ -35,10 +35,11 @@ assertion and it is beaten by `docs/proof/`. Two exceptions are called out below
 | `metric-aggregation-prior-art.md` | Where is the line between counting and scoring, operationally? | **Operator-set thresholds are not a third option** — Beller et al., 168,214 projects, 80%+ of configs never change after creation. Convergent validity fails across MI, SIG and SQALE. The Maintainability Index has not been recalibrated since 1994. Eight buildable rules and a reconstructibility test. Behind **#70**. |
 | `executable-spec-adoption-prior-art.md` | Who authors executable specifications, and do inline assertions survive? | **Two questions, see the note below.** The Gherkin promise was never audited — surveys show 60.7% developers, 1.8% business analysts. Suppression false-positive rate is **4–5%**; a third of suppressions silence a claim the team agrees with. The failure mode is **freezing, not deletion**. Behind **#69**. |
 | `inconclusive-verdict-prior-art.md` | Does any assertion system distinguish "failed" from "could not be evaluated"? | **Closes half of the checkpoint's standing NOT CHECKED** — Razniewski & Nutt (VLDB 2011) is free at `vldb.org` and now read. SMT-LIB's `unknown` + `:reason-unknown` is the design; **budget exhaustion may never return a refutation**. Does not contradict `static-analysis-prior-art.md`. Behind **#69** and **#71**. |
+| `non-notion-tool-fit-2026-08-19.md` | Which non-Notion tools best fit the current coverage-verifier shape? | Settles the practical pivot order: Jira first, then GitHub/Linear, with Slack and document stores as evidence connectors rather than primary products. |
 
 `sweep-raw/` holds the verbatim scout reports and the two verification reports behind
 `coverage-artifact-prior-art.md`, including every scout's dissent section. It is evidence for that
-file, not a twentieth entry.
+file, not a twenty-first entry.
 
 ## Four files whose tier or scope needs a word
 
