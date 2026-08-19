@@ -4,7 +4,7 @@ A local, read-only CLI that tests a Notion workspace against explicit structural
 
 This repository is canonical. External planning artifacts (Notion pages, memos, drafts) are inputs. They do not override `CONTEXT.md` or the ADRs in `docs/adr/`.
 
-Building. Source is on `main` in `slice/` — a private, unpublishable package, deliberately not `src/` until #8 settles the npm name. Three of the four v0.1 rules are built: `SYS001`, `REF001` and `REQ001`. `UNQ001` is #59, and it is blocked on #70 decision 1. Both pre-build gates closed on 2026-08-17 and nothing gates the build.
+Building. Source is on `main` in `slice/` — a private, unpublishable package, deliberately not `src/` until #8 settles the npm name. Three of the four v0.1 rules are built: `SYS001`, `REF001` and `REQ001`. `UNQ001` is #59, it is not blocked, and it is the next build. Both pre-build gates closed on 2026-08-17 and nothing gates the build.
 <!-- claim: exists path="slice/scan.ts" -->
 <!-- claim: exists path="slice/sys001.ts" -->
 <!-- claim: exists path="slice/ref001.ts" -->
