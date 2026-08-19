@@ -188,8 +188,8 @@ governs a design decision that has not been taken yet and the code alone does no
   updating it would assert that it is live. Verified 2026-08-18 when the count went 13 → 19 and
   README's example correctly stayed silent.
 - **`docs/research/` has an INDEX.md as of 2026-08-17 (#54). Start there, not at the directory.**
-  Nineteen files, one line each: the question it answers and what it refutes.
-  <!-- claim: count glob="docs/research/*.md" exclude="INDEX.md" equals=19 -->
+  Twenty files, one line each: the question it answers and what it refutes.
+  <!-- claim: count glob="docs/research/*.md" exclude="INDEX.md" equals=20 -->
   **Four** entries carry notes
   rather than rows — `notion-live-probe.md` holds **observations** but is documented-tier and that is
   **not** a misfiling (it ran through an OAuth connector and ADR-0004 says it "does not clear the REST
