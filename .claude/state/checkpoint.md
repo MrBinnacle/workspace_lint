@@ -569,9 +569,11 @@ operator-only items are hoisted into the standing block above and all three gate
 
 **Fourteen issues open**, eight of them decision tickets. #24 and #18 closed this session.
 
-1. ⭐ **#58 — `REQ001`.** Unblocked. **Read `docs/spec/v0.1-hydration-map.md` §1.3 first** — the
-   relation/people truncation hazard is the thing this rule meets that no earlier rule did, and the
-   acquisition-route choice is marked revisable *for #58 to settle*.
+1. ⭐ **#58 — `REQ001`. THE PLAN IS WRITTEN AND APPROVED. Execute it, do not re-plan it.**
+   `~/.claude/plans/steady-seeking-rocket.md`, approved 2026-08-18. It carries the Files table that
+   is the `guard-canonical-doc-edit.py` authorisation token, so **re-approve it via `EnterPlanMode`
+   if it has aged past 24h** — the guard checks mtime, not intent. Read
+   `docs/spec/v0.1-hydration-map.md` §1.3 alongside it.
 2. **#70 decision 1**, then **#59 — `UNQ001`**. That completes the four v0.1 rules.
 3. **#51's implementation**, once the two operator preconditions are met. `notion-port.ts`'s header
    is wrong until then.
@@ -614,3 +616,65 @@ merging a PR when the classifier declines it, and anything requiring a TTY — *
 TTY.**
 
 **NO SELF-ASSESS LINE, BY OPERATOR RULING 2026-08-17.** The ritual line records `verdict=n/a`.
+
+### POST-CLOSE ADDENDUM (S026, after `2487ab5` shipped) — #58 was planned, not built, and reading the code moved four things the plan had to absorb
+
+The close shipped, PR #91 merged as `49bfcc0`, and the session continued. **No deliverable landed
+after the close**, so this is an addendum rather than a second band: what follows is a plan, four
+design findings, and three dispatches whose results have not arrived.
+
+**The operator's direction, verbatim in effect:** run #58 in a **fresh session** with clean context.
+The plan is the handoff.
+
+#### The plan exists and is approved — `~/.claude/plans/steady-seeking-rocket.md`
+
+⛔ **Execute it. Do not re-plan it.** It carries the Files table that is
+`guard-canonical-doc-edit.py`'s authorisation token for `CONTEXT.md` and `PRODUCT.md`. The guard
+checks the plan file's **mtime within 24h**, not intent — **if it has aged out, re-approve through
+`EnterPlanMode` before touching either file.** That is a mechanical re-approval, not a re-decision.
+
+#### Four findings from reading `slice/`, none of which were known at close
+
+1. ⭐ **`slice/notion-port.ts` DISCARDS `properties`.** `retrievePage` is typed
+   `Promise<{ id: string; url?: string }>` and the adapter casts the SDK response to it. `REQ001`'s
+   entire input is thrown away at the seam. The fix is a **field, not a method** — `properties?` on
+   the same return — so `GET /v1/pages/{id}` stays the same call and #51's ASK-FIRST precedent for a
+   *new endpoint* does not apply.
+2. ⭐ **The scan retrieves ONLY the declared root.** Descendants arrive as `child_page` blocks inside
+   a parent's listing and are never fetched as pages, so there is no property data for any resource
+   below the root. **`REQ001` needs a hydration stage that does not exist**, which is exactly the
+   cost `docs/spec/v0.1-hydration-map.md` §1.3 priced as route 1.
+3. ⭐ **The rule turns on one mapping, and it is forced away from the flattering direction.** A
+   property **absent from the page's property map** is **NOT a violation** — the API returns the
+   properties the integration can see, so absent means *not defined here* OR *not granted*, and the
+   scan cannot tell which. Only *present-and-empty* is a violation. Collapsing the two reports a
+   defect in the operator's workspace that is really a defect in the grant. This is #58's own
+   hazard 1 and it is marked **non-negotiable** in the plan.
+4. ⚠ **A live `REQ001` VIOLATION cannot be produced against the current fixture.** The readable pages
+   carry `title`, which is non-empty; the only resources with arbitrary properties are rows inside
+   `wl-dataset`, which this build does not enumerate. **The live run proves the conforming path and
+   the gap path, not the violation path**, and `docs/proof/` must say so rather than imply a fuller
+   proof. Creating a violating page is an operator-only Notion-UI action. **This is a fifth
+   operator-only fixture item** and it belongs beside the two that gate #51.
+
+#### Three read-only scouts were dispatched and HAVE NOT REPORTED
+
+⛔ **Their findings are not in this file and must not be assumed.** Dispatched against **#78**
+(property identity, name vs ID), **#70 decision 1** (built-in duplicate-title, the blocker on #59),
+and **#71 + #74** (disposition prep). All three were read-only: no file was written and nothing was
+posted to the tracker by them.
+
+**An empty `TaskList` is not evidence a fork finished** — it returned "No tasks found" while all
+three were live, which is the same signal that cost S025 a defect. A fresh session should treat these
+three questions as **open and un-researched**, and re-dispatch rather than wait. If a return arrives
+in the operator's terminal after this commit, it is evidence, and it lands as its own addendum.
+
+#### One correction to the shipped band
+
+The band's next-step 1 said to read the hydration map "first". ~~That was the whole of the
+instruction.~~ It is now insufficient: the instruction is to **execute the approved plan**, and the
+map is read alongside it. Corrected in place in EXACT NEXT STEPS above, because that block is read by
+the next session rather than being a dated record.
+
+**Nothing else in the S026 band is superseded.** The gate figure (696), the merge SHAs, the
+`findingFor(...)!` correction to three, and every hoisted constraint stand as written.
