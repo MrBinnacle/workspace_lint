@@ -34,6 +34,7 @@ that checkable.
 | `integration-capabilities.md` | What "Read content" grants, and what the page does not say | 2026-08-19 |
 | `link-domains.md` | The `app.notion.com/p/{id}` migration, and what it did NOT migrate | 2026-08-19 |
 | `access-enumeration.md` | What routes enumerate a connection's reachable objects; the search-limitations page in full; ADR-0002 finding 1 refuted | 2026-08-19 |
+| `rate-limits.md` | Two ceilings — per connection and per workspace; the standing ~3 req/s claim is incomplete, not refuted | 2026-08-19 |
 | `WATCH.md` | Changelog reconciliation record | 2026-08-19 |
 
 ## How to add an entry
