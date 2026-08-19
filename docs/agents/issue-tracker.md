@@ -13,6 +13,49 @@ Issues and specs for this repo live as GitHub issues. Use the `gh` CLI for all o
 
 Infer the repo from `git remote -v` — `gh` does this automatically when run inside a clone.
 
+## ⛔ A commit body can close an issue by accident, and it has done so four times
+
+**GitHub parses `<keyword> #<number>` in any merged commit body or PR body as a closing directive.**
+The keywords are `close`, `closes`, `closed`, `fix`, `fixes`, `fixed`, `resolve`, `resolves`,
+`resolved`. Prose that merely *describes* a closure is indistinguishable from an instruction to
+perform one, because the parser reads the two adjacent tokens and nothing else.
+
+**This is not hypothetical here.** Four issues in this repository were closed by narrative sentences
+in state-file commit messages — never by anyone deciding to close them:
+
+| merge | issue auto-closed | lag |
+|---|---|---|
+| PR #41 `2026-08-17T15:21:53Z` | **#10** | +2s |
+| PR #72 `2026-08-18T05:03:27Z` | **#73** +1s, **#7** +2s | |
+| PR #104 `2026-08-19T02:44:58Z` | **#70** | +2s |
+
+The #70 case is the clearest. Commit `71d26ed` said *"Five isolated SME seats **resolved #70**
+decision 1"* — a true, careful sentence naming exactly one of four decisions. The parser matched
+`resolved #70`, closed the whole ticket as `COMPLETED`, and decisions 2, 3 and 4 left the board.
+
+### Two rules
+
+1. **Word order.** Put the reference before the verb when you are describing, not directing:
+   ✅ `#70 decision 1 was resolved` · ✅ `per #70` · ✅ `the ruling on #70`
+   ⛔ `resolved #70` · ⛔ `closes #7` · ⛔ `fixed #10`
+   A closing keyword immediately followed by a reference must appear **only** when you intend the
+   close — which is the normal case in a feature PR body and the rare case in a state-file commit.
+2. **Before merging anything, grep your own message:**
+   `git log -1 --pretty=%B | grep -oiE "(clos(e|es|ed)|fix(es|ed)?|resolv(e|es|ed))[[:space:]]+#[0-9]+"`
+   Everything it prints will close on merge. If that is not what you meant, amend before pushing.
+
+### And the attribution does not tell you what happened
+
+⛔ **An auto-close is credited to the person who merged, with `stateReason: COMPLETED`** — exactly
+like a deliberate close. In this repository every timeline actor is `MrBinnacle`, which is at once
+the maintainer's account, the identity `gh` writes as, and the merger. **`actor` cannot distinguish
+a human decision from a parser accident**, and reading it as the former cost three sessions of
+maintainer attention on #70 before anyone checked the merge timestamps.
+
+**The tell is the lag.** An auto-close lands one to two seconds after a merge. When an issue's
+closure is surprising, compare `closedAt` against the merge times of PRs that landed in the same
+minute before assuming a person meant it.
+
 ## Pull requests as a triage surface
 
 **PRs as a request surface: no.** _(Set to `yes` if this repo treats external PRs as feature requests; `/triage` reads this flag.)_
