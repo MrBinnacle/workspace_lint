@@ -34,7 +34,7 @@ required ("repair them once your confidence level in the veracity of the action 
 | --- | --- | --- | --- |
 | TARGET-1 | REPAIR | **resolves** | **Alive, outside the integration's grant.** The reference is correct; the 404 is a grant boundary. Repair refused — a relink would have redirected a working pointer. |
 | TARGET-2 | CANT-TELL | 404 | Dead on both credential paths. Nothing identifiable to repair toward; the bin stands. |
-| TARGET-3 | REPAIR | 404 | Dead on both credential paths — a true repair candidate. The correct replacement target is a fact only the operator holds; no repair executed on inference. |
+| TARGET-3 | REPAIR | 404 | Dead on both credential paths — a true repair candidate. Replacement determined at satisfied confidence from the workspace's own doctrine and structure (the task surface that intake graduates into; the alternative surface self-describes as a review shelf). The write was **blocked by session permissions** — the one-mention edit is specified for the operator to apply or approve. |
 | TARGET-4 | NOISE | resolves as **archived** | Retired to trash/archive deliberately. The operator's NOISE ruling is confirmed by the artifact. |
 | TARGET-5 | REPAIR | **resolves** | **Alive, outside the integration's grant.** Same class as TARGET-1. Repair refused. |
 
