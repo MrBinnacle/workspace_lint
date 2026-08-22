@@ -39,6 +39,14 @@ export type Observer = {
   calls: Call[];
 };
 
+/**
+ * Convert port calls into Observed values and append the audit call log.
+ *
+ * The observer is the only place that translates transport failures into the
+ * scan's evidence states. Keeping that mapping here prevents rule code from
+ * parsing thrown SDK errors or cause strings, and keeps the call log aligned
+ * with the exact request whose result was classified.
+ */
 export function createObserver(): Observer {
   const calls: Call[] = [];
   return {

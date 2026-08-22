@@ -249,6 +249,14 @@ function residualClause(count: number, attestation: Attestation | null): string 
   return 'no residuals — every enumeration behind this figure carried a completeness signal';
 }
 
+/**
+ * Build the single structured report consumed by terminal, Markdown and JSON output.
+ *
+ * Suppression, redaction, ordering and byte-basis choices are made here once.
+ * Renderers are therefore formatters over an already-decided document, not
+ * independent implementations that can disagree about what is safe or valid to
+ * publish.
+ */
 export function buildReportDocument(r: ScanResult, opts: DocumentOptions = {}): ReportDocument {
   const label = (e: { alias: string; safeLabel: string }) => (opts.showTitles ? e.alias : e.safeLabel);
   const entries = r.manifest.all();
@@ -418,6 +426,13 @@ export function buildReportDocument(r: ScanResult, opts: DocumentOptions = {}): 
   };
 }
 
+/**
+ * Render the human terminal report from the same document used by artifacts.
+ *
+ * This keeps stdout subject to the same redaction and suppression rules as the
+ * Markdown and JSON exporters; any field not present on ReportDocument is not
+ * available for the terminal to leak or reinterpret.
+ */
 export function renderReport(r: ScanResult, opts: RenderOptions = {}): string[] {
   const out: string[] = [...r.log];
   /* The FULL ID, not a prefix. Notion IDs are time-ordered, so resources created
