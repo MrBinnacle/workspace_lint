@@ -5,7 +5,7 @@
 reason. **CANT-TELL is a defect of the report, not of the workspace, and its count is a product
 measurement.** Same redaction rule as the pre-registration: role labels only.
 
-**Status: READ IN PROGRESS — 4 of 6 binned, 2026-08-22.** Empty bins mean the operator has not
+**Status: READ IN PROGRESS — 5 of 6 binned, 2026-08-22.** Empty bins mean the operator has not
 yet ruled on that row. A future session must not fill them from anything but the operator's own
 reading.
 
@@ -15,7 +15,7 @@ reading.
 | TARGET-2 unresolvable | REF001 | ROOT-A | **CANT-TELL** | "no idea what that page was" |
 | TARGET-3 unresolvable | REF001 | ROOT-A | **REPAIR** | "that's the old task sequencer link" |
 | TARGET-4 unresolvable | REF001 | ROOT-B | **NOISE** | "Hans Archive absorbed that one on purpose" |
-| TARGET-5 unresolvable | REF001 | ROOT-C | | |
+| TARGET-5 unresolvable | REF001 | ROOT-C | **REPAIR** | "I'd fix that link today" |
 | block-budget exhaustion on one ROOT-C child | SYS001 | ROOT-C | | |
 
 The two `400 validation_error` targets under ROOT-C are gaps, not findings, and take no bin; if
