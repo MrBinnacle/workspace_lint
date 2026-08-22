@@ -1,4 +1,13 @@
-# Codebase review — 2026-08-19
+# INPUT: Codex codebase review — 2026-08-19
+
+> **Status: input artifact, not canonical.** A Codex-authored static review, routed in for
+> disposition 2026-08-22 per the operator's standing route for external LLM analyses. The
+> per-claim verification record and the verdicts are in PR #131's disposition comment.
+> Where this document and a `slice/` code header disagree, the header wins — one instance is
+> already on record: the streaming-UNQ001 design proposed below is pre-registered in
+> `slice/scan.ts` (the `UNQ001_SCOPE_CEILING` header) as a Revisit-if, with a blast-radius
+> note this document does not carry. This file is a mirror of the external artifact and is
+> not edited beyond this banner.
 
 Scope: static review of the TypeScript slice, docs, and local checks. No live Notion workspace was scanned.
 
