@@ -139,10 +139,12 @@ enumeration approach is insufficient on its own and the unrecognised reporting p
 real work"* — **before** the spec was written rather than after a future run. The consequence it
 names is adopted: **the residue path is the primary mechanism and the host list is an optimisation.**
 
-A second, weaker fact points the same way: third-party reports describe an in-progress vendor
-migration across `notion.so`, `notion.com` and `app.notion.com`. It is **not checked** against any
-Notion-owned source and is not relied on below. It is recorded only because a moving host set and an
-unbounded one argue for the same design.
+A second fact points the same way, and it is first-party since 2026-08-19: the vendor's own
+changelog entry of 2026-07-15 (fetched and mirrored at `docs/vendor/link-domains.md`) describes the
+host migration to `app.notion.com` and states the link values are *"not stable identifiers: their
+domain and path format may change again."* A moving host set and an unbounded one argue for the same
+design. *(This paragraph originally rested on third-party reports marked not checked; the vendor
+receipt replaced them on 2026-08-22, #111.)*
 
 ### 2.1 The host table, each entry marked
 
@@ -152,15 +154,15 @@ unbounded one argue for the same design.
 | --- | --- | --- |
 | `app.notion.com` | **observed** | `results-ref001-live.md` §2 — `href=https://app.notion.com/p/3bf1351d6af481108dc5dcc8bffb9742` |
 | `*.notion.site` | **documented, not observed** | Notion Help, *Manage your Notion Sites*, "Create a new notion.site domain": *"it will be displayed at the start of any public page URLs, such as `acme.notion.site`"* |
+| `www.notion.so` | **observed** | `results-first-real-workspace.md` §4 — three link candidates on this host in one run (2026-08-19). Moved from `CANDIDATE_HOSTS` 2026-08-22, #111. |
+| `notion.so` | **documented, not observed** | `docs/vendor/link-domains.md` — vendor changelog entry dated 2026-07-15, *"Existing `notion.so` links continue to open correctly."* Moved 2026-08-22, #111. The `www.` form is a separate host string; neither row vouches for the other. |
 
 `CANDIDATE_HOSTS` — **not checked.** These must **not** enter the allow-list until a locator exists.
 Each is currently reported through the residue path, which is the safe direction.
 
 | Host | Status | The check that would settle it |
 | --- | --- | --- |
-| `www.notion.so` | not checked | Copy a page link from the Notion UI and record the host, or observe one in live block content. |
-| `notion.so` | not checked | Same. |
-| `notion.com` | not checked | Same. |
+| `notion.com` | not checked | Copy a page link from the Notion UI and record the host, or observe one in live block content. Its siblings entering the table is not a locator for it — that inference is the one ADR-0001 decision 4 rejects (#111). |
 | custom domains | **documented and unbounded** | None exists. This is the entry that makes enumeration insufficient. |
 
 The previous implementation's regex `/notion\.(so|site)/` matched **none** of the observed hosts and
@@ -435,9 +437,11 @@ the reasoning:
 
 ## Revisit if
 
-**A locator is found for `www.notion.so`, `notion.so`, or `notion.com`.** Move the row from
-`CANDIDATE_HOSTS` to the host table with its locator. This lowers false `unrecognised` reports and
-changes no behaviour that matters for soundness.
+**A locator is found for `notion.com`.** Move the row from `CANDIDATE_HOSTS` to the host table with
+its locator. This lowers false `unrecognised` reports and changes no behaviour that matters for
+soundness. *(This clause originally named `www.notion.so` and `notion.so` too; both fired and both
+rows moved on 2026-08-22, #111 — the first at observed tier from `results-first-real-workspace.md`
+§4, the second at documented tier from the vendor changelog entry of 2026-07-15.)*
 
 **Route A turns out to cover every internal reference Notion actually produces.** #34's second
 *Revisit if*. Then host matching is dead weight and this spec narrows to §3 Route A. It is testable

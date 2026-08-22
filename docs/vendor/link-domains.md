@@ -26,7 +26,8 @@ of the three now has one. ⚠ **It does not extend to the other two** — the ve
 not `www.notion.so`, and said nothing about `notion.com`.
 
 **2. ⭐ The migrated set and the set `REF001` reads are DISJOINT.** `REF001` Route B classifies
-user-authored hrefs out of rich text (`slice/references.ts` line 287 — `link.url`). The vendor
+user-authored hrefs out of rich text (`slice/references.ts`, the `link.url` read in
+`extractReferences`). The vendor
 declares that population **unchanged**. Route A (mentions) reads the migrated population.
 
 **Consequence:** `#111`'s `www.notion.so` under-reporting is **persistent, not a transient that ages
@@ -40,15 +41,19 @@ It now has a first-party receipt, and a stronger one: not merely unbounded in pr
 the allow-list"* is upgraded from a design position to a vendor-corroborated one.
 
 **4. No path-handling defect, checked rather than assumed.** The `/p/{page-id}` prefix is new in this
-entry. `slice/references.ts` keys on the **ID shape anywhere in the URL**, never on the path — line
-154's comment states the property and line 196 names `app.notion.com/p/{id}` explicitly. A host the
-list does not know still reaches the residue path.
+entry. `slice/references.ts` keys on the **ID shape anywhere in the URL**, never on the path — the
+`notionShapedId` header comment states the property and `classifyHref`'s comments name
+`app.notion.com/p/{id}` explicitly. A host the list does not know still reaches the residue path.
+*(These anchors were line numbers 154 and 196 as fetched; re-anchored to symbols 2026-08-22 after
+#111's diff moved them — the line-number form rots on every edit and the citation standard forbids
+it.)*
 
 **The design survived a vendor path-format change that shipped a month before anyone here read the
 changelog.** That is the strongest evidence the residue path has.
 
 ## What may change in the code
 
-`KNOWN_INTERNAL_HOSTS` (`slice/references.ts:87`) may gain `notion.so` as `evidence: 'documented'` on
+`KNOWN_INTERNAL_HOSTS` (`slice/references.ts`) may gain `notion.so` as `evidence: 'documented'` on
 this locator. It is an **optimisation** that suppresses residue noise and changes no verdict.
 `www.notion.so` remains `observed` from `#111`'s own run and is a separate host string.
+**Taken 2026-08-22:** both entries landed exactly so, in #111's build.

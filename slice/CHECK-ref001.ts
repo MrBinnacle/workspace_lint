@@ -70,16 +70,30 @@ const broken = classifyHref('/3bf1351d6af481108dc5dcc8bffb9742', 'block-1');
 check('an unparseable href carrying an ID is UNRECOGNISED', broken.kind, 'unrecognised');
 check('  with the other of the two defined causes', broken.kind === 'unrecognised' ? broken.cause : '', 'href-unparseable');
 
-/* Spec §2.1: these three have no locator and must NOT be in the allow-list.
- * They travel the residue path, which costs precision and not soundness. */
-for (const host of ['www.notion.so', 'notion.so', 'notion.com']) {
+/* Spec §2.1 as amended for #111: `www.notion.so` is OBSERVED — three locators in
+ * one run, results-first-real-workspace.md §4 — and `notion.so` is DOCUMENTED,
+ * docs/vendor/link-domains.md (vendor changelog, 2026-07-15). `notion.com` still
+ * has no locator at any tier and must NOT be in the allow-list; it travels the
+ * residue path, which costs precision and not soundness. Adding it on the
+ * strength of its siblings would be the inference ADR-0001 decision 4 rejects. */
+{
+  const r = classifyHref('https://notion.com/Some-Page-3bf1351d6af481108dc5dcc8bffb9742', 'block-1');
+  check('notion.com is NOT CHECKED, so it travels the residue path', r.kind, 'unrecognised');
+}
+for (const host of ['www.notion.so', 'notion.so']) {
   const r = classifyHref(`https://${host}/Some-Page-3bf1351d6af481108dc5dcc8bffb9742`, 'block-1');
-  check(`${host} is NOT CHECKED, so it travels the residue path`, r.kind, 'unrecognised');
+  check(`${host} has a locator and resolves as an internal reference`, r.kind, 'internal');
 }
 
-check('the allow-list holds exactly the two hosts that have a locator', KNOWN_INTERNAL_HOSTS.length, 2);
-check('  app.notion.com is marked observed', KNOWN_INTERNAL_HOSTS[0]!.evidence, 'observed');
-check('  *.notion.site is marked documented, not observed', KNOWN_INTERNAL_HOSTS[1]!.evidence, 'documented');
+check('the allow-list holds exactly the four hosts that have a locator', KNOWN_INTERNAL_HOSTS.length, 4);
+check('  app.notion.com is marked observed',
+  KNOWN_INTERNAL_HOSTS.find(h => h.host === 'app.notion.com')?.evidence ?? 'missing', 'observed');
+check('  *.notion.site is marked documented, not observed',
+  KNOWN_INTERNAL_HOSTS.find(h => h.host === '*.notion.site')?.evidence ?? 'missing', 'documented');
+check('  www.notion.so is marked observed — results-first-real-workspace.md §4',
+  KNOWN_INTERNAL_HOSTS.find(h => h.host === 'www.notion.so')?.evidence ?? 'missing', 'observed');
+check('  notion.so is marked documented, not observed — the changelog is the locator',
+  KNOWN_INTERNAL_HOSTS.find(h => h.host === 'notion.so')?.evidence ?? 'missing', 'documented');
 
 /* =========================================================================
  * TEST 1b — MUTATION CHECK: the host entry is load-bearing, not asserted
@@ -92,6 +106,29 @@ const mutated = classifyHref(OBSERVED_HREF, 'block-1', withoutObserved);
 check('with the entry removed the same href is no longer internal', mutated.kind, 'unrecognised');
 check('  it does not vanish into external — that is the false green', mutated.kind === 'external', false);
 check('the mutation moved the outcome', internal.kind !== mutated.kind, true);
+
+/* #111: the same load-bearing proof for BOTH hosts that ticket added. The first
+ * check of each pair guards the substitution itself — a filter that matched
+ * nothing leaves the list whole and the rest of the block green while testing
+ * nothing. */
+const WWW_HREF = 'https://www.notion.so/Some-Page-3bf1351d6af481108dc5dcc8bffb9742';
+const SO_HREF = 'https://notion.so/Some-Page-3bf1351d6af481108dc5dcc8bffb9742';
+const withoutWww: HostEntry[] = KNOWN_INTERNAL_HOSTS.filter(h => h.host !== 'www.notion.so');
+check('the #111 mutation actually substituted — exactly one entry left the list',
+  withoutWww.length, KNOWN_INTERNAL_HOSTS.length - 1);
+const wwwMutated = classifyHref(WWW_HREF, 'block-1', withoutWww);
+check('with www.notion.so removed its href degrades to the residue path', wwwMutated.kind, 'unrecognised');
+check('  not to external — that is the false green', wwwMutated.kind === 'external', false);
+const withoutSo: HostEntry[] = KNOWN_INTERNAL_HOSTS.filter(h => h.host !== 'notion.so');
+check('the notion.so mutation actually substituted too', withoutSo.length, KNOWN_INTERNAL_HOSTS.length - 1);
+check('with notion.so removed its href degrades to the residue path',
+  classifyHref(SO_HREF, 'block-1', withoutSo).kind, 'unrecognised');
+/* The vouching question, tested rather than narrated: each new entry ALONE must
+ * not recognise the other's href, because the patterns are exact. */
+const onlySo = KNOWN_INTERNAL_HOSTS.filter(h => h.host === 'notion.so');
+const onlyWww = KNOWN_INTERNAL_HOSTS.filter(h => h.host === 'www.notion.so');
+check('notion.so alone does NOT vouch for the www form', classifyHref(WWW_HREF, 'block-1', onlySo).kind, 'unrecognised');
+check('www.notion.so alone does NOT vouch for the bare form', classifyHref(SO_HREF, 'block-1', onlyWww).kind, 'unrecognised');
 
 /* Spec §6 test 1c: the regex the first implementation actually shipped. */
 const SHIPPED_REGEX_HOSTS: HostEntry[] = [{ host: 'notion.(so|site)', pattern: /notion\.(so|site)/, evidence: 'observed' }];
@@ -354,7 +391,7 @@ check('the dead-link finding is gone', rBlind.findings.filter(f => f.rule === RE
 check('  but the link did NOT vanish — that is the false green', rBlind.coverage.find(c => c.rule === REF001_ID)!.applicable, 1);
 check('  it degraded to a reported gap with a named cause', rBlind.gaps[0]!.cause.startsWith('link-host-unrecognised'), true);
 check('  and REF001 went from conforms-or-violates to undecidable', rBlind.outcomes[REF001_ID]!.evidence, 'undecidable');
-check('the host list restored to its two entries', KNOWN_INTERNAL_HOSTS.length, 2);
+check('the host list restored to its four entries', KNOWN_INTERNAL_HOSTS.length, 4);
 console.log('  ^ results-ref001-live.md §2: the regex that shipped first matched none of the');
 console.log('    observed hosts. The run discovered zero links, raised no error, and would have');
 console.log('    reported a clean verdict over a root containing a dead link.');
@@ -382,7 +419,7 @@ check('  not in the manifest table', /My-Private-Roadmap/.test(requiredSection(r
 check('  not in the gaps section', /My-Private-Roadmap/.test(requiredSection(redacted, 'GAPS')), false);
 check('  and not in the call log', /My-Private-Roadmap/.test(requiredSection(redacted, 'CALLS MADE (read-only)')), false);
 check('the redacted form still names the host and the ID, which is what the operator acts on',
-  reportSection(redacted, 'GAPS').includes('www.notion.so') && reportSection(redacted, 'GAPS').includes(LINK_TARGET_ID), true);
+  reportSection(redacted, 'GAPS').includes('notion.com') && reportSection(redacted, 'GAPS').includes(LINK_TARGET_ID), true);
 check('--show-titles opts in and the verbatim href appears', /My-Private-Roadmap/.test(shown), true);
 check('  and the default report says the opt-in exists', /page titles redacted by default/.test(redacted), true);
 

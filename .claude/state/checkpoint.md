@@ -225,11 +225,13 @@ governs a design decision that has not been taken yet and the code alone does no
 - **The `10,000` cap constant is vendor-documented and unobserved.**
 - **`request_status` has never been seen on either branch.** Re-confirmed absent from all eight live
   responses. No code path may block on its arrival; the test is positive only.
-- **Only `app.notion.com` is evidenced as an internal-link host**, and **`*.notion.site` is
-  documented**. `notion.so`, `www.notion.so` and `notion.com` are **not checked** — no locator
-  exists for any of the three. They were removed from the prototype's host list on 2026-08-17 and
-  travel the residue path instead. Settled by `docs/spec/REF001-link-recognition.md` §2.1, **merged
-  to `main` in PR #37**. **#34 is CLOSED.**
+- **`notion.com` is the one internal-link host still NOT CHECKED** — no locator at any tier, and
+  its siblings entering the table on 2026-08-22 (#111) is not one (ADR-0001 decision 4). The rest
+  of the host question is no longer this section's business: the table's membership and evidence
+  tiers are **gate-verified** (`CHECK-ref001.ts` asserts each entry and its tier by host name) and
+  its authority is `docs/spec/REF001-link-recognition.md` §2.1 — re-derive the count from the gate,
+  never re-quote it here (#103 owns making such prose annotatable). **#34 is CLOSED.** The residue
+  path remains the primary mechanism; the list is an optimisation, per the standing constraint below.
 - **Notion IDs are time-ordered, so an ID PREFIX is not a discriminator in this workspace.** The
   declared root and two of its children share **eight leading hex digits**. `#42`'s first live run
   rendered three distinct resources identically as `«3bf1351d…»` and the manifest read like a
@@ -702,61 +704,66 @@ of a measured rate.** `#117` owns the upstream half and names the three routes i
 
 ---
 
-## S034 — 2026-08-22 — both PRs merged, the verdict sprint is adopted, and the operator layer was rebuilt
+## S035 — 2026-08-22 — Session A of the verdict sprint: the run's path is clear
 
-**PHASE:** POST-BUILD → **VERDICT SPRINT (adopted, not started).** This session was dispositions and
-operator infrastructure; no rule or scan behaviour changed.
+**PHASE:** VERDICT SPRINT — **Session A COMPLETE.** Session B (the run) is next and is
+operator-gated twice: PR #133 must merge first, and the session opens with the operator typing
+`/grill-with-docs`.
 
-**TESTS:** Gate exit 0 on merged `main@34d8a2f` — the first run over the combined state (#132 + #131).
-Suite prints both discharges; ADR-0014 and ADR-0009 no longer OUT. `#128` CLOSED.
+**TESTS:** Gate exit 0 on `build/s035-111-observed-host@36a1322`, typecheck first, 0 FAIL. Red was
+demonstrated before green: five TEST 1 assertions failed against the two-host list before
+`references.ts` changed.
 
 ### What happened
 
-1. **The worth question.** The operator asked continue/pivot/ditch. Finding: the project's own kill
-   criterion (`PRODUCT.md`: policy-free report reads as noise to a real workspace owner) has NEVER
-   been tested, and the test costs ~2–3 sessions. Adopted as the **verdict sprint** (below). Named
-   self-diagnosis, undisputed: recent sessions over-weighted epistemic infrastructure — the
-   operator's own decay-synthesis cause 3 applied to this repo. **Meta-layer FROZEN until the verdict.**
-2. **PR #131 reconciled and merged.** All claims verified against files; three docstrings adopted
-   (accurate); review doc relocated to `docs/inputs/codex-codebase-review-2026-08-19.md` with input
-   banner; three perf PRs declined as unmeasured (streaming-UNQ001 already pre-registered in the
-   `UNQ001_SCOPE_CEILING` header — the code header wins). Disposition comment on the PR. It was a
-   DRAFT — `gh pr ready` unblocked the merge button.
-3. **Operator layer rebuilt (home-dir, not this repo):** session model = **Fable 5 always**,
-   `/effort` per-phase (memory `model-routing-table` has the justified table); output style
-   `Concise Humanist` (terse in-session, literal-humanist for public artifacts); global CLAUDE.md
-   refactored 18,015→12,729 b rooted in Anthropic best-practices + Pocock writing-for-agents
-   (backup `.bak-2026-08-22-refactor`). ⚠ Rust/ML stack rules moved to
-   `~/.claude/reference/operating-rules-detail.md` §3-stacks — load them when a project's stack matches.
+1. **Board disposition applied.** Four labels created (`sprint`, `frozen`, `queued`, `operator`) and
+   all 26 open issues labeled per the S034 disposition; read-back query returned zero unlabeled
+   open issues.
+2. **#127 CLOSED — and the sprint plan's "fix #127" step was STALE.** The fix had already merged to
+   `main` in PR #129 (verified `git merge-base --is-ancestor`, not the badge): `readProperty`
+   returns `unexpressed`, both scan sites route it to a `property-value-unexpressed` gap. The one
+   open DoD checkbox (property-item path) resolved by inspection of the port: no code calls the
+   property-item endpoint, so the changelog's "property item values" clause has no route into this
+   build. Revisit-if recorded on the issue: re-establish `unexpressed` handling before any
+   property-item endpoint enters the port. This is "deref the checkpoint's blocker claim" firing
+   again — the S033a plan was quoted forward by S034 without dereferencing #127's comments.
+3. **#111 BUILT — PR #133 open, awaiting operator merge.** `www.notion.so` (observed,
+   `results-first-real-workspace.md` §4) and `notion.so` (documented, vendor changelog 2026-07-15
+   via `docs/vendor/link-domains.md`) entered `KNOWN_INTERNAL_HOSTS`; `notion.com` stays out as a
+   recorded refusal (no locator; sibling strength is the ADR-0001 d4 inference). Spec §2.1 and its
+   §12 Revisit-if updated under the approved plan `snug-gathering-mochi.md`. TEST 8's redaction
+   fixture moved to `notion.com` to keep testing the residue path. Pre-commit `/code-review`
+   returned five findings, all applied: symbol-anchored locators in `link-domains.md` (line-number
+   receipts had rotted), a `notion.so` mutation with substitution guard, the tautological
+   vouching check replaced with single-entry-list probes in both directions, the checkpoint host
+   bullet reframed to fit its unverified-facts heading, and the evidence-tier assertions moved off
+   positional access.
+4. **The close rides the PR branch, deliberately.** This band and the #111 build both touch
+   `checkpoint.md`; a close committed to `main` while PR #133 floats would hand the operator a
+   merge conflict inside the state file. `main` therefore has no S035 band until #133 merges —
+   a session that opens before then reads S034 and must deref PR #133's state.
 
-### EXACT NEXT STEPS — the verdict sprint (carried forward from S033a, unchanged)
+### EXACT NEXT STEPS — sessions B and C, carried from S034 unchanged
 
-Process rule: no freehand — each step routes through its mattpocock skill; `[/]` skills mean PAUSE
-and ask the operator to type the slash command.
-
-1. **Session A — clear the run's path.** Board-audit label pass per the disposition below; fix
-   **#127** (unsupported-type pair counted as evaluated) and **#111** (`www.notion.so` observed
-   host → REF001 under-reports, biasing run 1 toward a FALSE noise verdict). Route: `/tdd` per bug,
-   `/code-review` before commit. ⚠ #51 stays out (rows endpoint is ASK FIRST).
-2. **Session B — the run.** Operator types `/grill-with-docs` first: pre-register 2–3 real roots,
-   the read protocol ("a finding I would repair", defined BEFORE the report exists), and what run 1
-   can decide. ⚠ **Run 1 cannot fire the kill criterion** — the policy-free counters are unbuilt;
-   run 1 is calibration + the first real denominator (#117). Then the agent runs the scan (token
-   stays in `.env`, consumed by the CLI) and the operator reads the report as its user.
-3. **Session C (conditional) — #70 decisions 2–4.** Operator types `/to-spec` → `/to-tickets`;
+1. **Session B — the run.** Operator merges PR #133, then types `/grill-with-docs`: pre-register
+   2–3 real roots, the read protocol ("a finding I would repair", defined BEFORE the report
+   exists), and what run 1 can decide. ⚠ **Run 1 cannot fire the kill criterion** — the
+   policy-free counters are unbuilt; run 1 is calibration + the first real denominator (#117).
+   Then the agent runs the scan (token stays in `.env`, consumed by the CLI) and the operator
+   reads the report as its user. `REAL_ROOT_ID` = `Headquarters`, confirmed good.
+2. **Session C (conditional) — #70 decisions 2–4.** Operator types `/to-spec` → `/to-tickets`;
    `/implement` per ticket. Plan gate applies (ADR + PRODUCT.md). Run 2's reading IS the
    kill-criterion test.
-4. **Board disposition (apply as labels in session A):** SPRINT #127 #111 #70 #95 #84 #117 ·
-   FROZEN #121 #123 #124 #103 #125 #25 #74 #78 #97 #101 + hook-test backlog · QUEUED #51 #113 #29
-   #27 #69 #82 #118 #96 #8 · OPERATOR #102.
+3. Sprint labels now live on the board: `sprint` #70 #95 #84 #117 remain open; #127 #111 done
+   (the latter pending merge). `frozen`/`queued`/`operator` mark the rest.
 
-**NEXT-MODEL: Fable 5 (`/model fable`), `/effort medium`** — every session now (split retired);
-bump to `/effort high` at decision points (the grill, the run-2 verdict reading).
+**NEXT-MODEL: Fable 5 (`/model fable`), `/effort medium`** — bump to `/effort high` at the grill
+and the run-verdict reading.
 
-**NEXT-REPO/CWD:** the `workspace_lint` repository root. Local `main` is current at the close commit.
+**NEXT-REPO/CWD:** the `workspace_lint` repository root.
 
 ### WHAT ONLY THE OPERATOR CAN DO
 
-`#102`'s fixture backlog (Notion UI; two items gate #51's oracle). ~~Sharing a **real root** with
-the integration~~ **DONE post-close 2026-08-22: `Headquarters` shared and `REAL_ROOT_ID` set —
-session B is unblocked.** Zhou & Walker (2016), DOI `10.1145/2950290.2950298`, still unread.
+Merge PR #133 (session B's precondition). Type `/grill-with-docs` at session B open. `#102`'s
+fixture backlog (Notion UI; two items gate #51's oracle). Zhou & Walker (2016),
+DOI `10.1145/2950290.2950298`, still unread.
