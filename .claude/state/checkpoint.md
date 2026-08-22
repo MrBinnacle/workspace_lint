@@ -783,12 +783,18 @@ was touched; this session's product is tracker artifacts.
    not incremented — they have drifted before.
 5. #101 stays frozen and undecided by any of this; the Measurements ADR must not pre-decide it.
 
-**NEXT-MODEL: Opus 5 at `/effort high`** — the caps-fallback, invoked post-close: the operator is
-at 23% Fable budget until Saturday, which the routing rule names as exactly the Opus condition.
-~~Fable 5 (`/model fable`)~~ stands as the routed default again once the budget resets. #140 is
-safe on the fallback because its ADR is pre-decided in #139 and the #70 thread — assembly under
-the plan gate, not open decision-making. #141 and #142 are execution against a written spec and
-run at medium either way.
+**NEXT-MODEL: Opus 5 at `/effort high`** — and as of the second post-close amendment this is the
+**default, not a fallback**: the operator ruled **"Opus default"** on 2026-08-22, superseding the
+same-day Fable-always rule. ~~The caps-fallback framing, and "Fable stands as the routed default
+again once the budget resets"~~ — both superseded by the ruling. Fable is now **reserved** for
+sessions whose product is calcifying judgment the gate cannot falsify: adjudication
+(kill-criterion calls, disposition synthesis), pre-registration design, superseding-ADR work, and
+grill / field-synthesis passes; an Opus session that surfaces such a decision **defers it to a
+Fable session rather than deciding on the wrong tier**. Rule of record: `~/.claude/CLAUDE.md` §0
+and the routing memory. #140 is safe on Opus because its ADR is pre-decided in #139 and the #70
+thread — assembly under the plan gate, not open decision-making. #141 and #142 are execution
+against a written spec and run at medium either way. In this project's near queue, the first
+Fable-class session is **run 2's disposition synthesis and kill-criterion adjudication**.
 
 **NEXT-REPO/CWD:** the `workspace_lint` repository root.
 
