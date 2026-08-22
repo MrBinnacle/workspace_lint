@@ -45,18 +45,17 @@ read this block instead. Nothing here depends on a band still being present.
   the SDK's `logLevel: 'error'`, because the SDK's own warn logger bypasses application redaction.
 - **`NOTION_TOKEN` and `FIXTURE_ROOT_ID` are now CONFIRMED GOOD** — eight live calls succeeded on
   2026-08-17. `UNSHARED_PAGE_ID`, `REVOKE_PARENT_ID` and `PAGINATION_PAGE_ID` are confirmed by use.
-- ~~**`REAL_ROOT_ID` is still unexercised.** Nothing has called it.~~ ⛔ **CORRECTED 2026-08-19 —
-  IT IS NOT MERELY UNEXERCISED, IT IS POINTED AT THE WRONG PAGE.** `REAL_ROOT_ID` holds
-  `wl-outside-grant`, the fixture's **never-connected contrast page**, which 404s by design. A scan
-  against it resolves in two requests to *"declared root UNREACHABLE"* and exit 2 — a path already
-  exercised, so it yields nothing. `.env.example` describes the variable as *"A real workspace root,
-  if you want disclaimed-frequency measured"* and ships it **empty**. The note read as *ready and
-  waiting* for many sessions because nobody dereferenced the value. **Q8 and the Q3 re-run remain
-  open and are NOT one config edit away.** They need a real root **shared with the integration in
-  the Notion UI**, which is operator-only.
-- ⛔ **THE INTEGRATION'S ENTIRE GRANT IS THE FIXTURE.** Measured 2026-08-19 with a one-call
-  `POST /v1/search` diagnostic: two workspace-level pages plus the 150 synthetic `row NNN` pages, and
-  nothing else. **No real content is reachable by the REST token until the operator shares a page.**
+- **`REAL_ROOT_ID` holds a REAL root as of 2026-08-22:** `Headquarters`
+  (`28a1351d-6af4-818d-a555-de4585036900`, workspace-parent), shared by the operator in the Notion
+  UI and verified by a live retrieve before the `.env` line was updated in place. History: from
+  2026-08-19 to 2026-08-22 it pointed at `wl-outside-grant` (the never-connected contrast page,
+  404s by design) and the note read as *ready and waiting* for many sessions because nobody
+  dereferenced the value. **Q8 and the Q3 re-run are now one declared-root away** — and sprint
+  session B's run 1 is unblocked.
+- **THE GRANT IS NO LONGER FIXTURE-ONLY.** Re-measured 2026-08-22 with the same one-call
+  `POST /v1/search` diagnostic: the fixture pages PLUS `Headquarters` and real content beneath it
+  (100+ results, `has_more: true`). The 2026-08-19 finding ("two workspace-level pages plus the 150
+  synthetic rows, nothing else") is superseded by the operator's share.
   ⚠ *Search as a DIAGNOSTIC does not violate ADR-0014* — that decision governs the product's command
   paths, and search's weakness (unattested, eventually consistent) bears on denominators, not on
   discovery. It is not a licence to put search in the scan.
@@ -758,6 +757,6 @@ bump to `/effort high` at decision points (the grill, the run-2 verdict reading)
 
 ### WHAT ONLY THE OPERATOR CAN DO
 
-`#102`'s fixture backlog (Notion UI; two items gate #51's oracle). Sharing a **real root** with the
-integration in the Notion UI — session B is blocked without it (the grant is fixture-only, measured
-2026-08-19). Zhou & Walker (2016), DOI `10.1145/2950290.2950298`, still unread.
+`#102`'s fixture backlog (Notion UI; two items gate #51's oracle). ~~Sharing a **real root** with
+the integration~~ **DONE post-close 2026-08-22: `Headquarters` shared and `REAL_ROOT_ID` set —
+session B is unblocked.** Zhou & Walker (2016), DOI `10.1145/2950290.2950298`, still unread.
