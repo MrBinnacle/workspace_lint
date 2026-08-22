@@ -5,12 +5,13 @@
 reason. **CANT-TELL is a defect of the report, not of the workspace, and its count is a product
 measurement.** Same redaction rule as the pre-registration: role labels only.
 
-**Status: UNREAD.** The bins below are empty because the read has not happened. A future session
-must not fill them from anything but the operator's own reading.
+**Status: READ IN PROGRESS — 1 of 6 binned, 2026-08-22.** Empty bins mean the operator has not
+yet ruled on that row. A future session must not fill them from anything but the operator's own
+reading.
 
 | finding | rule | seen from | bin | reason (operator's words) |
 | --- | --- | --- | --- | --- |
-| TARGET-1 unresolvable | REF001 | ROOT-A, ROOT-B, ROOT-C | | |
+| TARGET-1 unresolvable | REF001 | ROOT-A, ROOT-B, ROOT-C | **REPAIR** | "dead doctrine pointer, I'd relink it today" |
 | TARGET-2 unresolvable | REF001 | ROOT-A | | |
 | TARGET-3 unresolvable | REF001 | ROOT-A | | |
 | TARGET-4 unresolvable | REF001 | ROOT-B | | |
