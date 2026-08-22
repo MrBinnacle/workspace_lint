@@ -4530,3 +4530,64 @@ spec→tickets→implement flow applies to session C (the #70 counters), which I
 straddle, #125, #117 Route 2, hook tests). None of those items is cancelled; they are re-sequenced
 behind a product verdict, because the operator's continue/ditch question outranks every one of
 them and the sprint is the only work that answers it.
+
+---
+
+## S034 — 2026-08-22 — both PRs merged, the verdict sprint is adopted, and the operator layer was rebuilt
+
+**PHASE:** POST-BUILD → **VERDICT SPRINT (adopted, not started).** This session was dispositions and
+operator infrastructure; no rule or scan behaviour changed.
+
+**TESTS:** Gate exit 0 on merged `main@34d8a2f` — the first run over the combined state (#132 + #131).
+Suite prints both discharges; ADR-0014 and ADR-0009 no longer OUT. `#128` CLOSED.
+
+### What happened
+
+1. **The worth question.** The operator asked continue/pivot/ditch. Finding: the project's own kill
+   criterion (`PRODUCT.md`: policy-free report reads as noise to a real workspace owner) has NEVER
+   been tested, and the test costs ~2–3 sessions. Adopted as the **verdict sprint** (below). Named
+   self-diagnosis, undisputed: recent sessions over-weighted epistemic infrastructure — the
+   operator's own decay-synthesis cause 3 applied to this repo. **Meta-layer FROZEN until the verdict.**
+2. **PR #131 reconciled and merged.** All claims verified against files; three docstrings adopted
+   (accurate); review doc relocated to `docs/inputs/codex-codebase-review-2026-08-19.md` with input
+   banner; three perf PRs declined as unmeasured (streaming-UNQ001 already pre-registered in the
+   `UNQ001_SCOPE_CEILING` header — the code header wins). Disposition comment on the PR. It was a
+   DRAFT — `gh pr ready` unblocked the merge button.
+3. **Operator layer rebuilt (home-dir, not this repo):** session model = **Fable 5 always**,
+   `/effort` per-phase (memory `model-routing-table` has the justified table); output style
+   `Concise Humanist` (terse in-session, literal-humanist for public artifacts); global CLAUDE.md
+   refactored 18,015→12,729 b rooted in Anthropic best-practices + Pocock writing-for-agents
+   (backup `.bak-2026-08-22-refactor`). ⚠ Rust/ML stack rules moved to
+   `~/.claude/reference/operating-rules-detail.md` §3-stacks — load them when a project's stack matches.
+
+### EXACT NEXT STEPS — the verdict sprint (carried forward from S033a, unchanged)
+
+Process rule: no freehand — each step routes through its mattpocock skill; `[/]` skills mean PAUSE
+and ask the operator to type the slash command.
+
+1. **Session A — clear the run's path.** Board-audit label pass per the disposition below; fix
+   **#127** (unsupported-type pair counted as evaluated) and **#111** (`www.notion.so` observed
+   host → REF001 under-reports, biasing run 1 toward a FALSE noise verdict). Route: `/tdd` per bug,
+   `/code-review` before commit. ⚠ #51 stays out (rows endpoint is ASK FIRST).
+2. **Session B — the run.** Operator types `/grill-with-docs` first: pre-register 2–3 real roots,
+   the read protocol ("a finding I would repair", defined BEFORE the report exists), and what run 1
+   can decide. ⚠ **Run 1 cannot fire the kill criterion** — the policy-free counters are unbuilt;
+   run 1 is calibration + the first real denominator (#117). Then the agent runs the scan (token
+   stays in `.env`, consumed by the CLI) and the operator reads the report as its user.
+3. **Session C (conditional) — #70 decisions 2–4.** Operator types `/to-spec` → `/to-tickets`;
+   `/implement` per ticket. Plan gate applies (ADR + PRODUCT.md). Run 2's reading IS the
+   kill-criterion test.
+4. **Board disposition (apply as labels in session A):** SPRINT #127 #111 #70 #95 #84 #117 ·
+   FROZEN #121 #123 #124 #103 #125 #25 #74 #78 #97 #101 + hook-test backlog · QUEUED #51 #113 #29
+   #27 #69 #82 #118 #96 #8 · OPERATOR #102.
+
+**NEXT-MODEL: Fable 5 (`/model fable`), `/effort medium`** — every session now (split retired);
+bump to `/effort high` at decision points (the grill, the run-2 verdict reading).
+
+**NEXT-REPO/CWD:** the `workspace_lint` repository root. Local `main` is current at the close commit.
+
+### WHAT ONLY THE OPERATOR CAN DO
+
+`#102`'s fixture backlog (Notion UI; two items gate #51's oracle). ~~Sharing a **real root** with
+the integration~~ **DONE post-close 2026-08-22: `Headquarters` shared and `REAL_ROOT_ID` set —
+session B is unblocked.** Zhou & Walker (2016), DOI `10.1145/2950290.2950298`, still unread.
