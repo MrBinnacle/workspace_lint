@@ -4221,3 +4221,136 @@ recommendation** — `#121` is the test that would make it one.
 **Promotion review** of the quarantined skills — see the standing block.
 
 **NO SELF-ASSESS LINE, BY OPERATOR RULING 2026-08-17.** The ritual line records `verdict=n/a`.
+
+## S032 — 2026-08-19 — the corpus got a type system, and the first traversal put two ADRs OUT
+
+**PHASE:** **POST-BUILD.** All four v0.1 rules on `main`. This session built no rule. It built the
+instruments that decide whether what the repository asserts about Notion is checkable, and then used
+them.
+
+**TESTS:** **FOURTEEN suites, 1051 assertions, exit 0, offline.** Re-derived, never quoted.
+
+**TRACKER:** 27 open. Three filed — `#127`, `#128`, and `#126`/`#129` as PRs.
+
+### ⭐ The finding: our negative claims are a type error visible on the face of the sentence
+
+A §0.5 sweep ran **before** any instrument was designed — three scouts, three literatures. It refuted
+this session's own first proposal (consumer-driven contract testing) and produced the result that
+determined everything after it.
+
+*"The API cannot do X"*, derived from *"we looked and found no way"*, is **negation as failure** under
+a closed-world assumption, not a negation. It reads *"it is not currently believed that"* (DOI
+`10.1155/2013/632319`).
+
+⭐ **And it explains four-of-four with no appeal to bias.** A positive claim is **monotonic** under
+vendor change; a negation-as-failure claim is **nonmonotonic by construction**, and the vendor
+shipping *anything at all* is the new information. **Negative claims are the only class Notion's
+forward development can falsify by addition.** The direction of the errors is a property of the
+sentence type, not of the authors — which also means only negative claims need an expiry, and that is
+what makes the changelog watch affordable.
+
+Full sweep with locators: `docs/research/vendor-assumption-drift-prior-art.md`, raw reports and every
+blocked-route table under `sweep-raw/`.
+
+### What shipped
+
+**`slice/negation.ts` + `CHECK-negation.ts`** — the **first check here that flags an UNANNOTATED
+sentence**. `CHECK-claims.ts` evaluates claims that were *declared*; its header states that hole and
+this closes it for the one sentence class where every measured error occurred.
+
+**`slice/support.ts` + `CHECK-support.ts`** — the ADR support graph. The edges already existed as a
+`- **Evidence:**` convention in ten of fourteen ADRs and **nobody had read them as a graph.**
+
+**`.claude/agents/notion-sme.md` + `docs/vendor/`** — an SME bound to fetched evidence and forbidden
+to answer from weights, and the corpus it reads. **`docs/vendor/WATCH.md`** is the changelog
+reconciliation record.
+
+**ADR-0015** supersedes `ADR-0002` finding 1 **only**.
+
+**`#127`** — `readProperty` gains `unexpressed`.
+
+### ⭐ The instruments caught things nothing else would have
+
+- **The negation gate caught ADR-0015 itself**, five untyped sentences, before commit — the check
+  firing on its own author. It is now the first ADR authored with its negatives typed.
+- **The support graph's first traversal put TWO ADRs OUT and only one was predicted.** `ADR-0014` was
+  expected. **`ADR-0009`, the credential-and-boundary decision, was not.** → `#128`.
+- **The changelog watch found a live defect on its first pass.** `#127`, and no mechanism here would
+  have surfaced it — the offline fixture cannot build the shape.
+- **The claims gate caught two `count` sites my own grep missed**, then the new suite count. Twice the
+  instrument beat the sweep.
+
+### ⛔ Where I was wrong, and the operator corrected two of them
+
+- **`#127`'s first framing said the vendor "declines to compute" the value.** ⛔ **Wrong, and
+  corrected on the ticket within the hour.** `type: "unsupported"` is a statement about what the API
+  **represents**; the value likely exists and renders in the UI. **The cause string may never claim
+  Notion could not compute it**, and `CHECK-req001.ts` now asserts the cause contains no such claim.
+  This is *"a UI affordance is not an API behaviour"* crossed from the other side.
+- **"Limit" is banned; the word is "challenge", and it is operational rather than semantic.** *"For
+  you — actionably — not for semantics and motivational posters."* **A challenge is a work item with
+  a next action, never a status to report and stop at.** I had written *"bi-directional CDCT is
+  unassessed, I am accepting it"* while holding three untaken routes. Sent back; all three taken.
+- **The plan claimed TypeScript would surface `unexpressed`'s consumers. It did not.** Both sites use
+  `if` guards rather than an exhaustive switch, so the new union member **compiled clean with no
+  branch anywhere** — verified by compiling it that way first.
+- **I called `/teach` nonexistent from a `find -maxdepth 3`.** It exists, it is his, and §14 already
+  records that plugin skills sit seven levels deep.
+- **The SME overstated its own find** — *"we had read half a page"* — when `ADR-0002` finding 2
+  already carried the substance. Corrected inside ADR-0015 rather than dropped.
+
+### BLOCKERS
+
+**None mechanical.** Gate green, tree clean, 1051 assertions.
+
+The blocker is unchanged from S031 and is **evidential**: there is still no measured rate of the
+defect this product detects. Nothing this session touched `#117`.
+
+### EXACT NEXT STEPS
+
+**Twenty-seven issues open** — 8, 25, 27, 29, 51, 69, 70, 74, 78, 82, 84, 95, 96, 97, 101, 102, 103,
+111, 113, 117, 118, 121, 123, 124, 125, 127, 128.
+
+1. ⛔ **Merge state by ancestry, never the badge.** `main` carries `1229d03` (PR #126). **PR #129 was
+   open at close** — `git merge-base --is-ancestor 7f35d0a origin/main`.
+2. ⭐ **`#128` — re-justify or supersede `ADR-0014` and `ADR-0009`.** Both cite the refuted finding.
+   ⛔ **`CHECK-support.ts` asserts `ADR-0014` IS out; that assertion moves in the same change that
+   re-justifies it**, or the fix reddens the gate and reads as a defect in the fix.
+3. **`#51` — implement it.** Decision granted, capability confirmed. ⚠ The **rows** endpoint is a
+   POST and a fifth endpoint: **ASK FIRST**.
+4. **`#127`'s open checkbox** — rollup vs formula are **not** separately exercised. The changelog
+   names both *"page property values"* and *"property item values"*; this build hydrates only the
+   page-property path.
+5. **`#125` — the remaining negatives sweep.** Now cheap: the gate lists every untyped one.
+6. **`#117` Route 2** — the denominator. Untouched for two sessions and it is the real blocker.
+7. **Hook tests, `skill-router.py` first.** Three of TWELVE tested (recounted 2026-08-19).
+
+⚠ **THE DECISION WIP LIMIT IS LAPSED and the count will look like a violation.** `#113`, `#70`,
+`#117`, `#123`, `#124`, `#125`, `#128`. `docs/agents/triage-labels.md` records the lapse — the limit
+read *"while any v0.1 rule is unbuilt"* and `UNQ001` completed the catalogue. **Not a breach.**
+*Record always* is unaffected.
+
+**NEXT-MODEL: frontier tier.** `#128` is a belief-revision judgement that reverses or re-founds two
+standing ADRs, and culprit selection is under-determined by construction — the one class of work
+where a cheaper tier's confident answer is actively harmful. `#51` and `#127`'s checkbox are
+execution against settled briefs and can be straddled with each other, nothing else. **Do not scope
+`#128` and `#117` into one session**; they are different tiers of ambiguity and the boundary belongs
+between them.
+
+**NEXT-REPO/CWD:** the `workspace_lint` repository root. ⚠ **Absolute-`cd` every verification** — cwd
+drifted into `slice/` twice this session and produced two failed reads.
+
+### WHAT ONLY THE OPERATOR CAN DO
+
+**Merging PR #129.** `gh pr merge` is denied to the agent.
+
+**`#102`'s fixture backlog, seven items**, all in the Notion UI. Two gate `#51`'s live oracle run —
+one `link_to_page` block pointing at `wl-dataset`, and a permanent database reference whose addition
+moves `fixture-oracle.ts`'s `references.applicable` and **must be re-pre-registered before the run,
+never corrected after it.**
+
+**Reading Zhou & Walker (2016), DOI `10.1145/2950290.2950298`** — *"API deprecation: a retrospective
+analysis and detection method for code examples on the web"*. The closest paper found to this
+repository's exact problem and **it is unread**: Crossref carries no abstract, Semantic Scholar
+returns a publisher elision, and Unpaywall wants an email address a scout correctly declined to
+supply on his behalf.
