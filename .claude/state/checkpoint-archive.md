@@ -4735,3 +4735,104 @@ Merge the close PR. Type `/to-spec` at session C open. Decide #51's fifth-endpoi
 are the case for it). `#102`'s fixture backlog. Zhou & Walker (2016), DOI
 `10.1145/2950290.2950298`, still unread.
 
+## S037 — 2026-08-22 — Session C, spec layer: #70 decisions 2–4 resolved into spec #139 and six tickets
+
+**PHASE:** VERDICT SPRINT — **session C's spec layer is COMPLETE.** The operator typed
+`/to-spec #70` then `/to-tickets #139`; both ran to publication. The implement layer is next and
+remains operator-gated per ticket. Run 2 — the kill-criterion reading — waits on the counters.
+
+**TESTS:** Gate exit 0 at session start on `main@5f32064` and unchanged at close — no slice code
+was touched; this session's product is tracker artifacts.
+
+### What happened
+
+1. **Session-start verification held.** The S036 close PR was confirmed merged by `merge-base`
+   ancestry (not the badge); no open PRs; #70 held exactly decisions 2–4; #101 (`frozen`) was
+   kept out of scope.
+2. **Spec #139 published** — "Measurements: the policy-free decay counters and the REF001
+   anchor-text ruling." It resolves the three remaining #70 decisions into buildable form:
+   - **Decision 2:** the three unrepresented signals are **Measurements, not Rules** — a Rule
+     tests one invariant and a count tests none. Building them in v0.1 is operator-ratified
+     sequencing (the S034 plan gates run 2 on the counters; the operator opened session C).
+   - **Decision 3:** measurements get **no coverage item, no ratio, no exit-byte channel at any
+     level** (no rule, so no rule-level channel either — the contrast with #101's tier). The
+     replacement honesty controls: printed denominators; a section that can never be silently
+     empty (a "not computed" line with a named cause); every zero scoped to the scanned set.
+   - **Decision 4:** ADR-0001 is **not reopened**; the eight-rule counting boundary and the
+     reconstructibility gate test are promoted from the #70 thread into **one additive ADR** at
+     implement time. Per #70's own Revisit-if, that promotion re-scopes the ticket.
+   - **#135 ruled in the same pass:** anchor text is **title-class disclosure**, by the remedy
+     test — identical remedy (redact by default, reveal under the existing title-reveal opt-in)
+     means it is not a new disclosure category and gets no second flag.
+   - Three reshapings worth remembering as decisions, not accidents: "no writes in N days"
+     carries a threshold and is forbidden on this surface — last-write timestamps sorted by a
+     named key replace it; the owner signal selects properties **by type `people`, never by
+     name** (name-matching is the label inference Principle 4 forbids); **view counts are
+     conditional on a vendor fact** to be checked against the endpoint's own reference page at
+     build, never asserted from memory. No new endpoint enters the scan for a measurement.
+3. **Six tickets published from the spec** (#140–#145), all `enhancement` + `ready-for-agent` +
+   `sprint`, blocking edges as GitHub-native dependencies and verified by read-back:
+   - **#140** the additive ADR + `CONTEXT.md` glossary row + `PRODUCT.md` pointer (no blockers —
+     the boundary is stated before code, decision 4's own requirement);
+   - **#141** REF001 anchor text under title-reveal, closing #135's defect (no blockers,
+     independent chain);
+   - **#142** tracer bullet: the Measurement class end to end carrying last-edited timestamps,
+     with the exit-byte-isolation, non-empty, determinism and redaction controls all
+     mutation-checked (blocked by #140);
+   - **#143** maintenance-load counts by property type + the view-count vendor check + the
+     reconstructibility assertion (blocked by #142);
+   - **#144** inbound-reference counts from the scanned set beside last-write timestamps,
+     thresholdless, scoped zeros (blocked by #142);
+   - **#145** owner signal: empty-value counts per people-type property — mostly exercises the
+     "not computed" boundary honestly until #51 lands (blocked by #142).
+4. **Cross-links landed and read back:** #70 carries the pointer to #139 (worded so no closing
+   keyword precedes a reference); #135 carries the ruling location. #139 itself untouched by
+   the ticketing pass, per the skill.
+
+### EXACT NEXT STEPS — implement layer, batch-optimized
+
+⭐ **Operator ruling (2026-08-22, second post-close amendment): NO one-ticket-per-session
+pacing, no sandbagging in the name of safe — and, his clarification, no token waste either:
+"a deliberate, session over session effort to work smarter not necessarily harder."** Session D
+takes the **whole chain** as far as the real boundaries allow — the ~40% context ceiling, gate
+green before every commit, and the ask-first tiers are the limits; a ticket count is not one.
+Parallelize where it genuinely saves context or wall-clock (independent tickets to concurrent
+subagents, worktree isolation when both mutate files; named return channel; wait for forks) —
+never to look busy. Each close's NEXT block names how the next session is shaped to minimize
+overhead, so the optimization is visible in the record rather than asserted.
+
+1. **Session D takes #140 and #141 in parallel, then #142 in the same session the moment #140's
+   ADR lands, then fans #143 / #144 / #145 off #142** — blocking edges order work inside the
+   session; they do not partition sessions. **One approved plan may gate the whole chain**: the
+   plan gate is per-file authorisation, not pacing — a single Files table naming the new ADR,
+   `CONTEXT.md`, `PRODUCT.md` and `docs/spec/REF001-link-recognition.md` covers all of it. A
+   quiet hook is not approval; the Files table is the token.
+2. If context saturates mid-chain, checkpoint and clear per §11 and continue from state — the
+   boundary is saturation, never the next ticket.
+3. **Run 2 after the counters ship — the reading IS the kill-criterion test.** If owners read
+   counts as noise, the pre-registered honest fix is better linking and context; watch for it
+   being proposed as a score, and refuse that.
+4. `CONTEXT.md`'s "Seven distinctions"/"Seven defaults" counts must be re-derived in #140's edit,
+   not incremented — they have drifted before.
+5. #101 stays frozen and undecided by any of this; the Measurements ADR must not pre-decide it.
+
+**NEXT-MODEL: Opus 5 at `/effort high`** — and as of the second post-close amendment this is the
+**default, not a fallback**: the operator ruled **"Opus default"** on 2026-08-22, superseding the
+same-day Fable-always rule. ~~The caps-fallback framing, and "Fable stands as the routed default
+again once the budget resets"~~ — both superseded by the ruling. Fable is now **reserved** for
+sessions whose product is calcifying judgment the gate cannot falsify: adjudication
+(kill-criterion calls, disposition synthesis), pre-registration design, superseding-ADR work, and
+grill / field-synthesis passes; an Opus session that surfaces such a decision **defers it to a
+Fable session rather than deciding on the wrong tier**. Rule of record: `~/.claude/CLAUDE.md` §0
+and the routing memory. #140 is safe on Opus because its ADR is pre-decided in #139 and the #70
+thread — assembly under the plan gate, not open decision-making. #141 and #142 are execution
+against a written spec and run at medium either way. In this project's near queue, the first
+Fable-class session is **run 2's disposition synthesis and kill-criterion adjudication**.
+
+**NEXT-REPO/CWD:** the `workspace_lint` repository root.
+
+### WHAT ONLY THE OPERATOR CAN DO
+
+Merge this close's PR. Type `/implement` (or assign) at the frontier — #140 and/or #141. Decide
+#51's fifth-endpoint grant when it surfaces (still ask-first; #145's width is part of that case).
+`#102`'s fixture backlog. Zhou & Walker (2016), DOI `10.1145/2950290.2950298`, still unread.

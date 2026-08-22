@@ -709,6 +709,35 @@ success, which is this project's oldest failure shape.
   standing rule that a green mutation names dead code: it may instead name a mutation that never
   happened.
 
+**Five constraints hoisted from the S037 band on 2026-08-22 before it was archived, plus what S038
+measured.** Each governs work that is not done, and nothing else in this file records it.
+
+- ⛔ **`#101` IS FROZEN AND ADR-0017 DID NOT PRE-DECIDE IT.** The `undeclared-invariant` tier is a
+  tier **of a rule** and therefore has a rule-level channel to the exit byte; a Measurement owns no
+  rule ID and has none. ADR-0017 decision 4 states that contrast deliberately so a later session
+  cannot read the Measurements decision as having settled #101 by implication. It has not.
+- ⛔ **THE MEASUREMENT BOUNDARY IS NOW CANON — CITE ADR-0017, NEVER THIS FILE AND NEVER THE #70
+  THREAD.** The eight operational rules, the eight worked examples, the reconstructibility gate test
+  and the no-channel-at-any-level decision all live there as of PR #149. The state file's job here is
+  a pointer; restating any of it is the mirror this file has been burned by four times.
+- ⛔ **`#143` AND `#145` WILL SHIP BOUNDARY LINES, NOT COUNTS, AND THAT IS THE SPEC'S OWN FALLBACK.**
+  `NotionPort` has three methods and none retrieves a database; `scan.ts` marks every
+  `child_database` a drop-out. So per-database relation/rollup/formula counts and people-type
+  empty-value counts have **no input available** and render "not computed" with the cause. The
+  consequence is load-bearing and is the operator's call, not the agent's: **run 2 would then read a
+  surface where two of four measurements are boundary lines**, which prices `#51`'s fifth-endpoint
+  grant in terms of what the kill-criterion test can actually test. Do not request an endpoint;
+  surface the price.
+- ⭐ **`#143`'s VIEW-COUNT VENDOR CHECK IS ALREADY DISCHARGED IN THIS REPO — do not re-fetch and do
+  not answer it from memory.** `docs/vendor/list-views.md`, fetched 2026-08-19: `GET /v1/views`
+  returns view metadata for a specified database and the read-only capability suffices. **It is a
+  NEW ENDPOINT**, so it is outside spec #139's scope (*"No new endpoint enters the scan for a
+  measurement"*) and outside the current grant. The claim is POSITIVE and therefore monotonic under
+  vendor change, so it needs no expiry — unlike a negative one.
+- **`#145`'s owner signal selects properties by TYPE `people`, never by NAME.** Matching a property
+  called "Owner" infers meaning from a label, which Principle 4 forbids. The property's own name
+  prints as data beside the count.
+
 ⭐ **THE n=1 PROBLEM IS DISTRIBUTION, NOT ACCESS. Established S031 on the operator's reframing.**
 The repository has read n=1 as an evidence problem to be solved by someone granting access. It is the
 other way round: **nobody grants access to a tool with nothing to show.** The operator stated it
@@ -720,104 +749,100 @@ of a measured rate.** `#117` owns the upstream half and names the three routes i
 
 ---
 
-## S037 — 2026-08-22 — Session C, spec layer: #70 decisions 2–4 resolved into spec #139 and six tickets
+## S038 — 2026-08-22 — Session D, implement layer: three of the six Measurements tickets, in one batch
 
-**PHASE:** VERDICT SPRINT — **session C's spec layer is COMPLETE.** The operator typed
-`/to-spec #70` then `/to-tickets #139`; both ran to publication. The implement layer is next and
-remains operator-gated per ticket. Run 2 — the kill-criterion reading — waits on the counters.
+**PHASE:** VERDICT SPRINT — **the implement layer is under way.** #140, #141 and #142 are built and
+committed on `build/s038-measurements`; **PR #149 is open and NOT merged** (the operator merges).
 
-**TESTS:** Gate exit 0 at session start on `main@5f32064` and unchanged at close — no slice code
-was touched; this session's product is tracker artifacts.
+⛔ **#143, #144 and #145 ARE STILL BLOCKED, and the first draft of this band said they were not.**
+Caught by the close's own deref step, which read the tracker instead of the reasoning: GitHub's
+dependency gate counts **open** blockers, and #142 stays OPEN until PR #149 merges and closes it.
+`blocked_by=1` on all three, verified live at close. **They unblock on the merge, not on the
+commit** — and "the code is written" is not the same fact as "the ticket is closed", which is
+exactly the shape this repository has been burned by when a stacked PR merged after its base.
+
+**TESTS:** Gate green at open (`main@e3b883d`, 14 suites) and at close (**15 suites** —
+`CHECK-measurements.ts` registered). The typecheck runs first and the chain is `&&`.
 
 ### What happened
 
-1. **Session-start verification held.** The S036 close PR was confirmed merged by `merge-base`
-   ancestry (not the badge); no open PRs; #70 held exactly decisions 2–4; #101 (`frozen`) was
-   kept out of scope.
-2. **Spec #139 published** — "Measurements: the policy-free decay counters and the REF001
-   anchor-text ruling." It resolves the three remaining #70 decisions into buildable form:
-   - **Decision 2:** the three unrepresented signals are **Measurements, not Rules** — a Rule
-     tests one invariant and a count tests none. Building them in v0.1 is operator-ratified
-     sequencing (the S034 plan gates run 2 on the counters; the operator opened session C).
-   - **Decision 3:** measurements get **no coverage item, no ratio, no exit-byte channel at any
-     level** (no rule, so no rule-level channel either — the contrast with #101's tier). The
-     replacement honesty controls: printed denominators; a section that can never be silently
-     empty (a "not computed" line with a named cause); every zero scoped to the scanned set.
-   - **Decision 4:** ADR-0001 is **not reopened**; the eight-rule counting boundary and the
-     reconstructibility gate test are promoted from the #70 thread into **one additive ADR** at
-     implement time. Per #70's own Revisit-if, that promotion re-scopes the ticket.
-   - **#135 ruled in the same pass:** anchor text is **title-class disclosure**, by the remedy
-     test — identical remedy (redact by default, reveal under the existing title-reveal opt-in)
-     means it is not a new disclosure category and gets no second flag.
-   - Three reshapings worth remembering as decisions, not accidents: "no writes in N days"
-     carries a threshold and is forbidden on this surface — last-write timestamps sorted by a
-     named key replace it; the owner signal selects properties **by type `people`, never by
-     name** (name-matching is the label inference Principle 4 forbids); **view counts are
-     conditional on a vendor fact** to be checked against the endpoint's own reference page at
-     build, never asserted from memory. No new endpoint enters the scan for a measurement.
-3. **Six tickets published from the spec** (#140–#145), all `enhancement` + `ready-for-agent` +
-   `sprint`, blocking edges as GitHub-native dependencies and verified by read-back:
-   - **#140** the additive ADR + `CONTEXT.md` glossary row + `PRODUCT.md` pointer (no blockers —
-     the boundary is stated before code, decision 4's own requirement);
-   - **#141** REF001 anchor text under title-reveal, closing #135's defect (no blockers,
-     independent chain);
-   - **#142** tracer bullet: the Measurement class end to end carrying last-edited timestamps,
-     with the exit-byte-isolation, non-empty, determinism and redaction controls all
-     mutation-checked (blocked by #140);
-   - **#143** maintenance-load counts by property type + the view-count vendor check + the
-     reconstructibility assertion (blocked by #142);
-   - **#144** inbound-reference counts from the scanned set beside last-write timestamps,
-     thresholdless, scoped zeros (blocked by #142);
-   - **#145** owner signal: empty-value counts per people-type property — mostly exercises the
-     "not computed" boundary honestly until #51 lands (blocked by #142).
-4. **Cross-links landed and read back:** #70 carries the pointer to #139 (worded so no closing
-   keyword precedes a reference); #135 carries the ruling location. #139 itself untouched by
-   the ticketing pass, per the skill.
+1. **One approved plan gated the whole chain**, per the S037 ruling that blocking edges order work
+   *inside* a session rather than partitioning sessions. The plan's Files table named the ADR,
+   `CONTEXT.md`, `PRODUCT.md` and the REF001 spec. ⚠ **The guard blocked the first ADR write** because
+   the slug had drifted from the one the plan named — the plan is the authorisation token, so the
+   fix was to use its filename, never to edit the plan to match the file.
+2. **#140 — ADR-0017.** Additive: supersedes nothing, extends ADR-0001 decision 4. It promotes the
+   counting/scoring boundary out of the #70 comment thread and gives it the mechanical form:
+   **every aggregate printed must be arithmetically reconstructible from the per-item rows printed
+   in the same report.** `CONTEXT.md` gained the Measurement row and an eighth distinction;
+   `PRODUCT.md`'s sixth signal **lost its threshold wording** (narrowing, not widening).
+3. **#141 — REF001 anchor text**, title-class under the existing `--show-titles` flag, no second
+   flag. Stored raw and resolved at exactly one point.
+4. **#142 — the Measurement class end to end.** Own module, own field on `ScanResult` and
+   `ReportDocument`, own section in all three renderers. **No new endpoint** — `last_edited_time`
+   was always on the `GET /v1/pages` response.
 
-### EXACT NEXT STEPS — implement layer, batch-optimized
+### What the mutations found — and one of them found a defect in MY control
 
-⭐ **Operator ruling (2026-08-22, second post-close amendment): NO one-ticket-per-session
-pacing, no sandbagging in the name of safe — and, his clarification, no token waste either:
-"a deliberate, session over session effort to work smarter not necessarily harder."** Session D
-takes the **whole chain** as far as the real boundaries allow — the ~40% context ceiling, gate
-green before every commit, and the ask-first tiers are the limits; a ticket count is not one.
-Parallelize where it genuinely saves context or wall-clock (independent tickets to concurrent
-subagents, worktree isolation when both mutate files; named return channel; wait for forks) —
-never to look busy. Each close's NEXT block names how the next session is shaped to minimize
-overhead, so the optimization is visible in the record rather than asserted.
+⭐ **A MUTATION THAT FAILS IN THE WRONG FILE IS A FINDING ABOUT THE CONTROL, NOT A PASS.** Wiring a
+measurement into the exit byte's inputs turned the gate red — through `CHECK-sys001`, **not** through
+`CHECK-measurements`. Cause: the isolation test compared the real derivation against a deliberately
+extreme one, and **both arms HAVE measurements**, so it could only ever detect a channel keyed on
+measurement CONTENT and was blind to one keyed on mere PRESENCE. A third arm was added
+(present vs. absent), re-run against the still-live mutation, and it now fails in its own file.
+**Generalise this: an isolation control needs an arm where the thing under test is ABSENT, not only
+one where it differs.**
 
-1. **Session D takes #140 and #141 in parallel, then #142 in the same session the moment #140's
-   ADR lands, then fans #143 / #144 / #145 off #142** — blocking edges order work inside the
-   session; they do not partition sessions. **One approved plan may gate the whole chain**: the
-   plan gate is per-file authorisation, not pacing — a single Files table naming the new ADR,
-   `CONTEXT.md`, `PRODUCT.md` and `docs/spec/REF001-link-recognition.md` covers all of it. A
-   quiet hook is not approval; the Files table is the token.
-2. If context saturates mid-chain, checkpoint and clear per §11 and continue from state — the
-   boundary is saturation, never the next ticket.
-3. **Run 2 after the counters ship — the reading IS the kill-criterion test.** If owners read
-   counts as noise, the pre-registered honest fix is better linking and context; watch for it
-   being proposed as a score, and refuse that.
-4. `CONTEXT.md`'s "Seven distinctions"/"Seven defaults" counts must be re-derived in #140's edit,
-   not incremented — they have drifted before.
-5. #101 stays frozen and undecided by any of this; the Measurements ADR must not pre-decide it.
+⚠ **A vacuous assertion shipped into the first draft and is recorded at the site.** It read
+`x.link !== null || /link:/.test(term) || …` — the middle disjunct is TRUE for every report ever
+rendered, because the findings section prints `link:` four lines up. **A disjunction whose second
+term is a tautology asserts nothing about the first and passes exactly as loudly as a real check.**
+Third instance of this family here, after `x.includes('')` and `rendered.includes(BLANKED)`.
 
-**NEXT-MODEL: Opus 5 at `/effort high`** — and as of the second post-close amendment this is the
-**default, not a fallback**: the operator ruled **"Opus default"** on 2026-08-22, superseding the
-same-day Fable-always rule. ~~The caps-fallback framing, and "Fable stands as the routed default
-again once the budget resets"~~ — both superseded by the ruling. Fable is now **reserved** for
-sessions whose product is calcifying judgment the gate cannot falsify: adjudication
-(kill-criterion calls, disposition synthesis), pre-registration design, superseding-ADR work, and
-grill / field-synthesis passes; an Opus session that surfaces such a decision **defers it to a
-Fable session rather than deciding on the wrong tier**. Rule of record: `~/.claude/CLAUDE.md` §0
-and the routing memory. #140 is safe on Opus because its ADR is pre-decided in #139 and the #70
-thread — assembly under the plan gate, not open decision-making. #141 and #142 are execution
-against a written spec and run at medium either way. In this project's near queue, the first
-Fable-class session is **run 2's disposition synthesis and kill-criterion adjudication**.
+Both live mutations were **verified as APPLIED by grepping their marker before the run was scored**,
+and **scored on the exit code**. Marker counts back to zero after revert.
+
+### ⛔ THE MACHINE'S SKILL LAYER WAS THE HANDBRAKE, AND IT IS ONLY HALF FIXED
+
+The operator said he had hardcoded the Pocock methodology into his configuration repeatedly and it
+"hasn't done a darn thing." **He was right, and the cause was mechanical, in two compounding halves:**
+
+- **20 of 35 installed `mattpocock-skills` carried `disable-model-invocation: true`.** The Skill tool
+  does not deprioritise those — it **refuses** them, and they never enter the session listing.
+- **`~/.claude/hooks/skill-rules.json` held 15 router rules and NOT ONE named a Pocock skill.** The
+  router is correctly wired on `UserPromptSubmit` and works; it had never been pointed at them.
+
+So the methodology lived only in `~/.claude/CLAUDE.md` §14 prose — which §1 itself classifies as
+unreliable model-pull. **DONE:** the flag is removed from 9 workflow skills across both cached plugin
+versions (18 files). ⚠ **That lives in the plugin CACHE and a plugin update wipes it.**
+⛔ **STILL OWED — the router half is BLOCKED to the agent:** writing to `~/.claude/hooks/` is denied
+by the auto-mode classifier. The operator must run the script himself; it compiles every pattern and
+probes 7 positives and 3 negatives before writing, and refuses to write on any probe failure.
+
+### EXACT NEXT STEPS
+
+0. ⛔ **FIRST, CONFIRM PR #149 MERGED — by `git merge-base --is-ancestor`, never by the MERGED
+   badge.** Until it does, #142 is open, and #143/#144/#145 each report `blocked_by=1`. Starting
+   them before the merge means building on a base that may still change.
+1. **Then #144, then #143 and #145.** #144 is the only one of the three with real input — inbound
+   reference counts come from the scan's own reference set. Thresholdless, every zero scoped.
+2. **#143 and #145 ship boundary lines, not counts** — see the standing block above for why, and for
+   the fact that `#143`'s view-count vendor question is **already discharged** in `docs/vendor/`.
+3. **The plan for #140–#145 is already approved and its Files table still authorises the chain**, but
+   it is time-boxed to 24h by the guard — a fresh session past that window re-runs the plan gate.
+4. **Run 2 is still downstream of the counters** and remains the kill-criterion reading.
+
+**NEXT-MODEL: Opus 5 at `/effort medium`** — #144, #143 and #145 are execution against a written spec
+and an ADR that already decided the open questions, so nothing in them is calcifying judgement the
+gate cannot falsify. Raise to `high` only if #143's boundary framing turns out to need a call about
+what the report may claim. **The first Fable-class session in this queue is still run 2's disposition
+synthesis and kill-criterion adjudication**, unchanged.
 
 **NEXT-REPO/CWD:** the `workspace_lint` repository root.
 
 ### WHAT ONLY THE OPERATOR CAN DO
 
-Merge this close's PR. Type `/implement` (or assign) at the frontier — #140 and/or #141. Decide
-#51's fifth-endpoint grant when it surfaces (still ask-first; #145's width is part of that case).
-`#102`'s fixture backlog. Zhou & Walker (2016), DOI `10.1145/2950290.2950298`, still unread.
+Merge PR #149. **Run the router-rules script** — the second half of the skill-layer fix, and the
+thing that stops this recurring. Decide `#51`'s fifth-endpoint grant when #143/#145 surface its
+price. `#102`'s fixture backlog. Zhou & Walker (2016), DOI `10.1145/2950290.2950298`, still unread.
+
