@@ -808,12 +808,13 @@ the agent PAUSES and asks him to type the slash command.
 `#97`, `#101`, and the hook-test backlog. **QUEUED BEHIND the sprint:** `#51`, `#117` Route 2
 (advanced but not closed by run 1), `#113`, `#29`.
 
-**NEXT-MODEL: Sonnet 5 (`/model sonnet`)** — sprint session A is two settled bug briefs plus a
-mechanical label pass. Sessions B and C likewise; escalate to **Fable 5 (`/model fable`)** only
-if `#70`'s decisions turn out contested in the grill. ⚠ Routing vocabulary, fixed 2026-08-22 at
-the operator's request: a NEXT-MODEL line names the model string, never a bare tier label —
-"fast tier" = Sonnet 5, and `/fast` mode is Opus-with-faster-output, NOT the fast tier (memory:
-`model-routing-table`).
+**NEXT-MODEL: Fable 5 (`/model fable`), `/effort medium`** — and every future session, unless
+usage caps visibly bite (then `/fast` for execution sessions — Opus at speed, never Sonnet).
+The frontier/fast session split was retired 2026-08-22 at the operator's request: routing by
+predicted session type fails in this repo ("execution" work has repeatedly hidden decisions),
+and the error costs are asymmetric, so sessions default up and the cheap models (`sonnet`,
+`haiku`) live in subagents only. Escalate to `/effort high` at decision points (the #70 grill,
+the run-2 verdict reading). Full table: memory `model-routing-table`.
 
 **NEXT-REPO/CWD:** the `workspace_lint` repository root. ⚠ Absolute-`cd` every verification; cwd
 drifted twice in S032.
