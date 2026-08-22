@@ -5,9 +5,10 @@
 reason. **CANT-TELL is a defect of the report, not of the workspace, and its count is a product
 measurement.** Same redaction rule as the pre-registration: role labels only.
 
-**Status: READ IN PROGRESS — 5 of 6 binned, 2026-08-22.** Empty bins mean the operator has not
-yet ruled on that row. A future session must not fill them from anything but the operator's own
-reading.
+**Status: READ COMPLETE — 6 of 6 binned, 2026-08-22.** Five bins are the operator's cold read;
+the sixth (the SYS001 row) was SME-advised on fetched evidence and ratified by the operator in
+his own words ("confirmed"), and is marked so — a delegated bin is not a cold-read bin and the
+distinction is part of the record.
 
 | finding | rule | seen from | bin | reason (operator's words) |
 | --- | --- | --- | --- | --- |
@@ -16,7 +17,7 @@ reading.
 | TARGET-3 unresolvable | REF001 | ROOT-A | **REPAIR** | "that's the old task sequencer link" |
 | TARGET-4 unresolvable | REF001 | ROOT-B | **NOISE** | "Hans Archive absorbed that one on purpose" |
 | TARGET-5 unresolvable | REF001 | ROOT-C | **REPAIR** | "I'd fix that link today" |
-| block-budget exhaustion on one ROOT-C child | SYS001 | ROOT-C | | |
+| block-budget exhaustion on one ROOT-C child | SYS001 | ROOT-C | **NOISE** (SME-advised, operator-ratified) | The child is a healthy, actively maintained reference page — verified by fetch; the defect is the instrument's 40-request budget, filed as #136. No workspace edit exists to make. |
 
 The two `400 validation_error` targets under ROOT-C are gaps, not findings, and take no bin; if
 the operator's read reclassifies them, that is recorded here as its own line, not edited into the
@@ -34,7 +35,7 @@ required ("repair them once your confidence level in the veracity of the action 
 | --- | --- | --- | --- |
 | TARGET-1 | REPAIR | **resolves** | **Alive, outside the integration's grant.** The reference is correct; the 404 is a grant boundary. Repair refused — a relink would have redirected a working pointer. |
 | TARGET-2 | CANT-TELL | 404 | Dead on both credential paths. Nothing identifiable to repair toward; the bin stands. |
-| TARGET-3 | REPAIR | 404 | Dead on both credential paths — a true repair candidate. Replacement determined at satisfied confidence from the workspace's own doctrine and structure (the task surface that intake graduates into; the alternative surface self-describes as a review shelf). The write was **blocked by session permissions** — the one-mention edit is specified for the operator to apply or approve. |
+| TARGET-3 | REPAIR | 404 | Dead on both credential paths — a true repair candidate. Replacement determined at satisfied confidence from the workspace's own doctrine and structure (the task surface that intake graduates into; the alternative surface self-describes as a review shelf). The write was blocked by session permissions on first attempt; the operator granted permission and the **repair was executed and verified by read-back on 2026-08-22** — one mention repointed at the task surface, with a rollback-noted breadcrumb in the workspace's own protocol format. The only REPAIR executed from this run: 1 of 3 binned, and the verification layer is why the other two were refused. |
 | TARGET-4 | NOISE | resolves as **archived** | Retired to trash/archive deliberately. The operator's NOISE ruling is confirmed by the artifact. |
 | TARGET-5 | REPAIR | **resolves** | **Alive, outside the integration's grant.** Same class as TARGET-1. Repair refused. |
 
