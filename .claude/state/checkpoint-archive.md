@@ -4591,3 +4591,69 @@ bump to `/effort high` at decision points (the grill, the run-2 verdict reading)
 `#102`'s fixture backlog (Notion UI; two items gate #51's oracle). ~~Sharing a **real root** with
 the integration~~ **DONE post-close 2026-08-22: `Headquarters` shared and `REAL_ROOT_ID` set —
 session B is unblocked.** Zhou & Walker (2016), DOI `10.1145/2950290.2950298`, still unread.
+
+## S035 — 2026-08-22 — Session A of the verdict sprint: the run's path is clear
+
+**PHASE:** VERDICT SPRINT — **Session A COMPLETE.** Session B (the run) is next and is
+operator-gated ~~twice: PR #133 must merge first, and~~ **once — PR #133 MERGED post-close
+2026-08-22 (`d1b336c`, ancestry-verified; gate exit 0 on merged `main`; only #111 closed at the
+merge, no parser accidents)** — the session opens with the operator typing `/grill-with-docs`.
+
+**TESTS:** Gate exit 0 on `build/s035-111-observed-host@36a1322`, typecheck first, 0 FAIL. Red was
+demonstrated before green: five TEST 1 assertions failed against the two-host list before
+`references.ts` changed.
+
+### What happened
+
+1. **Board disposition applied.** Four labels created (`sprint`, `frozen`, `queued`, `operator`) and
+   all 26 open issues labeled per the S034 disposition; read-back query returned zero unlabeled
+   open issues.
+2. **#127 CLOSED — and the sprint plan's "fix #127" step was STALE.** The fix had already merged to
+   `main` in PR #129 (verified `git merge-base --is-ancestor`, not the badge): `readProperty`
+   returns `unexpressed`, both scan sites route it to a `property-value-unexpressed` gap. The one
+   open DoD checkbox (property-item path) resolved by inspection of the port: no code calls the
+   property-item endpoint, so the changelog's "property item values" clause has no route into this
+   build. Revisit-if recorded on the issue: re-establish `unexpressed` handling before any
+   property-item endpoint enters the port. This is "deref the checkpoint's blocker claim" firing
+   again — the S033a plan was quoted forward by S034 without dereferencing #127's comments.
+3. **#111 BUILT — PR #133 open, awaiting operator merge.** `www.notion.so` (observed,
+   `results-first-real-workspace.md` §4) and `notion.so` (documented, vendor changelog 2026-07-15
+   via `docs/vendor/link-domains.md`) entered `KNOWN_INTERNAL_HOSTS`; `notion.com` stays out as a
+   recorded refusal (no locator; sibling strength is the ADR-0001 d4 inference). Spec §2.1 and its
+   §12 Revisit-if updated under the approved plan `snug-gathering-mochi.md`. TEST 8's redaction
+   fixture moved to `notion.com` to keep testing the residue path. Pre-commit `/code-review`
+   returned five findings, all applied: symbol-anchored locators in `link-domains.md` (line-number
+   receipts had rotted), a `notion.so` mutation with substitution guard, the tautological
+   vouching check replaced with single-entry-list probes in both directions, the checkpoint host
+   bullet reframed to fit its unverified-facts heading, and the evidence-tier assertions moved off
+   positional access.
+4. **The close rides the PR branch, deliberately.** This band and the #111 build both touch
+   `checkpoint.md`; a close committed to `main` while PR #133 floats would hand the operator a
+   merge conflict inside the state file. `main` therefore has no S035 band until #133 merges —
+   a session that opens before then reads S034 and must deref PR #133's state.
+
+### EXACT NEXT STEPS — sessions B and C, carried from S034 unchanged
+
+1. **Session B — the run.** ~~Operator merges PR #133, then~~ **#133 is merged;** operator types `/grill-with-docs`: pre-register
+   2–3 real roots, the read protocol ("a finding I would repair", defined BEFORE the report
+   exists), and what run 1 can decide. ⚠ **Run 1 cannot fire the kill criterion** — the
+   policy-free counters are unbuilt; run 1 is calibration + the first real denominator (#117).
+   Then the agent runs the scan (token stays in `.env`, consumed by the CLI) and the operator
+   reads the report as its user. `REAL_ROOT_ID` = `Headquarters`, confirmed good.
+2. **Session C (conditional) — #70 decisions 2–4.** Operator types `/to-spec` → `/to-tickets`;
+   `/implement` per ticket. Plan gate applies (ADR + PRODUCT.md). Run 2's reading IS the
+   kill-criterion test.
+3. Sprint labels now live on the board: `sprint` #70 #95 #84 #117 remain open; #127 #111 done
+   (the latter pending merge). `frozen`/`queued`/`operator` mark the rest.
+
+**NEXT-MODEL: Fable 5 (`/model fable`), `/effort medium`** — bump to `/effort high` at the grill
+and the run-verdict reading.
+
+**NEXT-REPO/CWD:** the `workspace_lint` repository root.
+
+### WHAT ONLY THE OPERATOR CAN DO
+
+~~Merge PR #133 (session B's precondition).~~ **DONE post-close 2026-08-22.** Type
+`/grill-with-docs` at session B open. `#102`'s
+fixture backlog (Notion UI; two items gate #51's oracle). Zhou & Walker (2016),
+DOI `10.1145/2950290.2950298`, still unread.
