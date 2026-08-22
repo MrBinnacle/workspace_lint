@@ -548,9 +548,12 @@ exit byte is fully proven live. All five bytes have been reached live; three spe
 - **`Finding.link` is NOT exercised live.** Only the declared root is retrieved with `GET /v1/pages`,
   and on this fixture the root is *evaluated*, so it produces no finding to carry a link. Offline
   only. Both recorded in `docs/proof/results-49-exit-byte.md` §4 and `results-t4-reports.md` §8.
-- **Exit `2` is reached live by pervasiveness condition (a) only.** Condition (b), a genuinely
-  **unbounded** gap, needs an enumeration to die mid-stream on a 429 or 502 and cannot be forced
-  against a read-only connection. Offline only, via `MIDSTREAM`.
+- ~~**Exit `2` is reached live by pervasiveness condition (a) only.**~~ **SUPERSEDED 2026-08-22
+  (S036): condition (b) was reached live** — not by a mid-stream 429/502, which still cannot be
+  forced, but by a path no fixture modelled: the per-resource **block-tree budget of 40 requests**
+  exhausted on an ordinary long reference page, producing an UNBOUNDED gap and a disclaimed
+  disposition (`docs/proof/results-real-roots-rest.md` §4.1). The budget has no open owner —
+  the report's reason string cites CLOSED #7 — and **#136** now holds that question.
 
 **Two manifest invariants, hoisted from S018 and S015 on 2026-08-18 for the same reason.**
 
@@ -704,68 +707,78 @@ of a measured rate.** `#117` owns the upstream half and names the three routes i
 
 ---
 
-## S035 — 2026-08-22 — Session A of the verdict sprint: the run's path is clear
+## S036 — 2026-08-22 — Session B of the verdict sprint: run 1 executed, read, verified, and one repair landed
 
-**PHASE:** VERDICT SPRINT — **Session A COMPLETE.** Session B (the run) is next and is
-operator-gated ~~twice: PR #133 must merge first, and~~ **once — PR #133 MERGED post-close
-2026-08-22 (`d1b336c`, ancestry-verified; gate exit 0 on merged `main`; only #111 closed at the
-merge, no parser accidents)** — the session opens with the operator typing `/grill-with-docs`.
+**PHASE:** VERDICT SPRINT — **Session B COMPLETE.** The grill ran, the run was pre-registered
+BEFORE the first scan (`15b57f7`), five real roots were scanned through the REST port, the
+operator cold-read all reports, every finding is binned, the one true repair is executed in the
+workspace and verified by read-back. Session C is next and is operator-gated: `/to-spec` →
+`/to-tickets` → `/implement` for #70 decisions 2–4; run 2's reading is the kill-criterion test.
 
-**TESTS:** Gate exit 0 on `build/s035-111-observed-host@36a1322`, typecheck first, 0 FAIL. Red was
-demonstrated before green: five TEST 1 assertions failed against the two-host list before
-`references.ts` changed.
+**TESTS:** Gate exit 0 at session start on `main@3e1722b`. No slice code changed this session —
+the session's product was evidence, not build.
 
 ### What happened
 
-1. **Board disposition applied.** Four labels created (`sprint`, `frozen`, `queued`, `operator`) and
-   all 26 open issues labeled per the S034 disposition; read-back query returned zero unlabeled
-   open issues.
-2. **#127 CLOSED — and the sprint plan's "fix #127" step was STALE.** The fix had already merged to
-   `main` in PR #129 (verified `git merge-base --is-ancestor`, not the badge): `readProperty`
-   returns `unexpressed`, both scan sites route it to a `property-value-unexpressed` gap. The one
-   open DoD checkbox (property-item path) resolved by inspection of the port: no code calls the
-   property-item endpoint, so the changelog's "property item values" clause has no route into this
-   build. Revisit-if recorded on the issue: re-establish `unexpressed` handling before any
-   property-item endpoint enters the port. This is "deref the checkpoint's blocker claim" firing
-   again — the S033a plan was quoted forward by S034 without dereferencing #127's comments.
-3. **#111 BUILT — PR #133 open, awaiting operator merge.** `www.notion.so` (observed,
-   `results-first-real-workspace.md` §4) and `notion.so` (documented, vendor changelog 2026-07-15
-   via `docs/vendor/link-domains.md`) entered `KNOWN_INTERNAL_HOSTS`; `notion.com` stays out as a
-   recorded refusal (no locator; sibling strength is the ADR-0001 d4 inference). Spec §2.1 and its
-   §12 Revisit-if updated under the approved plan `snug-gathering-mochi.md`. TEST 8's redaction
-   fixture moved to `notion.com` to keep testing the residue path. Pre-commit `/code-review`
-   returned five findings, all applied: symbol-anchored locators in `link-domains.md` (line-number
-   receipts had rotted), a `notion.so` mutation with substitution guard, the tautological
-   vouching check replaced with single-entry-list probes in both directions, the checkpoint host
-   bullet reframed to fit its unverified-facts heading, and the evidence-tier assertions moved off
-   positional access.
-4. **The close rides the PR branch, deliberately.** This band and the #111 build both touch
-   `checkpoint.md`; a close committed to `main` while PR #133 floats would hand the operator a
-   merge conflict inside the state file. `main` therefore has no S035 band until #133 merges —
-   a session that opens before then reads S034 and must deref PR #133's state.
+1. **The grill settled four pre-registrations** (roots + order, the REPAIR/NOISE/CANT-TELL read
+   protocol, run 1's closed decision list, floor stays 1.0) and the operator added two roots
+   mid-flight — both databases, both un-rootable (#51), so their parent pages ran and the
+   database roots stand registered as **deferred runs = #51's acceptance case**.
+2. **Five runs: no green anywhere.** 47 children, 132 refs, 7 dead-ref findings on 5 unique
+   targets (5.6% of 126 evaluated), 399 requests/102 s total. Three predictions held, four
+   refuted — the refuted four are the result: first live exit 2 (block budget, §above), a
+   `400 validation_error` target class (#137), request cost tracks reference density not
+   resource count, databases 29.8% of children with zero enterable. Full record:
+   `docs/proof/prereg-real-roots-rest.md` + `results-real-roots-rest.md`.
+3. ⭐ **THE VERIFICATION LAYER REVERSED TWO OF THREE OWNER REPAIR RULINGS.** Both "dead" targets
+   resolve through the owner-side connector — **alive, outside the integration's grant**. The
+   owner, reading his own workspace cold, could not distinguish decay from grant boundary,
+   because a dead-target finding is anonymous (no anchor text — **#135**, filed with this as
+   evidence). Cold-read accept rate 4/6; verified genuinely-dead REPAIR rate 1/6. **Any future
+   accepted-finding-rate claim must name which layer it counts.** Dispositions + verification:
+   `docs/proof/dispositions-real-roots.md`; the SYS001 bin is marked SME-advised,
+   operator-ratified — a delegated bin is not a cold-read bin.
+4. **One repair executed in the owner's workspace** (dead "launch work" mention on the HQ page →
+   the task database), under explicit operator permission after the auto-mode classifier blocked
+   the first attempt, with a breadcrumb + rollback per the workspace's own doctrine. ⚠ **Notion
+   writes: read `notion://docs/enhanced-markdown-spec` first** — a database mention is
+   `mention-database`, not `mention-page`, and a page with child `page` blocks must never be
+   full-content replaced (children go to Trash). **The operator granted standing administrator
+   scope over the workspace**; the discipline is breadcrumb + rollback on every material edit,
+   and nothing workspace-identifying enters this public repo (role labels and counts only).
+5. ⛔ **PR #134 WAS MERGED MID-FLIGHT AT `99ad79b`, and six later pushes to the branch were dead
+   letters.** The MERGED badge and successful pushes both lied; `git merge-base --is-ancestor`
+   caught it. Third instance of the mid-flight-merge shape. **A push that succeeds after the
+   PR merged lands on a closed PR** — re-verify the PR state, not the push exit code. This
+   close rides the same branch into a second PR carrying the six orphaned commits.
+6. **Tracker:** #135 (anonymous dead-target findings — with the reversed-rulings evidence),
+   #136 (block budget, no open owner, first live exit 2), #137 (400 class, ready-for-agent),
+   run-1 evidence comment on #51. P5's counting ambiguity (findings vs unique targets) is
+   recorded in the results file as a pre-registration defect — **define the counting rule in
+   the prediction, not at scoring time.**
 
-### EXACT NEXT STEPS — sessions B and C, carried from S034 unchanged
+### EXACT NEXT STEPS — session C, conditional as planned in S034
 
-1. **Session B — the run.** ~~Operator merges PR #133, then~~ **#133 is merged;** operator types `/grill-with-docs`: pre-register
-   2–3 real roots, the read protocol ("a finding I would repair", defined BEFORE the report
-   exists), and what run 1 can decide. ⚠ **Run 1 cannot fire the kill criterion** — the
-   policy-free counters are unbuilt; run 1 is calibration + the first real denominator (#117).
-   Then the agent runs the scan (token stays in `.env`, consumed by the CLI) and the operator
-   reads the report as its user. `REAL_ROOT_ID` = `Headquarters`, confirmed good.
-2. **Session C (conditional) — #70 decisions 2–4.** Operator types `/to-spec` → `/to-tickets`;
-   `/implement` per ticket. Plan gate applies (ADR + PRODUCT.md). Run 2's reading IS the
-   kill-criterion test.
-3. Sprint labels now live on the board: `sprint` #70 #95 #84 #117 remain open; #127 #111 done
-   (the latter pending merge). `frozen`/`queued`/`operator` mark the rest.
+1. **Operator merges the close PR** (this branch — carries the six orphaned disposition commits
+   plus this close).
+2. **Session C (operator-gated):** operator types `/to-spec` for #70 decisions 2–4, then
+   `/to-tickets`, then `/implement` per ticket. Plan gate applies (ADR + PRODUCT.md edits).
+   Run 2 after the counters ship; **run 2's reading IS the kill-criterion test**, and #135's
+   anchor-text question should be settled in the same spec pass — the reversed rulings say the
+   read layer is currently the weakest link in the acceptance chain.
+3. **Deferred runs** (the two named databases) activate when #51 lands; #51 now carries run-1's
+   measured width (14 databases enumerated, 0 enterable, 29.8% of children).
+4. Sprint labels stand. #127 #111 done; #70 #95 #84 #117 remain open under `sprint`.
 
-**NEXT-MODEL: Fable 5 (`/model fable`), `/effort medium`** — bump to `/effort high` at the grill
-and the run-verdict reading.
+**NEXT-MODEL: Fable 5 (`/model fable`), `/effort high`** — session C opens at the spec/decision
+layer (#70 decisions 2–4), which is decision-artifact work end to end.
 
 **NEXT-REPO/CWD:** the `workspace_lint` repository root.
 
 ### WHAT ONLY THE OPERATOR CAN DO
 
-~~Merge PR #133 (session B's precondition).~~ **DONE post-close 2026-08-22.** Type
-`/grill-with-docs` at session B open. `#102`'s
-fixture backlog (Notion UI; two items gate #51's oracle). Zhou & Walker (2016),
-DOI `10.1145/2950290.2950298`, still unread.
+Merge the close PR. Type `/to-spec` at session C open. Decide #51's fifth-endpoint grant
+(`POST /v1/data_sources/{id}/query` is ask-first; the deferred runs and #125's endpoint finding
+are the case for it). `#102`'s fixture backlog. Zhou & Walker (2016), DOI
+`10.1145/2950290.2950298`, still unread.
+
