@@ -707,8 +707,9 @@ of a measured rate.** `#117` owns the upstream half and names the three routes i
 ## S035 — 2026-08-22 — Session A of the verdict sprint: the run's path is clear
 
 **PHASE:** VERDICT SPRINT — **Session A COMPLETE.** Session B (the run) is next and is
-operator-gated twice: PR #133 must merge first, and the session opens with the operator typing
-`/grill-with-docs`.
+operator-gated ~~twice: PR #133 must merge first, and~~ **once — PR #133 MERGED post-close
+2026-08-22 (`d1b336c`, ancestry-verified; gate exit 0 on merged `main`; only #111 closed at the
+merge, no parser accidents)** — the session opens with the operator typing `/grill-with-docs`.
 
 **TESTS:** Gate exit 0 on `build/s035-111-observed-host@36a1322`, typecheck first, 0 FAIL. Red was
 demonstrated before green: five TEST 1 assertions failed against the two-host list before
@@ -745,7 +746,7 @@ demonstrated before green: five TEST 1 assertions failed against the two-host li
 
 ### EXACT NEXT STEPS — sessions B and C, carried from S034 unchanged
 
-1. **Session B — the run.** Operator merges PR #133, then types `/grill-with-docs`: pre-register
+1. **Session B — the run.** ~~Operator merges PR #133, then~~ **#133 is merged;** operator types `/grill-with-docs`: pre-register
    2–3 real roots, the read protocol ("a finding I would repair", defined BEFORE the report
    exists), and what run 1 can decide. ⚠ **Run 1 cannot fire the kill criterion** — the
    policy-free counters are unbuilt; run 1 is calibration + the first real denominator (#117).
@@ -764,6 +765,7 @@ and the run-verdict reading.
 
 ### WHAT ONLY THE OPERATOR CAN DO
 
-Merge PR #133 (session B's precondition). Type `/grill-with-docs` at session B open. `#102`'s
+~~Merge PR #133 (session B's precondition).~~ **DONE post-close 2026-08-22.** Type
+`/grill-with-docs` at session B open. `#102`'s
 fixture backlog (Notion UI; two items gate #51's oracle). Zhou & Walker (2016),
 DOI `10.1145/2950290.2950298`, still unread.
