@@ -808,9 +808,12 @@ the agent PAUSES and asks him to type the slash command.
 `#97`, `#101`, and the hook-test backlog. **QUEUED BEHIND the sprint:** `#51`, `#117` Route 2
 (advanced but not closed by run 1), `#113`, `#29`.
 
-**NEXT-MODEL: fast tier** (sprint session A — two settled bug briefs plus a mechanical label
-pass). Sessions B and C are also fast-tier; escalate to frontier only if `#70`'s decisions turn
-out contested in the grill.
+**NEXT-MODEL: Sonnet 5 (`/model sonnet`)** — sprint session A is two settled bug briefs plus a
+mechanical label pass. Sessions B and C likewise; escalate to **Fable 5 (`/model fable`)** only
+if `#70`'s decisions turn out contested in the grill. ⚠ Routing vocabulary, fixed 2026-08-22 at
+the operator's request: a NEXT-MODEL line names the model string, never a bare tier label —
+"fast tier" = Sonnet 5, and `/fast` mode is Opus-with-faster-output, NOT the fast tier (memory:
+`model-routing-table`).
 
 **NEXT-REPO/CWD:** the `workspace_lint` repository root. ⚠ Absolute-`cd` every verification; cwd
 drifted twice in S032.
