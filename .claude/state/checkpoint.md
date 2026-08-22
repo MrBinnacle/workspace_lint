@@ -65,6 +65,12 @@ read this block instead. Nothing here depends on a band still being present.
 - **The fixture is mutable and it is an instrument.** **`wl-revoke-child` is still disconnected**,
   re-confirmed live 2026-08-17 — restoring it resets Q1. `wl-outside-grant` is the working REF001
   control: 404 on retrieve, link readable.
+- **The operator granted standing administrator scope over his workspace (S036).** The discipline
+  on every material edit: breadcrumb + rollback, read Notion's enhanced-markdown spec before any
+  write (a database mention is `mention-database`, not `mention-page`; a full-content replace
+  trashes child pages), verify by read-back — and nothing workspace-identifying enters this public
+  repo (role labels and counts only). Hoisted from the S036 band; project memory carries the same
+  rule but is machine-local.
 
 **Proof questions.** Full status in `store.json` → `unknowns_assigned_to_proof`.
 
@@ -643,6 +649,9 @@ is a standing fact and nothing else in this file records it.
   band claiming a PR's state from the MERGED badge. **Verify with `git merge-base --is-ancestor
   <sha> origin/main`.** The operator has merged mid-close twice — PR #38 during S026 and PR #94
   during S027 — so **re-read external state immediately before committing a close.**
+  And S036 added the sharper form: **a push that succeeds after the PR merged lands on a closed
+  PR** — six pushes were dead letters behind a MERGED badge; re-verify the PR state, never the
+  push exit code.
 - ⚠ **A UNIT TEST OF AN EVALUATOR MUST NOT DEPEND ON THE REPOSITORY'S OWN STATE.**
   `CHECK-claims.ts` used `slice/req001.ts` as its *"does not exist"* fixture and it rotted the
   moment the rule shipped — three assertions failed at once inside the suite whose job is catching
@@ -703,82 +712,84 @@ I declare my intent as far as end users/customers when we don't have something w
 ANYONE."* Both are right, and the second one refuses the request `#29` has been making for four
 sessions. **Do not schedule a buyer conversation, a segment declaration or a pricing question ahead
 of a measured rate.** `#117` owns the upstream half and names the three routes in cost order.
----
 
 ---
 
-## S036 — 2026-08-22 — Session B of the verdict sprint: run 1 executed, read, verified, and one repair landed
+## S037 — 2026-08-22 — Session C, spec layer: #70 decisions 2–4 resolved into spec #139 and six tickets
 
-**PHASE:** VERDICT SPRINT — **Session B COMPLETE.** The grill ran, the run was pre-registered
-BEFORE the first scan (`15b57f7`), five real roots were scanned through the REST port, the
-operator cold-read all reports, every finding is binned, the one true repair is executed in the
-workspace and verified by read-back. Session C is next and is operator-gated: `/to-spec` →
-`/to-tickets` → `/implement` for #70 decisions 2–4; run 2's reading is the kill-criterion test.
+**PHASE:** VERDICT SPRINT — **session C's spec layer is COMPLETE.** The operator typed
+`/to-spec #70` then `/to-tickets #139`; both ran to publication. The implement layer is next and
+remains operator-gated per ticket. Run 2 — the kill-criterion reading — waits on the counters.
 
-**TESTS:** Gate exit 0 at session start on `main@3e1722b`. No slice code changed this session —
-the session's product was evidence, not build.
+**TESTS:** Gate exit 0 at session start on `main@5f32064` and unchanged at close — no slice code
+was touched; this session's product is tracker artifacts.
 
 ### What happened
 
-1. **The grill settled four pre-registrations** (roots + order, the REPAIR/NOISE/CANT-TELL read
-   protocol, run 1's closed decision list, floor stays 1.0) and the operator added two roots
-   mid-flight — both databases, both un-rootable (#51), so their parent pages ran and the
-   database roots stand registered as **deferred runs = #51's acceptance case**.
-2. **Five runs: no green anywhere.** 47 children, 132 refs, 7 dead-ref findings on 5 unique
-   targets (5.6% of 126 evaluated), 399 requests/102 s total. Three predictions held, four
-   refuted — the refuted four are the result: first live exit 2 (block budget, §above), a
-   `400 validation_error` target class (#137), request cost tracks reference density not
-   resource count, databases 29.8% of children with zero enterable. Full record:
-   `docs/proof/prereg-real-roots-rest.md` + `results-real-roots-rest.md`.
-3. ⭐ **THE VERIFICATION LAYER REVERSED TWO OF THREE OWNER REPAIR RULINGS.** Both "dead" targets
-   resolve through the owner-side connector — **alive, outside the integration's grant**. The
-   owner, reading his own workspace cold, could not distinguish decay from grant boundary,
-   because a dead-target finding is anonymous (no anchor text — **#135**, filed with this as
-   evidence). Cold-read accept rate 4/6; verified genuinely-dead REPAIR rate 1/6. **Any future
-   accepted-finding-rate claim must name which layer it counts.** Dispositions + verification:
-   `docs/proof/dispositions-real-roots.md`; the SYS001 bin is marked SME-advised,
-   operator-ratified — a delegated bin is not a cold-read bin.
-4. **One repair executed in the owner's workspace** (dead "launch work" mention on the HQ page →
-   the task database), under explicit operator permission after the auto-mode classifier blocked
-   the first attempt, with a breadcrumb + rollback per the workspace's own doctrine. ⚠ **Notion
-   writes: read `notion://docs/enhanced-markdown-spec` first** — a database mention is
-   `mention-database`, not `mention-page`, and a page with child `page` blocks must never be
-   full-content replaced (children go to Trash). **The operator granted standing administrator
-   scope over the workspace**; the discipline is breadcrumb + rollback on every material edit,
-   and nothing workspace-identifying enters this public repo (role labels and counts only).
-5. ⛔ **PR #134 WAS MERGED MID-FLIGHT AT `99ad79b`, and six later pushes to the branch were dead
-   letters.** The MERGED badge and successful pushes both lied; `git merge-base --is-ancestor`
-   caught it. Third instance of the mid-flight-merge shape. **A push that succeeds after the
-   PR merged lands on a closed PR** — re-verify the PR state, not the push exit code. This
-   close rides the same branch into a second PR carrying the six orphaned commits.
-6. **Tracker:** #135 (anonymous dead-target findings — with the reversed-rulings evidence),
-   #136 (block budget, no open owner, first live exit 2), #137 (400 class, ready-for-agent),
-   run-1 evidence comment on #51. P5's counting ambiguity (findings vs unique targets) is
-   recorded in the results file as a pre-registration defect — **define the counting rule in
-   the prediction, not at scoring time.**
+1. **Session-start verification held.** The S036 close PR was confirmed merged by `merge-base`
+   ancestry (not the badge); no open PRs; #70 held exactly decisions 2–4; #101 (`frozen`) was
+   kept out of scope.
+2. **Spec #139 published** — "Measurements: the policy-free decay counters and the REF001
+   anchor-text ruling." It resolves the three remaining #70 decisions into buildable form:
+   - **Decision 2:** the three unrepresented signals are **Measurements, not Rules** — a Rule
+     tests one invariant and a count tests none. Building them in v0.1 is operator-ratified
+     sequencing (the S034 plan gates run 2 on the counters; the operator opened session C).
+   - **Decision 3:** measurements get **no coverage item, no ratio, no exit-byte channel at any
+     level** (no rule, so no rule-level channel either — the contrast with #101's tier). The
+     replacement honesty controls: printed denominators; a section that can never be silently
+     empty (a "not computed" line with a named cause); every zero scoped to the scanned set.
+   - **Decision 4:** ADR-0001 is **not reopened**; the eight-rule counting boundary and the
+     reconstructibility gate test are promoted from the #70 thread into **one additive ADR** at
+     implement time. Per #70's own Revisit-if, that promotion re-scopes the ticket.
+   - **#135 ruled in the same pass:** anchor text is **title-class disclosure**, by the remedy
+     test — identical remedy (redact by default, reveal under the existing title-reveal opt-in)
+     means it is not a new disclosure category and gets no second flag.
+   - Three reshapings worth remembering as decisions, not accidents: "no writes in N days"
+     carries a threshold and is forbidden on this surface — last-write timestamps sorted by a
+     named key replace it; the owner signal selects properties **by type `people`, never by
+     name** (name-matching is the label inference Principle 4 forbids); **view counts are
+     conditional on a vendor fact** to be checked against the endpoint's own reference page at
+     build, never asserted from memory. No new endpoint enters the scan for a measurement.
+3. **Six tickets published from the spec** (#140–#145), all `enhancement` + `ready-for-agent` +
+   `sprint`, blocking edges as GitHub-native dependencies and verified by read-back:
+   - **#140** the additive ADR + `CONTEXT.md` glossary row + `PRODUCT.md` pointer (no blockers —
+     the boundary is stated before code, decision 4's own requirement);
+   - **#141** REF001 anchor text under title-reveal, closing #135's defect (no blockers,
+     independent chain);
+   - **#142** tracer bullet: the Measurement class end to end carrying last-edited timestamps,
+     with the exit-byte-isolation, non-empty, determinism and redaction controls all
+     mutation-checked (blocked by #140);
+   - **#143** maintenance-load counts by property type + the view-count vendor check + the
+     reconstructibility assertion (blocked by #142);
+   - **#144** inbound-reference counts from the scanned set beside last-write timestamps,
+     thresholdless, scoped zeros (blocked by #142);
+   - **#145** owner signal: empty-value counts per people-type property — mostly exercises the
+     "not computed" boundary honestly until #51 lands (blocked by #142).
+4. **Cross-links landed and read back:** #70 carries the pointer to #139 (worded so no closing
+   keyword precedes a reference); #135 carries the ruling location. #139 itself untouched by
+   the ticketing pass, per the skill.
 
-### EXACT NEXT STEPS — session C, conditional as planned in S034
+### EXACT NEXT STEPS — implement layer, operator-gated per ticket
 
-1. **Operator merges the close PR** (this branch — carries the six orphaned disposition commits
-   plus this close).
-2. **Session C (operator-gated):** operator types `/to-spec` for #70 decisions 2–4, then
-   `/to-tickets`, then `/implement` per ticket. Plan gate applies (ADR + PRODUCT.md edits).
-   Run 2 after the counters ship; **run 2's reading IS the kill-criterion test**, and #135's
-   anchor-text question should be settled in the same spec pass — the reversed rulings say the
-   read layer is currently the weakest link in the acceptance chain.
-3. **Deferred runs** (the two named databases) activate when #51 lands; #51 now carries run-1's
-   measured width (14 databases enumerated, 0 enterable, 29.8% of children).
-4. Sprint labels stand. #127 #111 done; #70 #95 #84 #117 remain open under `sprint`.
+1. **Frontier: #140 and #141**, workable in parallel. Each `/implement` session must satisfy the
+   plan gate BEFORE touching canon: #140's plan Files table names the new ADR file, `CONTEXT.md`
+   and `PRODUCT.md`; #141's names `docs/spec/REF001-link-recognition.md`. A quiet hook is not
+   approval; the Files table is the token.
+2. Then **#142** (unblocked when #140 lands), then **#143 / #144 / #145** off #142 in any order.
+3. **Run 2 after the counters ship — the reading IS the kill-criterion test.** If owners read
+   counts as noise, the pre-registered honest fix is better linking and context; watch for it
+   being proposed as a score, and refuse that.
+4. `CONTEXT.md`'s "Seven distinctions"/"Seven defaults" counts must be re-derived in #140's edit,
+   not incremented — they have drifted before.
+5. #101 stays frozen and undecided by any of this; the Measurements ADR must not pre-decide it.
 
-**NEXT-MODEL: Fable 5 (`/model fable`), `/effort high`** — session C opens at the spec/decision
-layer (#70 decisions 2–4), which is decision-artifact work end to end.
+**NEXT-MODEL: Fable 5 (`/model fable`)** — `/effort high` for #140 (an ADR is a decision
+artifact); #141 and #142 are execution against a written spec and run at medium.
 
 **NEXT-REPO/CWD:** the `workspace_lint` repository root.
 
 ### WHAT ONLY THE OPERATOR CAN DO
 
-Merge the close PR. Type `/to-spec` at session C open. Decide #51's fifth-endpoint grant
-(`POST /v1/data_sources/{id}/query` is ask-first; the deferred runs and #125's endpoint finding
-are the case for it). `#102`'s fixture backlog. Zhou & Walker (2016), DOI
-`10.1145/2950290.2950298`, still unread.
-
+Merge this close's PR. Type `/implement` (or assign) at the frontier — #140 and/or #141. Decide
+#51's fifth-endpoint grant when it surfaces (still ask-first; #145's width is part of that case).
+`#102`'s fixture backlog. Zhou & Walker (2016), DOI `10.1145/2950290.2950298`, still unread.
