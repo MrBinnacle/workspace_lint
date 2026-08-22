@@ -703,176 +703,61 @@ of a measured rate.** `#117` owns the upstream half and names the three routes i
 
 ---
 
-## S033 — 2026-08-22 — both OUT ADRs re-justified, and the graph learned to read a discharge
+## S034 — 2026-08-22 — both PRs merged, the verdict sprint is adopted, and the operator layer was rebuilt
 
-**PHASE:** **POST-BUILD.** One working unit, exactly as the S032 band scoped it: `#128` alone, on the
-frontier tier. No rule touched, no product behaviour changed — the scan is byte-identical.
+**PHASE:** POST-BUILD → **VERDICT SPRINT (adopted, not started).** This session was dispositions and
+operator infrastructure; no rule or scan behaviour changed.
 
-**TESTS:** **FOURTEEN suites, gate exit 0, offline.** Scored on the exit byte, not on a grep.
+**TESTS:** Gate exit 0 on merged `main@34d8a2f` — the first run over the combined state (#132 + #131).
+Suite prints both discharges; ADR-0014 and ADR-0009 no longer OUT. `#128` CLOSED.
 
-**TRACKER:** 27 open at close. `#128` has the verdict comment and closes when the operator merges.
+### What happened
 
-### The judgement
+1. **The worth question.** The operator asked continue/pivot/ditch. Finding: the project's own kill
+   criterion (`PRODUCT.md`: policy-free report reads as noise to a real workspace owner) has NEVER
+   been tested, and the test costs ~2–3 sessions. Adopted as the **verdict sprint** (below). Named
+   self-diagnosis, undisputed: recent sessions over-weighted epistemic infrastructure — the
+   operator's own decay-synthesis cause 3 applied to this repo. **Meta-layer FROZEN until the verdict.**
+2. **PR #131 reconciled and merged.** All claims verified against files; three docstrings adopted
+   (accurate); review doc relocated to `docs/inputs/codex-codebase-review-2026-08-19.md` with input
+   banner; three perf PRs declined as unmeasured (streaming-UNQ001 already pre-registered in the
+   `UNQ001_SCOPE_CEILING` header — the code header wins). Disposition comment on the PR. It was a
+   DRAFT — `gh pr ready` unblocked the merge button.
+3. **Operator layer rebuilt (home-dir, not this repo):** session model = **Fable 5 always**,
+   `/effort` per-phase (memory `model-routing-table` has the justified table); output style
+   `Concise Humanist` (terse in-session, literal-humanist for public artifacts); global CLAUDE.md
+   refactored 18,015→12,729 b rooted in Anthropic best-practices + Pocock writing-for-agents
+   (backup `.bak-2026-08-22-refactor`). ⚠ Rust/ML stack rules moved to
+   `~/.claude/reference/operating-rules-detail.md` §3-stacks — load them when a project's stack matches.
 
-**Both verdicts are RE-JUSTIFIED, on the same restated ground** — non-guarantee (ADR-0015
-decision 2) carries every clause that previously routed through the refuted finding 1. That is why
-one ADR (ADR-0016) holds both.
+### EXACT NEXT STEPS — the verdict sprint (carried forward from S033a, unchanged)
 
-- **ADR-0014:** its decision 2's carried facts were always findings 2 and 3. The refuted finding did
-  ONE job — the pre-registered denominator clause — restated on non-guarantee. Re-read knowing
-  ADR-0015 decision 4, search's exclusion reason moves from "enumerates nothing" to "enumerates
-  without attestation", which is the reason the ADR actually wrote down.
-- **ADR-0009:** the scenario's "neither side of that comparison is retrievable" is refuted as
-  written; **retrievable is not attestable**, and asserting narrowing from absence in a
-  non-guaranteed index is negation as failure. Decision 4's detected/disclosed split stands. The
-  widening asymmetry (an appearance in search IS positive evidence of access) is recorded in
-  ADR-0016 for whichever future ADR reopens search — recorded, not built.
+Process rule: no freehand — each step routes through its mattpocock skill; `[/]` skills mean PAUSE
+and ask the operator to type the slash command.
 
-### The mechanism the DoD hid
+1. **Session A — clear the run's path.** Board-audit label pass per the disposition below; fix
+   **#127** (unsupported-type pair counted as evaluated) and **#111** (`www.notion.so` observed
+   host → REF001 under-reports, biasing run 1 toward a FALSE noise verdict). Route: `/tdd` per bug,
+   `/code-review` before commit. ⚠ #51 stays out (rows endpoint is ASK FIRST).
+2. **Session B — the run.** Operator types `/grill-with-docs` first: pre-register 2–3 real roots,
+   the read protocol ("a finding I would repair", defined BEFORE the report exists), and what run 1
+   can decide. ⚠ **Run 1 cannot fire the kill criterion** — the policy-free counters are unbuilt;
+   run 1 is calibration + the first real denominator (#117). Then the agent runs the scan (token
+   stays in `.env`, consumed by the CLI) and the operator reads the report as its user.
+3. **Session C (conditional) — #70 decisions 2–4.** Operator types `/to-spec` → `/to-tickets`;
+   `/implement` per ticket. Plan gate applies (ADR + PRODUCT.md). Run 2's reading IS the
+   kill-criterion test.
+4. **Board disposition (apply as labels in session A):** SPRINT #127 #111 #70 #95 #84 #117 ·
+   FROZEN #121 #123 #124 #103 #125 #25 #74 #78 #97 #101 + hook-test backlog · QUEUED #51 #113 #29
+   #27 #69 #82 #118 #96 #8 · OPERATOR #102.
 
-`slice/support.ts` had **no re-justification route** — an OUT ADR cites its refuted support forever,
-because ADRs are never edited in place, so no new ADR could clear an OUT verdict. Shipped: a
-`Re-justifies:` **header line in the ADR that performs the discharge**, read by the graph. A
-discharge is valid only while its author is IN; a fallen discharger drops everything it held up;
-mutual bootstrapping between two OUT ADRs is refused; discharged entries stay VISIBLE in the suite
-output (baseline, not suppression — third use of the principle). A sidecar was considered and
-rejected: a re-justification always has a new ADR to live in, and a record with a canonical home
-does not get a mirror (G-010). **The line is a claim the graph cannot judge** — it checks existence
-and the discharger's IN-ness, never adequacy; adequacy is the operator's PR review.
+**NEXT-MODEL: Fable 5 (`/model fable`), `/effort medium`** — every session now (split retired);
+bump to `/effort high` at decision points (the grill, the run-2 verdict reading).
 
-`CHECK-support.ts` asserts **both halves** against the repository: ADR-0014 and ADR-0009 OUT
-*before* discharge — so the retraction demonstrably still fires and the control is not
-substitutable by withdrawing the refutation — and absent *after*. Three mutations run and killed,
-substitution verified before scoring each: Re-justifies line stripped, parser blanked, validity
-check skipped.
-
-### Self-catches and one first
-
-- The ADR draft contained an invented DOI-error-correction paragraph — **noise manufactured to look
-  like rigour** — deleted before commit. The shape to watch: the register rewards visible
-  corrections, so a model can fabricate one to perform the register.
-- **The gh-pr-preflight guard fired on its first recorded use.** `gh pr create` is blocked while
-  other PRs are open; the survey found **PR #131 — a codex-authored branch this session did not
-  know existed** (`codex/conduct-comprehensive-codebase-review`: `docs/review/`, `slice/observed.ts`,
-  `slice/report.ts`). Zero overlap with S033's files; ack legitimate. ⚠ **#131 is an external-LLM
-  analysis awaiting the operator's disposition route** — nothing in this repo's state recorded it
-  before this band.
-
-### BLOCKERS
-
-**None mechanical.** The evidential blocker is unchanged from S031/S032: no measured rate of the
-defect this product detects. `#117` untouched a third session.
-
-### EXACT NEXT STEPS — THE VERDICT SPRINT (operator-directed 2026-08-22, supersedes the S032 queue)
-
-**The direction changed after close.** The operator asked whether the product is worth continuing.
-The assessment found the project's own kill criterion — `PRODUCT.md` "Kill criteria", the
-policy-free-surface-reads-as-noise criterion — has never been tested, and testing it is cheap. The
-operator adopted a time-boxed verdict sprint: run the built tool against his real workspace, then
-build the minimum decay counters, then read the report as its user. **The meta-layer is FROZEN
-until the sprint returns a verdict.** Process rule, stated by the operator: no freehand work —
-each step routes through the mattpocock skill that owns it, and operator-only (`[/]`) skills mean
-the agent PAUSES and asks him to type the slash command.
-
-1. ⛔ **Merge state by ancestry, never the badge.** PR #132 (`build/s033-adr16-rejustification`,
-   head `af03f75` + this close + the S033a amendment) was OPEN at close. Check:
-   `git merge-base --is-ancestor af03f75 origin/main`. ⚠ **Until it merges, `main`'s suite still
-   reports both ADRs OUT** — that is the record working, not a defect.
-2. **Sprint session A (fast tier) — clear the run's path.**
-   - **Board-audit label pass**: apply the disposition table in the S033a addendum below to the
-     tracker (a label/comment pass, mechanical). `/triage` is NOT the vehicle — it is for issues
-     that arrived raw, and these are the operator's own; the checkpoint owns the ordering.
-   - **Fix `#127`** (REQ001 counts an unobservable `unsupported`-type pair as evaluated) and
-     **`#111`** (`www.notion.so` is an observed link host; REF001 under-reports). Both are
-     ready-for-agent bugs that corrupt run 1's report — `#111` in the direction that fakes a
-     "noise" verdict. Route: `/tdd` (agent-invocable) per bug, `/code-review` before commit.
-     ⚠ `#51` stays out — its rows endpoint (`POST /v1/data_sources/{id}/query`) is ASK FIRST,
-     and the S032 straddle rule binds #51+#127 only if #51 is taken.
-3. **Sprint session B (fast tier, operator present) — the run.**
-   - Operator opens with `/session-start-from-state`, then **operator types `/grill-with-docs`**
-     (operator-only; agent pauses for it). Three decisions to settle, pre-registered BEFORE the
-     report exists: which 2–3 real roots; the read protocol — what counts as "a finding I would
-     repair"; and what run 1 can decide. ⚠ **Run 1 cannot fire the kill criterion** — the
-     criterion names the policy-free surface, which is unbuilt until #70's counters land. Run 1
-     is calibration plus the first real denominator (`#117`'s missing number).
-   - Agent runs the built scan against the declared roots (token stays in `.env`, consumed by the
-     CLI, never read by a tool), produces the report, and the operator reads it as its user.
-4. **Sprint session C (conditional on B) — the counters.** `#70` decisions 2–4. Route: **operator
-   types `/to-spec` → `/to-tickets`**, then `/implement` per ticket (drives `/tdd` +
-   `/code-review` internally). ADR + `PRODUCT.md` edits ⇒ the plan gate applies. Then run 2, and
-   run 2's reading IS the kill-criterion test.
-5. **PR #131 disposition** — operator route: verify each claim against files, adopt or decline on
-   its own logic (standing memory: external LLM analyses are routed in to disposition).
-
-**FROZEN until the sprint verdict:** `#121`, `#123`, `#124`, `#103`, `#125`, `#25`, `#74`, `#78`,
-`#97`, `#101`, and the hook-test backlog. **QUEUED BEHIND the sprint:** `#51`, `#117` Route 2
-(advanced but not closed by run 1), `#113`, `#29`.
-
-**NEXT-MODEL: Fable 5 (`/model fable`), `/effort medium`** — and every future session, unless
-usage caps visibly bite (then `/fast` for execution sessions — Opus at speed, never Sonnet).
-The frontier/fast session split was retired 2026-08-22 at the operator's request: routing by
-predicted session type fails in this repo ("execution" work has repeatedly hidden decisions),
-and the error costs are asymmetric, so sessions default up and the cheap models (`sonnet`,
-`haiku`) live in subagents only. Escalate to `/effort high` at decision points (the #70 grill,
-the run-2 verdict reading). Full table: memory `model-routing-table`.
-
-**NEXT-REPO/CWD:** the `workspace_lint` repository root. ⚠ Absolute-`cd` every verification; cwd
-drifted twice in S032.
+**NEXT-REPO/CWD:** the `workspace_lint` repository root. Local `main` is current at the close commit.
 
 ### WHAT ONLY THE OPERATOR CAN DO
 
-**Merging PR #132** (`gh pr merge` is denied to the agent), and **disposition of PR #131**.
-
-**`#102`'s fixture backlog, seven items**, all in the Notion UI — two gate `#51`'s live oracle run
-(the `link_to_page` block at `wl-dataset`; the permanent database reference, re-pre-registered
-before the run, never corrected after).
-
-**Reading Zhou & Walker (2016), DOI `10.1145/2950290.2950298`** — still the closest paper to this
-repository's exact problem and still unread; every open-access route failed and Unpaywall wants an
-email a scout declined to supply.
-
----
-
-POST-CLOSE ADDENDUM (S033a, after `027680f` shipped) — **the operator redirected the queue, and
-the EXACT NEXT STEPS block above was rewritten in place** (forward-looking surfaces are corrected
-in place, not by addendum; this block records what changed and why).
-
-**What happened.** After close, the operator asked whether the product is worth continuing —
-"more work, pivot, ditch." The assessment, formed from `PRODUCT.md`, `CONTEXT.md`,
-`docs/inputs/decay-causal-synthesis-2026-08-16.md` and the open tracker: the project's own kill
-criterion (policy-free report reads as noise to a real workspace owner) has never been tested, the
-test costs roughly two to three sessions, and neither "ditch" nor "continue" is evidence-based
-before it runs. A named self-diagnosis went into that assessment and the operator did not dispute
-it: recent sessions over-weighted epistemic infrastructure relative to a product with zero users —
-cause 3 of the operator's own decay synthesis ("meta-work becomes sophisticated procrastination")
-applied to this repository. The operator adopted the verdict sprint and added two constraints:
-(a) route the work through the mattpocock skills — no freehand — pausing for operator-only ones;
-(b) audit the issues board against the new direction.
-
-**The skill routing was checked against the installed set and upstream** (plugin cache 1.2.2,
-`ask-matt` router, github.com/mattpocock/skills). One deliberate deviation from the main flow,
-declared rather than silent: the real-workspace RUN is an experiment, not a build, so it gets a
-`/grill-with-docs` (to pre-register roots and the read protocol) and NO `/to-spec`/`/to-tickets` —
-upstream itself says the skills compose to fit and are not mandatory ceremony. The full
-spec→tickets→implement flow applies to session C (the #70 counters), which IS a build. Upstream's
-`/compact`-by-default at phase boundaries stays overridden by this project's Memento discipline.
-
-**Board disposition (the audit), all 27 open issues:**
-
-- **SPRINT:** #127, #111 (session A, pre-run bug fixes — #111 under-reports REF001 on the
-  commonest real link host, which biases run 1 toward a false "noise" verdict); #70 (session C,
-  the counters); #95 (run 1 may produce the live REQ001 violation the fixture cannot); #84 (the
-  owner's six entropy invariants — feed it into the session-B grill as the read protocol's raw
-  material); #117 (run 1 yields the first real denominator; Route 2 stays queued, not closed).
-- **FROZEN until the verdict:** #121, #123, #124, #103, #125, #25, #74, #78, #97, #101, and the
-  hook-test backlog — all epistemic-infrastructure or doc-hygiene work that protects no sprint
-  step.
-- **QUEUED BEHIND:** #51 (ASK-FIRST endpoint; straddles only with #127 if taken, and it is not
-  taken), #113, #29 (buyer questions — downstream of the verdict), #27, #69, #82, #118, #96, #8.
-- **OPERATOR-ONLY, unchanged:** #102 (fixture backlog, Notion UI), #128 (closes when PR #132
-  merges), PR #131 disposition.
-
-**What this supersedes.** The S032-derived ordering (steps 2–5 of the original block: #51+#127
-straddle, #125, #117 Route 2, hook tests). None of those items is cancelled; they are re-sequenced
-behind a product verdict, because the operator's continue/ditch question outranks every one of
-them and the sprint is the only work that answers it.
+`#102`'s fixture backlog (Notion UI; two items gate #51's oracle). Sharing a **real root** with the
+integration in the Notion UI — session B is blocked without it (the grant is fixture-only, measured
+2026-08-19). Zhou & Walker (2016), DOI `10.1145/2950290.2950298`, still unread.
