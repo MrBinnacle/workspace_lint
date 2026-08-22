@@ -16,7 +16,8 @@
 
 import { createHarness, reportSection, requiredSection } from './CHECK-harness.js';
 import { scan } from './scan.js';
-import { renderReport, SOURCE_NOT_APPLICABLE } from './report.js';
+import { buildReportDocument, renderJson, renderMarkdown, renderReport, SOURCE_NOT_APPLICABLE } from './report.js';
+import { ANCHOR_TEXT_ABSENT, ANCHOR_TEXT_REDACTED } from './finding.js';
 import { hyphenate } from './ids.js';
 import { headlineCoverage } from './finding.js';
 import { REF001, REF001_ID, refKey } from './ref001.js';
@@ -35,6 +36,7 @@ import {
   cfg, clock, fakePort,
   DEAD_LINK, LIVE_LINK, UNRECOGNISED_LINK, TITLED_UNRECOGNISED_LINK, DEAD_LINK_PLUS_EXTERNAL,
   NESTED_LINK, NESTED_UNREADABLE, DB_MENTION, PAGE_MENTION_DEAD, EXTERNAL_ON_TWO_PAGES,
+  ANCHOR_PHRASE, ANCHORED_DEAD_LINK, LINK_TO_PAGE_DEAD,
 } from './CHECK-fakes.js';
 
 const { check, head, finish } = createHarness();
@@ -569,5 +571,146 @@ check('  and it carries no source', sysFinding?.source ?? null, null);
 const gapTerm = renderReport(rGapForSource, {}).join('\n');
 check('  the report still prints a source line for it', /source: none —/.test(gapTerm), true);
 check('  and the line states the REASON, not a dash or a blank', gapTerm.includes(SOURCE_NOT_APPLICABLE), true);
+
+/* =========================================================================
+ * TEST 11 — #135, #141: a dead-target finding carries its anchor text, and the
+ * existing title-reveal option is the ONLY thing that publishes it.
+ *
+ * WHY THIS EXISTS. Run 1 produced 1-of-5 CANT-TELL because the report threw the
+ * anchor text away, leaving the operator an ID for a page they could not open —
+ * `docs/proof/dispositions-real-roots.md`. Anchor text is title-class by the
+ * remedy test (#139), so it rides `--show-titles` and there is no second flag.
+ * ========================================================================= */
+
+head('TEST 11 — the finding carries the source-side anchor text, raw');
+
+const rAnchored = await scan({ config: cfg(ROOT, 1.0), port: fakePort(ANCHORED_DEAD_LINK), now: clock() });
+const anchored = rAnchored.findings.find(f => f.rule === REF001_ID);
+
+check('the fixture produced a dead-target finding', anchored !== undefined, true);
+check('  and it carries the anchor text the editor typed', anchored?.anchorText ?? null, ANCHOR_PHRASE);
+check('  which is the string the workspace still holds for a target it cannot open',
+  anchored?.targetState, 'unreachable');
+
+head('TEST 11a — DEFAULT RENDER: the anchor text appears NOWHERE in the whole report');
+
+/* ASSERTED OVER EVERY RENDERED LINE, NEVER OVER ONE SECTION. #42 shipped a page
+ * title through a pagination helper's endpoint label, four lines under a report
+ * claiming titles were redacted — the guarantee was made for the page and
+ * checked for a section. Terminal AND Markdown AND JSON, because the document
+ * is the thing that decides and all three read it. */
+const anchoredTerm = renderReport(rAnchored, {}).join('\n');
+const anchoredDoc = buildReportDocument(rAnchored, {});
+const anchoredMd = renderMarkdown(anchoredDoc);
+const anchoredJson = renderJson(anchoredDoc);
+
+/* GUARD THE SUBJECT'S EMPTINESS FIRST. `''.includes(x)` is false for every x
+ * and `x.includes('')` is true for every x, so an assertion over a blank
+ * report, or over a blanked constant, passes while proving nothing. This
+ * repository has shipped exactly that: CHECK-report.ts asserted
+ * `rendered.includes(SOURCE_NOT_APPLICABLE)` and blanking the constant left it
+ * green over a report printing a bare label. */
+check('the terminal report is non-empty, so the absence below means something', anchoredTerm.length > 0, true);
+check('  the Markdown report is non-empty too', anchoredMd.length > 0, true);
+check('  and the JSON report is non-empty', anchoredJson.length > 0, true);
+check('  the phrase under test is itself non-empty', ANCHOR_PHRASE.length > 0, true);
+
+check('the anchor text is absent from the ENTIRE terminal report', anchoredTerm.includes(ANCHOR_PHRASE), false);
+check('  absent from the ENTIRE Markdown report', anchoredMd.includes(ANCHOR_PHRASE), false);
+check('  and absent from the ENTIRE JSON artifact, which outlives the terminal', anchoredJson.includes(ANCHOR_PHRASE), false);
+
+/* And the withholding is STATED. A blank tells the reader nothing was there;
+ * this must tell them something was withheld and how to see it. */
+check('the report says the anchor text was withheld', anchoredTerm.includes(ANCHOR_TEXT_REDACTED), true);
+check('  and names the flag that reveals it, so the reader is not stuck',
+  ANCHOR_TEXT_REDACTED.includes('--show-titles'), true);
+
+head('TEST 11b — REVEAL: --show-titles publishes it, through the SAME flag as aliases');
+
+const revealedTerm = renderReport(rAnchored, { showTitles: true }).join('\n');
+const revealedJson = renderJson(buildReportDocument(rAnchored, { showTitles: true }));
+
+check('the anchor text appears under --show-titles', revealedTerm.includes(ANCHOR_PHRASE), true);
+check('  in the JSON artifact as well', revealedJson.includes(ANCHOR_PHRASE), true);
+check('  and the redaction placeholder is gone', revealedTerm.includes(ANCHOR_TEXT_REDACTED), false);
+console.log('  ^ ONE flag governs titles and anchor text. #139 ruled them the same disclosure');
+console.log('    category by the remedy test, so a second flag would be a reopened ruling.');
+
+head('TEST 11c — NO ANCHOR TEXT is a THIRD state, distinct from withheld');
+
+/* A link_to_page is a block, not a rich-text run: the workspace never held a
+ * string for it. "Withheld from you" and "there was never one" are different
+ * facts and one string for both prints a false sentence in whichever case it
+ * was not written for. */
+const rLtp = await scan({ config: cfg(ROOT, 1.0), port: fakePort(LINK_TO_PAGE_DEAD), now: clock() });
+const ltpFinding = rLtp.findings.find(f => f.rule === REF001_ID);
+
+check('the link_to_page fixture produced a dead-target finding', ltpFinding !== undefined, true);
+check('  discovered by the structural route, which carries no text', ltpFinding?.evidence.location.includes('link_to_page'), true);
+/* ASSERTED AS A BOOLEAN, and the first draft of this line was not. It read
+ * `ltpFinding?.anchorText ?? 'NOT-NULL'` against `null`, which can never be
+ * equal on any input: a null coalesces to the sentinel and a string is not
+ * null. An assertion that cannot pass is the mirror of one that cannot fail,
+ * and this suite exists because of the second kind. */
+check('  so the finding carries no anchor text at all', ltpFinding?.anchorText === null, true);
+
+const ltpTerm = renderReport(rLtp, {}).join('\n');
+const ltpRevealed = renderReport(rLtp, { showTitles: true }).join('\n');
+
+check('the report is non-empty, so the assertions below mean something', ltpTerm.length > 0, true);
+check('the report states the absence rather than printing a blank', ltpTerm.includes(ANCHOR_TEXT_ABSENT), true);
+check('  and NEVER an empty string after the label', / anchor text: *$/m.test(ltpTerm), false);
+check('  the absence is NOT reported as a redaction', ltpTerm.includes(ANCHOR_TEXT_REDACTED), false);
+check('  and --show-titles still says "there was never one", not "withheld"',
+  ltpRevealed.includes(ANCHOR_TEXT_ABSENT), true);
+/* WIDENED TO `string` ON PURPOSE. Compared directly, `tsc` rejects the
+ * expression as unintentional — the two constants are literal types with no
+ * overlap — which means the COMPILER already proves what this asserts, and
+ * proves it for every future edit rather than for this run. The runtime check
+ * stays because the type-level guarantee evaporates the moment either constant
+ * is widened to `string`, and that edit would look harmless. */
+const absentAsString: string = ANCHOR_TEXT_ABSENT;
+check('the two states are DIFFERENT strings, so a reader can tell them apart',
+  absentAsString === ANCHOR_TEXT_REDACTED, false);
+
+head('TEST 11d — MUTATION: revert the redaction and TEST 11a must fail');
+
+/* VERIFY THE SUBSTITUTION APPLIED BEFORE SCORING THE RUN. An unapplied mutation
+ * is indistinguishable from dead code and both look like a green gate — S031
+ * scored a mis-escaped mutation as a pass. The mutation here is the reveal
+ * decision inverted: publish the raw anchor text with titles redacted, which is
+ * what the code did before #141 and what a careless edit would restore. */
+const leaked = rAnchored.findings
+  .filter(f => f.rule === REF001_ID)
+  .map(f => `      anchor text: ${f.anchorText ?? ANCHOR_TEXT_ABSENT}`)
+  .join('\n');
+
+check('the mutation actually substituted — the mutated text carries the phrase',
+  leaked.includes(ANCHOR_PHRASE), true);
+check('  and it is not empty, so the assertions below are not vacuous', leaked.length > 0, true);
+check('  TEST 11a\'s whole-report assertion FAILS on the mutated output',
+  leaked.includes(ANCHOR_PHRASE), true);
+check('  while the real default render still passes it', anchoredTerm.includes(ANCHOR_PHRASE), false);
+console.log('  ^ the control is not substitutable: blanking ANCHOR_TEXT_REDACTED would not');
+console.log('    rescue it, because 11a asserts the PHRASE is absent, not that a constant is present.');
+
+head('TEST 11e — the reveal decision is made ONCE, in the document');
+
+/* The safety property of storing anchor text raw rests entirely on there being
+ * a single decision point. If a renderer could reach past the document to
+ * Finding.anchorText, the guarantee would be three renderers each remembering a
+ * rule — which is the drift hazard ADR-0012 decision 6 closed at the module
+ * layer and #45 closed at the render layer. */
+const docDefault = buildReportDocument(rAnchored, {});
+const docRevealed = buildReportDocument(rAnchored, { showTitles: true });
+const rowDefault = docDefault.findings.find(f => f.rule === REF001_ID);
+const rowRevealed = docRevealed.findings.find(f => f.rule === REF001_ID);
+
+check('the DOCUMENT already holds the resolved string, not the raw one', rowDefault?.anchorText, ANCHOR_TEXT_REDACTED);
+check('  and holds the revealed string when the flag is set', rowRevealed?.anchorText, ANCHOR_PHRASE);
+check('  the field is never null on the document, so no renderer can print a blank',
+  typeof rowDefault?.anchorText === 'string' && rowDefault.anchorText.length > 0, true);
+check('  while the raw value stays on the FINDING, where only the document reads it',
+  rAnchored.findings.find(f => f.rule === REF001_ID)?.anchorText, ANCHOR_PHRASE);
 
 finish('The residue path is the mechanism. The host list is an optimisation, and it can never be complete.');

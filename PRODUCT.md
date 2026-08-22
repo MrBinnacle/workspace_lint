@@ -73,13 +73,17 @@ Its own counter-argument is why this is a design finding rather than a stop: fou
 - duplicate titles within a data source;
 - edit age, and owner-property nulls where an owner property exists;
 - relation, rollup, formula and view counts per database — the maintenance load, counted;
-- databases with no writes in N days and no inbound references.
+- databases by last-write timestamp beside their inbound-reference count from the scanned set.
 
 The last three come from `docs/inputs/decay-causal-synthesis-2026-08-16.md`, which locates the decay mechanism in unbounded accumulation, a super-linear maintenance tax, and no single-source-of-truth enforcement. All three are countable without a declared policy.
 
+**The last three ship as Measurements, not as rules** — a fourth report class that counts and makes no conformity claim, with no coverage item and no channel to the exit byte. ADR-0017 decides the class and the eight operational rules that bound it; spec #70/#139 resolved the design. ⛔ **The sixth signal was written here as "databases with no writes in N days" and that wording is retired: a threshold on the policy-free surface must ship with a default, and a default is a shipped judgement.** Last-write timestamps sorted by a named key carry the same signal and let the reader draw the conclusion. A threshold remains available where it always was — as a configured rule with a rule ID, which is framing 3.
+
 Declared rules serve the buyer who must prove something to a third party. They are not the entry point.
 
-**The line this must not cross.** ADR-0001 rejected the entropy-engine framing because entropy is a symptom with no testable contract. Counting stays inside that decision; scoring leaves it. "This database has 47 rollups and no writes in 180 days" is a measured structural fact with a link attached. "This database is too complex" is a judgement the product does not make, and shipping one would reopen ADR-0001 without a superseding ADR.
+**The line this must not cross.** ADR-0001 rejected the entropy-engine framing because entropy is a symptom with no testable contract. Counting stays inside that decision; scoring leaves it. "This database has 47 rollups, last edited 2026-02-19" is a measured structural fact with a link attached. "This database is too complex" is a judgement the product does not make, and shipping one would reopen ADR-0001 without a superseding ADR.
+
+**That line is now mechanical rather than a matter of taste.** ADR-0017 promotes it into canon with one test the gate holds: **every aggregate printed must be arithmetically reconstructible by the reader from the per-item rows printed in the same report.** A sum beside its rows passes; a mean, a ratio, a rank, a grade or a score does not. A proposed report line is checked against that test instead of argued about.
 
 **The objection this surface exists to answer.** A config-driven linter is itself a maintenance tax, levied on people who by the same account have no maintenance energy left. The people willing to pay it are the ones whose workspaces are already fine. The tool must return something before it asks for anything.
 

@@ -159,6 +159,10 @@ function sys001Finding(args: {
      * no containing page to send a reader to, and one invented here would be an
      * address the rule never observed. */
     source: null,
+    /* SYS001's subject is the resource itself, so there is no reference and no
+     * anchor text. Null here is the same answer `source` gives one line up and
+     * for the same reason. */
+    anchorText: null,
     message: args.message,
   };
 }

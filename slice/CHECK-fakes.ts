@@ -46,6 +46,17 @@ export type FakeResource = {
    * so a fake that collapsed them could not tell the two apart either.
    */
   properties?: Record<string, unknown>;
+  /**
+   * What GET /v1/pages returns as `last_edited_time` — #142.
+   *
+   * OMITTED AND PRESENT ARE DIFFERENT FIXTURES, exactly as `properties` above.
+   * Omitted models a response that carried no timestamp, which is what drives
+   * the measurement's "not computed" branch; present drives the computed one.
+   * A fake that always supplied one could not exercise ADR-0017 decision 5 at
+   * all, and that branch is the whole reason the section can never go silently
+   * empty.
+   */
+  lastEditedTime?: string;
 };
 
 /**
@@ -84,6 +95,7 @@ export function fakePort(spec: Record<string, FakeResource>, meFails = false): N
         id,
         ...(r.url === undefined ? {} : { url: r.url }),
         ...(r.properties === undefined ? {} : { properties: r.properties }),
+        ...(r.lastEditedTime === undefined ? {} : { last_edited_time: r.lastEditedTime }),
       };
     },
     async listChildren(id, cursor) {
@@ -164,6 +176,24 @@ export const linkPara = (id: string, href: string) =>
   ({ object: 'block', id, type: 'paragraph', paragraph: { rich_text: [{ type: 'text', text: { content: 'link' }, href }] } });
 
 /**
+ * The anchor text a real editor would have typed — #141. Deliberately reads
+ * like workspace content, because that is what the redaction control must be
+ * shown to withhold. A fixture whose anchor text is the word "link" cannot
+ * demonstrate that anything sensitive was kept out of the report.
+ */
+export const ANCHOR_PHRASE = 'Q3 Roadmap — Confidential';
+
+/**
+ * A link run carrying anchor text on `plain_text`, which is the field the API
+ * sends and the only one a mention has. `linkPara` above sets `text.content`
+ * and no `plain_text`, so the two helpers exercise the extractor's two source
+ * fields between them rather than leaving either branch unrun.
+ */
+export const anchoredLinkPara = (id: string, href: string, anchor: string) =>
+  ({ object: 'block', id, type: 'paragraph',
+     paragraph: { rich_text: [{ type: 'text', text: { content: anchor }, plain_text: anchor, href }] } });
+
+/**
  * A root with ONE readable child and one link, and NO data source.
  *
  * The absence of the data source is what makes these fixtures useful: every
@@ -182,6 +212,33 @@ const oneChildWith = (href: string, extra: Record<string, FakeResource> = {}): R
  * entry, so retrievePage 404s — which is what an unconnected page returns, not
  * 403 (observed 2026-08-17). This is acceptance criterion 4. */
 export const DEAD_LINK: Record<string, FakeResource> = oneChildWith(OBSERVED_LINK);
+
+/**
+ * The same dead link, but the run carries the anchor text an editor typed —
+ * #135, #141. This is the fixture the disclosure control is measured on.
+ */
+export const ANCHORED_DEAD_LINK: Record<string, FakeResource> = {
+  [ROOT]: { steps: [page([anchoredLinkPara('block-link', OBSERVED_LINK, ANCHOR_PHRASE), childPage(PAGE_B, 'wl-revoke-parent')])] },
+  [PAGE_B]: { steps: [page([])] },
+};
+
+/**
+ * A `link_to_page` BLOCK pointing at the dead target — the no-anchor-text case.
+ *
+ * It is a block and not a rich-text run, so there is no string an editor typed
+ * and nothing to redact. This fixture exists so the report's THIRD state — "the
+ * workspace never held one" — is exercised rather than assumed, and so it can
+ * be shown distinct from "withheld from you". Run 1 met this shape live.
+ */
+export const LINK_TO_PAGE_DEAD: Record<string, FakeResource> = {
+  [ROOT]: {
+    steps: [page([
+      { object: 'block', id: 'block-ltp', type: 'link_to_page', link_to_page: { type: 'page_id', page_id: LINK_TARGET } },
+      childPage(PAGE_B, 'wl-revoke-parent'),
+    ])],
+  },
+  [PAGE_B]: { steps: [page([])] },
+};
 
 /* ------------------------------------------------- the permission filter -- */
 

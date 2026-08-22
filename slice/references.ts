@@ -55,6 +55,31 @@ export type InternalReference = Origin & {
   via: string;
   /** Null for a Route A structural reference, which carries an ID and no URL. */
   href: string | null;
+  /**
+   * THE SOURCE-SIDE ANCHOR TEXT — #135, #141. The one string the workspace still
+   * holds about a target the API refuses, and the difference between a finding
+   * the operator can bin and one they cannot: run 1 produced 1-of-5 CANT-TELL
+   * because the report discarded it (`docs/proof/dispositions-real-roots.md`).
+   *
+   * ⛔ IT IS TITLE-CLASS DISCLOSURE AND IT IS STORED RAW. Ruled by the remedy
+   * test (ADR-0009 decision 6, `CONTEXT.md`): the remedy for disclosing anchor
+   * text is identical to the remedy for disclosing a title — redact by default,
+   * reveal under the operator's existing `--show-titles` opt-in — and an
+   * identical remedy means it is not a new disclosure category. So there is NO
+   * SECOND FLAG, and a session that adds one has reopened a settled ruling.
+   *
+   * IT IS DELIBERATELY NOT REDACTED AT THE POINT OF ENTRY, which is the opposite
+   * of `Entry.link`. That field is redacted on the way in because it is never
+   * revealable; this one is revealable under a flag, so redacting here would
+   * destroy the value the flag exists to show. The safety property is carried a
+   * different way: exactly one place — `buildReportDocument` — decides whether
+   * it is published, in the same expression that already decides `alias`. No
+   * renderer and no exporter ever sees the raw string.
+   *
+   * NULL IS A REAL CASE, not a placeholder: a Route A `link_to_page` is a block
+   * rather than rich text and carries no anchor text at all.
+   */
+  anchorText: string | null;
 };
 
 export type ExternalReference = Origin & { kind: 'external'; href: string };
@@ -185,6 +210,10 @@ export function classifyHref(
   sourceBlock: string,
   hosts: HostEntry[] = KNOWN_INTERNAL_HOSTS,
   sourcePage = '(unrecorded page)',
+  /* #141. Last and defaulted so every existing caller and check compiles
+   * unchanged — a classifier that suddenly required a fifth argument would have
+   * forced edits across the suites that exist to hold its behaviour still. */
+  anchorText: string | null = null,
 ): Reference {
   const where: Origin = { sourcePage, sourceBlock };
   const id = notionShapedId(href);
@@ -209,7 +238,7 @@ export function classifyHref(
      * observed for pages and unevidenced for anything else, and guessing from
      * the path would be the same class of assertion finding.ts refuses when it
      * declines to construct a link from an ID. */
-    return id ? { ...where, kind: 'internal', targetId: id, targetKind: 'unknown', via: `href(${host})`, href } : { ...where, kind: 'external', href };
+    return id ? { ...where, kind: 'internal', targetId: id, targetKind: 'unknown', via: `href(${host})`, href, anchorText } : { ...where, kind: 'external', href };
   }
 
   /* STEP 5, AND IT IS THE WHOLE DESIGN. It over-reports on purpose: a non-Notion
@@ -243,6 +272,18 @@ export function classifyHref(
  * instance: fifty links to one dead page are one internal reference, and the
  * ratio does not swing on how many times an editor pasted the same URL.
  */
+/**
+ * A non-empty string, or null. #141.
+ *
+ * ⛔ EMPTY COLLAPSES TO NULL DELIBERATELY. `''` and "there is no anchor text"
+ * are the same fact to a reader, and `''` is the substitutable value that makes
+ * a downstream `includes()` assertion true for every input — the vacuous pass
+ * this repository already shipped once in `CHECK-report.ts`. Anything that is
+ * not a string collapses too: an API that returned a number here would
+ * otherwise reach the report as `[object Object]` or `0`.
+ */
+const str = (v: unknown): string | null => (typeof v === 'string' && v.length > 0 ? v : null);
+
 export function extractReferences(blocks: unknown[], sourcePage: string): Reference[] {
   const out: Reference[] = [];
 
@@ -262,7 +303,11 @@ export function extractReferences(blocks: unknown[], sourcePage: string): Refere
       const isDb = b.link_to_page?.database_id !== undefined;
       const pid = b.link_to_page?.page_id ?? b.link_to_page?.database_id;
       const id = pid ? notionShapedId(String(pid)) : null;
-      if (id) out.push({ ...where, kind: 'internal', targetId: id, targetKind: isDb ? 'database' : 'page', via: 'link_to_page', href: null });
+      /* ANCHOR TEXT IS NULL HERE AND THE NULL IS STRUCTURAL, not a gap in the
+       * implementation. A `link_to_page` is a BLOCK, not a rich-text run: there
+       * is no text the editor typed for it, because Notion renders the target's
+       * own title. There is nothing to capture and nothing to redact. */
+      if (id) out.push({ ...where, kind: 'internal', targetId: id, targetKind: isDb ? 'database' : 'page', via: 'link_to_page', href: null, anchorText: null });
     }
 
     /* Rich text lives under the block's own type key, and on a table row it
@@ -275,12 +320,32 @@ export function extractReferences(blocks: unknown[], sourcePage: string): Refere
       const t = item as Record<string, any> | null;
       if (!t || typeof t !== 'object') continue;
 
+      /* #141. The rendered text of this run, and it is TITLE-CLASS on every
+       * route — for a link it is what the editor typed, and for a mention it is
+       * the target's own title as the API rendered it. Captured once here rather
+       * than per route so no route is silently left without it.
+       *
+       * EMPTY BECOMES NULL. An empty string and "no anchor text" are the same
+       * fact to a reader, and an empty string is the substitutable value that
+       * makes a downstream `includes()` assertion vacuously true — the hazard
+       * this repository already paid for once in CHECK-report.ts. */
+      /* TWO FIELDS, AND THE SECOND IS NOT A BELT-AND-BRACES HABIT. `plain_text`
+       * is the rendered form and the ONLY field a mention carries its text in —
+       * a mention has no `text` object at all. `text.content` is the authored
+       * form and is what a plain link run carries. Reading only the first would
+       * make this depend on an unlocated claim that every rich-text object
+       * always carries `plain_text`, which is the sentence type this repository
+       * has been wrong about four times; reading only the second would make
+       * every mention anonymous. Both are source-side text, both are
+       * title-class, and both branches are exercised by the fixtures. */
+      const runText = str(t.plain_text) ?? str(t.text?.content);
+
       if (t.type === 'mention') {
         const m = t.mention;
         const pid = m?.type === 'page' ? m.page?.id : m?.type === 'database' ? m.database?.id : null;
         const id = pid ? notionShapedId(String(pid)) : null;
         if (id) {
-          out.push({ ...where, kind: 'internal', targetId: id, targetKind: m.type === 'database' ? 'database' : 'page', via: `mention(${String(m.type)})`, href: null });
+          out.push({ ...where, kind: 'internal', targetId: id, targetKind: m.type === 'database' ? 'database' : 'page', via: `mention(${String(m.type)})`, href: null, anchorText: runText });
           continue;
         }
         /* A link_preview mention carries a URL and no page ID (spec §3, Route
@@ -288,7 +353,7 @@ export function extractReferences(blocks: unknown[], sourcePage: string): Refere
          * line the URL is dropped and the reference enters no denominator. */
         const preview = m?.type === 'link_preview' ? m.link_preview?.url : null;
         if (preview) {
-          out.push(classifyHref(String(preview), sourceBlock, KNOWN_INTERNAL_HOSTS, sourcePage));
+          out.push(classifyHref(String(preview), sourceBlock, KNOWN_INTERNAL_HOSTS, sourcePage, runText));
           continue;
         }
       }
@@ -296,7 +361,7 @@ export function extractReferences(blocks: unknown[], sourcePage: string): Refere
       /* -- Route B: href parsing ------------------------------------------ */
       const href = t.href ?? t.text?.link?.url;
       if (!href) continue;
-      out.push(classifyHref(String(href), sourceBlock, KNOWN_INTERNAL_HOSTS, sourcePage));
+      out.push(classifyHref(String(href), sourceBlock, KNOWN_INTERNAL_HOSTS, sourcePage, runText));
     }
   }
 
@@ -312,6 +377,15 @@ export function extractReferences(blocks: unknown[], sourcePage: string): Refere
  * count as a fact, which would then move with where an editor pasted the link
  * rather than with what the workspace contains. The unit is the reference, not
  * the paste.
+ *
+ * ⚠ FIRST WINS, AND THAT DECIDES WHOSE ANCHOR TEXT SURVIVES — #141. Fifty links
+ * to one dead page are one reference, so the anchor text that reaches the
+ * finding is the FIRST occurrence's and the other forty-nine are dropped. That
+ * is correct for the unit and it is not the whole truth about the workspace, so
+ * the finding names it as one occurrence rather than implying the link appears
+ * once. Changing the tie-break to "longest" or "most recent" would make the
+ * report depend on traversal order, which ADR-0004 removes from every other
+ * field.
  */
 export function dedupeReferences(refs: Reference[]): Reference[] {
   const seen = new Set<string>();

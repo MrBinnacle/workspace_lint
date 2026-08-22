@@ -131,9 +131,14 @@ read this block instead. Nothing here depends on a band still being present.
   it and must travel with it: **no price**, **n=1 and the one is the owner**, and **"free" means no
   per-run vendor charge, not unlimited**. ⛔ **The enterprise half is NOT asserted** — it needs
   Notion's own pricing page, which has not been read.
-- **`CONTEXT.md` now carries SEVEN settled defaults and SEVEN glossary distinctions.** The seventh
-  default is the tool-competence rule from #35; the seventh distinction is *a residual is not a gap*.
-  Both counts were stale-by-one in the file's own prose before this session and are now correct.
+- ⛔ **`CONTEXT.md`'s settled-default and glossary-distinction counts are RE-DERIVED BY COUNTING THE
+  LIST, NEVER RE-QUOTED FROM HERE.** ~~SEVEN settled defaults and SEVEN glossary distinctions~~ —
+  the distinctions count went to **eight** on 2026-08-22 when ADR-0017 added *a measurement is not a
+  finding*, and this line was the only surface that went stale saying so. **The number is deleted
+  rather than corrected**, which is G-010: this was a hand-kept mirror of a figure `CONTEXT.md`
+  states in its own prose two lines above the list it counts. Both counts had already been
+  stale-by-one once before, in the file's own prose, which is how they got mirrored here in the
+  first place. The check is `grep -c '^- \*\*' ` over each section, or reading the list.
 - **ADR-0006 decision 2's search row is superseded by ADR-0007.** Cite ADR-0007's table.
 - **ADR-0005's evidential floor is uneven and the ADR says so.** Decision 5's funnel rests on CONSORT,
   PRISMA and STROBE clauses **fetched but never re-verified**.
@@ -484,7 +489,7 @@ The check: `gh issue list --label decision --state open --json number,labels --j
   ⚠ That loop's exclusions are NOT the gate's: it counts `CHECK-harness.ts` and `CHECK-fakes.ts`,
   which are helpers that assert nothing and print nothing, so they contribute zero and the total is
   right by accident. The claim comment below excludes them deliberately.
-  <!-- claim: count glob="slice/CHECK-*.ts" exclude="CHECK-harness.ts,CHECK-fakes.ts" equals=14 --> ~~`npm run check` DOES NOT TYPECHECK~~ — **#60 CLOSED**, and the
+  <!-- claim: count glob="slice/CHECK-*.ts" exclude="CHECK-harness.ts,CHECK-fakes.ts" equals=15 --> ~~`npm run check` DOES NOT TYPECHECK~~ — **#60 CLOSED**, and the
   counterfactual is recorded: `main@f42fadd` printed `ALL CHECKS PASS` at **exit 0** over a tree
   carrying a real `TS2322`. The chain is `&&`, so a type error now stops the gate before any
   assertion runs. **`tsconfig.json` is a GLOB (`*.ts`), not a

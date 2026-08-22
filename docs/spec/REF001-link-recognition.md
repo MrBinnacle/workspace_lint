@@ -423,6 +423,19 @@ the reasoning:
   is required — see §5. The rule name was absent from this bullet until ADR-0012.
 - No host enters `KNOWN_INTERNAL_HOSTS` without a locator. The `CANDIDATE_HOSTS` table is not an
   allow-list.
+- **Anchor text on a dead-target finding is TITLE-CLASS DISCLOSURE, not a new disclosure category,
+  so it is governed by the existing `--show-titles` opt-in and there is NO SECOND FLAG.** Ruled on
+  issue #135 by the remedy test — *a value is distinct when its remedy is distinct* (`CONTEXT.md`,
+  ADR-0009 decision 6) — and the remedy here is identical to a title's: redact by default, reveal
+  under the operator's opt-in. Recorded in spec #139 and built in #141. The finding carries the
+  source-side anchor text because it is the one string the workspace still holds about a target the
+  API refuses, and without it the operator cannot bin the finding REPAIR or NOISE without leaving
+  the report — measured, not assumed: run 1 produced 1-of-5 CANT-TELL for this reason
+  (`docs/proof/dispositions-real-roots.md`). ⚠ A reference discovered by **Route A** carries no
+  anchor text at all, because a `link_to_page` is a block rather than a rich-text run; that absence
+  renders as its own stated third state and must never be collapsed into the redaction placeholder.
+  *Revisit if:* a case appears where anchor text needs a remedy distinct from a title's — that
+  reopens the classification, and adding a second flag without one does not.
 
 **Revisable with new evidence — you have better access than this document.**
 

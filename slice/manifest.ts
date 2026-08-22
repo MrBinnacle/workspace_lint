@@ -121,6 +121,25 @@ export type RefFacts = {
   href: string | null;
   /** Which detection route found it. Carries no title. */
   via: string;
+  /**
+   * THE SOURCE-SIDE ANCHOR TEXT, RAW — #135, #141. TITLE-CLASS: it is published
+   * only under the operator's existing `--show-titles` opt-in, by the same
+   * ruling and the same single decision point as `Entry.alias`. There is no
+   * second flag; the remedy test made it the same disclosure category, not a
+   * new one. `references.ts`' InternalReference docstring holds the full ruling.
+   *
+   * ⛔ THIS IS THE ONE EXCEPTION TO `UnqFacts`' RULE AND THE EXCEPTION IS
+   * ARGUED, NOT ASSUMED. That type forbids storing an observed value because a
+   * property value is workspace content that three renderers and a JSON
+   * artifact would eventually print. The distinguishing fact is that anchor text
+   * is content the operator has ALREADY opted to reveal or not, through a flag
+   * that exists — so it has a decision point, and a property value does not. If
+   * that flag ever stops governing it, this field becomes the #42 leak with
+   * better paperwork.
+   *
+   * Null for a Route A structural reference, which is a block and has none.
+   */
+  anchorText: string | null;
   sourcePage: string;
   sourceBlock: string;
   /**
@@ -228,6 +247,24 @@ export type Entry = {
   unq: UnqFacts | null;
   /** Null unless an enumeration call was made for this resource. ADR-0013 decision 2. */
   enumeration: Enumeration | null;
+  /**
+   * The `last_edited_time` the API returned on this resource's OWN retrieve —
+   * #142, ADR-0017. Verbatim, as an absolute instant.
+   *
+   * NULL MEANS NO RETRIEVE WAS MADE, WHICH IS THE COMMON CASE and not a defect.
+   * A child page discovered in its parent's block listing reaches `fetched`
+   * without `GET /v1/pages` ever being called on it, so no response exists to
+   * read this from. The measurement prints its denominator rather than letting
+   * a reader take the rows for the whole reached set.
+   *
+   * ⛔ NOT AN AGE, AND NOTHING HERE MAY TURN IT INTO ONE. An age is a function
+   * of the clock, so it belongs to VOLATILE_FIELDS and to nothing else — the
+   * determinism claim (ADR-0004, acceptance criterion 5) is defined against the
+   * normaliser's output, and a section that silently re-derived an age would
+   * make two identical runs differ. Recorded by the site that observed it, like
+   * `Loss` and `RefFacts`, never re-derived by a later reader.
+   */
+  lastEditedTime: string | null;
 };
 
 /**
@@ -250,6 +287,8 @@ export type MarkArgs = {
   link?: string | null;
   /** Recorded by the site that made the enumeration call. See Entry.enumeration. */
   enumeration?: Enumeration;
+  /** Verbatim from the resource's own retrieve. See Entry.lastEditedTime. */
+  lastEditedTime?: string;
 };
 
 export class Manifest {
@@ -276,7 +315,7 @@ export class Manifest {
     const slot = Manifest.slot(unit, key);
     const e =
       this.entries.get(slot) ??
-      { key, unit, alias: args.alias || key, safeLabel: args.safeLabel || key, stages: new Set<Stage>(), loss: null, link: null, isRoot: false, ref: null, req: null, unq: null, enumeration: null };
+      { key, unit, alias: args.alias || key, safeLabel: args.safeLabel || key, stages: new Set<Stage>(), loss: null, link: null, isRoot: false, ref: null, req: null, unq: null, enumeration: null, lastEditedTime: null };
     if (args.alias) e.alias = args.alias;
     if (args.safeLabel) e.safeLabel = args.safeLabel;
     if (args.link) e.link = args.link;
@@ -285,6 +324,7 @@ export class Manifest {
     if (args.req) e.req = args.req;
     if (args.unq) e.unq = args.unq;
     if (args.enumeration) e.enumeration = args.enumeration;
+    if (args.lastEditedTime) e.lastEditedTime = args.lastEditedTime;
     e.stages.add(args.stage);
     if (args.loss) e.loss = args.loss;
     this.entries.set(slot, e);

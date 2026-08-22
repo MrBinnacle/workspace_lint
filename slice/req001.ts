@@ -354,6 +354,9 @@ export const REQ001: Rule = {
            * property map — the reader is already at the address, and inventing
            * a second one would send them somewhere the rule never looked. */
           source: null,
+          /* No reference is involved: REQ001's subject is a (resource, property)
+           * pair the operator declared. Nothing to anchor and nothing to redact. */
+          anchorText: null,
           message: `required property "${property}" is present and carries no value`,
         };
       })

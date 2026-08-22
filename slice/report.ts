@@ -12,8 +12,9 @@
 
 import { STAGES, type Residual, type Stage } from './manifest.js';
 import type { Attestation } from './notion-port.js';
-import { anchorKey, formatRow, headlineCoverage, LINK_NOT_CAPTURED, type CoverageRow, type FindingSource } from './finding.js';
+import { ANCHOR_TEXT_ABSENT, ANCHOR_TEXT_REDACTED, anchorKey, formatRow, headlineCoverage, LINK_NOT_CAPTURED, type CoverageRow, type FindingSource } from './finding.js';
 import { canonicalize, NORMALIZATION_VERSION, VOLATILE_FIELDS } from './normalize.js';
+import type { Measurement } from './measurement.js';
 import type { ScanResult } from './scan.js';
 
 export type RenderOptions = {
@@ -109,11 +110,33 @@ export type ReportDocument = {
    * exporter can sum them.
    */
   residuals: Residual[];
+  /**
+   * ADR-0017. NOT findings, NOT gaps, NOT residuals. A separate field so no
+   * renderer can merge a count into a defect table and no exporter can sum
+   * across classes — the identical construction, and the identical reason, as
+   * `residuals` directly above.
+   */
+  measurements: Measurement[];
   findings: {
     rule: string; resource: string; discriminator: Record<string, string>;
     certainty: string; targetState: string; bounded: boolean; isRootMiss: boolean;
     evidence: { object: string; location: string; observed: string; expected: string };
     link: string | null; linkAbsentReason: string | null;
+    /**
+     * #135, #141. ALREADY RESOLVED — this is the string to print, never the raw
+     * anchor text. `buildReportDocument` has applied the reveal decision, so a
+     * renderer that prints this field verbatim is correct by construction and a
+     * renderer that reaches past the document to `Finding.anchorText` is the
+     * leak. Same contract as every other field on this document: the renderers
+     * are formatters over an already-decided value.
+     *
+     * NEVER NULL AND NEVER EMPTY. The three states a reader must be able to
+     * tell apart — revealed, withheld, never existed — are three different
+     * strings, because one string for two of them prints a false sentence in
+     * whichever case it was not written for, and an empty one makes a
+     * downstream `includes()` assertion vacuously true.
+     */
+    anchorText: string;
     /**
      * WHERE THE DEFECT IS — #100. Null for a rule whose subject is the resource
      * itself; the finding type carries the reason at each site. It is on the
@@ -386,6 +409,20 @@ export function buildReportDocument(r: ScanResult, opts: DocumentOptions = {}): 
      * may be a verbatim href, which is why that field does need the lookup. */
     residuals: [...r.residuals],
 
+    /* COPIED, like every sibling field, so a renderer that sorts or splices
+     * `doc.measurements` cannot mutate the ScanResult.
+     *
+     * NO REDACTION TRANSFORM IS APPLIED HERE AND NONE IS NEEDED, which is worth
+     * stating rather than leaving to be inferred: a measurement row names its
+     * resource by `safeLabel` and carries the already-redacted `Entry.link`, so
+     * every string on it is safe on any line by construction. That is a
+     * DIFFERENT safety argument from the one anchor text uses two fields below,
+     * where a single decision point governs a raw value — and conflating the two
+     * arguments is how a future measurement carrying a title would slip in
+     * under the wrong precedent. A measurement that ever needs a title must
+     * route through the reveal decision, not through here. */
+    measurements: [...r.measurements],
+
     findings: [...r.findings]
       .map(f => ({
         rule: f.rule,
@@ -400,6 +437,20 @@ export function buildReportDocument(r: ScanResult, opts: DocumentOptions = {}): 
         /* The REASON travels with the null, because "no link" and "we did not
          * look" are different facts about the same field. */
         linkAbsentReason: f.link === null ? LINK_NOT_CAPTURED : null,
+        /* #141. THE REVEAL DECISION, MADE ONCE, HERE — beside `label()` above,
+         * which is the identical decision for `Entry.alias`. Anchor text is
+         * title-class by the remedy test (#139), so it rides the SAME flag and
+         * there is deliberately no second one.
+         *
+         * The order of the two tests is load-bearing. Absence is checked FIRST,
+         * so a reference that never had anchor text says so under `--show-titles`
+         * instead of claiming something was withheld. Redaction-first would make
+         * the reveal flag print "withheld" for a value that does not exist. */
+        anchorText: f.anchorText === null
+          ? ANCHOR_TEXT_ABSENT
+          : opts.showTitles
+            ? f.anchorText
+            : ANCHOR_TEXT_REDACTED,
         /* Carried through verbatim, fallback strings included. Substituting a
          * blank or a dash here would delete the distinction `references.ts`
          * wrote them to preserve. */
@@ -528,8 +579,57 @@ export function renderReport(r: ScanResult, opts: RenderOptions = {}): string[] 
      * IDs — see FindingSource — so no redaction transform is applied and none
      * is needed; CHECK-ref001 asserts that over every rendered line. */
     out.push(`      source: ${f.source ? `page ${f.source.page} · block ${f.source.block}` : SOURCE_NOT_APPLICABLE}`);
+    /* #135, #141. WHAT THE WORKSPACE STILL CALLS THE THING THAT IS NOT THERE.
+     * `source` above says where to go; this says what the operator was looking
+     * at when they got there, which is what turns a dead-reference finding from
+     * an ID into a decision. Run 1 binned 1 of 5 CANT-TELL for want of it.
+     *
+     * Printed from the DOCUMENT, already resolved. This line does not know
+     * whether titles are revealed and must not learn. */
+    out.push(`      anchor text: ${f.anchorText}`);
   }
   out.push('  no baseline state is printed: this slice computes none (spec §1.2).');
+
+  /* ADR-0017. A SEPARATE SECTION FROM FINDINGS, DELIBERATELY, and the reasoning
+   * is ADR-0013's applied to a different pair: a count in a table of defects is
+   * a count a reader will read as a defect, and this section makes no conformity
+   * claim at all.
+   *
+   * IT ALWAYS RENDERS — decision 5. A measurement that could not be computed
+   * prints its cause, because a quiet report and an absent report look identical
+   * (Baca et al., DOI 10.1002/spe.2109: a tool abandoned after an expired
+   * licence silently stopped it analysing). There is deliberately no
+   * `if (!doc.measurements.length)` early return here. */
+  out.push('');
+  out.push('──────── MEASUREMENTS ────────');
+  out.push('  counted facts, not defect claims: no measurement enters a coverage ratio or the exit byte (ADR-0017)');
+  for (const m of doc.measurements) {
+    out.push('');
+    out.push(`  ${m.label}`);
+    if (!m.computed) {
+      /* THE BOUNDARY, NAMED. "not computed" plus its cause is the whole of
+       * decision 5: a reader can tell a limit from a pass. */
+      out.push(`      not computed — ${m.cause}`);
+      continue;
+    }
+    /* THE DENOMINATOR, PRINTED BESIDE THE ROWS — decision 6. Without it a
+     * reader takes the rows for the whole reached set, and every zero in this
+     * section becomes a claim about the workspace rather than about the scan. */
+    out.push(`      over: ${m.over}   (unit: ${m.unit})`);
+    /* MEASURED FROM THE DATA, NEVER A CONSTANT. A width written as a constant
+     * beside one that is measured is correct until the data outgrows the guess,
+     * and that shape has now shipped three times in this repository — the
+     * manifest's unit column, and `heading.length + 20` in CHECK-harness.ts. */
+    const rw = Math.max(12, ...m.rows.map(x => x.resource.length));
+    for (const row of m.rows)
+      out.push(`      ${row.resource.padEnd(rw)}  ${row.value}  ${row.link ?? LINK_NOT_CAPTURED}`);
+    /* ADR-0017 decision 3. A total prints only beside the rows it sums, and it
+     * is COMPUTED from them rather than supplied, so the reader's recount cannot
+     * disagree with it. `null` means the rows do not sum — a column of instants
+     * has no meaningful total, and printing `0` would be a number the run never
+     * computed. */
+    if (m.total !== null) out.push(`      total: ${m.total} ${m.unit}   (sum of the ${m.rows.length} row(s) above — recount it)`);
+  }
 
   out.push('');
   out.push('──────── DISCLOSURES ────────');
@@ -775,6 +875,31 @@ export function renderMarkdown(doc: ReportDocument): string {
   }
   L.push('');
 
+  /* ADR-0017, and it renders unconditionally for decision 5's reason. Its own
+   * heading, above Findings and below Residuals, so the document's four classes
+   * are four sections in every emitter. */
+  L.push('## Measurements');
+  L.push('');
+  L.push('_A measurement is a counted fact, **not** a defect claim. It has no coverage item, enters no ratio, and reaches the exit byte through no channel — not even a rule-level one, because it owns no rule ID (ADR-0017 decision 4). Every aggregate printed here is reconstructible from the rows printed beside it._');
+  L.push('');
+  for (const m of doc.measurements) {
+    L.push(`### ${md(m.label)}`);
+    L.push('');
+    if (!m.computed) {
+      L.push(`_Not computed — ${md(m.cause)}_`);
+      L.push('');
+      continue;
+    }
+    L.push(`_Computed over ${md(m.over)}. Unit: **${md(m.unit)}**._`);
+    L.push('');
+    L.push(`| Resource | Value | Link |`);
+    L.push('| --- | --- | --- |');
+    for (const row of m.rows)
+      L.push(`| \`${md(row.resource)}\` | ${md(row.value)} | ${row.link ? `\`${md(row.link)}\`` : `_${md(LINK_NOT_CAPTURED)}_`} |`);
+    if (m.total !== null) L.push(`| **Total** | **${m.total} ${md(m.unit)}** | _sum of the ${m.rows.length} row(s) above_ |`);
+    L.push('');
+  }
+
   L.push('## Findings');
   L.push('');
   if (!doc.findings.length) L.push('_None._');
@@ -790,6 +915,12 @@ export function renderMarkdown(doc: ReportDocument): string {
      * emitters disagreeing about what a run found is the defect T4's review
      * found in three sections of this file. */
     L.push(`- Source: ${f.source ? `page \`${md(f.source.page)}\` · block \`${md(f.source.block)}\`` : `_${md(SOURCE_NOT_APPLICABLE)}_`}`);
+    /* #141. Escaped through md() like every other value on this document that
+     * came out of a workspace — anchor text is the one field here an editor
+     * typed freely, so it is the likeliest to carry a pipe or a backtick and
+     * break the table it sits under. The JSON emitter needs no equivalent: it
+     * serialises the same already-resolved document through canonicalize(). */
+    L.push(`- Anchor text: ${md(f.anchorText)}`);
     L.push('');
   }
   /* Spec §1.2: this slice computes no baseline state. Printing one would look

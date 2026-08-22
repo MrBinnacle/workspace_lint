@@ -39,6 +39,7 @@ import type { Config, RuleDecl } from './config.js';
 import { attestationOf, BLOCK_CHILDREN, type NotionPort } from './notion-port.js';
 import { createObserver, listAllChildren, readBlockTree, type Call, type Observer } from './observed.js';
 import { Manifest, gapsFrom, residualsFrom, RESOURCES, type Enumeration, type Loss, type Residual } from './manifest.js';
+import { measurementsFrom, type Measurement } from './measurement.js';
 import { deriveVerdict, type Gap, type Verdict } from './verdict.js';
 import { SYS001 } from './sys001.js';
 import { REF001, REF001_UNIT, refKey } from './ref001.js';
@@ -102,6 +103,24 @@ export type ScanResult = {
    */
   residuals: Residual[];
   findings: Finding[];
+  /**
+   * ADR-0017. THE FOURTH CLASS. Counted facts and observed timestamps, making no
+   * conformity claim.
+   *
+   * ⛔ ITS OWN FIELD, EXACTLY LIKE `residuals`, AND FOR THE SAME REASON. A
+   * renderer cannot merge measurements into a findings table and an exporter
+   * cannot sum across classes, because there is no single collection holding
+   * both. A count read as a defect claim is the alarming direction, and a rule
+   * ID attached to a count would force a coverage item for a claim that cannot
+   * be stated.
+   *
+   * IT REACHES THE EXIT BYTE THROUGH NO CHANNEL AT ANY LEVEL — ADR-0017
+   * decision 4. `deriveVerdict` does not take this field, and it owns no rule
+   * ID, so the rule-level route that ADR-0011 and ADR-0012 open for every rule
+   * does not exist for it either. That second half is the operative one and it
+   * is the stated contrast with #101, which is frozen.
+   */
+  measurements: Measurement[];
   /** ADR-0011: one row per rule, over that rule's own coverage item. */
   coverage: CoverageRow[];
   /** Per rule, the outcome PAIR. Keyed by rule ID. */
@@ -128,6 +147,15 @@ export type ScanOptions = {
    * reason: a control that passes with its mechanism disabled tested nothing.
    */
   deriveResiduals?: (m: Manifest) => Residual[];
+  /**
+   * The measurement derivation, injected at the same seam as the two above and
+   * for the identical reason: a control that passes with its mechanism disabled
+   * tested nothing. The exit-byte-isolation check replaces this with a
+   * derivation that returns wildly different rows and asserts the byte does not
+   * move; without the seam that check could only assert what the code already
+   * says. ADR-0017 decision 4.
+   */
+  deriveMeasurements?: (m: Manifest) => Measurement[];
   /**
    * The rules, injected at the same seam and for the same reason. A list rather
    * than a pair, so a check can add a rule on an existing coverage item and
@@ -192,6 +220,7 @@ export async function scan(opts: ScanOptions): Promise<ScanResult> {
   const { config, port } = opts;
   const deriveGaps = opts.deriveGaps ?? gapsFrom;
   const deriveResiduals = opts.deriveResiduals ?? residualsFrom;
+  const deriveMeasurements = opts.deriveMeasurements ?? measurementsFrom;
   const rules = opts.rules ?? BUILT_RULES;
   const now = opts.now ?? (() => Date.now());
 
@@ -303,6 +332,14 @@ export async function scan(opts: ScanOptions): Promise<ScanResult> {
        * between here and deriveVerdict where a residual could reach a
        * denominator. */
       residuals: deriveResiduals(manifest),
+      /* DERIVED AFTER THE VERDICT, ON THE SAME LINE OF REASONING AS RESIDUALS —
+       * ADR-0017 decision 4. The ordering is the prohibition expressed as
+       * control flow: `deriveVerdict` has already returned, so there is no line
+       * between here and it through which a measurement could reach the byte,
+       * a coverage row, or a ratio. A future edit that moved this call above
+       * `deriveVerdict` would be the defect that decision names, and it would be
+       * visible as a move rather than hidden in an argument list. */
+      measurements: deriveMeasurements(manifest),
       findings, coverage, outcomes, byteBasis, externalReferences,
       calls: observer.calls,
       requestCount: observer.calls.length,
@@ -349,6 +386,11 @@ export async function scan(opts: ScanOptions): Promise<ScanResult> {
     alias: rootAlias,
     stage: 'resolved',
     link: page.value.url ? redactHref(page.value.url) : null,
+    /* #142, ADR-0017. RECORDED BY THE SITE THAT MADE THE CALL, verbatim and
+     * absolute — the same discipline as `Loss` and `RefFacts`, and for the same
+     * reason: this repository has twice recovered a fact by re-deriving it later
+     * and been wrong both times. Nothing downstream turns it into an age. */
+    lastEditedTime: page.value.last_edited_time,
   });
   /* THE ROOT'S PROPERTY MAP ARRIVES ON THIS RESPONSE and is kept, so REQ001
    * over the root costs no second request. `has` is what the hydration stage
@@ -1260,7 +1302,7 @@ function referenceFacts(manifest: Manifest, key: string) {
    * facts at all — and not references.ts's, which is a block the API returned
    * without an id. Two conditions, two strings; they were near-synonyms and a
    * reader could not tell which had happened. */
-  return e?.ref ?? { targetId: null, targetKind: 'unknown' as TargetKind, href: null, via: 'unrecorded route', sourcePage: '(no origin recorded for this reference)', sourceBlock: '(no origin recorded for this reference)', resolveCause: null };
+  return e?.ref ?? { targetId: null, targetKind: 'unknown' as TargetKind, href: null, via: 'unrecorded route', anchorText: null, sourcePage: '(no origin recorded for this reference)', sourceBlock: '(no origin recorded for this reference)', resolveCause: null };
 }
 
 /**
@@ -1303,7 +1345,11 @@ function registerReferences(manifest: Manifest, refs: Reference[]): ResolutionTa
         alias: `→ ${r.href}`,
         safeLabel: `→ ${redactHref(r.href)}`,
         loss,
-        ref: { targetId: null, targetKind: 'unknown', href: r.href, via: `unrecognised(${r.cause})`, sourcePage: r.sourcePage, sourceBlock: r.sourceBlock, resolveCause: null },
+        /* An unrecognised candidate was never classified to a target, so it
+         * produces no finding at all (spec §7) and there is nothing for anchor
+         * text to travel on. Recorded as null rather than omitted, so the shape
+         * of a ref entry does not vary by branch. */
+        ref: { targetId: null, targetKind: 'unknown', href: r.href, via: `unrecognised(${r.cause})`, anchorText: null, sourcePage: r.sourcePage, sourceBlock: r.sourceBlock, resolveCause: null },
       });
       continue;
     }
@@ -1314,7 +1360,7 @@ function registerReferences(manifest: Manifest, refs: Reference[]): ResolutionTa
       id: key, unit: REF001_UNIT, stage: 'declared',
       alias: `→ ${r.href ?? r.targetId}`,
       safeLabel: `→ ${safe}`,
-      ref: { targetId: r.targetId, targetKind: r.targetKind, href: r.href, via: r.via, sourcePage: r.sourcePage, sourceBlock: r.sourceBlock, resolveCause: null },
+      ref: { targetId: r.targetId, targetKind: r.targetKind, href: r.href, via: r.via, anchorText: r.anchorText, sourcePage: r.sourcePage, sourceBlock: r.sourceBlock, resolveCause: null },
     });
     /* Classified to a target: the reference is RESOLVED whatever the target
      * turns out to be. Resolution of the link and retrieval of the target are
