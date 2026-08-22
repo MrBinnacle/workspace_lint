@@ -43,6 +43,21 @@
  * "culprit selection", under-determined by construction, and this file
  * deliberately does not attempt it — it reports the OUT set and stops.
  *
+ * RE-JUSTIFICATION — how an OUT verdict is discharged, added for issue #128.
+ * An OUT ADR cites a refuted document forever, because ADRs are never edited in
+ * place. So a re-justification is recorded in the ADR that PERFORMS it: a
+ * `- **Re-justifies:** ADR-0014, ADR-0009` header line. A node named there is
+ * treated as IN despite its withdrawn support, PROVIDED the discharging ADR is
+ * itself IN — a discharger that is OUT or refuted discharges nothing, so if the
+ * re-justifying ADR ever falls, everything it was holding up falls with it.
+ * That is ordinary TMS propagation, not a special case.
+ *
+ * ⛔ A DISCHARGE LINE IS A CLAIM THIS FILE CANNOT JUDGE. It verifies that the
+ * re-justification EXISTS and that its author is IN — never that the reasoning
+ * is adequate. Adequacy is the operator's review of the discharging ADR. The
+ * suite keeps discharged entries visible (`RE-JUSTIFIED …`) for the same reason
+ * negation-baseline entries stay visible: baseline, not suppression.
+ *
  * A BASE BELIEF IS ONE WITH AN EMPTY SUPPORT LIST. Under TMS it must be checked
  * against the world rather than against premises. Four ADRs carry no Evidence
  * line and are therefore base beliefs.
@@ -71,6 +86,9 @@ import { loadBaseline as loadNegationBaseline } from './negation.js';
 /** The Evidence line, which is the support list. One per document, by convention. */
 const EVIDENCE = /^-\s+\*\*Evidence:\*\*\s*(.+)$/m;
 
+/** The Re-justifies line — the ADRs whose OUT verdict this document discharges. */
+const REJUSTIFIES = /^-\s+\*\*Re-justifies:\*\*\s*(.+)$/m;
+
 /** A repository path inside backticks. Deliberately narrow: `dir/file.ext`. */
 const PATH_IN_TICKS = /`([A-Za-z0-9_./-]+\.(?:md|ts|json))`/g;
 
@@ -88,6 +106,8 @@ export type Node = {
   adrs: string[];
   /** Repo-relative file paths this document cites as support. */
   files: string[];
+  /** ADR numbers whose OUT verdict this document discharges — issue #128. */
+  rejustifies: string[];
 };
 
 export function adrFiles(repo: string): string[] {
@@ -106,8 +126,17 @@ export function adrFiles(repo: string): string[] {
  */
 export function parseNode(text: string, file: string): Node {
   const number = file.slice(file.lastIndexOf('/') + 1, file.lastIndexOf('/') + 5);
+  /* The Re-justifies line is read whether or not an Evidence line exists — but a
+   * discharger with no Evidence line is a base belief and validity is judged
+   * elsewhere, in dischargedSet. Self-references are dropped here too: an ADR
+   * cannot re-justify itself. */
+  const rj = text.match(REJUSTIFIES);
+  const rejustifies = rj
+    ? [...new Set([...rj[1]!.matchAll(ADR_REF)].map(x => x[1]!))].filter(n => n !== number)
+    : [];
+
   const m = text.match(EVIDENCE);
-  if (!m) return { file, number, base: true, adrs: [], files: [] };
+  if (!m) return { file, number, base: true, adrs: [], files: [], rejustifies };
 
   const line = m[1]!;
   const files = [...line.matchAll(PATH_IN_TICKS)].map(x => x[1]!);
@@ -115,7 +144,7 @@ export function parseNode(text: string, file: string): Node {
    * edge, and a self-loop would make the OUT traversal non-terminating in the
    * least useful way. */
   const adrs = [...new Set([...line.matchAll(ADR_REF)].map(x => x[1]!))].filter(n => n !== number);
-  return { file, number, base: false, adrs, files: [...new Set(files)] };
+  return { file, number, base: false, adrs, files: [...new Set(files)], rejustifies };
 }
 
 export type Graph = { nodes: Node[]; byNumber: Map<string, Node> };
@@ -168,13 +197,17 @@ export type OutEntry = { file: string; via: string; reason: string };
  * An ADR is OUT when it cites a refuted document, or when it cites an ADR that is
  * already OUT. The source document itself is NOT listed — it is where the
  * retraction starts, not something the retraction knocked over.
+ *
+ * `discharged` names files treated as IN despite a withdrawn support — nodes a
+ * valid re-justification holds up. Callers wanting the discharge semantics use
+ * `applyRejustifications`, which computes the set; this function only honours it.
  */
-export function outSet(graph: Graph, refuted: string[]): OutEntry[] {
+export function outSet(graph: Graph, refuted: string[], discharged: Set<string> = new Set()): OutEntry[] {
   const refutedSet = new Set(refuted);
   const out = new Map<string, OutEntry>();
 
   for (const n of graph.nodes) {
-    if (refutedSet.has(n.file)) continue;
+    if (refutedSet.has(n.file) || discharged.has(n.file)) continue;
     const hit = n.files.find(f => refutedSet.has(f)) ?? n.adrs.map(a => graph.byNumber.get(a)).find(t => t && refutedSet.has(t.file))?.file;
     if (hit) out.set(n.file, { file: n.file, via: hit, reason: 'cites a document carrying a REFUTED claim' });
   }
@@ -185,7 +218,7 @@ export function outSet(graph: Graph, refuted: string[]): OutEntry[] {
   for (let pass = 0; pass < graph.nodes.length; pass++) {
     let grew = false;
     for (const n of graph.nodes) {
-      if (out.has(n.file) || refutedSet.has(n.file)) continue;
+      if (out.has(n.file) || refutedSet.has(n.file) || discharged.has(n.file)) continue;
       const via = n.adrs.map(a => graph.byNumber.get(a)).find(t => t && out.has(t.file));
       if (via) {
         out.set(n.file, { file: n.file, via: via.file, reason: 'cites an ADR that is itself OUT' });
@@ -195,4 +228,45 @@ export function outSet(graph: Graph, refuted: string[]): OutEntry[] {
     if (!grew) break;
   }
   return [...out.values()];
+}
+
+export type Discharge = { file: string; by: string };
+
+/**
+ * The OUT set after re-justifications — issue #128.
+ *
+ * A node named in a `Re-justifies:` line is discharged when its discharger is
+ * itself IN: neither refuted nor OUT. Discharging shrinks the OUT set, which can
+ * only make more dischargers valid, so the loop is monotone and terminates. Two
+ * OUT ADRs re-justifying each other discharge nothing — neither is valid first,
+ * which is the correct refusal of mutual bootstrapping.
+ *
+ * Discharged entries are RETURNED, not dropped: the suite prints them, because a
+ * discharge is accepted debt with an author, not a suppression.
+ */
+export function applyRejustifications(
+  graph: Graph, refuted: string[],
+): { out: OutEntry[]; discharged: Discharge[] } {
+  const refutedSet = new Set(refuted);
+  const discharged = new Map<string, Discharge>();
+
+  for (let pass = 0; pass < graph.nodes.length; pass++) {
+    const out = new Set(outSet(graph, refuted, new Set(discharged.keys())).map(o => o.file));
+    let grew = false;
+    for (const n of graph.nodes) {
+      if (refutedSet.has(n.file) || out.has(n.file)) continue;
+      for (const target of n.rejustifies) {
+        const t = graph.byNumber.get(target);
+        if (t && out.has(t.file) && !discharged.has(t.file)) {
+          discharged.set(t.file, { file: t.file, by: n.file });
+          grew = true;
+        }
+      }
+    }
+    if (!grew) break;
+  }
+  return {
+    out: outSet(graph, refuted, new Set(discharged.keys())),
+    discharged: [...discharged.values()],
+  };
 }
