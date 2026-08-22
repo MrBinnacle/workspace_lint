@@ -410,7 +410,7 @@
     {
       "date": "2026-08-22",
       "ruling": "The Pocock skills and the hand-rolled workflow: 'you keep blasting through it and manually doing the steps every single time' / 'most of these as human invocable are just slowing me down' / 'it feels like I'm driving with the handbrake on'.",
-      "effect": "20 of 35 installed mattpocock skills carried disable-model-invocation: true, so the Skill tool REFUSED them; and skill-rules.json held 15 router rules naming none of them. Flag removed from 9 workflow skills across both cached plugin versions (18 files) - but that is the plugin CACHE and a plugin update wipes it. The router half is BLOCKED to the agent by the auto-mode classifier and the operator must run the script. Also: do not answer a capability complaint with 'safety' or 'best practices' - find the mechanism."
+      "effect": "20 of 35 installed mattpocock skills carried disable-model-invocation: true, so the Skill tool REFUSED them; and skill-rules.json held 15 router rules naming none of them. Flag removed from 9 workflow skills across both cached plugin versions (18 files) - but that is the plugin CACHE and a plugin update wipes it. BOTH HALVES NOW IN: the operator ran the router script the same day (writing to ~/.claude/hooks/ is denied to the agent), taking skill-rules.json from 15 to 21 rules with six naming a Pocock skill, all six verified to resolve and be model-invocable. RE-VERIFY AFTER ANY PLUGIN UPDATE - a restored flag would leave 21 rules nudging toward six skills the Skill tool refuses, which is worse than the original because the nudge fires and the call fails. Also: do not answer a capability complaint with 'safety' or 'best practices' - find the mechanism."
     }
   ],
   "tracker": {

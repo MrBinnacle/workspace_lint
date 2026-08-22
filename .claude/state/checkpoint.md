@@ -822,9 +822,19 @@ The operator said he had hardcoded the Pocock methodology into his configuration
 So the methodology lived only in `~/.claude/CLAUDE.md` §14 prose — which §1 itself classifies as
 unreliable model-pull. **DONE:** the flag is removed from 9 workflow skills across both cached plugin
 versions (18 files). ⚠ **That lives in the plugin CACHE and a plugin update wipes it.**
-⛔ **STILL OWED — the router half is BLOCKED to the agent:** writing to `~/.claude/hooks/` is denied
-by the auto-mode classifier. The operator must run the script himself; it compiles every pattern and
-probes 7 positives and 3 negatives before writing, and refuses to write on any probe failure.
+~~STILL OWED — the router half is BLOCKED to the agent~~ ✅ **BOTH HALVES ARE NOW IN. The operator
+ran the script during this close** (writing to `~/.claude/hooks/` is denied to the agent by the
+auto-mode classifier, so it had to be him). **`skill-rules.json` went 15 → 21 rules**, six of them
+naming a Pocock skill where none did before: `implement`, `to-spec`, `to-tickets`, `triage`,
+`grilling`, `code-review`. All ten probes passed — 7 positives matched, 3 negatives stayed quiet —
+and the script refuses to write on any probe failure.
+
+**Verified after the write, because a router rule naming a skill that does not resolve is a SILENT
+NO-OP** and would have looked exactly like success: all six names resolve to a real `SKILL.md` and
+all six are model-invocable. ⚠ **Re-run that verification after any `mattpocock-skills` update** —
+the frontmatter edits live in the plugin CACHE and an update restores the flag, which would leave 21
+router rules nudging toward six skills the Skill tool refuses. That failure mode is worse than the
+original, because the nudge would fire and the call would fail.
 
 ### EXACT NEXT STEPS
 
@@ -850,7 +860,12 @@ synthesis and kill-criterion adjudication**, unchanged.
 
 ### WHAT ONLY THE OPERATOR CAN DO
 
-Merge PR #149. **Run the router-rules script** — the second half of the skill-layer fix, and the
-thing that stops this recurring. Decide `#51`'s fifth-endpoint grant when #143/#145 surface its
-price. `#102`'s fixture backlog. Zhou & Walker (2016), DOI `10.1145/2950290.2950298`, still unread.
+~~Merge PR #149~~ (done, `6b92aef`). ~~Run the router-rules script~~ (done during this close;
+`skill-rules.json` is at 21 rules and verified). **Merge PR #150**, which carries this close.
+Decide `#51`'s fifth-endpoint grant when #143/#145 surface its price. `#102`'s fixture backlog.
+Zhou & Walker (2016), DOI `10.1145/2950290.2950298`, still unread.
+
+⛔ **And one new standing item: after any `mattpocock-skills` plugin update, re-check that the nine
+flipped skills are still model-invocable.** The router now nudges toward six of them, so a restored
+flag turns a working path into a nudge the Skill tool refuses.
 
