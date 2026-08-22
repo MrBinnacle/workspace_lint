@@ -769,13 +769,26 @@ was touched; this session's product is tracker artifacts.
    keyword precedes a reference); #135 carries the ruling location. #139 itself untouched by
    the ticketing pass, per the skill.
 
-### EXACT NEXT STEPS — implement layer, operator-gated per ticket
+### EXACT NEXT STEPS — implement layer, batch-optimized
 
-1. **Frontier: #140 and #141**, workable in parallel. Each `/implement` session must satisfy the
-   plan gate BEFORE touching canon: #140's plan Files table names the new ADR file, `CONTEXT.md`
-   and `PRODUCT.md`; #141's names `docs/spec/REF001-link-recognition.md`. A quiet hook is not
-   approval; the Files table is the token.
-2. Then **#142** (unblocked when #140 lands), then **#143 / #144 / #145** off #142 in any order.
+⭐ **Operator ruling (2026-08-22, second post-close amendment): NO one-ticket-per-session
+pacing, no sandbagging in the name of safe — and, his clarification, no token waste either:
+"a deliberate, session over session effort to work smarter not necessarily harder."** Session D
+takes the **whole chain** as far as the real boundaries allow — the ~40% context ceiling, gate
+green before every commit, and the ask-first tiers are the limits; a ticket count is not one.
+Parallelize where it genuinely saves context or wall-clock (independent tickets to concurrent
+subagents, worktree isolation when both mutate files; named return channel; wait for forks) —
+never to look busy. Each close's NEXT block names how the next session is shaped to minimize
+overhead, so the optimization is visible in the record rather than asserted.
+
+1. **Session D takes #140 and #141 in parallel, then #142 in the same session the moment #140's
+   ADR lands, then fans #143 / #144 / #145 off #142** — blocking edges order work inside the
+   session; they do not partition sessions. **One approved plan may gate the whole chain**: the
+   plan gate is per-file authorisation, not pacing — a single Files table naming the new ADR,
+   `CONTEXT.md`, `PRODUCT.md` and `docs/spec/REF001-link-recognition.md` covers all of it. A
+   quiet hook is not approval; the Files table is the token.
+2. If context saturates mid-chain, checkpoint and clear per §11 and continue from state — the
+   boundary is saturation, never the next ticket.
 3. **Run 2 after the counters ship — the reading IS the kill-criterion test.** If owners read
    counts as noise, the pre-registered honest fix is better linking and context; watch for it
    being proposed as a score, and refuse that.
@@ -783,12 +796,18 @@ was touched; this session's product is tracker artifacts.
    not incremented — they have drifted before.
 5. #101 stays frozen and undecided by any of this; the Measurements ADR must not pre-decide it.
 
-**NEXT-MODEL: Opus 5 at `/effort high`** — the caps-fallback, invoked post-close: the operator is
-at 23% Fable budget until Saturday, which the routing rule names as exactly the Opus condition.
-~~Fable 5 (`/model fable`)~~ stands as the routed default again once the budget resets. #140 is
-safe on the fallback because its ADR is pre-decided in #139 and the #70 thread — assembly under
-the plan gate, not open decision-making. #141 and #142 are execution against a written spec and
-run at medium either way.
+**NEXT-MODEL: Opus 5 at `/effort high`** — and as of the second post-close amendment this is the
+**default, not a fallback**: the operator ruled **"Opus default"** on 2026-08-22, superseding the
+same-day Fable-always rule. ~~The caps-fallback framing, and "Fable stands as the routed default
+again once the budget resets"~~ — both superseded by the ruling. Fable is now **reserved** for
+sessions whose product is calcifying judgment the gate cannot falsify: adjudication
+(kill-criterion calls, disposition synthesis), pre-registration design, superseding-ADR work, and
+grill / field-synthesis passes; an Opus session that surfaces such a decision **defers it to a
+Fable session rather than deciding on the wrong tier**. Rule of record: `~/.claude/CLAUDE.md` §0
+and the routing memory. #140 is safe on Opus because its ADR is pre-decided in #139 and the #70
+thread — assembly under the plan gate, not open decision-making. #141 and #142 are execution
+against a written spec and run at medium either way. In this project's near queue, the first
+Fable-class session is **run 2's disposition synthesis and kill-criterion adjudication**.
 
 **NEXT-REPO/CWD:** the `workspace_lint` repository root.
 
