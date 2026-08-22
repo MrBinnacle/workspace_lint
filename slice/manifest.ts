@@ -121,6 +121,25 @@ export type RefFacts = {
   href: string | null;
   /** Which detection route found it. Carries no title. */
   via: string;
+  /**
+   * THE SOURCE-SIDE ANCHOR TEXT, RAW — #135, #141. TITLE-CLASS: it is published
+   * only under the operator's existing `--show-titles` opt-in, by the same
+   * ruling and the same single decision point as `Entry.alias`. There is no
+   * second flag; the remedy test made it the same disclosure category, not a
+   * new one. `references.ts`' InternalReference docstring holds the full ruling.
+   *
+   * ⛔ THIS IS THE ONE EXCEPTION TO `UnqFacts`' RULE AND THE EXCEPTION IS
+   * ARGUED, NOT ASSUMED. That type forbids storing an observed value because a
+   * property value is workspace content that three renderers and a JSON
+   * artifact would eventually print. The distinguishing fact is that anchor text
+   * is content the operator has ALREADY opted to reveal or not, through a flag
+   * that exists — so it has a decision point, and a property value does not. If
+   * that flag ever stops governing it, this field becomes the #42 leak with
+   * better paperwork.
+   *
+   * Null for a Route A structural reference, which is a block and has none.
+   */
+  anchorText: string | null;
   sourcePage: string;
   sourceBlock: string;
   /**

@@ -154,6 +154,25 @@ export type Finding = {
    * that writes `null` says why at the site.
    */
   source: FindingSource | null;
+  /**
+   * THE SOURCE-SIDE ANCHOR TEXT, RAW AND UNREDACTED — #135, #141.
+   *
+   * ⛔ THE ONLY FIELD ON THIS TYPE THAT MAY CARRY WORKSPACE CONTENT, and it is
+   * safe for exactly one reason: `buildReportDocument` resolves it before any
+   * renderer sees the document, in the same expression that already resolves
+   * `Entry.alias` against `--show-titles`. Every other field here is safe on
+   * every line by construction; this one is safe because a single decision point
+   * governs it. **A renderer that reads `Finding.anchorText` directly, or an
+   * exporter that serialises a raw `Finding`, is the #42 title leak arriving
+   * through a fourth door** — and #42's lesson was that the hole was in one
+   * helper while the report made the guarantee for the whole page.
+   *
+   * REQUIRED AND NULLABLE for the same reason `source` is: the compiler makes
+   * every rule answer rather than letting one forget. `null` is honest for every
+   * rule whose subject is not a reference, and for a Route A reference, which is
+   * a block and has no anchor text.
+   */
+  anchorText: string | null;
   /** One line a human reads. Carries no page title. */
   message: string;
 };
@@ -183,6 +202,33 @@ export type Finding = {
  * capture. A data source is not retrieved at all — issue #51. */
 export const LINK_NOT_CAPTURED =
   'not captured — GET /v1/pages runs for the declared root and for reference targets only, so no url exists for this resource';
+
+/**
+ * What the report prints where anchor text would go, when titles are redacted —
+ * #141.
+ *
+ * IT NAMES THE FLAG, because a bare `«redacted»` tells a reader something is
+ * being withheld and not how to see it, and the whole value of anchor text is
+ * that the operator can decide REPAIR or NOISE without leaving the report.
+ */
+export const ANCHOR_TEXT_REDACTED =
+  '«redacted — anchor text is title-class disclosure; --show-titles opts in»';
+
+/**
+ * What the report prints when the reference genuinely carried no anchor text.
+ *
+ * ⛔ DISTINCT FROM THE REDACTION PLACEHOLDER, AND THE DISTINCTION IS THE POINT.
+ * "Withheld from you" and "the workspace never held one" are different facts,
+ * and one string for both tells the reader a false one in whichever case it was
+ * not written for. This repository has now made that mistake in the opposite
+ * direction too — two fallbacks that read as synonyms in `references.ts` and
+ * `scan.ts`, which let a brief and a grep disagree until each named its own
+ * cause. **And it is never the empty string**: an empty subject makes a
+ * downstream `includes()` assertion vacuously true, which is how a blanked
+ * constant once left `CHECK-report.ts` green over a report printing nothing.
+ */
+export const ANCHOR_TEXT_ABSENT =
+  'none — a structural link_to_page block carries no anchor text for an editor to have typed';
 
 /* --------------------------------------------------------------- coverage -- */
 

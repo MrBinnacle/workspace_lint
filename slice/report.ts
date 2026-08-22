@@ -12,7 +12,7 @@
 
 import { STAGES, type Residual, type Stage } from './manifest.js';
 import type { Attestation } from './notion-port.js';
-import { anchorKey, formatRow, headlineCoverage, LINK_NOT_CAPTURED, type CoverageRow, type FindingSource } from './finding.js';
+import { ANCHOR_TEXT_ABSENT, ANCHOR_TEXT_REDACTED, anchorKey, formatRow, headlineCoverage, LINK_NOT_CAPTURED, type CoverageRow, type FindingSource } from './finding.js';
 import { canonicalize, NORMALIZATION_VERSION, VOLATILE_FIELDS } from './normalize.js';
 import type { ScanResult } from './scan.js';
 
@@ -114,6 +114,21 @@ export type ReportDocument = {
     certainty: string; targetState: string; bounded: boolean; isRootMiss: boolean;
     evidence: { object: string; location: string; observed: string; expected: string };
     link: string | null; linkAbsentReason: string | null;
+    /**
+     * #135, #141. ALREADY RESOLVED — this is the string to print, never the raw
+     * anchor text. `buildReportDocument` has applied the reveal decision, so a
+     * renderer that prints this field verbatim is correct by construction and a
+     * renderer that reaches past the document to `Finding.anchorText` is the
+     * leak. Same contract as every other field on this document: the renderers
+     * are formatters over an already-decided value.
+     *
+     * NEVER NULL AND NEVER EMPTY. The three states a reader must be able to
+     * tell apart — revealed, withheld, never existed — are three different
+     * strings, because one string for two of them prints a false sentence in
+     * whichever case it was not written for, and an empty one makes a
+     * downstream `includes()` assertion vacuously true.
+     */
+    anchorText: string;
     /**
      * WHERE THE DEFECT IS — #100. Null for a rule whose subject is the resource
      * itself; the finding type carries the reason at each site. It is on the
@@ -400,6 +415,20 @@ export function buildReportDocument(r: ScanResult, opts: DocumentOptions = {}): 
         /* The REASON travels with the null, because "no link" and "we did not
          * look" are different facts about the same field. */
         linkAbsentReason: f.link === null ? LINK_NOT_CAPTURED : null,
+        /* #141. THE REVEAL DECISION, MADE ONCE, HERE — beside `label()` above,
+         * which is the identical decision for `Entry.alias`. Anchor text is
+         * title-class by the remedy test (#139), so it rides the SAME flag and
+         * there is deliberately no second one.
+         *
+         * The order of the two tests is load-bearing. Absence is checked FIRST,
+         * so a reference that never had anchor text says so under `--show-titles`
+         * instead of claiming something was withheld. Redaction-first would make
+         * the reveal flag print "withheld" for a value that does not exist. */
+        anchorText: f.anchorText === null
+          ? ANCHOR_TEXT_ABSENT
+          : opts.showTitles
+            ? f.anchorText
+            : ANCHOR_TEXT_REDACTED,
         /* Carried through verbatim, fallback strings included. Substituting a
          * blank or a dash here would delete the distinction `references.ts`
          * wrote them to preserve. */
@@ -528,6 +557,14 @@ export function renderReport(r: ScanResult, opts: RenderOptions = {}): string[] 
      * IDs — see FindingSource — so no redaction transform is applied and none
      * is needed; CHECK-ref001 asserts that over every rendered line. */
     out.push(`      source: ${f.source ? `page ${f.source.page} · block ${f.source.block}` : SOURCE_NOT_APPLICABLE}`);
+    /* #135, #141. WHAT THE WORKSPACE STILL CALLS THE THING THAT IS NOT THERE.
+     * `source` above says where to go; this says what the operator was looking
+     * at when they got there, which is what turns a dead-reference finding from
+     * an ID into a decision. Run 1 binned 1 of 5 CANT-TELL for want of it.
+     *
+     * Printed from the DOCUMENT, already resolved. This line does not know
+     * whether titles are revealed and must not learn. */
+    out.push(`      anchor text: ${f.anchorText}`);
   }
   out.push('  no baseline state is printed: this slice computes none (spec §1.2).');
 
@@ -790,6 +827,12 @@ export function renderMarkdown(doc: ReportDocument): string {
      * emitters disagreeing about what a run found is the defect T4's review
      * found in three sections of this file. */
     L.push(`- Source: ${f.source ? `page \`${md(f.source.page)}\` · block \`${md(f.source.block)}\`` : `_${md(SOURCE_NOT_APPLICABLE)}_`}`);
+    /* #141. Escaped through md() like every other value on this document that
+     * came out of a workspace — anchor text is the one field here an editor
+     * typed freely, so it is the likeliest to carry a pipe or a backtick and
+     * break the table it sits under. The JSON emitter needs no equivalent: it
+     * serialises the same already-resolved document through canonicalize(). */
+    L.push(`- Anchor text: ${md(f.anchorText)}`);
     L.push('');
   }
   /* Spec §1.2: this slice computes no baseline state. Printing one would look

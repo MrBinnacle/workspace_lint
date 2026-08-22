@@ -304,6 +304,9 @@ export const UNQ001: Rule = {
            * property value; the co-participants are already named in the
            * evidence, and the anchor is the address. */
           source: null,
+          /* No reference is involved: UNQ001's subject is a pair of resources in
+           * a declared scope. Nothing to anchor and nothing to redact. */
+          anchorText: null,
           message: `property "${o.property}" carries a value shared with ${others.length} other resource(s) in the declared uniqueness scope`,
         };
       })

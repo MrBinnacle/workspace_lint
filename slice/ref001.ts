@@ -205,6 +205,21 @@ export const REF001: Rule = {
          * when the entry carried no facts at all, which is the same condition
          * every other field on this finding already degrades under. */
         source: facts ? { page: idForm(facts.sourcePage), block: idForm(facts.sourceBlock) } : null,
+        /* #135, #141. THE ONE STRING THE WORKSPACE STILL HOLDS ABOUT A TARGET
+         * THE API REFUSES. Without it this finding names an ID the operator
+         * cannot recognise, and run 1 measured the cost: 1 of 5 dispositions was
+         * CANT-TELL, and the verification layer reversed two of three owner
+         * repair rulings partly for the same reason
+         * (`docs/proof/dispositions-real-roots.md`).
+         *
+         * PASSED THROUGH RAW, AND THIS RULE DOES NOT REDACT IT. That is not an
+         * omission — `buildReportDocument` owns the reveal decision for every
+         * title-class value in one expression, and a rule that redacted here
+         * would make the flag unable to reveal what it exists to reveal. This
+         * is the one field on this finding that behaves that way; `link` above
+         * is redacted at the point of entry precisely because it is never
+         * revealable. */
+        anchorText: facts?.anchorText ?? null,
         /* No title, and no verbatim href: both can carry workspace content into
          * every consumer of this finding, redaction flag or not. */
         message: `internal reference does not resolve — the target is unreachable (${facts?.via ?? 'unrecorded route'})${kindQualifier}`,

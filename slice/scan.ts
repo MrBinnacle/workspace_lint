@@ -1260,7 +1260,7 @@ function referenceFacts(manifest: Manifest, key: string) {
    * facts at all — and not references.ts's, which is a block the API returned
    * without an id. Two conditions, two strings; they were near-synonyms and a
    * reader could not tell which had happened. */
-  return e?.ref ?? { targetId: null, targetKind: 'unknown' as TargetKind, href: null, via: 'unrecorded route', sourcePage: '(no origin recorded for this reference)', sourceBlock: '(no origin recorded for this reference)', resolveCause: null };
+  return e?.ref ?? { targetId: null, targetKind: 'unknown' as TargetKind, href: null, via: 'unrecorded route', anchorText: null, sourcePage: '(no origin recorded for this reference)', sourceBlock: '(no origin recorded for this reference)', resolveCause: null };
 }
 
 /**
@@ -1303,7 +1303,11 @@ function registerReferences(manifest: Manifest, refs: Reference[]): ResolutionTa
         alias: `→ ${r.href}`,
         safeLabel: `→ ${redactHref(r.href)}`,
         loss,
-        ref: { targetId: null, targetKind: 'unknown', href: r.href, via: `unrecognised(${r.cause})`, sourcePage: r.sourcePage, sourceBlock: r.sourceBlock, resolveCause: null },
+        /* An unrecognised candidate was never classified to a target, so it
+         * produces no finding at all (spec §7) and there is nothing for anchor
+         * text to travel on. Recorded as null rather than omitted, so the shape
+         * of a ref entry does not vary by branch. */
+        ref: { targetId: null, targetKind: 'unknown', href: r.href, via: `unrecognised(${r.cause})`, anchorText: null, sourcePage: r.sourcePage, sourceBlock: r.sourceBlock, resolveCause: null },
       });
       continue;
     }
@@ -1314,7 +1318,7 @@ function registerReferences(manifest: Manifest, refs: Reference[]): ResolutionTa
       id: key, unit: REF001_UNIT, stage: 'declared',
       alias: `→ ${r.href ?? r.targetId}`,
       safeLabel: `→ ${safe}`,
-      ref: { targetId: r.targetId, targetKind: r.targetKind, href: r.href, via: r.via, sourcePage: r.sourcePage, sourceBlock: r.sourceBlock, resolveCause: null },
+      ref: { targetId: r.targetId, targetKind: r.targetKind, href: r.href, via: r.via, anchorText: r.anchorText, sourcePage: r.sourcePage, sourceBlock: r.sourceBlock, resolveCause: null },
     });
     /* Classified to a target: the reference is RESOLVED whatever the target
      * turns out to be. Resolution of the link and retrieval of the target are
