@@ -225,11 +225,13 @@ governs a design decision that has not been taken yet and the code alone does no
 - **The `10,000` cap constant is vendor-documented and unobserved.**
 - **`request_status` has never been seen on either branch.** Re-confirmed absent from all eight live
   responses. No code path may block on its arrival; the test is positive only.
-- **Only `app.notion.com` is evidenced as an internal-link host**, and **`*.notion.site` is
-  documented**. `notion.so`, `www.notion.so` and `notion.com` are **not checked** — no locator
-  exists for any of the three. They were removed from the prototype's host list on 2026-08-17 and
-  travel the residue path instead. Settled by `docs/spec/REF001-link-recognition.md` §2.1, **merged
-  to `main` in PR #37**. **#34 is CLOSED.**
+- **`notion.com` is the one internal-link host still NOT CHECKED** — no locator at any tier, and
+  its siblings entering the table on 2026-08-22 (#111) is not one (ADR-0001 decision 4). The rest
+  of the host question is no longer this section's business: the table's membership and evidence
+  tiers are **gate-verified** (`CHECK-ref001.ts` asserts each entry and its tier by host name) and
+  its authority is `docs/spec/REF001-link-recognition.md` §2.1 — re-derive the count from the gate,
+  never re-quote it here (#103 owns making such prose annotatable). **#34 is CLOSED.** The residue
+  path remains the primary mechanism; the list is an optimisation, per the standing constraint below.
 - **Notion IDs are time-ordered, so an ID PREFIX is not a discriminator in this workspace.** The
   declared root and two of its children share **eight leading hex digits**. `#42`'s first live run
   rendered three distinct resources identically as `«3bf1351d…»` and the manifest read like a

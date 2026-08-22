@@ -76,9 +76,16 @@ export type HostEntry = { host: string; pattern: RegExp; evidence: 'observed' | 
 /**
  * Spec §2.1. An entry needs a locator, and that is non-negotiable (spec §7).
  *
- * `notion.so`, `www.notion.so` and `notion.com` are NOT here. They are marked
- * *not checked* — no locator exists for any of the three — so they travel the
- * residue path meanwhile, which costs precision and not soundness.
+ * `notion.com` is NOT here. It is marked *not checked* — no locator exists at
+ * any tier — so it travels the residue path meanwhile, which costs precision
+ * and not soundness. Its siblings joining the list is not evidence about it:
+ * adding a host on sibling strength is the inference ADR-0001 decision 4
+ * rejects (#111).
+ *
+ * `www.notion.so` and `notion.so` are SEPARATE host strings at different
+ * evidence tiers, deliberately — the vendor wrote `notion.so`, not the `www.`
+ * form, and the `www.` form was observed live. Each pattern is exact, so
+ * neither entry vouches for the other.
  *
  * Exported as a mutable array so a check can remove an entry and show the entry
  * is load-bearing rather than assert it is. A constant no test can mutate cannot
@@ -89,6 +96,11 @@ export const KNOWN_INTERNAL_HOSTS: HostEntry[] = [
   { host: 'app.notion.com', pattern: /^app\.notion\.com$/i, evidence: 'observed' },
   /* Notion Help, Manage your Notion Sites, "Create a new notion.site domain". */
   { host: '*.notion.site', pattern: /\.notion\.site$/i, evidence: 'documented' },
+  /* results-first-real-workspace.md §4 — three locators in one run (#111). */
+  { host: 'www.notion.so', pattern: /^www\.notion\.so$/i, evidence: 'observed' },
+  /* docs/vendor/link-domains.md — changelog 2026-07-15, "Existing notion.so
+   * links continue to open correctly." */
+  { host: 'notion.so', pattern: /^notion\.so$/i, evidence: 'documented' },
 ];
 
 /* --------------------------------------------------------------- ID shape -- */

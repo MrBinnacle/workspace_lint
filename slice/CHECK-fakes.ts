@@ -153,8 +153,11 @@ export const LINK_TARGET_ID = '6ec4684a-9dd7-b443-b0f8-ff01e22ec075';
 export const OBSERVED_LINK = `https://app.notion.com/p/${LINK_TARGET}`;
 /* A Notion-shaped ID on a host with no locator. The residue path, spec §4 step 5. */
 export const UNKNOWN_HOST_LINK = `https://docs.acme.example/${LINK_TARGET}`;
-/* A UI-copied link: the PATH CARRIES THE PAGE TITLE, and the host is not checked. */
-export const TITLED_LINK = `https://www.notion.so/My-Private-Roadmap-${LINK_TARGET}`;
+/* A title-bearing link on a host that is NOT CHECKED, so it travels the residue
+ * path. `notion.com`, not `www.notion.so`: the latter became an observed internal
+ * host in #111, and this fixture's job is redaction on the RESIDUE path — a
+ * recognised host would silently change what TEST 8 tests. */
+export const TITLED_LINK = `https://notion.com/My-Private-Roadmap-${LINK_TARGET}`;
 export const EXTERNAL_LINK = 'https://example.com/blog';
 
 export const linkPara = (id: string, href: string) =>
