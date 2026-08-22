@@ -752,14 +752,21 @@ of a measured rate.** `#117` owns the upstream half and names the three routes i
 ## S038 — 2026-08-22 — Session D, implement layer: three of the six Measurements tickets, in one batch
 
 **PHASE:** VERDICT SPRINT — **the implement layer is under way.** #140, #141 and #142 are built and
-committed on `build/s038-measurements`; **PR #149 is open and NOT merged** (the operator merges).
+committed on `build/s038-measurements`. ~~PR #149 is open and NOT merged.~~ **PR #149 MERGED
+mid-close** (merge commit `6b92aef`); **#140, #141 and #142 are CLOSED**; the three feature commits
+are confirmed on `main` by `merge-base --is-ancestor`, not by the badge.
 
-⛔ **#143, #144 and #145 ARE STILL BLOCKED, and the first draft of this band said they were not.**
-Caught by the close's own deref step, which read the tracker instead of the reasoning: GitHub's
-dependency gate counts **open** blockers, and #142 stays OPEN until PR #149 merges and closes it.
-`blocked_by=1` on all three, verified live at close. **They unblock on the merge, not on the
-commit** — and "the code is written" is not the same fact as "the ticket is closed", which is
-exactly the shape this repository has been burned by when a stacked PR merged after its base.
+✅ **#143, #144 and #145 are UNBLOCKED — `blocked_by=0` on all three, re-read after the merge.**
+
+⚠ **This line was wrong twice in one close, in opposite directions, and both are kept because the
+pair is the lesson.** The first draft said they were unblocked *because #142 had landed* — false:
+GitHub's dependency gate counts **open** blockers, and a written commit is not a closed ticket. The
+close's own deref step caught that and corrected it to `blocked_by=1`, verified live. Then **the
+operator merged PR #149 while this close was being written**, which made the correction stale in the
+forward direction. ⛔ **The standing rule earned its place again: re-read external state immediately
+before committing a close, and the close commit itself was a DEAD LETTER** — pushed successfully to
+a branch whose PR had already merged, exit code 0 and nothing reaching `main`. **Verify with
+`merge-base`, never with the push exit code and never with the MERGED badge.**
 
 **TESTS:** Gate green at open (`main@e3b883d`, 14 suites) and at close (**15 suites** —
 `CHECK-measurements.ts` registered). The typecheck runs first and the chain is `&&`.
@@ -821,10 +828,11 @@ probes 7 positives and 3 negatives before writing, and refuses to write on any p
 
 ### EXACT NEXT STEPS
 
-0. ⛔ **FIRST, CONFIRM PR #149 MERGED — by `git merge-base --is-ancestor`, never by the MERGED
-   badge.** Until it does, #142 is open, and #143/#144/#145 each report `blocked_by=1`. Starting
-   them before the merge means building on a base that may still change.
-1. **Then #144, then #143 and #145.** #144 is the only one of the three with real input — inbound
+0. ✅ **PR #149 is MERGED and verified on `main` (`6b92aef`); #140/#141/#142 CLOSED; #143/#144/#145
+   at `blocked_by=0`. Nothing gates the next session — branch from `main` and start.** ⚠ The
+   S038 close itself rode a SECOND PR, because the first close commit was pushed onto the
+   already-merged #149 and never reached `main`.
+1. **#144 first, then #143 and #145.** #144 is the only one of the three with real input — inbound
    reference counts come from the scan's own reference set. Thresholdless, every zero scoped.
 2. **#143 and #145 ship boundary lines, not counts** — see the standing block above for why, and for
    the fact that `#143`'s view-count vendor question is **already discharged** in `docs/vendor/`.
