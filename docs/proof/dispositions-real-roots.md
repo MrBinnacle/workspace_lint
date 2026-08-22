@@ -21,3 +21,28 @@ reading.
 The two `400 validation_error` targets under ROOT-C are gaps, not findings, and take no bin; if
 the operator's read reclassifies them, that is recorded here as its own line, not edited into the
 table above.
+
+## Post-read verification — a second credential path, appended and never edited into the bins
+
+After the bins above were committed, each dead target was fetched through the owner-side MCP
+connector (documented-tier under ADR-0004; a different credential path that does not clear the
+REST path). **The bins above are the cold-read record and stand unedited**; this section is the
+verification layer the pre-registration did not promise but the operator's repair authorization
+required ("repair them once your confidence level in the veracity of the action is satisfactory").
+
+| finding | cold-read bin | second path | verified state |
+| --- | --- | --- | --- |
+| TARGET-1 | REPAIR | **resolves** | **Alive, outside the integration's grant.** The reference is correct; the 404 is a grant boundary. Repair refused — a relink would have redirected a working pointer. |
+| TARGET-2 | CANT-TELL | 404 | Dead on both credential paths. Nothing identifiable to repair toward; the bin stands. |
+| TARGET-3 | REPAIR | 404 | Dead on both credential paths — a true repair candidate. The correct replacement target is a fact only the operator holds; no repair executed on inference. |
+| TARGET-4 | NOISE | resolves as **archived** | Retired to trash/archive deliberately. The operator's NOISE ruling is confirmed by the artifact. |
+| TARGET-5 | REPAIR | **resolves** | **Alive, outside the integration's grant.** Same class as TARGET-1. Repair refused. |
+
+**The product measurement this adds:** 2 of 3 REPAIR rulings were made against targets that are
+not dead — the report gave the reader no way to distinguish decay from grant boundary, and the
+reader (the workspace's own owner, reading with full context) could not recover the distinction
+either. REF001's wording — *absent or inaccessible, indistinguishable* — held exactly; what run 1
+measured is what that indistinguishability costs at the read layer. Evidence filed on #135. An
+accepted-finding rate computed from cold-read bins alone would have scored 4 of 6 accepts; the
+verified figure for genuinely-dead REPAIR targets is 1 of 6. Both numbers are honest at their own
+layer, and any future acceptance-rate claim must name which layer it counts.
