@@ -14,6 +14,7 @@ import { STAGES, type Residual, type Stage } from './manifest.js';
 import type { Attestation } from './notion-port.js';
 import { ANCHOR_TEXT_ABSENT, ANCHOR_TEXT_REDACTED, anchorKey, formatRow, headlineCoverage, LINK_NOT_CAPTURED, type CoverageRow, type FindingSource } from './finding.js';
 import { canonicalize, NORMALIZATION_VERSION, VOLATILE_FIELDS } from './normalize.js';
+import type { Measurement } from './measurement.js';
 import type { ScanResult } from './scan.js';
 
 export type RenderOptions = {
@@ -109,6 +110,13 @@ export type ReportDocument = {
    * exporter can sum them.
    */
   residuals: Residual[];
+  /**
+   * ADR-0017. NOT findings, NOT gaps, NOT residuals. A separate field so no
+   * renderer can merge a count into a defect table and no exporter can sum
+   * across classes — the identical construction, and the identical reason, as
+   * `residuals` directly above.
+   */
+  measurements: Measurement[];
   findings: {
     rule: string; resource: string; discriminator: Record<string, string>;
     certainty: string; targetState: string; bounded: boolean; isRootMiss: boolean;
@@ -401,6 +409,20 @@ export function buildReportDocument(r: ScanResult, opts: DocumentOptions = {}): 
      * may be a verbatim href, which is why that field does need the lookup. */
     residuals: [...r.residuals],
 
+    /* COPIED, like every sibling field, so a renderer that sorts or splices
+     * `doc.measurements` cannot mutate the ScanResult.
+     *
+     * NO REDACTION TRANSFORM IS APPLIED HERE AND NONE IS NEEDED, which is worth
+     * stating rather than leaving to be inferred: a measurement row names its
+     * resource by `safeLabel` and carries the already-redacted `Entry.link`, so
+     * every string on it is safe on any line by construction. That is a
+     * DIFFERENT safety argument from the one anchor text uses two fields below,
+     * where a single decision point governs a raw value — and conflating the two
+     * arguments is how a future measurement carrying a title would slip in
+     * under the wrong precedent. A measurement that ever needs a title must
+     * route through the reveal decision, not through here. */
+    measurements: [...r.measurements],
+
     findings: [...r.findings]
       .map(f => ({
         rule: f.rule,
@@ -567,6 +589,47 @@ export function renderReport(r: ScanResult, opts: RenderOptions = {}): string[] 
     out.push(`      anchor text: ${f.anchorText}`);
   }
   out.push('  no baseline state is printed: this slice computes none (spec §1.2).');
+
+  /* ADR-0017. A SEPARATE SECTION FROM FINDINGS, DELIBERATELY, and the reasoning
+   * is ADR-0013's applied to a different pair: a count in a table of defects is
+   * a count a reader will read as a defect, and this section makes no conformity
+   * claim at all.
+   *
+   * IT ALWAYS RENDERS — decision 5. A measurement that could not be computed
+   * prints its cause, because a quiet report and an absent report look identical
+   * (Baca et al., DOI 10.1002/spe.2109: a tool abandoned after an expired
+   * licence silently stopped it analysing). There is deliberately no
+   * `if (!doc.measurements.length)` early return here. */
+  out.push('');
+  out.push('──────── MEASUREMENTS ────────');
+  out.push('  counted facts, not defect claims: no measurement enters a coverage ratio or the exit byte (ADR-0017)');
+  for (const m of doc.measurements) {
+    out.push('');
+    out.push(`  ${m.label}`);
+    if (!m.computed) {
+      /* THE BOUNDARY, NAMED. "not computed" plus its cause is the whole of
+       * decision 5: a reader can tell a limit from a pass. */
+      out.push(`      not computed — ${m.cause}`);
+      continue;
+    }
+    /* THE DENOMINATOR, PRINTED BESIDE THE ROWS — decision 6. Without it a
+     * reader takes the rows for the whole reached set, and every zero in this
+     * section becomes a claim about the workspace rather than about the scan. */
+    out.push(`      over: ${m.over}   (unit: ${m.unit})`);
+    /* MEASURED FROM THE DATA, NEVER A CONSTANT. A width written as a constant
+     * beside one that is measured is correct until the data outgrows the guess,
+     * and that shape has now shipped three times in this repository — the
+     * manifest's unit column, and `heading.length + 20` in CHECK-harness.ts. */
+    const rw = Math.max(12, ...m.rows.map(x => x.resource.length));
+    for (const row of m.rows)
+      out.push(`      ${row.resource.padEnd(rw)}  ${row.value}  ${row.link ?? LINK_NOT_CAPTURED}`);
+    /* ADR-0017 decision 3. A total prints only beside the rows it sums, and it
+     * is COMPUTED from them rather than supplied, so the reader's recount cannot
+     * disagree with it. `null` means the rows do not sum — a column of instants
+     * has no meaningful total, and printing `0` would be a number the run never
+     * computed. */
+    if (m.total !== null) out.push(`      total: ${m.total} ${m.unit}   (sum of the ${m.rows.length} row(s) above — recount it)`);
+  }
 
   out.push('');
   out.push('──────── DISCLOSURES ────────');
@@ -811,6 +874,31 @@ export function renderMarkdown(doc: ReportDocument): string {
       L.push(`| \`${md(x.cause)}\` | \`${md(x.resource)}\` | \`${md(x.endpoint)}\` | ${md(x.remedy)} |`);
   }
   L.push('');
+
+  /* ADR-0017, and it renders unconditionally for decision 5's reason. Its own
+   * heading, above Findings and below Residuals, so the document's four classes
+   * are four sections in every emitter. */
+  L.push('## Measurements');
+  L.push('');
+  L.push('_A measurement is a counted fact, **not** a defect claim. It has no coverage item, enters no ratio, and reaches the exit byte through no channel — not even a rule-level one, because it owns no rule ID (ADR-0017 decision 4). Every aggregate printed here is reconstructible from the rows printed beside it._');
+  L.push('');
+  for (const m of doc.measurements) {
+    L.push(`### ${md(m.label)}`);
+    L.push('');
+    if (!m.computed) {
+      L.push(`_Not computed — ${md(m.cause)}_`);
+      L.push('');
+      continue;
+    }
+    L.push(`_Computed over ${md(m.over)}. Unit: **${md(m.unit)}**._`);
+    L.push('');
+    L.push(`| Resource | Value | Link |`);
+    L.push('| --- | --- | --- |');
+    for (const row of m.rows)
+      L.push(`| \`${md(row.resource)}\` | ${md(row.value)} | ${row.link ? `\`${md(row.link)}\`` : `_${md(LINK_NOT_CAPTURED)}_`} |`);
+    if (m.total !== null) L.push(`| **Total** | **${m.total} ${md(m.unit)}** | _sum of the ${m.rows.length} row(s) above_ |`);
+    L.push('');
+  }
 
   L.push('## Findings');
   L.push('');

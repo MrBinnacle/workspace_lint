@@ -96,7 +96,26 @@ export interface NotionPort {
    * whether it carries a value. Declaring that union here would put a copy of
    * the vendor's type in this file, and the copy is what drifts.
    */
-  retrievePage(id: string): Promise<{ id: string; url?: string; properties?: Record<string, unknown> }>;
+  /**
+   * `last_edited_time` IS THE SAME MOVE `properties` WAS, AND THE PRECEDENT IS
+   * WRITTEN DIRECTLY ABOVE — #142. `GET /v1/pages/{id}` has always returned it
+   * and this declared type threw it away. **Keeping more of one response is not
+   * a new endpoint**, so the endpoint surface in this file's header is unchanged
+   * and #51's ASK-FIRST precedent for ADDING an endpoint does not apply here
+   * either. It is the input to the last-edited measurement (ADR-0017).
+   *
+   * OPTIONAL, AND THE OPTIONALITY IS LOAD-BEARING for the same reason
+   * `properties` is: a response that carried no timestamp and a resource whose
+   * retrieve was never made are different observations, and the measurement
+   * maps them to different report lines. Neither is a defect.
+   *
+   * ⛔ IT IS NOT PARSED, COMPARED TO A CLOCK, OR TURNED INTO AN AGE HERE. A
+   * relative age depends on when the run happened, which is exactly the class of
+   * field ADR-0004's normaliser strips, and this section must not be the reason
+   * two runs over an unchanged workspace differ. The absolute instant the API
+   * returned is what travels.
+   */
+  retrievePage(id: string): Promise<{ id: string; url?: string; last_edited_time?: string; properties?: Record<string, unknown> }>;
   listChildren(id: string, cursor?: string): Promise<BlockListResponse>;
 }
 
@@ -130,7 +149,7 @@ export function liveNotionPort(auth: string, notionVersion: string): NotionPort 
   return {
     whoami: () => translate(() => client.users.me({})) as Promise<{ name?: string; type?: string }>,
     retrievePage: id =>
-      translate(() => client.pages.retrieve({ page_id: id })) as Promise<{ id: string; url?: string; properties?: Record<string, unknown> }>,
+      translate(() => client.pages.retrieve({ page_id: id })) as Promise<{ id: string; url?: string; last_edited_time?: string; properties?: Record<string, unknown> }>,
     listChildren: (id, cursor) =>
       translate(() => client.blocks.children.list({ block_id: id, page_size: 100, start_cursor: cursor })) as Promise<BlockListResponse>,
   };

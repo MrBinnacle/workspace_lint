@@ -46,6 +46,17 @@ export type FakeResource = {
    * so a fake that collapsed them could not tell the two apart either.
    */
   properties?: Record<string, unknown>;
+  /**
+   * What GET /v1/pages returns as `last_edited_time` — #142.
+   *
+   * OMITTED AND PRESENT ARE DIFFERENT FIXTURES, exactly as `properties` above.
+   * Omitted models a response that carried no timestamp, which is what drives
+   * the measurement's "not computed" branch; present drives the computed one.
+   * A fake that always supplied one could not exercise ADR-0017 decision 5 at
+   * all, and that branch is the whole reason the section can never go silently
+   * empty.
+   */
+  lastEditedTime?: string;
 };
 
 /**
@@ -84,6 +95,7 @@ export function fakePort(spec: Record<string, FakeResource>, meFails = false): N
         id,
         ...(r.url === undefined ? {} : { url: r.url }),
         ...(r.properties === undefined ? {} : { properties: r.properties }),
+        ...(r.lastEditedTime === undefined ? {} : { last_edited_time: r.lastEditedTime }),
       };
     },
     async listChildren(id, cursor) {
