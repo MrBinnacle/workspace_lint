@@ -783,8 +783,12 @@ was touched; this session's product is tracker artifacts.
    not incremented — they have drifted before.
 5. #101 stays frozen and undecided by any of this; the Measurements ADR must not pre-decide it.
 
-**NEXT-MODEL: Fable 5 (`/model fable`)** — `/effort high` for #140 (an ADR is a decision
-artifact); #141 and #142 are execution against a written spec and run at medium.
+**NEXT-MODEL: Opus 5 at `/effort high`** — the caps-fallback, invoked post-close: the operator is
+at 23% Fable budget until Saturday, which the routing rule names as exactly the Opus condition.
+~~Fable 5 (`/model fable`)~~ stands as the routed default again once the budget resets. #140 is
+safe on the fallback because its ADR is pre-decided in #139 and the #70 thread — assembly under
+the plan gate, not open decision-making. #141 and #142 are execution against a written spec and
+run at medium either way.
 
 **NEXT-REPO/CWD:** the `workspace_lint` repository root.
 
