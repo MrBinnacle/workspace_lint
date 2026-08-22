@@ -763,24 +763,54 @@ check skipped.
 **None mechanical.** The evidential blocker is unchanged from S031/S032: no measured rate of the
 defect this product detects. `#117` untouched a third session.
 
-### EXACT NEXT STEPS
+### EXACT NEXT STEPS — THE VERDICT SPRINT (operator-directed 2026-08-22, supersedes the S032 queue)
+
+**The direction changed after close.** The operator asked whether the product is worth continuing.
+The assessment found the project's own kill criterion — `PRODUCT.md` "Kill criteria", the
+policy-free-surface-reads-as-noise criterion — has never been tested, and testing it is cheap. The
+operator adopted a time-boxed verdict sprint: run the built tool against his real workspace, then
+build the minimum decay counters, then read the report as its user. **The meta-layer is FROZEN
+until the sprint returns a verdict.** Process rule, stated by the operator: no freehand work —
+each step routes through the mattpocock skill that owns it, and operator-only (`[/]`) skills mean
+the agent PAUSES and asks him to type the slash command.
 
 1. ⛔ **Merge state by ancestry, never the badge.** PR #132 (`build/s033-adr16-rejustification`,
-   head `af03f75` + this close) was OPEN at close. Check: `git merge-base --is-ancestor af03f75
-   origin/main`. ⚠ **Until it merges, `main`'s suite still reports both ADRs OUT** — that is the
-   record working, not a defect.
-2. **`#51` + `#127`'s open checkbox** — execution against settled briefs; the S032 band said these
-   two straddle with each other and nothing else. ⚠ The rows endpoint
-   (`POST /v1/data_sources/{id}/query`) is a POST and a fifth endpoint: **ASK FIRST, not granted.**
-3. **`#125` — the remaining negatives sweep.** Cheap: the gate lists every untyped one.
-4. **`#117` Route 2 — the denominator.** The real blocker, three sessions untouched.
-5. **Hook tests, `skill-router.py` first.** Three of TWELVE tested (recount of 2026-08-19).
-6. **PR #131 disposition** — operator route: verify each claim against files, adopt or decline on
+   head `af03f75` + this close + the S033a amendment) was OPEN at close. Check:
+   `git merge-base --is-ancestor af03f75 origin/main`. ⚠ **Until it merges, `main`'s suite still
+   reports both ADRs OUT** — that is the record working, not a defect.
+2. **Sprint session A (fast tier) — clear the run's path.**
+   - **Board-audit label pass**: apply the disposition table in the S033a addendum below to the
+     tracker (a label/comment pass, mechanical). `/triage` is NOT the vehicle — it is for issues
+     that arrived raw, and these are the operator's own; the checkpoint owns the ordering.
+   - **Fix `#127`** (REQ001 counts an unobservable `unsupported`-type pair as evaluated) and
+     **`#111`** (`www.notion.so` is an observed link host; REF001 under-reports). Both are
+     ready-for-agent bugs that corrupt run 1's report — `#111` in the direction that fakes a
+     "noise" verdict. Route: `/tdd` (agent-invocable) per bug, `/code-review` before commit.
+     ⚠ `#51` stays out — its rows endpoint (`POST /v1/data_sources/{id}/query`) is ASK FIRST,
+     and the S032 straddle rule binds #51+#127 only if #51 is taken.
+3. **Sprint session B (fast tier, operator present) — the run.**
+   - Operator opens with `/session-start-from-state`, then **operator types `/grill-with-docs`**
+     (operator-only; agent pauses for it). Three decisions to settle, pre-registered BEFORE the
+     report exists: which 2–3 real roots; the read protocol — what counts as "a finding I would
+     repair"; and what run 1 can decide. ⚠ **Run 1 cannot fire the kill criterion** — the
+     criterion names the policy-free surface, which is unbuilt until #70's counters land. Run 1
+     is calibration plus the first real denominator (`#117`'s missing number).
+   - Agent runs the built scan against the declared roots (token stays in `.env`, consumed by the
+     CLI, never read by a tool), produces the report, and the operator reads it as its user.
+4. **Sprint session C (conditional on B) — the counters.** `#70` decisions 2–4. Route: **operator
+   types `/to-spec` → `/to-tickets`**, then `/implement` per ticket (drives `/tdd` +
+   `/code-review` internally). ADR + `PRODUCT.md` edits ⇒ the plan gate applies. Then run 2, and
+   run 2's reading IS the kill-criterion test.
+5. **PR #131 disposition** — operator route: verify each claim against files, adopt or decline on
    its own logic (standing memory: external LLM analyses are routed in to disposition).
 
-**NEXT-MODEL: fast tier.** Step 2 is execution against settled briefs — the S032 band's own
-straddle-scope. `#117` Route 2 needs design judgement; if it is the pick instead, frontier tier,
-and do not combine it with step 2 in one session.
+**FROZEN until the sprint verdict:** `#121`, `#123`, `#124`, `#103`, `#125`, `#25`, `#74`, `#78`,
+`#97`, `#101`, and the hook-test backlog. **QUEUED BEHIND the sprint:** `#51`, `#117` Route 2
+(advanced but not closed by run 1), `#113`, `#29`.
+
+**NEXT-MODEL: fast tier** (sprint session A — two settled bug briefs plus a mechanical label
+pass). Sessions B and C are also fast-tier; escalate to frontier only if `#70`'s decisions turn
+out contested in the grill.
 
 **NEXT-REPO/CWD:** the `workspace_lint` repository root. ⚠ Absolute-`cd` every verification; cwd
 drifted twice in S032.
@@ -796,3 +826,49 @@ before the run, never corrected after).
 **Reading Zhou & Walker (2016), DOI `10.1145/2950290.2950298`** — still the closest paper to this
 repository's exact problem and still unread; every open-access route failed and Unpaywall wants an
 email a scout declined to supply.
+
+---
+
+POST-CLOSE ADDENDUM (S033a, after `027680f` shipped) — **the operator redirected the queue, and
+the EXACT NEXT STEPS block above was rewritten in place** (forward-looking surfaces are corrected
+in place, not by addendum; this block records what changed and why).
+
+**What happened.** After close, the operator asked whether the product is worth continuing —
+"more work, pivot, ditch." The assessment, formed from `PRODUCT.md`, `CONTEXT.md`,
+`docs/inputs/decay-causal-synthesis-2026-08-16.md` and the open tracker: the project's own kill
+criterion (policy-free report reads as noise to a real workspace owner) has never been tested, the
+test costs roughly two to three sessions, and neither "ditch" nor "continue" is evidence-based
+before it runs. A named self-diagnosis went into that assessment and the operator did not dispute
+it: recent sessions over-weighted epistemic infrastructure relative to a product with zero users —
+cause 3 of the operator's own decay synthesis ("meta-work becomes sophisticated procrastination")
+applied to this repository. The operator adopted the verdict sprint and added two constraints:
+(a) route the work through the mattpocock skills — no freehand — pausing for operator-only ones;
+(b) audit the issues board against the new direction.
+
+**The skill routing was checked against the installed set and upstream** (plugin cache 1.2.2,
+`ask-matt` router, github.com/mattpocock/skills). One deliberate deviation from the main flow,
+declared rather than silent: the real-workspace RUN is an experiment, not a build, so it gets a
+`/grill-with-docs` (to pre-register roots and the read protocol) and NO `/to-spec`/`/to-tickets` —
+upstream itself says the skills compose to fit and are not mandatory ceremony. The full
+spec→tickets→implement flow applies to session C (the #70 counters), which IS a build. Upstream's
+`/compact`-by-default at phase boundaries stays overridden by this project's Memento discipline.
+
+**Board disposition (the audit), all 27 open issues:**
+
+- **SPRINT:** #127, #111 (session A, pre-run bug fixes — #111 under-reports REF001 on the
+  commonest real link host, which biases run 1 toward a false "noise" verdict); #70 (session C,
+  the counters); #95 (run 1 may produce the live REQ001 violation the fixture cannot); #84 (the
+  owner's six entropy invariants — feed it into the session-B grill as the read protocol's raw
+  material); #117 (run 1 yields the first real denominator; Route 2 stays queued, not closed).
+- **FROZEN until the verdict:** #121, #123, #124, #103, #125, #25, #74, #78, #97, #101, and the
+  hook-test backlog — all epistemic-infrastructure or doc-hygiene work that protects no sprint
+  step.
+- **QUEUED BEHIND:** #51 (ASK-FIRST endpoint; straddles only with #127 if taken, and it is not
+  taken), #113, #29 (buyer questions — downstream of the verdict), #27, #69, #82, #118, #96, #8.
+- **OPERATOR-ONLY, unchanged:** #102 (fixture backlog, Notion UI), #128 (closes when PR #132
+  merges), PR #131 disposition.
+
+**What this supersedes.** The S032-derived ordering (steps 2–5 of the original block: #51+#127
+straddle, #125, #117 Route 2, hook tests). None of those items is cancelled; they are re-sequenced
+behind a product verdict, because the operator's continue/ditch question outranks every one of
+them and the sprint is the only work that answers it.
