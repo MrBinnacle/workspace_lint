@@ -842,12 +842,30 @@ later-reversed decision; ~10 sessions then gives a denominator. **Until then say
 
 ### EXACT NEXT STEPS
 
-1. **Take #158.** Three counters are unbuilt-not-ungranted and the flagship is the cheapest — widen
-   `listChildren`'s declared return type and let the edit-age table render the reached set. **Read
-   the banner at the top of #158's body before the body**; the scope was widened after filing.
-   ⛔ **Capture the field; do NOT label it the page's edit age** until the block-vs-page equivalence
-   is settled by an empirical edit-and-diff test on the fixture. That test is cheap and nobody has
-   run it.
+**⚠ Corrected in place after the close shipped — the test named in step 1 is now BUILT. See the
+addendum at the foot of this band for what changed and when.**
+
+0. **RUN THE PROBE FIRST — one command, no arguments, from the repo root:**
+   `cd prototypes && npx tsx block-vs-page-timestamp.ts`
+   It is built, typechecked and **unrun**, on **PR #161** (open at close — merge it first).
+   Pre-registration: `docs/proof/prereg-block-vs-page-timestamp.md`, committed before the probe so
+   the predictions cannot be aimed after the data. It **scores P1–P5 and prints the verdict itself**
+   off a decision table fixed in advance — do not re-derive one.
+   ⛔ **THIS PROBE WRITES** — the first in the repo that does. It creates its own scratch child page
+   under the fixture root, edits it twice, archives it, verifies by read-back; no existing page,
+   block or property is touched. Rollback is in a `finally` and prints the id by hand if it fails.
+   The fixture root's own `last_edited_time` moves and cannot be rolled back — disclosed, accepted,
+   and no other proof reads it. Record the run in `docs/proof/results-block-vs-page-timestamp.md`,
+   role labels only.
+   ⭐ **If P1 comes back REFUTED, STOP** — that refutes the S042 instrument-defect finding itself and
+   reopens both `dispositions-run2.md` and #158's banner. Proceeding past a refuted P1 is the one
+   way this sequence goes badly wrong.
+1. **Then take #158.** Three counters are unbuilt-not-ungranted and the flagship is the cheapest —
+   widen `listChildren`'s declared return type and let the edit-age table render the reached set.
+   **Read the banner at the top of #158's body before the body**; the scope was widened after filing.
+   ⛔ **Capture the field; label it the page's edit age ONLY if step 0 licensed that** — and if it
+   did, the licence is empirical on n=1 with the vendor silent, never a documented guarantee, and
+   every downstream claim must say so and cite the prereg.
 2. **Then the two authorized GETs** — `GET /v1/databases/{id}` (already authorized) →
    `GET /v1/data_sources/{id}` for the schema's `properties` map, and `GET /v1/views`. Neither needs
    an operator decision. ⛔ `GET /v1/databases/{id}` no longer returns a property schema on the API
@@ -882,3 +900,30 @@ position swap. Quarantine is back to 22. ⚠ **`write-a-skill` is operator-only 
 and the Skill tool refuses it**, so §1.5 conventions were applied by hand; if he wants the
 authored-by-the-skill treatment on any of the three, only he can fire it. Grant the ask-first
 POST if people-type empty values are ever worth it. Install `mewt`.
+
+**POST-CLOSE ADDENDUM (S042, after `ba2ebc7` shipped) — the edit-and-diff test that gates #158's
+cheapest item is now BUILT and UNRUN, on PR #161.**
+
+The close named that test as the thing standing between capture and labelling, and left it as work
+for someone else. The operator asked for it staged to standard instead, saying he did not know how
+to run it. So it was built the same session the close shipped: pre-registration first
+(`docs/proof/prereg-block-vs-page-timestamp.md`, P1–P5 plus a five-row decision table fixed before
+any data), then `prototypes/block-vs-page-timestamp.ts`, then one copy-pasteable command.
+
+Design call worth carrying forward: **the probe creates its own subject rather than editing existing
+fixture content.** Same measurement, no risk to content other proofs depend on. It is the first
+writing probe here and it inherits `live-ref001`'s token discipline verbatim.
+
+**Found while wiring it, and not yet fixed:** `prototypes/tsconfig.json` carries a **hand-kept
+`include` list** — the same defect `slice/` fixed under #60 by globbing. The new file typechecked
+clean only because it was not being checked at all; **exit 0 was vacuous until the file was added to
+the list.** It is added and compiles, the list is still hand-kept, and the next probe will hit this
+again. Low stakes — `prototypes/` is not the product tree — but it is the identical shape the gate
+exists to catch, living one directory over from the gate.
+
+~~The close's step 1 said the test was unbuilt and that "nobody has run it".~~ Half of that is now
+wrong: it is built. **It is still unrun**, and the EXACT NEXT STEPS above were corrected in place —
+per the amendment convention, forward-looking surfaces are fixed directly rather than left for the
+next session to reconcile against an addendum it reads second.
+
+No bin, no branch and no adjudication is touched. Run 2 stays adjudicated at SURVIVES-NARROW.
