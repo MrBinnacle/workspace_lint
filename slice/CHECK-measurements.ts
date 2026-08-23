@@ -23,7 +23,7 @@
 import { createHarness } from './CHECK-harness.js';
 import { scan } from './scan.js';
 import { buildReportDocument, renderJson, renderMarkdown, renderReport } from './report.js';
-import { measurementsFrom, MEASUREMENT_IDS, type Measurement } from './measurement.js';
+import { measurementsFrom, totalIsReconstructible, MEASUREMENT_IDS, type Measurement } from './measurement.js';
 import { LINK_NOT_CAPTURED } from './finding.js';
 import { hyphenate } from './ids.js';
 import { ROOT, PAGE_B, DATASET, DATASET_B, cfg, clock, fakePort, DEAD_LINK, INBOUND_REFS, INBOUND_REFS_PLUS_EXTERNAL, THREE_CHILDREN, TITLED_URL, TITLE_IN_URL } from './CHECK-fakes.js';
@@ -70,7 +70,25 @@ check('  the last-edited measurement is present, keyed by its stable ID', edited
  * the number moved. */
 check('  the v0.1 set is exactly the keys this suite knows about',
   r.measurements.map(m => m.id).sort().join(' + '),
-  [MEASUREMENT_IDS.lastEdited, MEASUREMENT_IDS.inboundReferences].sort().join(' + '));
+  [
+    MEASUREMENT_IDS.lastEdited,
+    MEASUREMENT_IDS.inboundReferences,
+    MEASUREMENT_IDS.databaseTypedProperties,
+    MEASUREMENT_IDS.databaseViews,
+    MEASUREMENT_IDS.peoplePropertyEmpty,
+  ].sort().join(' + '));
+
+/* AND EVERY DECLARED KEY IS RETURNED EXACTLY ONCE. The assertion above catches a
+ * measurement silently dropped or silently added; this one catches a key
+ * DECLARED and never returned, and a key returned twice — neither of which the
+ * set comparison can tell apart from correct on its own.
+ *
+ * ⚠ IT READS THE CONSTANT UNDER TEST, so it is a consistency check and not an
+ * independent control. It is paired with the explicit list above deliberately;
+ * do not drop the list in favour of this. */
+check('  and every declared measurement key is returned exactly once',
+  Object.values(MEASUREMENT_IDS).map(id => `${id}:${r.measurements.filter(m => m.id === id).length}`).join(' '),
+  Object.values(MEASUREMENT_IDS).map(id => `${id}:1`).join(' '));
 
 check('  every measurement carries a STABLE key, so it can be promoted to a rule condition later',
   r.measurements.every(m => m.id.startsWith('measurement/')), true);
@@ -260,16 +278,54 @@ head('TEST 6 — a printed total is a function of the rows printed beside it');
  * no code path through which a caller hands `measurementsFrom` a total, so the
  * printed figure and the printed rows cannot disagree. This asserts the printing
  * rather than the arithmetic, because the arithmetic is true by construction. */
-for (const m of measurementsFrom(r.manifest)) {
-  if (!m.computed) continue;
-  if (m.total === null) {
-    check(`${m.id}: no total is printed, because these rows do not sum`,
-      m.rows.every(x => x.numeric === null), true);
-    continue;
-  }
-  const recomputed = m.rows.reduce((sum, x) => sum + (x.numeric ?? 0), 0);
-  check(`${m.id}: the printed total equals the sum of the printed rows`, m.total, recomputed);
+/* ⛔ RUN OVER A MANIFEST THAT ACTUALLY HAS A SUMMING MEASUREMENT IN IT, AND THE
+ * GUARD BELOW IS WHY. This loop first ran over `r`'s manifest alone — the
+ * DEAD_LINK fixture, which reaches no database — so every measurement in it was
+ * either `computed: false` or had a null total, and the `m.total === sum` branch
+ * was NEVER TAKEN. Verified rather than reasoned: skewing a real total by +41
+ * turned the gate red through TEST 7's assertions and left this loop silent,
+ * which is the wrong file catching this test's defect.
+ *
+ * Same family as every other vacuous-subject failure this suite records: the
+ * loop was not wrong, its input could not exercise it. */
+const rSums = await scan({ config: cfg(ROOT, 0.0), port: fakePort(INBOUND_REFS), now: clock() });
+const reconstructible = [...measurementsFrom(r.manifest), ...measurementsFrom(rSums.manifest)];
+check('the reconstructibility loop has a measurement that actually SUMS, so it is not vacuous',
+  reconstructible.some(m => m.computed && m.total !== null), true);
+for (const m of reconstructible) {
+  check(`${m.id}: its printed total is reconstructible from its printed rows`,
+    totalIsReconstructible(m), true);
 }
+
+head('TEST 6b — MUTATION: a total that disagrees with its rows is CAUGHT — #143 AC2');
+
+/* ⛔ THE FIXTURES ARE CONSTRUCTED HERE AND NOT DERIVED, BECAUSE THE DERIVATION
+ * CANNOT PRODUCE ONE. `measurementsFrom` computes every total from its own rows,
+ * so there is no code path that yields a skewed measurement — which is exactly
+ * what makes the loop above pass for every real measurement and therefore
+ * exactly why the loop alone proves nothing about the predicate. A control that
+ * only ever sees inputs it must accept has not been shown to reject anything.
+ *
+ * ⚠ WHY THIS IS NOT #143's LITERAL "TAKES THE SUITE TO A NON-ZERO EXIT". A gate
+ * assertion that must go red to pass is a gate that cannot ship. The predicate is
+ * scored in BOTH directions over the same rows instead, which is the same
+ * evidence without the contradiction. The literal exit-byte form is a by-hand
+ * red run and its receipt belongs in docs/proof/, not in the suite. */
+const HONEST: Measurement = {
+  id: 'measurement/honest@1', label: 'A measurement whose total sums its rows', unit: 'widgets',
+  computed: true, over: 'a set invented by this check', total: 5,
+  rows: [{ resource: 'res-a', value: '2', numeric: 2, link: null },
+         { resource: 'res-b', value: '3', numeric: 3, link: null }],
+};
+const SKEWED: Measurement = { ...HONEST, id: 'measurement/skewed@1', total: 99 };
+
+check('the honest fixture passes, so the predicate is not simply always-false',
+  totalIsReconstructible(HONEST), true);
+check('  the skewed fixture genuinely disagrees — 99 is not 2 + 3',
+  SKEWED.computed && SKEWED.total, 99);
+check('  and the two differ only in the total, so nothing else explains the verdict',
+  JSON.stringify({ ...HONEST, id: '', total: 0 }) === JSON.stringify({ ...SKEWED, id: '', total: 0 }), true);
+check('  the predicate CATCHES the skew', totalIsReconstructible(SKEWED), false);
 
 /* The timestamp measurement has no total, and that is the correct answer rather
  * than a missing feature: ADR-0017 rule 3 forbids a number combining two units,
@@ -475,5 +531,105 @@ check('  every count is zero when nothing references anything',
 check('  and the total collapses with them', noRefs?.computed ? noRefs.total : 'no total', 0);
 console.log('  ^ the referenced arm reads 1 and this arm reads 0 over the same code path,');
 console.log('    so the number is a join over the reference set and not a constant.');
+
+/* =========================================================================
+ * TEST 8 — #143. The maintenance counts, and their boundary named rather than
+ * shrugged at.
+ *
+ * ⛔ BOTH LINES ARE `not computed` ON TODAY'S BUILD AND THAT IS THE HONEST
+ * ANSWER, NOT A STUB. Relation, rollup and formula counts are read off a
+ * data-source SCHEMA; a view count is read off a view listing. `NotionPort`
+ * declares three methods and none of them returns either. #143's own AC3
+ * pre-authorises this outcome — "either views print like the other counts, or
+ * the not-computed line names the boundary".
+ * ========================================================================= */
+
+head('TEST 8 — a database count that cannot be computed names the endpoint, not a shrug');
+
+/* THE SUBJECT IS GUARDED FIRST: a fixture with no database in it would make
+ * every assertion below true about nothing at all. */
+const rDb = await scan({ config: cfg(ROOT, 0.0), port: fakePort(INBOUND_REFS), now: clock() });
+check('the fixture really did reach data sources, so this is not a vacuous pass',
+  rDb.gaps.some(g => g.resource === hyphenate(DATASET)), true);
+
+const typed = rDb.measurements.find(m => m.id === MEASUREMENT_IDS.databaseTypedProperties);
+const views = rDb.measurements.find(m => m.id === MEASUREMENT_IDS.databaseViews);
+
+check('the typed-property measurement is present', typed !== undefined, true);
+check('  and is NOT computed on this build', typed?.computed, false);
+check('  its cause is non-empty, so the assertions below are not vacuously true',
+  typed && !typed.computed ? typed.cause.length > 0 : false, true);
+check('  the cause names the SCHEMA endpoint that would supply the counts',
+  typed && !typed.computed ? typed.cause.includes('GET /v1/data_sources/{data_source_id}') : false, true);
+check('  and the traversal endpoint that would reach it',
+  typed && !typed.computed ? typed.cause.includes('GET /v1/databases/{id}') : false, true);
+
+check('the view measurement is present', views !== undefined, true);
+check('  and is NOT computed on this build', views?.computed, false);
+check('  the cause names GET /v1/views — the vendor question is DISCHARGED, not open',
+  views && !views.computed ? views.cause.includes('GET /v1/views') : false, true);
+
+/* ⛔ THE HONEST HALF, AND THE ONE MOST EASILY GOT WRONG. `docs/vendor/list-views.md`
+ * (fetched 2026-08-19) records that read-content capability — which a read-only
+ * integration already holds — is sufficient for GET /v1/views. So the missing
+ * thing is the CALL, not the grant, and a cause blaming the credential would be
+ * a false claim about the operator's own token. */
+check('  and it blames the missing CALL, never the grant',
+  views && !views.computed ? /not the grant/.test(views.cause) : false, true);
+check('  the grant is not falsely implicated anywhere in it',
+  views && !views.computed ? /(insufficient|lacks?|denied) (permission|capability|grant)/i.test(views.cause) : true, false);
+
+/* THE CAUSE IS SCOPED TO WHAT WAS ACTUALLY REACHED, so "not computed" is an
+ * observation about this scan rather than a standing disclaimer. */
+check('  the cause counts the data sources it is silent about',
+  typed && !typed.computed ? /2 data source\(s\) reached/.test(typed.cause) : false, true);
+
+head('TEST 9 — #145. The owner signal names the ROW endpoint it does not have');
+
+const people = rDb.measurements.find(m => m.id === MEASUREMENT_IDS.peoplePropertyEmpty);
+
+check('the measurement is present even though nothing was counted', people !== undefined, true);
+check('  and is NOT computed on this build', people?.computed, false);
+check('  its cause is non-empty', people && !people.computed ? people.cause.length > 0 : false, true);
+check('  the cause names the ROW endpoint, which is the one that is missing',
+  people && !people.computed ? people.cause.includes('POST /v1/data_sources/{data_source_id}/query') : false, true);
+check('  and the SCHEMA endpoint, where the property TYPE would come from',
+  people && !people.computed ? people.cause.includes('GET /v1/data_sources/{data_source_id}') : false, true);
+/* ⚠ THE TWO ENDPOINTS HAVE DIFFERENT REMEDIES AND THE CAUSE MUST NOT FLATTEN
+ * THEM. The schema endpoint is authorized; the row endpoint is a POST whose
+ * addition is an ASK FIRST decision that has not been granted. An operator told
+ * only "not computed" would reach for the wrong one. */
+check('  and it records that the ROW endpoint is ungranted, not merely uncalled',
+  people && !people.computed ? /not been granted/i.test(people.cause) : false, true);
+
+/* #145 AC3: the type is the only selector. Principle 4 forbids inferring meaning
+ * from a label, and "Owner" is a label. */
+check('  the label selects by TYPE', /people-type/i.test(people?.label ?? ''), true);
+check('  and no property NAME appears in the label',
+  /\bowner\b|\bassignee\b|\bDRI\b/i.test(people?.label ?? ''), false);
+check('  nor anywhere in the measurement',
+  /\bowner\b|\bassignee\b/i.test(JSON.stringify(people ?? {})), false);
+
+head('TEST 9b — every not-computed line reaches the reader, in all three emitters');
+
+const dbTerm = renderReport(rDb, {}).join('\n');
+const dbDoc = buildReportDocument(rDb, {});
+const dbMd = renderMarkdown(dbDoc);
+const dbJson = renderJson(dbDoc);
+
+check('the terminal report is non-empty, so the assertions below mean something', dbTerm.length > 0, true);
+/* LITERALS, NOT THE CONSTANTS UNDER TEST. Reading the label back out of
+ * measurement.ts would make these pass under any rename — the same shape as
+ * `rendered.includes(BLANKED)`, which this suite already records. */
+check('  the typed-property line renders', dbTerm.includes('Relation, rollup and formula properties'), true);
+check('  the view line renders', dbTerm.includes('Views, per reached database'), true);
+check('  the people line renders', dbTerm.includes('People-type properties with an empty value'), true);
+check('  three not-computed lines are printed, one per boundary',
+  (dbTerm.match(/not computed —/g) ?? []).length >= 3, true);
+check('  and they survive into the Markdown emitter', /Not computed —/.test(dbMd), true);
+check('  and into the JSON artifact', /"cause"/.test(dbJson), true);
+console.log('  ^ ADR-0017 decision 5: a quiet report and an absent report look identical.');
+console.log('    Baca et al. (10.1002/spe.2109) — an expired licence stopped a tool analysing');
+console.log('    and nobody noticed. Every boundary here is printed, with the endpoint named.');
 
 finish('A measurement is a counted fact. It makes no conformity claim, and ADR-0017 decision 4 gives it no channel to the exit byte — not even a rule-level one, because it owns no rule ID.');

@@ -128,7 +128,33 @@ export type Measurement = {
 export const MEASUREMENT_IDS = {
   lastEdited: 'measurement/last-edited@1',
   inboundReferences: 'measurement/inbound-references@1',
+  databaseTypedProperties: 'measurement/database-typed-properties@1',
+  databaseViews: 'measurement/database-views@1',
+  peoplePropertyEmpty: 'measurement/people-property-empty@1',
 } as const;
+
+/**
+ * Is a measurement's printed total the sum of the rows printed beside it?
+ *
+ * ADR-0017 decision 3, as an EXPORTED PREDICATE rather than a loop inside the
+ * suite — #143. Inline, the only thing a check can do is recompute and compare,
+ * and that passes for every measurement this file can build, because no code
+ * path hands `measurementsFrom` a total. A control that only ever sees inputs it
+ * must accept has not been shown to reject anything. Exported, the suite can
+ * feed it a deliberately skewed measurement and watch it return false, which is
+ * the difference between a control and a restatement.
+ *
+ * `computed: false` is vacuously reconstructible: there is no total and no rows,
+ * so there is no arithmetic for a reader to disagree with.
+ */
+export function totalIsReconstructible(m: Measurement): boolean {
+  if (!m.computed) return true;
+  /* Null means the rows do not sum, and the honest form of that claim is that
+   * NONE of them is numeric — a null total over numeric rows would be a figure
+   * withheld rather than a figure that does not exist. */
+  if (m.total === null) return m.rows.every(x => x.numeric === null);
+  return m.total === m.rows.reduce((sum, x) => sum + (x.numeric ?? 0), 0);
+}
 
 /**
  * THE SCOPE, SPELLED THE SAME WAY EVERY TIME IT IS PRINTED — #144.
@@ -248,7 +274,111 @@ export function measurementsFrom(manifest: Manifest): Measurement[] {
         total: null,
       };
 
-  return [lastEdited, inboundReferences(manifest)];
+  /* APPENDED, AND THE ORDER IS THE RENDER ORDER. `report.ts` iterates this array,
+   * so `lastEdited` staying first is a choice rather than an accident: the
+   * computed lines lead, and the boundary lines follow them. */
+  const reachedDatabases = all.filter(e => e.kind === 'data-source').length;
+
+  return [
+    lastEdited,
+    inboundReferences(manifest),
+    ...maintenanceLoad(reachedDatabases),
+  ];
+}
+
+/* ------------------------------------------ the boundary lines (#143, #145) --
+ *
+ * ⛔ THESE THREE ARE `computed: false` ON TODAY'S BUILD, AND THAT IS THE HONEST
+ * ANSWER RATHER THAN AN UNFINISHED ONE. `NotionPort` declares three methods —
+ * `GET /v1/users/me`, `GET /v1/pages/{id}`, `GET /v1/blocks/{id}/children` — and
+ * `scan.ts`'s `child_database` branch returns before spending a request. No
+ * schema, no view listing and no row has ever entered the manifest, so there is
+ * nothing here to count and no fixture, offline or live, that could change that:
+ * the limit is the PORT'S SHAPE, not the grant and not the data.
+ *
+ * ⛔ SO THE CAUSE MUST NAME THE ENDPOINT, AND MUST NAME THE RIGHT OBSTACLE. The
+ * three lines do not share one: the schema endpoint is authorized, the view
+ * endpoint needs no grant a read-only integration lacks, and the row endpoint is
+ * an ASK FIRST decision that has NOT been granted. An operator told only "not
+ * computed" reaches for the wrong remedy, and one told "insufficient permission"
+ * about the view line would be told something false about their own token.
+ *
+ * WHY THEY ARE PRINTED AT ALL — ADR-0017 decision 5. A quiet report and an
+ * absent report look identical. Baca et al., DOI 10.1002/spe.2109: a static
+ * analysis tool at Ericsson "had been abandoned after it stopped reporting
+ * faults; this was caused by an expired license that was not discovered before
+ * this study was done."
+ * -------------------------------------------------------------------------- */
+
+/**
+ * The reached-set clause every boundary cause below ends with.
+ *
+ * ⭐ SCOPED TO WHAT THIS SCAN ACTUALLY REACHED, so "not computed" is an
+ * observation about this run rather than a standing disclaimer a reader learns
+ * to skip. A line that reads the same on every workspace is a line nobody reads.
+ */
+const reachedClause = (databases: number): string =>
+  `${databases} data source(s) reached by this scan, none entered`;
+
+function maintenanceLoad(databases: number): Measurement[] {
+  /* ⚠ NO `sorted by …` CLAUSE ON THESE LABELS, DELIBERATELY. #143 AC4 requires
+   * sorting to name its key in the header; nothing here sorts, because nothing
+   * here has rows. A label advertising a sort the run did not perform is a claim
+   * about work that did not happen. The clause is added in the same edit that
+   * adds the rows, and not before. */
+  const typedProperties: Measurement = {
+    id: MEASUREMENT_IDS.databaseTypedProperties,
+    label: 'Relation, rollup and formula properties, per reached database',
+    unit: 'properties',
+    computed: false,
+    cause: `no data-source schema was retrieved — these counts are read off the schema that GET /v1/data_sources/{data_source_id} returns ("information that describes the structure and columns of a data source", docs/vendor/data-source-endpoints.md section 1, fetched 2026-08-19), and this scan's port declares three methods (GET /v1/users/me, GET /v1/pages/{id}, GET /v1/blocks/{id}/children), none of which retrieves a database or a data source; widening it means GET /v1/databases/{id} to list a database's data-source IDs, which IS already authorized, and then GET /v1/data_sources/{data_source_id} for each schema (${reachedClause(databases)})`,
+  };
+
+  /* ⭐ THE VENDOR QUESTION #143 AC3 RAISES IS DISCHARGED IN THIS REPOSITORY AND
+   * IS NOT RE-ASKED FROM MEMORY. `docs/vendor/list-views.md`, fetched
+   * 2026-08-19 from the endpoint's own reference page: GET /v1/views "Returns a
+   * paginated list of View references for the specified database", carrying view
+   * metadata only, "an array of view-reference objects with `object` and `id`,
+   * plus pagination". An array with pagination is exactly countable — so the
+   * data IS obtainable and the read-content capability a read-only integration
+   * already holds is sufficient for it.
+   *
+   * ⛔ WHICH MAKES THE MISSING THING THE CALL, NOT THE GRANT, and this cause must
+   * say so. It is also why this line is not a NEGATIVE claim about Notion and
+   * needs no negation marker: it asserts nothing the vendor could falsify by
+   * shipping something. */
+  const views: Measurement = {
+    id: MEASUREMENT_IDS.databaseViews,
+    label: 'Views, per reached database',
+    unit: 'views',
+    computed: false,
+    cause: `no view listing was requested — a view count would come from GET /v1/views, which returns a paginated list of view references for a specified database and carries view metadata only (docs/vendor/list-views.md, fetched 2026-08-19); the read-content capability a read-only integration already holds is sufficient for it, so what is missing here is the call and not the grant — this scan's port declares three methods and GET /v1/views is not among them (${reachedClause(databases)})`,
+  };
+
+  /* ⛔ TWO THINGS ARE MISSING HERE AND THEY HAVE DIFFERENT REMEDIES — #145. The
+   * property TYPE lives in a data-source schema, and the empties are counted
+   * over ROWS. `docs/vendor/data-source-endpoints.md` section 2 records
+   * POST /v1/data_sources/{data_source_id}/query as "the endpoint that returns
+   * the rows", a POST whose addition to the port is a CLAUDE.md section 3 ASK
+   * FIRST decision that has not been granted. Flattening the two into one cause
+   * would hand the operator the wrong lever.
+   *
+   * ⛔ AND WHEN IT IS BUILT, THE SELECTOR IS THE TYPE AND NEVER THE NAME.
+   * Matching a property called "Owner" infers meaning from a label, which
+   * Principle 4 forbids; the property's own name prints as data beside the
+   * count. The emptiness test is the one REQ001 already settled —
+   * `readProperty(...)`.state === 'empty' in req001.ts, which already rules that
+   * an empty array is empty, that a run of blank spans is empty, and that
+   * `false` and `0` are values. Do not write a second predicate for it. */
+  const peopleEmpty: Measurement = {
+    id: MEASUREMENT_IDS.peoplePropertyEmpty,
+    label: 'People-type properties with an empty value, per reached data source',
+    unit: 'rows',
+    computed: false,
+    cause: `no data-source row was read — this count needs the property TYPES from GET /v1/data_sources/{data_source_id} and the rows themselves from POST /v1/data_sources/{data_source_id}/query ("This is the endpoint that returns the rows", docs/vendor/data-source-endpoints.md section 2, fetched 2026-08-19); this scan's port declares three methods and neither is among them, and the row endpoint in particular has NOT been granted — it is a POST and adding it is an ask-first decision, so this line widens with that grant and not before (${reachedClause(databases)})`,
+  };
+
+  return [typedProperties, views, peopleEmpty];
 }
 
 /* ------------------------------------------------ inbound references (#144) --
