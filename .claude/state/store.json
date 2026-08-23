@@ -1,8 +1,8 @@
 {
   "project": "workspace_lint",
-  "updated": "2026-08-23",
-  "session": "S040",
-  "phase": "verdict-sprint: THE MEASUREMENTS SET IS COMPLETE. #140/#141/#142 closed at S038; #143 and #144 BUILT, MERGED (PR #153, merge 157757e, ancestry-verified with merge-base not the badge) and CLOSED at S040; #145 BUILT and MERGED but left OPEN and re-labelled ready-for-human, because its AC1 is unsatisfiable and amending it is an operator scope call. Spec #139 owes nothing further. RUN 2 IS NOW UNBLOCKED and is the kill-criterion reading - all six countable signals exist. Gate 16 suites, exit 0 on main.",
+  "updated": "2026-08-22",
+  "session": "S041",
+  "phase": "verdict-sprint: RUN 2 EXECUTED under pre-registration (PR #155 OPEN, unmerged - prereg ad69ab1 before any scan, results 66b0e34). Replication exact, 399 requests identical to run 1, counters cost zero. P1/P2/P3/P4/P6 hold, P5 refuted structurally, P7 pending. NEXT: operator cold read -> docs/proof/dispositions-run2.md -> pre-registered adjudication SURVIVES / SURVIVES-NARROW / KILL. Gate 16 suites exit 0 on main@8d23fe8.",
   "standing_rule_adopted_S025": "AMENDED 2026-08-18 on the operator's instruction to scrutinise it. ORIGINAL: no new decision ticket opens until four rules ship, unless it blocks a rule. It limited RECORDING where the problem was SCHEDULING, which pushed decisions into prose in a state file - the one medium this project has proven six times it cannot trust - and made the `decision` label expensive, corrupting the instrument the rule was counted with. AMENDED FORM: record always, schedule never. Every decision question is FILED. At most ONE decision ticket may be active (labelled `decision` and NOT `deferred`) while any v0.1 rule is unbuilt; 'unless it blocks a rule' is unchanged and now gates scheduling rather than recording. `deferred` is a new supplementary label and a deferred issue MUST name what would make it active. Prior art, unanimous across three domains and none of it consulted when the rule was written: Kanban/theory-of-constraints put WIP limits on work in progress and never on the backlog; aviation's Minimum Equipment List permits deferring a defect only by logging it; ordinary defect triage answers backlog pressure with severity plus an explicit deferred resolution. Full reasoning in docs/agents/triage-labels.md 'The standing rule, as amended'. Check: gh issue list --label decision --state open, minus those labelled deferred, must be <= 1. Measured at S027 close: ONE active (#70 decision 1, which genuinely blocks #59), nine deferred.",
   "phase_detail_s024": "S024: EVIDENCE, then a decision. #51 worked to a recorded decision; PR #86 merged as 818aba0.",
   "phase_detail_s033": "S033 judged #128 alone. ADR-0016 re-justifies ADR-0014 and ADR-0009, both on the same restated ground: non-guarantee (ADR-0015 decision 2) carries every clause that routed through the refuted finding 1. ADR-0014 denominator clause restated; ADR-0009 decision 4 stands because retrievable is not attestable - narrowing asserted from absence in a non-guaranteed index is negation as failure. The DoD hid a requirement: support.ts had no re-justification mechanism, since an OUT ADR cites its refuted support forever. Shipped the Re-justifies header-line convention: discharge valid only while its author is IN, mutual bootstrapping refused, discharged entries visible. CHECK-support asserts OUT pre-discharge AND clear post-discharge so neither half is substitutable. Three mutations killed, substitution verified each. PR #132 open at close; operator merges. PR #131 (codex, external-LLM analysis) found open by the new gh-pr-preflight guard, zero file overlap, awaiting operator disposition.",
@@ -680,5 +680,21 @@
     ],
     "agent_config_incident": "A UserPromptSubmit hook and .claude/settings.json were built into the product tree, argued for in a commit message and a PR body, and removed only after the operator objected twice. Branch history was rewritten and force-pushed with lease so they never entered merged history. THE GUARD HOLE IS UNCLOSED: .claude/hooks and .claude/settings.json are outside guard-canonical-doc-edit.py's set, so a hook there is an always-firing instruction channel through no plan gate. Operator-only to fix.",
     "gate": "16 suites, exit 0 on main after merge; suite count moved 15 -> 16 and the claim comment caught the stale count unprompted"
+  },
+  "phase_detail_s041": {
+    "landed": [
+      "docs/proof/prereg-run2-kill-criterion-read.md - P1-P7, extended read protocol, three-branch adjudication fixed before data",
+      "docs/proof/results-run2-kill-criterion-read.md - five holds, P5 refuted structurally, P7 pending",
+      "five deterministic scans + five show-titles copies in .scratch/ for the cold read"
+    ],
+    "found": [
+      "the TARGET-3 repair is visible in product output three ways untold, and it moved ROOT-A REF001 coverage DOWN 97.4->94.9 because the replacement target is a database the slice cannot enter - a price signal for #51 stated by the instrument",
+      "the last-edited measurement renders exactly one row (the declared root) on every policy-free run of this build - reference targets sit in the references unit and nothing is hydrated",
+      "inbound references landed on reached databases: 2 total across five runs, one of them the repair",
+      "S040 band claim falsified at start: #145 was already CLOSED with AC1 amended per its own recommendation - unblocking, not blocking"
+    ],
+    "open": [
+      "P7 and the adjudication wait on the operator cold read; dispositions-run2.md does not exist yet"
+    ]
   }
 }

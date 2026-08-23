@@ -738,93 +738,66 @@ the S040 session before either was archived.
 ---
 
 
-## S040 — 2026-08-23 — the Measurements set completed, and an agent-config channel caught before it merged
 
-**PHASE:** VERDICT SPRINT. **The Measurements set is COMPLETE.** #140/#141/#142 closed in S038;
-**#143 and #144 closed this session**, #145 is built and left OPEN on a scope call that is the
-operator's. Spec #139 owes nothing further. **Run 2 is now unblocked and is the next real move.**
 
-**TESTS:** Gate green on `main` at **16 suites, exit 0** — verified after merge, not before.
-The suite count moved 15 -> 16; the claim comment in this file caught the stale count on the first
-run after registration, which is the mechanism doing its job unprompted.
+## S041 — 2026-08-22 — run 2 executed under pre-registration; the adjudication now waits on the cold read
 
-**MERGED:** PR #153, merge commit `157757e`, **ancestry-verified with `git merge-base --is-ancestor`,
-never the badge**. Checked for accidental auto-closes in the two seconds after the merge: none.
+**PHASE:** VERDICT SPRINT — the agent half of run 2 is COMPLETE. Pre-registration first, scans
+second, results third, in that commit order. **PR #155 is OPEN and unmerged** (`proof/run2-kill-criterion-read`,
+commits `ad69ab1` prereg → `66b0e34` results); the operator merges, never the agent.
 
-### What landed
+**TESTS:** Gate green on `main@8d23fe8` at session start — 16 suites, exit 0, typecheck first.
+No slice/ code changed this session; the instrument ran as merged.
 
-**#144 — inbound references per reached database**, beside the last-write half, sorted by inbound
-count ascending then resource ID so the order is total. Two facts the ticket did not anticipate, both
-surfaced on the ticket rather than absorbed: **the count is structurally 0-or-1**, because the
-reference set is deduplicated by target (#141), so it answers *is anything pointing here* and not
-*how many links exist*; and **the last-write half is a boundary line** naming this tool's missing
-database retrieve, because Notion DOES return the field and a row reading "no timestamp" would be
-false about the vendor.
+**One band claim was falsified at session start and it unblocked rather than blocked:** S040
+carried #145 as "left OPEN on a scope call". It was already CLOSED — AC1 amended exactly as the
+ticket's recommendation proposed, the row half moved to #51's acceptance, the banner at the top
+of the body. Nothing gated run 2.
 
-**#143 and #145 — three boundary lines**, all `computed: false`, which is the branch #143's AC3
-pre-authorises. ⛔ **The three do NOT share an obstacle and the causes must not flatten them:** the
-schema endpoint is authorized, the views endpoint needs no grant a read-only integration lacks, and
-the row endpoint is ask-first and **not granted**. An operator told only "not computed" three times
-reaches for the wrong lever.
+### What the run measured (full record: `docs/proof/results-run2-kill-criterion-read.md`)
 
-**`Entry.kind`** is new — stamped by the block-listing site that observes it, and on the retrieve's
-**success branch**, so a root's kind is an observation rather than an inference from build capability.
-
-**`slice/CHECK-assertions.ts`** — the tautology lint, suite 16. Five shapes this repo has actually
-shipped, all mechanically detectable. **Comments are blanked before scanning**, because every one of
-those shapes is described in a comment here and a lint that read those as hits would be switched off
-within a day. It reported **itself** on its first run.
-
-### ⛔ The finding that outranks the rule work
-
-**An agent-config channel was built into `.claude/` and nearly merged.** See the standing block above
-for the rule and the guard hole; it is recorded there rather than here because it must fire from the
-always-loaded surface. The short version: availability drove placement — `~/.claude/hooks/` is
-write-denied, so the agent wrote where it was *permitted* and reasoned backwards into calling it
-correct, in the same session it correctly ran the plan gate for a five-line pointer in `CLAUDE.md`.
-
-⭐ **The generalisation worth carrying: a restriction that forces work to the operator's layer is a
-control, not an obstacle.** Routing around it produced a change no gate could see.
-
-### Two controls that were wrong, both caught by their own guards
-
-- ⛔ **A recompute control whose FIXTURE could not exercise it.** The reconstructibility loop ran over
-  a fixture reaching no database, so every measurement had a null total and the `total === sum` branch
-  was never taken. Skewing a real total by +41 reddened the gate through OTHER assertions and left the
-  loop silent. **An isolation control needs an arm where the thing under test is present in the FORM
-  under test, not merely one where the code path is entered.** Receipt:
-  `docs/proof/results-143-total-skew.md`.
-- ⛔ **A negative lookaround followed by `.*` enforces "somewhere in the document", not "on this row".**
-  It caught a mutation in two emitters and passed it in the third, which was the only tell. Now scoped
-  per row, and the shape is in the new lint.
+- **Same-day replication is exact.** Children, databases, exit bytes (3,3,2,3,3) and the request
+  total — **399, identical to run 1** — all reproduce. The counters cost zero requests, by
+  construction. ROOT-C reproduced its exit 2 through the same block-tree budget child (#136 data).
+- **The TARGET-3 repair is visible to the product in three places, untold:** the finding is gone
+  (ROOT-A: 2 REF001 findings, was 3); the replacement mention is a new 39th reference; and its
+  target — a database inside ROOT-A's own child set — is the ONLY nonzero inbound-reference row
+  in the whole run set. **The sting: the repair moved ROOT-A's REF001 coverage DOWN, 97.4% →
+  94.9%**, because the live replacement target is a database this slice cannot enter. That is a
+  price signal for #51 stated by the instrument itself.
+- **The flagship edit-age counter renders exactly one row per report — the declared root.** A
+  policy-free run hydrates nothing and reference targets sit in the references unit, so the
+  retrieved resource set is the root alone, on every root. The `over` line prices it honestly
+  ("1 of 20 reached"), and P5 was REFUTED structurally: no spread exists to measure, anywhere.
+- **Predictions: P1, P2, P3, P4, P6 HOLD; P5 REFUTED (the registered embarrassing branch, at
+  full strength); P7 PENDING the operator's cold read.**
 
 ### EXACT NEXT STEPS
 
-⛔ **0. DO NOT RESUME FROM THIS FILE. Open a fresh context and run `/implement` or the run-2 protocol
-directly.** This file is the standing block, not the resume surface.
+1. **Operator merges or amends PR #155**, then cold-reads the five `--show-titles` copies —
+   `.scratch/r2-ROOT-A-titles.txt` … `r2-ROOT-E-titles.txt` — under the protocol in
+   `docs/proof/prereg-run2-kill-criterion-read.md`: findings unchanged from run 1 inherit their
+   bins; the five Measurements sections get one bin each (SIGNAL / NOISE / CANT-TELL); the
+   density question is answered in his own words and recorded verbatim.
+2. **Bins land in `docs/proof/dispositions-run2.md`**, same redaction rule (role labels only;
+   the label→ID map is machine-local at `.scratch/real-roots-map.md`, gitignored, never
+   committed).
+3. **The adjudication branch — SURVIVES / SURVIVES-NARROW / KILL — is read off the
+   pre-registered procedure, never re-derived.** SURVIVES-NARROW obliges a filed ticket on the
+   counter surface. A KILL is the operator's values call in his own words and no bin arithmetic
+   reaches it for him.
+4. Two facts are fixed for that adjudication regardless of bins, from results §3: two of the six
+   countable signals render as boundary text on this build, and a third is structurally 0-or-1.
 
-1. **Run 2 is the next move and it is the KILL-CRITERION READ.** All six countable signals now exist.
-   ⚠ **The Measurements section renders four boundary paragraphs to one computed table** — every line
-   required by ADR-0017 decision 5, but whether that reads as honest or as noise is a felt-surface
-   judgement bearing directly on the verdict. Flagged on #143 and #145; **not decided**.
-2. **#145 needs one operator call and is `ready-for-human`:** AC1 is unsatisfiable — `fakePort`
-   implements `NotionPort`, which has no query method, so rows are unreachable **offline too**.
-   Recommendation on the ticket: amend AC1, move the row half to #51's acceptance.
-3. **The guard hole is unclosed.** `.claude/hooks/` and `.claude/settings.json` are outside the
-   guarded set. Operator-only.
-4. **`mewt` is not installed** and this repo hand-runs mutations one at a time.
+**NEXT-MODEL: Fable 5 at `/effort high`** — unchanged from S040's declaration and re-derived:
+the next session is disposition synthesis and the kill-criterion adjudication, the
+calcifying-judgement class the routing rule reserves for Fable. If the operator instead wants
+mechanical work first (e.g. #96), that is an Opus session and the adjudication waits.
 
-**NEXT-MODEL: Fable 5 at `/effort high`** — and this is a CHANGE from S039's Opus declaration,
-re-derived rather than copied. Run 2 is disposition synthesis and a kill-criterion adjudication, which
-is exactly the calcifying-judgement class the routing rule reserves for Fable: the gate cannot falsify
-a verdict about whether an owner reads the counters as noise. The felt-surface call in step 1 is the
-same class.
-
-**NEXT-REPO/CWD:** the `workspace_lint` repository root — where the state surfaces, the resume ritual
-and the gate all live.
+**NEXT-REPO/CWD:** the `workspace_lint` repository root.
 
 ### WHAT ONLY THE OPERATOR CAN DO
 
-Decide #145's AC1 amendment. Close the `.claude/hooks/` + `.claude/settings.json` guard hole. Decide
-the Measurements density question when run 2 surfaces it. `#102`'s fixture backlog. Install `mewt` if
-the hand-run mutation cost is worth removing.
+Merge PR #155. The cold read, the five bins, the density answer, and — if he reaches it — the
+KILL sentence. Close the `.claude/hooks/` + `.claude/settings.json` guard hole. `#102`'s fixture
+backlog. Install `mewt` if the hand-run mutation cost is worth removing.
