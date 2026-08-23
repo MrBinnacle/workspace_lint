@@ -4,10 +4,5 @@
     "strict": true, "noEmit": true, "skipLibCheck": true,
     "types": ["node"], "allowJs": false
   },
-  "include": [
-    "live-ref001.ts",
-    "link-recognition.ts",
-    "CHECK-link-recognition.ts",
-    "block-vs-page-timestamp.ts"
-  ]
+  "include": ["*.ts"]
 }
