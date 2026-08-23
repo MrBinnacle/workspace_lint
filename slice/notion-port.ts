@@ -57,8 +57,54 @@ export function attestationOf(endpoint: string): Attestation {
   return ATTESTED_ENDPOINTS.includes(endpoint) ? 'attested' : 'unattested';
 }
 
+/**
+ * One block, as `GET /v1/blocks/{block_id}/children` returns it — #158 item 0.
+ *
+ * ⛔ IT IS A WIDENING OF A CALL THIS SLICE ALREADY MAKES, NOT A NEW ENDPOINT,
+ * and the precedent is written twice below on `retrievePage`: `properties` (#58)
+ * and `last_edited_time` (#142) were both fields the response had always
+ * carried and the declared return type had always thrown away. "Keeping more of
+ * one response is not a new endpoint", so #51's ASK-FIRST precedent for ADDING
+ * an endpoint does not apply here either, and the endpoint surface in this
+ * file's header is unchanged.
+ *
+ * ⛔ THE COST OF NOT DOING IT WAS A FALSE CLAIM ABOUT THE VENDOR. `measurement.ts`
+ * stated, unqualified, that a child page enumerated from its parent's listing has
+ * no response carrying its `last_edited_time`. The response exists, this code
+ * receives it, and `results: unknown[]` discarded it — so the report named a
+ * boundary that was this tool's own type declaration. A tool that reports an
+ * external obstacle for a figure it already holds is committing the defect it
+ * exists to detect.
+ *
+ * EVERY FIELD IS OPTIONAL, AND THAT IS THE PARTIAL-BLOCK-OBJECT CASE. When the
+ * API returns a partial block object is undocumented, so a consumer may never
+ * assume `type` or `last_edited_time` arrived. `scan.ts`'s `asChildBlock`
+ * validates before reading, and a block that carried no timestamp produces no
+ * measurement row rather than a null one.
+ *
+ * ⚠ WHETHER A `child_page` BLOCK'S TIMESTAMP IS ITS PAGE'S IS EMPIRICAL, n=1,
+ * AND THE VENDOR IS SILENT. `docs/proof/results-block-vs-page-timestamp.md`,
+ * pre-registered before any data existed: across four runs the block's value
+ * moved with its page's on every content-only edit and was equal at every
+ * measurement. Labelling is licensed as an OBSERVATION and never as a documented
+ * guarantee. The same file records that the API truncates this value to the
+ * MINUTE — 24 of 24 observed — which the vendor does not document and its own
+ * example contradicts, so ⛔ NO CODE HERE OR DOWNSTREAM MAY ORDER EDITS OR
+ * MEASURE ELAPSED TIME BELOW ONE MINUTE.
+ *
+ * The index signature keeps the block's own type payload — `child_page`,
+ * `paragraph`, `toggle` — reachable without this file declaring a copy of the
+ * vendor's block union, which is the copy that drifts.
+ */
+export type BlockObject = {
+  id?: string;
+  type?: string;
+  last_edited_time?: string;
+  [key: string]: unknown;
+};
+
 export type BlockListResponse = {
-  results: unknown[];
+  results: BlockObject[];
   has_more: boolean;
   next_cursor: string | null;
   /** ADR-0006 decision 1. Tested positively, never awaited. */

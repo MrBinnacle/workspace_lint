@@ -11,7 +11,7 @@
  * deterministic.
  */
 
-import { PortError, type BlockListResponse, type NotionPort } from './notion-port.js';
+import { PortError, type BlockListResponse, type BlockObject, type NotionPort } from './notion-port.js';
 import { hyphenate } from './ids.js';
 import type { Config } from './config.js';
 
@@ -33,11 +33,29 @@ export const DATASET = '5db3573f8cf6a332afe7fee0d11db964';
  */
 export const DATASET_B = '6ec46840cf6a332afe7fee0d11db9642';
 
-export const childPage = (id: string, title: string) => ({ object: 'block', id, type: 'child_page', child_page: { title } });
-export const childDb = (id: string, title: string) => ({ object: 'block', id, type: 'child_database', child_database: { title } });
+/**
+ * A `child_page` block as the listing returns it — #158 item 0.
+ *
+ * `lastEdited` IS OMITTED WHEN NOT SUPPLIED, not sent as `undefined`, for the
+ * reason `retrievePage`'s fields are: the fake models a RESPONSE, and a response
+ * either carries the key or does not. That distinction is the whole fixture for
+ * the PARTIAL BLOCK OBJECT — the case Notion does not document and which
+ * `docs/proof/results-block-vs-page-timestamp.md` explicitly did not force. A
+ * fake that always supplied the key could not exercise the branch that has to
+ * survive one arriving without it.
+ */
+export const childPage = (id: string, title: string, lastEdited?: string) =>
+  ({ object: 'block', id, type: 'child_page', child_page: { title }, ...(lastEdited === undefined ? {} : { last_edited_time: lastEdited }) });
+export const childDb = (id: string, title: string, lastEdited?: string) =>
+  ({ object: 'block', id, type: 'child_database', child_database: { title }, ...(lastEdited === undefined ? {} : { last_edited_time: lastEdited }) });
 export const para = (id: string) => ({ object: 'block', id, type: 'paragraph', paragraph: { rich_text: [] } });
 
-export const page = (results: unknown[], extra: Partial<BlockListResponse> = {}): BlockListResponse =>
+/* `BlockObject[]` since #158 item 0 — the fake models the response, and the
+ * response's declared shape is no longer `unknown[]`. Every field on
+ * `BlockObject` is optional, so the fixture helpers above and the inline block
+ * literals throughout this file satisfy it unchanged; what it now rejects is a
+ * fixture block that is not an object at all. */
+export const page = (results: BlockObject[], extra: Partial<BlockListResponse> = {}): BlockListResponse =>
   ({ results, has_more: false, next_cursor: null, ...extra });
 
 export type Step = BlockListResponse | { throwStatus: number; throwCode: string };
@@ -143,6 +161,46 @@ export const THREE_CHILDREN: Record<string, FakeResource> = {
   [PAGE_A]: { steps: [page([])] },
   [PAGE_B]: { steps: [page([])] },
   [DATASET]: { steps: [page([])] },
+};
+
+/**
+ * THE BLOCK LISTING CARRIES THE TIMESTAMPS — #158 item 0.
+ *
+ * The root retrieve supplies one; `PAGE_A` and `DATASET` carry one on their own
+ * `child_page` / `child_database` block; `PAGE_B` carries NONE. Three
+ * provenances in one fixture, deliberately:
+ *
+ *   ROOT     retrieve        — GET /v1/pages/{id} returned it
+ *   PAGE_A   block-listing   — the parent's listing returned it, no retrieve made
+ *   DATASET  block-listing   — likewise, and this slice makes no database retrieve
+ *   PAGE_B   none            — the partial-block-object case, undocumented and
+ *                              never forced live, so it must be survivable here
+ *
+ * ⛔ `PAGE_B` IS THE CONTROL AND MUST NOT BE GIVEN A TIMESTAMP AS A TIDY-UP. A
+ * fixture in which every resource has one cannot show that the denominator is
+ * still printed, and the denominator is the only thing standing between these
+ * rows and a reader taking them for the whole reached set.
+ *
+ * The three instants are distinct and ordered, so the sort is falsifiable: a
+ * derivation that dropped the sort would still pass against ties.
+ */
+export const BLOCK_EDITED_A = '2026-01-05T11:00:00.000Z';
+export const BLOCK_EDITED_DB = '2026-03-30T16:00:00.000Z';
+
+export const ROOT_EDITED = '2026-02-19T08:14:00.000Z';
+
+export const BLOCK_TIMES: Record<string, FakeResource> = {
+  [ROOT]: {
+    lastEditedTime: ROOT_EDITED,
+    steps: [page([
+      childPage(PAGE_A, 'wl-outside-grant', BLOCK_EDITED_A),
+      childPage(PAGE_B, 'wl-revoke-parent'),
+      childDb(DATASET, 'wl-dataset', BLOCK_EDITED_DB),
+    ])],
+  },
+  [PAGE_A]: { steps: [page([])] },
+  [PAGE_B]: { steps: [page([])] },
+  [DATASET]: { steps: [page([])], pageFail: { status: 404, code: 'object_not_found' } },
 };
 
 /* The root resolves, then its child list is never retrieved at all. The scan can

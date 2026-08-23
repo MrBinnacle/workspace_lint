@@ -201,7 +201,7 @@ const SCANNED_SET = 'from the scanned set';
  * file: the row reads `Entry.lastEditedTime`, which the new retrieve would
  * populate exactly as `GET /v1/pages` populates it for a page today.
  */
-const NO_DATABASE_RETRIEVE = 'last edited: not read (this scan makes no database retrieve)';
+const NO_DATABASE_RETRIEVE = 'last edited: not read (no database retrieve, and its block carried no timestamp)';
 
 /**
  * Why a database row carries no link, stated for the database case specifically.
@@ -228,24 +228,80 @@ const NO_DATABASE_LINK =
  * move the manifest makes with `Loss.cause` and the disclosure block.
  */
 const NO_DATABASE_RETRIEVE_DETAIL =
-  'last-write timestamps are unread for every row: this scan retrieves pages only (GET /v1/pages/{id}) and makes no database retrieve, so no response carrying a database\'s last_edited_time exists — the boundary is this tool\'s, not the vendor\'s, and it widens under #51';
+  'where a last-write timestamp is unread on a row, both sources were silent: this scan retrieves pages only (GET /v1/pages/{id}) and makes no database retrieve, and that database\'s own child_database block in the parent listing carried no last_edited_time either — the boundary is this tool\'s, not the vendor\'s, and it widens under #51';
 
 /**
- * The resources whose own retrieve this scan made.
+ * The resources this scan OBSERVED a timestamp for, from either call.
  *
- * ⛔ THIS IS A SMALLER SET THAN "RESOURCES THE SCAN REACHED", AND THE GAP IS THE
- * POINT. `GET /v1/pages/{id}` runs for the declared root, for reference targets,
- * and for resources a configured rule needed hydrated. A child page discovered
- * in the root's block listing is ENUMERATED and FETCHED without its own retrieve
- * ever being made, so no response carrying its `last_edited_time` exists.
+ * ⛔ IT USED TO SAY "the resources whose own retrieve this scan made", AND THE
+ * SENTENCE BENEATH IT WAS FALSE — #158 item 0. It read: a child page discovered
+ * in the root's block listing is enumerated and fetched without its own retrieve,
+ * "so no response carrying its `last_edited_time` exists". The response exists.
+ * `GET /v1/blocks/{block_id}/children` returns block objects, a full block
+ * object carries `last_edited_time`, a `child_page` IS a block object, and this
+ * scan already makes that call. The field was discarded at our own type boundary
+ * (`BlockListResponse.results: unknown[]`) and the report then named a
+ * vendor-shaped obstacle for a figure the run already held — which is precisely
+ * the inference this product exists to detect, committed by this product.
  *
- * The honest consequence is that this measurement's denominator is the retrieved
- * set and it says so, rather than quietly reporting rows for the resources it
- * happens to have and letting the reader infer the rest were not edited. That
- * inference is the defect this product exists to detect, and it would be this
- * product committing it.
+ * ⚠ THE SET IS STILL SMALLER THAN "RESOURCES THE SCAN REACHED" and the gap is
+ * still the point. A block object may arrive PARTIAL, carrying an id and no
+ * timestamp, and when the API does that is undocumented. Such a resource gets no
+ * row, and the denominator below prints both numbers so a reader cannot take the
+ * rows for the whole reached set.
  */
-const retrieved = (e: Entry): boolean => e.unit === RESOURCES && e.lastEditedTime !== null;
+const observed = (e: Entry): boolean => e.unit === RESOURCES && e.lastEditedTime !== null;
+
+/**
+ * How a row's timestamp was obtained, in the row's own words.
+ *
+ * ⛔ THE TWO PROVENANCES DO NOT CARRY THE SAME WEIGHT AND A BARE COLUMN OF
+ * INSTANTS HIDES THAT. A retrieve-sourced value is the page's own timestamp as
+ * the vendor documents it. A listing-sourced value is the BLOCK's timestamp, and
+ * that it equals the page's is an empirical finding at n=1 with the vendor
+ * silent. Printing them in one column without a marker asserts that they are the
+ * same kind of fact.
+ *
+ * ⚠ SHORT ON THE ROW, FULL ON THE MEASUREMENT — the split this file already
+ * makes with `NO_DATABASE_RETRIEVE` and its detail, and for the same reason: the
+ * full licence repeated on every row is four clauses of identical text between
+ * the reader and the only thing that varies.
+ */
+const provenanceOf = (e: Entry): string =>
+  e.lastEditedSource === 'retrieve'
+    ? 'from its own retrieve'
+    : "from the parent's block listing";
+
+/**
+ * THE LICENCE, PRINTED ONCE BESIDE THE ROWS, WITH ITS RECEIPT.
+ *
+ * ⛔ ALL THREE LIMITS ARE MANDATORY AND NONE IS OPTIONAL. A block timestamp
+ * labelled as its page's rests on `docs/proof/results-block-vs-page-timestamp.md`
+ * — pre-registered at `cc0eb1c` before any data existed, four runs, the block's
+ * value moving with its page's on every content-only edit and equal at every
+ * measurement. That is an OBSERVATION at n=1 and never a documented guarantee:
+ * the vendor has promised nothing and may change it without notice. The
+ * partial-block-object case was not forced, so the finding holds on a full
+ * object and says nothing about a partial one. And the API truncates the value
+ * to the MINUTE (24 of 24 observed), which the vendor does not document and its
+ * own example contradicts.
+ *
+ * ⛔ THE TRUNCATION IS LOAD-BEARING FOR A READER, NOT TRIVIA. Two edits inside
+ * one minute are indistinguishable in this column, so nothing here or downstream
+ * may order edits or measure elapsed time below that resolution.
+ */
+/**
+ * ⚠ IT NO LONGER SAYS "per resource the scan RETRIEVED" — #158 item 0. That
+ * label was correct while the retrieve was the only source and became a false
+ * narrowing the moment the block listing's field was kept: most rows in this
+ * table now belong to resources that were never retrieved. `observed` is the
+ * predicate, so `observed` is the word.
+ */
+const LAST_EDITED_LABEL =
+  'Last edited, per resource whose timestamp this scan observed (sorted by timestamp, oldest first)';
+
+const BLOCK_TIMESTAMP_LICENCE =
+  "a timestamp marked \"from the parent's block listing\" is the child_page or child_database BLOCK's last_edited_time, taken from GET /v1/blocks/{block_id}/children, which this scan already makes; that it is also the page's own is an OBSERVED finding and not a documented guarantee — observed n=1, vendor silent, four runs, docs/proof/results-block-vs-page-timestamp.md — and the API truncates every value in this column to the minute, so two edits within one minute are indistinguishable here and nothing may order edits below that resolution";
 
 /**
  * Derive the v0.1 measurement set from the manifest.
@@ -257,7 +313,7 @@ const retrieved = (e: Entry): boolean => e.unit === RESOURCES && e.lastEditedTim
  */
 export function measurementsFrom(manifest: Manifest): Measurement[] {
   const all = manifest.of(RESOURCES);
-  const withTimes = all.filter(retrieved);
+  const withTimes = all.filter(observed);
 
   /* SORTED BY A NAMED KEY, AND THE HEADER NAMES IT — ADR-0017 rule 6. Sorting is
    * allowed and ranking is not: the reader draws the conclusion from an ordered
@@ -269,37 +325,54 @@ export function measurementsFrom(manifest: Manifest): Measurement[] {
    * than of the workspace — ADR-0004, and the same reason SARIF Appendix F.3
    * sorts results. Without a tie-break two runs over an unchanged workspace
    * could differ, which would make this section the reason determinism fails. */
+  /* ⛔ SORTED ON THE INSTANT, NEVER ON THE RENDERED CELL. The cell carries the
+   * provenance marker after the timestamp, and sorting the rendered string would
+   * let two resources edited in the same minute be ordered by which call
+   * observed them — a property of this scan's traversal, not of the workspace,
+   * which is the class of field ADR-0004's normaliser exists to strip. The
+   * resource ID stays the tie-break, so the order is TOTAL and two runs over an
+   * unchanged workspace cannot differ. */
   const rows: MeasurementRow[] = withTimes
+    .slice()
+    .sort((a, b) => (a.lastEditedTime === b.lastEditedTime
+      ? (a.safeLabel < b.safeLabel ? -1 : a.safeLabel > b.safeLabel ? 1 : 0)
+      : (a.lastEditedTime as string) < (b.lastEditedTime as string) ? -1 : 1))
     .map(e => ({
       resource: e.safeLabel,
-      value: e.lastEditedTime as string,
+      /* THE PROVENANCE TRAVELS ON EVERY ROW, not only on the weaker one. Marking
+       * only the block-sourced values would make the unmarked ones read as a
+       * default the reader never had explained, and the two statuses are exactly
+       * what this column would otherwise flatten. */
+      value: `${e.lastEditedTime as string}  ·  ${provenanceOf(e)}`,
       /* Timestamps do not sum. ADR-0017 rule 3 forbids a number combining two
        * units, and a column of instants has no total that means anything. */
       numeric: null,
       link: e.link,
-    }))
-    .sort((a, b) => (a.value === b.value
-      ? (a.resource < b.resource ? -1 : a.resource > b.resource ? 1 : 0)
-      : a.value < b.value ? -1 : 1));
+    }));
 
   const lastEdited: Measurement = rows.length === 0
     ? {
         id: MEASUREMENT_IDS.lastEdited,
-        label: 'Last edited, per resource the scan retrieved (sorted by timestamp, oldest first)',
+        label: LAST_EDITED_LABEL,
         unit: 'resources',
+        /* ⛔ NOT READ, NOT "NOT COMPUTED" — #158 item 4. The call was made: this
+         * scan lists the root's children on every run. What is missing is the
+         * FIELD on the responses that came back, which is a different fact with
+         * a different remedy, and flattening the two into one apology is what
+         * item 4 of the ticket names. */
         computed: false,
-        cause: `no resource carried a last-edited timestamp — GET /v1/pages runs for the declared root, for reference targets, and for rule hydration only, so a resource enumerated in a parent's block listing has no response of its own to read one from (${all.length} resource(s) reached)`,
+        cause: `no resource carried a last-edited timestamp — the calls were made and the field was absent from every response: GET /v1/pages/{id} runs for the declared root, for reference targets and for rule hydration, and GET /v1/blocks/{block_id}/children returns a block object per child, but a PARTIAL block object carries no last_edited_time and when the API returns one is undocumented (${all.length} resource(s) reached)`,
       }
     : {
         id: MEASUREMENT_IDS.lastEdited,
-        label: 'Last edited, per resource the scan retrieved (sorted by timestamp, oldest first)',
+        label: LAST_EDITED_LABEL,
         unit: 'resources',
         computed: true,
         rows,
         /* THE DENOMINATOR, PRINTED. Both numbers, so the reader can see how much
          * of the reached set this measurement is silent about, rather than
          * reading the rows as the whole picture. */
-        over: `${rows.length} of ${all.length} reached resource(s) — those the scan retrieved directly; the remainder were enumerated without their own retrieve, so no timestamp exists for them`,
+        over: `${rows.length} of ${all.length} reached resource(s) — those whose timestamp this scan observed, from a retrieve of the resource itself or from its block in the parent's listing; the remainder returned a partial block object carrying no timestamp and have no row here. ${BLOCK_TIMESTAMP_LICENCE}`,
         /* Null, and not zero. A zero total would be a number the run did not
          * compute, printed where a real one goes. */
         total: null,
@@ -503,9 +576,15 @@ function inboundReferences(manifest: Manifest): Measurement {
        * a column of numbers reads the qualifier once, at most; putting it only
        * on the zeros would make the scoped phrasing look like a special case
        * rather than the standing terms of the whole column. */
+      /* THE PROVENANCE TRAVELS HERE TOO, for the same reason it travels on the
+       * last-edited table: a database's timestamp now reaches this row from its
+       * `child_database` block in the parent's listing, and that it is the
+       * database's own is an observation at n=1 rather than a documented
+       * guarantee. A cell reading a bare instant would assert the stronger
+       * thing. The licence itself is on the `over` line, once. */
       const written = e.lastEditedTime === null
         ? NO_DATABASE_RETRIEVE
-        : `last edited: ${e.lastEditedTime}`;
+        : `last edited: ${e.lastEditedTime} (${provenanceOf(e)})`;
       return {
         resource: e.safeLabel,
         value: `${count} ${count === 1 ? 'inbound reference' : 'inbound references'} ${SCANNED_SET}  ·  ${written}`,

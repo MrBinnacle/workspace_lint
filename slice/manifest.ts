@@ -283,6 +283,27 @@ export type Entry = {
    * `Loss` and `RefFacts`, never re-derived by a later reader.
    */
   lastEditedTime: string | null;
+  /**
+   * WHERE `lastEditedTime` CAME FROM — #158 item 0.
+   *
+   * ⛔ TWO PROVENANCES, TWO EPISTEMIC STATUSES, AND A COLUMN THAT PRINTS THEM
+   * WITHOUT SAYING WHICH IS LYING BY OMISSION. `retrieve` means the resource's
+   * own `GET /v1/pages/{id}` returned it: the page's own timestamp, documented,
+   * unqualified. `block-listing` means the value came off the `child_page` or
+   * `child_database` BLOCK in its parent's listing, and that it is the page's
+   * timestamp is an EMPIRICAL finding at n=1 with the vendor silent —
+   * `docs/proof/results-block-vs-page-timestamp.md`.
+   *
+   * RECORDED BY THE SITE THAT OBSERVED IT, never re-derived by a reader — the
+   * doctrine `Loss` and `Enumeration` already follow here. A later reader cannot
+   * recover this: both provenances produce an identical ISO string, so a
+   * derivation that tried to infer it would be guessing, and this repository has
+   * twice inverted an answer recovering structure from a value.
+   *
+   * NULL WHEN AND ONLY WHEN `lastEditedTime` IS NULL. The pair moves together in
+   * `mark` below.
+   */
+  lastEditedSource: 'retrieve' | 'block-listing' | null;
 };
 
 /**
@@ -307,8 +328,16 @@ export type MarkArgs = {
   link?: string | null;
   /** Recorded by the site that made the enumeration call. See Entry.enumeration. */
   enumeration?: Enumeration;
-  /** Verbatim from the resource's own retrieve. See Entry.lastEditedTime. */
+  /** Verbatim from the response that carried it. See Entry.lastEditedTime. */
   lastEditedTime?: string;
+  /**
+   * REQUIRED WHENEVER `lastEditedTime` IS SUPPLIED, and `mark` ignores the
+   * timestamp without it. See Entry.lastEditedSource: a value whose provenance
+   * the observing site did not state cannot have it recovered later, and an
+   * unlabelled one would print beside a labelled one as though both were the
+   * page's own.
+   */
+  lastEditedSource?: 'retrieve' | 'block-listing';
 };
 
 export class Manifest {
@@ -335,7 +364,7 @@ export class Manifest {
     const slot = Manifest.slot(unit, key);
     const e =
       this.entries.get(slot) ??
-      { key, unit, kind: 'unknown', alias: args.alias || key, safeLabel: args.safeLabel || key, stages: new Set<Stage>(), loss: null, link: null, isRoot: false, ref: null, req: null, unq: null, enumeration: null, lastEditedTime: null };
+      { key, unit, kind: 'unknown', alias: args.alias || key, safeLabel: args.safeLabel || key, stages: new Set<Stage>(), loss: null, link: null, isRoot: false, ref: null, req: null, unq: null, enumeration: null, lastEditedTime: null, lastEditedSource: null };
     if (args.kind) e.kind = args.kind;
     if (args.alias) e.alias = args.alias;
     if (args.safeLabel) e.safeLabel = args.safeLabel;
@@ -345,7 +374,23 @@ export class Manifest {
     if (args.req) e.req = args.req;
     if (args.unq) e.unq = args.unq;
     if (args.enumeration) e.enumeration = args.enumeration;
-    if (args.lastEditedTime) e.lastEditedTime = args.lastEditedTime;
+    /* ⛔ THE TIMESTAMP AND ITS PROVENANCE ARE ONE WRITE, and a timestamp offered
+     * without one is DROPPED rather than stored unlabelled. An unlabelled value
+     * would print in the same column as a retrieve-sourced one and claim the
+     * same standing, which is the whole thing `lastEditedSource` exists to stop.
+     *
+     * A RETRIEVE OVERRIDES A BLOCK LISTING AND NEVER THE REVERSE. Both are
+     * observations of the same resource, and the retrieve's is the page's own
+     * documented timestamp while the listing's is the page's only under an n=1
+     * empirical finding. A child that is also a reference target is enumerated
+     * first and retrieved later, so without this the weaker observation would
+     * survive purely because it arrived second. */
+    if (args.lastEditedTime && args.lastEditedSource) {
+      if (args.lastEditedSource === 'retrieve' || e.lastEditedSource === null) {
+        e.lastEditedTime = args.lastEditedTime;
+        e.lastEditedSource = args.lastEditedSource;
+      }
+    }
     e.stages.add(args.stage);
     if (args.loss) e.loss = args.loss;
     this.entries.set(slot, e);

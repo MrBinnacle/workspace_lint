@@ -26,7 +26,7 @@ import { buildReportDocument, renderJson, renderMarkdown, renderReport } from '.
 import { measurementsFrom, totalIsReconstructible, MEASUREMENT_IDS, type Measurement } from './measurement.js';
 import { LINK_NOT_CAPTURED } from './finding.js';
 import { hyphenate } from './ids.js';
-import { ROOT, PAGE_B, DATASET, DATASET_B, cfg, clock, fakePort, DEAD_LINK, INBOUND_REFS, INBOUND_REFS_PLUS_EXTERNAL, THREE_CHILDREN, TITLED_URL, TITLE_IN_URL } from './CHECK-fakes.js';
+import { ROOT, PAGE_A, PAGE_B, DATASET, DATASET_B, BLOCK_TIMES, cfg, clock, fakePort, DEAD_LINK, INBOUND_REFS, INBOUND_REFS_PLUS_EXTERNAL, THREE_CHILDREN, TITLED_URL, TITLE_IN_URL } from './CHECK-fakes.js';
 
 const { check, head, finish } = createHarness();
 
@@ -667,5 +667,109 @@ check('  and into the JSON artifact', /"cause"/.test(dbJson), true);
 console.log('  ^ ADR-0017 decision 5: a quiet report and an absent report look identical.');
 console.log('    Baca et al. (10.1002/spe.2109) — an expired licence stopped a tool analysing');
 console.log('    and nobody noticed. Every boundary here is printed, with the endpoint named.');
+
+/* =========================================================================
+ * TEST 10 — #158 item 0. THE FIELD ARRIVES IN A CALL THE SCAN ALREADY MAKES.
+ *
+ * ⛔ THIS TEST EXISTS BECAUSE THE PRODUCT MADE A FALSE NEGATIVE CLAIM ABOUT
+ * ITSELF. `measurement.ts` asserted, unqualified, that a child page enumerated
+ * from its parent's block listing has no response carrying its
+ * `last_edited_time`. `GET /v1/blocks/{block_id}/children` returns block
+ * objects, a full block object carries `last_edited_time`, and a `child_page`
+ * is a block object — so the response exists and the scan already receives it.
+ * The field was discarded at THIS TOOL'S OWN TYPE BOUNDARY, `BlockListResponse.
+ * results: unknown[]`, and the report then named a vendor-shaped obstacle for a
+ * figure it already held. That is the exact defect this product exists to detect
+ * and it was committing it.
+ *
+ * ⚠ WHAT THE LICENCE COVERS AND WHAT IT DOES NOT. Whether the block's timestamp
+ * IS the page's is an EMPIRICAL finding at n=1 with the vendor silent —
+ * `docs/proof/results-block-vs-page-timestamp.md`, pre-registered at `cc0eb1c`
+ * before any data existed, four runs, moved together on every content-only edit
+ * and equal at every measurement. It is never a documented guarantee, the
+ * partial-block-object case was not forced, and the API truncates the value to
+ * the MINUTE (24 of 24 observed), so nothing may order edits below that
+ * resolution. Every one of those limits is asserted below, because a licence
+ * that travels only in a comment does not travel.
+ * ========================================================================= */
+
+head('TEST 10 — a resource enumerated from the block listing gets its edit age');
+
+const rBlk = await scan({ config: cfg(ROOT, 0.0), port: fakePort(BLOCK_TIMES), now: clock() });
+const blkEdited = rBlk.measurements.find(m => m.id === MEASUREMENT_IDS.lastEdited);
+
+check('the last-edited measurement is computed on this fixture', blkEdited?.computed, true);
+
+const blkRows = blkEdited?.computed ? blkEdited.rows : [];
+
+/* THE SUBJECT IS GUARDED BEFORE ANYTHING IS ASSERTED ABOUT IT. An empty row set
+ * would make every `every()` below vacuously true — the family of failure this
+ * suite already records under `x.includes('')`. */
+check('  and it produced rows, so the assertions below are not over an empty set',
+  blkRows.length > 0, true);
+
+/* ⛔ THE COUNT IS THE WHOLE POINT AND IT IS THREE, NOT ONE. Before this ticket
+ * only the declared root had a retrieve, so this table had exactly one row on
+ * this shape of fixture. PAGE_A and DATASET are enumerated and never retrieved,
+ * and both now carry a timestamp that came from the parent's listing. */
+check('  one row per resource whose timestamp was observed, from EITHER provenance',
+  blkRows.map(x => x.resource).sort().join(' '),
+  [hyphenate(ROOT), hyphenate(PAGE_A), hyphenate(DATASET)].sort().join(' '));
+
+/* ⛔ PAGE_B IS THE PARTIAL-OBJECT CONTROL. Its block carried no
+ * `last_edited_time`, which is the case Notion does not document and which the
+ * live probe never forced. It must produce NO row rather than a null, a blank or
+ * an invented instant — and the denominator below is what keeps its absence
+ * visible instead of letting the three rows read as the whole reached set. */
+check('  a block object that carried NO timestamp produces no row at all',
+  blkRows.some(x => x.resource === hyphenate(PAGE_B)), false);
+
+head('TEST 10a — every row states WHERE its timestamp came from');
+
+/* ⛔ PROVENANCE IS NOT DECORATION HERE. A retrieve-sourced timestamp is the
+ * page's own, documented and unqualified. A block-listing-sourced one is the
+ * page's only under an n=1 empirical finding the vendor has never promised. Two
+ * different epistemic statuses printed in one column, and a reader cannot tell
+ * them apart unless the row says which it is. */
+check('every row names its provenance', blkRows.every(x => /from (its own retrieve|the parent's block listing)/.test(x.value)), true);
+check('  the retrieved root says so',
+  blkRows.find(x => x.resource === hyphenate(ROOT))?.value.includes('its own retrieve'), true);
+check('  and the enumerated child says the listing',
+  blkRows.find(x => x.resource === hyphenate(PAGE_A))?.value.includes("the parent's block listing"), true);
+check('  both provenances are actually present, so neither branch is unrun',
+  new Set(blkRows.map(x => /its own retrieve/.test(x.value) ? 'retrieve' : 'listing')).size, 2);
+
+head('TEST 10b — the licence travels with the figure, once, and cites its receipt');
+
+const blkOver = blkEdited?.computed ? blkEdited.over : '';
+
+check('the over line is non-empty', blkOver.length > 0, true);
+/* A LOCATOR A THIRD PARTY CAN FOLLOW. The project's citation standard: a claim
+ * carries a file plus a section, a URL plus a fetch date, or a commit SHA. */
+check('  it cites the proof file by path', blkOver.includes('docs/proof/results-block-vs-page-timestamp.md'), true);
+check('  it states the observation count rather than implying a guarantee', /n=1/.test(blkOver), true);
+check('  it records that the vendor never promised this', /vendor silent|vendor (has )?never/i.test(blkOver), true);
+check('  and it names the minute truncation, so nothing downstream orders edits below it',
+  /minute/i.test(blkOver), true);
+/* ⛔ THE DENOMINATOR SURVIVES THE WIDENING. It is the only thing standing
+ * between three rows and a reader taking them for the whole reached set, and a
+ * ticket that adds rows is exactly when it is most likely to be dropped. */
+check('  and the denominator still prints both numbers',
+  /3 of 4 reached resource\(s\)/.test(blkOver), true);
+
+head('TEST 10c — the false sentence is GONE from every emitter');
+
+const blkTerm = renderReport(rBlk, {}).join('\n');
+const blkMd = renderMarkdown(buildReportDocument(rBlk, {}));
+
+check('the rendered report is non-empty, so this is not vacuous', blkTerm.length > 0, true);
+/* ⛔ THE CLAIM UNDER TEST IS THE UNQUALIFIED NEGATIVE, and it is asserted over
+ * BOTH emitters because a sentence deleted in one renderer and left in another
+ * is this repository's oldest failure shape. Note this is a NEGATIVE about our
+ * own code path, not about Notion — no negation marker is owed. */
+check('  no emitter claims a response carrying last_edited_time does not exist',
+  /no response carrying (its|a database's) last_edited_time exists/.test(blkTerm + blkMd), false);
+console.log('  ^ the sentence was true of GET /v1/pages and false of the scan as a whole,');
+console.log('    because GET /v1/blocks/{id}/children was already returning the field.');
 
 finish('A measurement is a counted fact. It makes no conformity claim, and ADR-0017 decision 4 gives it no channel to the exit byte — not even a rule-level one, because it owns no rule ID.');

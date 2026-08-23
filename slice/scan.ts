@@ -172,6 +172,14 @@ type ChildBlock = {
   type: string;
   child_page?: { title?: string };
   child_database?: { title?: string };
+  /**
+   * THE FIELD THE SCAN WAS ALREADY RECEIVING AND THROWING AWAY — #158 item 0.
+   *
+   * OPTIONAL, because a partial block object carries no `last_edited_time` and
+   * when the API returns one is undocumented. A block that arrives without it
+   * produces no measurement row rather than a null one.
+   */
+  last_edited_time?: string;
 };
 
 function asChildBlock(b: unknown): ChildBlock | null {
@@ -180,6 +188,18 @@ function asChildBlock(b: unknown): ChildBlock | null {
   if (typeof o.id !== 'string' || typeof o.type !== 'string') return null;
   return o as unknown as ChildBlock;
 }
+
+/**
+ * The timestamp this block carried, or nothing — #158 item 0.
+ *
+ * ⛔ THE TYPE CHECK IS NOT DEFENSIVE PROGRAMMING, IT IS THE PARTIAL-OBJECT CASE.
+ * `BlockObject` declares every field optional because when the API returns a
+ * partial block object is undocumented, and `asChildBlock` above only validates
+ * `id` and `type`. Reading this field without checking would put `undefined`
+ * into the manifest as though it were an observation.
+ */
+const blockEditedTime = (b: ChildBlock): string | undefined =>
+  typeof b.last_edited_time === 'string' && b.last_edited_time.length > 0 ? b.last_edited_time : undefined;
 
 const titleOf = (b: ChildBlock): string =>
   String(b.child_page?.title ?? b.child_database?.title ?? b.id);
@@ -409,6 +429,10 @@ export async function scan(opts: ScanOptions): Promise<ScanResult> {
      * reason: this repository has twice recovered a fact by re-deriving it later
      * and been wrong both times. Nothing downstream turns it into an age. */
     lastEditedTime: page.value.last_edited_time,
+    /* THE RESOURCE'S OWN RETRIEVE. Documented, unqualified, and the stronger of
+     * the two provenances — see Entry.lastEditedSource and the block-listing
+     * site below, which records the weaker one. */
+    lastEditedSource: 'retrieve',
   });
   /* THE ROOT'S PROPERTY MAP ARRIVES ON THIS RESPONSE and is kept, so REQ001
    * over the root costs no second request. `has` is what the hydration stage
@@ -502,7 +526,15 @@ export async function scan(opts: ScanOptions): Promise<ScanResult> {
     childKeys.push(keyOf(c.id));
     resourceKind.set(keyOf(c.id), kindOf(c));
   }
-  for (const c of children) manifest.mark({ id: c.id, alias: titleOf(c), kind: kindOf(c), stage: 'declared' });
+  /* ⛔ THE TIMESTAMP IS STAMPED HERE, FROM THE LISTING THIS SCAN ALREADY MADE —
+   * #158 item 0. `GET /v1/blocks/{block_id}/children` returns block objects and
+   * a full block object carries `last_edited_time`; a `child_page` is a block
+   * object. The field arrived on every one of these and was discarded at this
+   * tool's own type boundary, while `measurement.ts` reported that no response
+   * carrying it existed. Recorded by the site that observed it, verbatim, with
+   * its provenance — see Entry.lastEditedSource for why the label is not
+   * optional and cannot be recovered later. */
+  for (const c of children) manifest.mark({ id: c.id, alias: titleOf(c), kind: kindOf(c), stage: 'declared', lastEditedTime: blockEditedTime(c), lastEditedSource: 'block-listing' });
   for (const c of children) manifest.mark({ id: c.id, alias: titleOf(c), kind: kindOf(c), stage: 'resolved' });
 
   /* -- descend one level -------------------------------------------------- */
@@ -869,6 +901,13 @@ async function hydrateRequiredProperties(args: {
       }
       map = fetched.value.properties;
       propertiesOf.set(resource, map);
+      /* THE HYDRATION RESPONSE CARRIES THE TIMESTAMP TOO, and discarding it here
+       * would leave the same defect #158 item 0 fixed one door along: the run
+       * observed the resource's own retrieve and the measurement would still
+       * report the weaker block-listing value, or none. `retrieve` overrides a
+       * block-listing value in `manifest.mark`, so this is the stronger
+       * observation replacing the weaker one and never the reverse. */
+      manifest.mark({ id: resource, stage: 'fetched', lastEditedTime: fetched.value.last_edited_time, lastEditedSource: 'retrieve' });
     }
 
     if (map === undefined) {
@@ -1154,6 +1193,8 @@ async function hydrateUniquenessScopes(args: {
         }
         map = fetched.value.properties;
         propertiesOf.set(resource, map);
+        /* Same response, same reason as the REQ001 hydration site above. */
+        manifest.mark({ id: resource, stage: 'fetched', lastEditedTime: fetched.value.last_edited_time, lastEditedSource: 'retrieve' });
       }
 
       if (map === undefined) {
