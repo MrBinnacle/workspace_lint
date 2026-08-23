@@ -219,6 +219,24 @@ export type Entry = {
    * resource-coverage ratio over things that are not resources.
    */
   unit: CoverageUnit;
+  /**
+   * WHAT KIND OF OBJECT THIS RESOURCE IS, as the block listing stated it — #144.
+   *
+   * RECORDED BY THE SITE THAT OBSERVED IT, never recovered later. The block type
+   * in a parent's listing is the only place this fact is stated, and a reader
+   * that recovered it by pattern-matching the drop-out cause would be the third
+   * instance of a shape this repository has already been wrong about twice —
+   * `Loss.bounded` and `Loss.target` were both recovered from prose and both
+   * recoveries inverted the answer.
+   *
+   * `unknown` IS THE DEFAULT AND THE DIRECTION IS DELIBERATE. A resource nobody
+   * classified must not inherit a kind, because the inbound-reference
+   * measurement selects on this field: defaulting to `data-source` would put
+   * unclassified resources in a table of databases, and defaulting to `page`
+   * would silently drop a real database out of the denominator. Both are wrong
+   * and only one is visible.
+   */
+  kind: 'page' | 'data-source' | 'unknown';
   /** Report-only. MAY CARRY A PAGE TITLE. Printed only under --show-titles. */
   alias: string;
   /** Report-only, and safe on every line. Never carries a title. */
@@ -276,6 +294,8 @@ export type MarkArgs = {
   stage: Stage;
   /** Defaults to resources. */
   unit?: CoverageUnit;
+  /** Stated by the block listing that named this resource. See Entry.kind. */
+  kind?: 'page' | 'data-source';
   alias?: string;
   safeLabel?: string;
   loss?: Loss | null;
@@ -315,7 +335,8 @@ export class Manifest {
     const slot = Manifest.slot(unit, key);
     const e =
       this.entries.get(slot) ??
-      { key, unit, alias: args.alias || key, safeLabel: args.safeLabel || key, stages: new Set<Stage>(), loss: null, link: null, isRoot: false, ref: null, req: null, unq: null, enumeration: null, lastEditedTime: null };
+      { key, unit, kind: 'unknown', alias: args.alias || key, safeLabel: args.safeLabel || key, stages: new Set<Stage>(), loss: null, link: null, isRoot: false, ref: null, req: null, unq: null, enumeration: null, lastEditedTime: null };
+    if (args.kind) e.kind = args.kind;
     if (args.alias) e.alias = args.alias;
     if (args.safeLabel) e.safeLabel = args.safeLabel;
     if (args.link) e.link = args.link;

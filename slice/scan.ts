@@ -363,6 +363,19 @@ export async function scan(opts: ScanOptions): Promise<ScanResult> {
   /* -- the declared root -------------------------------------------------- */
   const root = config.roots[0]!;
   const rootAlias = root.alias ?? root.id;
+  /* ⛔ NO `kind` HERE, AND THE OMISSION IS THE POINT. It was stamped `page` at
+   * this line and that was an inference from BUILD CAPABILITY — "the only
+   * retrieve we have returns pages, so a root must be one" — dressed as an
+   * observation. It contradicted `Entry.kind`'s own rule that the kind is
+   * recorded by the site that observed it, and Principle 3, which this file has
+   * already been wrong about once by claiming `present` for a resource the API
+   * had just refused.
+   *
+   * The concrete cost: a declared root naming a DATABASE would be stamped
+   * `page`, its retrieve would 404, and the inbound-reference measurement would
+   * then report "no data source was reached by this scan" — blaming the scope
+   * when the cause was that the root itself was one. The stamp moves to the
+   * success branch below, where a returned page is evidence of a page. */
   manifest.mark({ id: root.id, alias: rootAlias, stage: 'declared', isRoot: true });
 
   const page = await observer.observe('GET /v1/pages/{root}', () => port.retrievePage(root.id));
@@ -385,6 +398,11 @@ export async function scan(opts: ScanOptions): Promise<ScanResult> {
     id: root.id,
     alias: rootAlias,
     stage: 'resolved',
+    /* OBSERVED, NOT ASSUMED. `GET /v1/pages/{id}` returned an object, which is
+     * evidence that this root is a page. On the branch above it did not, and
+     * there the kind stays `unknown` — the honest answer, because a 404 is
+     * access failure or object absence and says nothing about the kind. */
+    kind: 'page',
     link: page.value.url ? redactHref(page.value.url) : null,
     /* #142, ADR-0017. RECORDED BY THE SITE THAT MADE THE CALL, verbatim and
      * absolute — the same discipline as `Loss` and `RefFacts`, and for the same
@@ -463,15 +481,29 @@ export async function scan(opts: ScanOptions): Promise<ScanResult> {
     .filter((b): b is ChildBlock => b !== null && (b.type === 'child_page' || b.type === 'child_database'));
 
   say(`child resources under the declared root: ${children.length}`);
-  /* Recorded from the BLOCK TYPE the listing returned, which is the only place
-   * the kind is stated. A REQ001 scope naming a data source is a gap with a
-   * named cause, and this is where the scan learns which resources those are. */
+
+  /* ⛔ ONE EXPRESSION, READ BY BOTH CONSUMERS — the local `resourceKind` map that
+   * REQ001 and UNQ001 check a scope against, and `Entry.kind` that the
+   * inbound-reference measurement selects on. It was written out twice, eight
+   * lines apart, which is the second copy `manifest.ts` forbids in as many words:
+   * "two structures maintained independently drift, and they drift toward the
+   * flattering answer."
+   *
+   * They had already begun to. The manifest was stamped before the root's
+   * retrieve and the map after it, so an unreachable root left the manifest
+   * asserting a kind the map did not hold. Nothing read the difference yet, which
+   * is exactly when a divergence is cheapest to remove.
+   *
+   * Recorded from the BLOCK TYPE the listing returned, which is the only place
+   * the kind is stated. */
+  const kindOf = (c: ChildBlock) => (c.type === 'child_database' ? 'data-source' as const : 'page' as const);
+
   for (const c of children) {
     childKeys.push(keyOf(c.id));
-    resourceKind.set(keyOf(c.id), c.type === 'child_database' ? 'data-source' : 'page');
+    resourceKind.set(keyOf(c.id), kindOf(c));
   }
-  for (const c of children) manifest.mark({ id: c.id, alias: titleOf(c), stage: 'declared' });
-  for (const c of children) manifest.mark({ id: c.id, alias: titleOf(c), stage: 'resolved' });
+  for (const c of children) manifest.mark({ id: c.id, alias: titleOf(c), kind: kindOf(c), stage: 'declared' });
+  for (const c of children) manifest.mark({ id: c.id, alias: titleOf(c), kind: kindOf(c), stage: 'resolved' });
 
   /* -- descend one level -------------------------------------------------- */
   for (const c of children) {

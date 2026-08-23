@@ -469,7 +469,7 @@ Three things from them still bind:
   `for f in slice/CHECK-*.ts; do npx tsx $f | grep -cE '^(PASS|FAIL)'; done`
   ⚠ **That loop's exclusions are NOT the gate's** — it counts `CHECK-harness.ts` and `CHECK-fakes.ts`,
   helpers that assert nothing, so they contribute zero and **the total is right by accident.**
-  <!-- claim: count glob="slice/CHECK-*.ts" exclude="CHECK-harness.ts,CHECK-fakes.ts" equals=15 -->
+  <!-- claim: count glob="slice/CHECK-*.ts" exclude="CHECK-harness.ts,CHECK-fakes.ts" equals=16 -->
   **#60 CLOSED** — the gate typechecks, the chain is `&&`, and a type error stops it before any
   assertion runs. **`tsconfig.json` is a GLOB (`*.ts`), not a hand-kept list.**
   `CHECK-suite-registration.ts` is the control for both halves: **TEST 3 covers WHICH files the

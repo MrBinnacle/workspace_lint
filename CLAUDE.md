@@ -30,5 +30,12 @@ which ticket is next.
 
 **Triage labels — `docs/agents/triage-labels.md`.** The five canonical triage roles.
 
+**Tooling — `docs/agents/tooling.md`.** Read it before asserting a fact about a library, an SDK or a
+vendor API, and before building any instrument — a script, a harness, a lint, a metric. It carries the
+command that RE-DERIVES the installed plugin inventory, never a written list, and the judgement half:
+what each installed plugin is for here.
+<!-- claim: exists path="docs/agents/tooling.md" -->
+<!-- claim: absent path=".claude/hooks" -->
+
 Commit scope names the surface changed — `state`, `slice`, `rule`, `spec`, `adr`, `context`, `agents`,
 `triage`, `claude`. `git log --format=%s` is the live list.
