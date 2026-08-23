@@ -26,7 +26,7 @@ import { buildReportDocument, renderJson, renderMarkdown, renderReport } from '.
 import { measurementsFrom, totalIsReconstructible, MEASUREMENT_IDS, type Measurement } from './measurement.js';
 import { LINK_NOT_CAPTURED } from './finding.js';
 import { hyphenate } from './ids.js';
-import { ROOT, PAGE_A, PAGE_B, DATASET, DATASET_B, BLOCK_TIMES, DB_SCHEMA, cfg, clock, fakePort, DEAD_LINK, INBOUND_REFS, INBOUND_REFS_PLUS_EXTERNAL, THREE_CHILDREN, TITLED_URL, TITLE_IN_URL } from './CHECK-fakes.js';
+import { ROOT, PAGE_A, PAGE_B, DATASET, DATASET_B, BLOCK_TIMES, BLOCK_EDITED_DB, DB_RETRIEVE_EDITED, DB_SCHEMA, cfg, clock, fakePort, DEAD_LINK, INBOUND_REFS, INBOUND_REFS_PLUS_EXTERNAL, THREE_CHILDREN, TITLED_URL, TITLE_IN_URL } from './CHECK-fakes.js';
 
 const { check, head, finish } = createHarness();
 
@@ -493,8 +493,16 @@ check('  the boundary line is not a silent blank', inRows.every(x => x.value.tri
  * the `over` line is checked for the specific endpoint — a short row marker with
  * no explanation anywhere is the shrug ADR-0017 decision 5 forbids. */
 const inOver = inbound?.computed ? inbound.over : '';
+/* ⚠ THE ENDPOINT NAMED HERE CHANGED WITH #158 ITEM 1, AND THE OLD ONE WOULD NOW
+ * BE THE WRONG ANSWER. The detail line used to say "this scan retrieves pages
+ * only (GET /v1/pages/{id}) and makes no database retrieve" — true until
+ * `retrieveDatabase` shipped, false after. A row whose timestamp is unread now
+ * means BOTH available sources were silent for that database, and the endpoint
+ * the reader needs named is the database retrieve that did not carry one. */
 check('  the measurement names the ENDPOINT boundary in full, beside the rows',
-  /GET \/v1\/pages\/\{id\}/.test(inOver), true);
+  /GET \/v1\/databases\/\{id\}/.test(inOver), true);
+check('    and no longer blames a database retrieve this build does not make',
+  /makes no database retrieve/.test(inOver), false);
 check('    and attributes it to this tool rather than to the vendor',
   /not the vendor/.test(inOver), true);
 check('    and the deduplication caveat travels with the counts',
@@ -853,6 +861,96 @@ check('    and still carries the full text under Disclosures',
  * be a worse loss than the density it fixed. */
 check('  the JSON artifact still carries the full cause', /"cause"/.test(dbJson), true);
 check('    and the one-line blocker beside it', /"blocker"/.test(dbJson), true);
+
+/* =========================================================================
+ * TEST 10d — the four defects a REVIEW found and no assertion did.
+ *
+ * ⛔ EACH ONE SURVIVED A GREEN GATE, and the common shape is that none of them
+ * is reachable from a value the suite already read: two are prose, one is a
+ * table's column arithmetic, one is a field discarded at a third call site. A
+ * suite that only checks the numbers it computes cannot see any of them.
+ * ========================================================================= */
+
+head('TEST 10d — a Markdown table row has as many cells as its header has columns');
+
+/* ⛔ THE TOTAL ROW EMITTED THREE CELLS UNDER A FOUR-COLUMN HEADER after the
+ * `Could vary?` column was added, so "sum of the N row(s) above" rendered under
+ * that heading — a total row answering whether the figure could have varied —
+ * and the Link cell disappeared. A header and its rows are two places one column
+ * count is written and the second is what drifts. Counted rather than eyeballed. */
+const mdTableLines = schemaMd.split('\n').filter(l => l.startsWith('|'));
+const cellsIn = (line: string): number => line.split('|').length - 2;
+const headerLines = mdTableLines.filter(l => l.includes('Could vary?'));
+check('the measurement tables were located, so this is not vacuous', headerLines.length > 0, true);
+const totalLines = mdTableLines.filter(l => l.includes('**Total**'));
+check('  and at least one Total row was rendered', totalLines.length > 0, true);
+check('  every Total row has the same cell count as the header',
+  totalLines.every(t => cellsIn(t) === cellsIn(headerLines[0]!)), true);
+/* ⚠ SCOPED TO THE SEPARATOR THAT FOLLOWS *THIS* HEADER, and the first draft was
+ * not — it collected every `| --- |` line in the document, which includes the
+ * Gaps, Residuals and Findings tables, and compared all of them to a measurement
+ * header. It failed for the right reason and would have been the wrong fix: a
+ * control that forbids other tables from having their own column count. The
+ * defect is the one this suite already records as
+ * `document-scoped-regex-defeats-a-per-row-claim` — a per-table property
+ * asserted over a whole document — committed while writing the test FOR it. */
+const headerAt = mdTableLines.indexOf(headerLines[0]!);
+const separator = mdTableLines[headerAt + 1] ?? '';
+check('  the separator row directly under it was located', /^\|\s*---/.test(separator), true);
+check('    and has the same cell count as the header',
+  cellsIn(separator), cellsIn(headerLines[0]!));
+
+head('TEST 10e — no `over` line renders a doubled full stop');
+
+/* An `over` string ending in a full stop met the template's own ". Unit:" and
+ * printed `…from this build.. Unit:`. A punctuation mark split across a constant
+ * and its caller is one sentence with two authors. */
+check('the Markdown carries no doubled sentence break before the unit',
+  /\.\. Unit:/.test(schemaMd), false);
+check('  and the unit is still printed, so the check above is not passing by absence',
+  /Unit: \*\*/.test(schemaMd), true);
+
+head('TEST 10f — a database\'s OWN retrieve supplies its timestamp');
+
+/* ⛔ ITEM 0'S DEFECT, ONE CALL FURTHER ALONG. `GET /v1/databases/{id}` returns
+ * `last_edited_time` and `readDatabaseFacts` read only `data_sources` off the
+ * response, so a database whose retrieve SUCCEEDED still printed "last edited:
+ * not read" while the run held the value. `DB_SCHEMA`'s databases carry a
+ * timestamp on their block AND answer the retrieve, and the retrieve must win:
+ * it is the object's own, documented and unqualified, while the block's is the
+ * database's only under an n=1 empirical finding. */
+const schemaEdited = rSchema.measurements.find(m => m.id === MEASUREMENT_IDS.lastEdited);
+const schemaEditedRows = schemaEdited?.computed ? schemaEdited.rows : [];
+check('the last-edited table has rows on this fixture', schemaEditedRows.length > 0, true);
+const dbEditedRow = schemaEditedRows.find(x => x.resource === hyphenate(DATASET));
+check('  the reached database has a row at all', dbEditedRow !== undefined, true);
+check('  and it credits the RETRIEVE, not the parent block listing',
+  dbEditedRow?.value.includes('from its own retrieve'), true);
+/* ⛔ AND IT CARRIES THE RETRIEVE'S VALUE, NOT THE BLOCK'S. The two disagree in
+ * this fixture deliberately: a provenance label that said "retrieve" beside the
+ * block's instant would be a correct-looking row asserting the stronger status
+ * over the weaker value, which is worse than an unlabelled one. */
+check('    carrying the retrieve\'s instant, not the block\'s',
+  dbEditedRow?.value.startsWith(DB_RETRIEVE_EDITED), true);
+check('    and the block\'s instant does not appear on that row',
+  dbEditedRow?.value.includes(BLOCK_EDITED_DB), false);
+
+head('TEST 10g — no rendered line names an obstacle this build no longer has');
+
+/* ⛔ THE FILE THAT AUTHORS THE CAUSE STRINGS HAD GONE STALE INSIDE ITSELF. Three
+ * constants and two block comments still said the port has three methods and
+ * retrieves no database, after #158 item 1 added `retrieveDatabase`. Comments
+ * are beyond any assertion's reach; the CONSTANTS are not, and these are the
+ * ones that print. Asserted over both text emitters. */
+const bothEmitters = schemaTerm + '\n' + renderReport(rDb, {}).join('\n') + '\n' + dbMd;
+check('no line claims this scan makes no database retrieve',
+  /makes no database retrieve/.test(bothEmitters), false);
+check('  nor that the port declares three methods',
+  /port declares three methods/.test(bothEmitters), false);
+/* THE POSITIVE CONTROL: the endpoint IS named, so the two negatives above are
+ * not passing because the subject vanished from the report altogether. */
+check('  while the database endpoint is still named where a reader needs it',
+  /GET \/v1\/databases\/\{id\}/.test(bothEmitters), true);
 
 /* =========================================================================
  * TEST 10 — #158 item 0. THE FIELD ARRIVES IN A CALL THE SCAN ALREADY MAKES.

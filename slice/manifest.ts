@@ -360,6 +360,19 @@ export type DbFacts = {
    * `includes()` assertion vacuously true.
    */
   cause: string | null;
+  /**
+   * `last_edited_time` FROM THE DATABASE'S OWN RETRIEVE — #158, and it is here
+   * because leaving it out reintroduced item 0's defect one call further along.
+   * `GET /v1/databases/{id}` returns this field and reading only `data_sources`
+   * off the response discarded it, so a database whose retrieve SUCCEEDED still
+   * printed "last edited: not read" while the run held the value.
+   *
+   * NULL means the retrieve did not succeed or carried no timestamp. It is the
+   * strongest provenance available for a database — the object's own retrieve —
+   * so the caller stamps it with source `retrieve`, which overrides anything the
+   * parent's block listing supplied.
+   */
+  lastEditedTime: string | null;
   /** Views counted across every page of the listing. NULL means not obtained. */
   views: number | null;
   /** Why the view count is null, or null when it is not. */
@@ -457,6 +470,33 @@ export class Manifest {
     e.stages.add(args.stage);
     if (args.loss) e.loss = args.loss;
     this.entries.set(slot, e);
+  }
+
+  /**
+   * Record a last-edited observation on an entry THAT ALREADY EXISTS.
+   *
+   * ⛔ IT EXISTS SO A RETRIEVE CANNOT CREATE A RESOURCE. `mark` creates the
+   * entry when it is absent, which is right for the traversal and catastrophic
+   * here: a REFERENCE TARGET is retrieved by `GET /v1/pages/{id}` and most
+   * targets are not resources under the declared root. Marking one to keep its
+   * timestamp would add a resource the scan never enumerated, and every
+   * denominator built on `of(RESOURCES)` — the applicable set, every coverage
+   * ratio, the exit byte behind them — would grow to include it. That is the
+   * flattering direction and it is the defect this product exists to detect.
+   *
+   * A NO-OP WHEN THE ENTRY IS ABSENT, deliberately and silently: "this resource
+   * is not in the manifest" is the normal case for a link target, not an error.
+   * The precedence rule is `mark`'s, applied identically here — a retrieve
+   * overrides a block listing and never the reverse.
+   */
+  observeLastEdited(id: string, time: string | undefined, source: 'retrieve' | 'block-listing', unit: CoverageUnit = RESOURCES): void {
+    if (!time) return;
+    const e = this.entries.get(Manifest.slot(unit, hyphenate(id) ?? id));
+    if (!e) return;
+    if (source === 'retrieve' || e.lastEditedSource === null) {
+      e.lastEditedTime = time;
+      e.lastEditedSource = source;
+    }
   }
 
   /** Record a loss without advancing a stage. */

@@ -968,7 +968,12 @@ export function renderMarkdown(doc: ReportDocument): string {
       L.push('');
       continue;
     }
-    L.push(`_Computed over ${md(m.over)}. Unit: **${md(m.unit)}**._`);
+    /* ⚠ THE TEMPLATE SUPPLIES THE SENTENCE BREAK ONLY WHEN `over` DOES NOT.
+     * `over` is prose written per measurement and some of them end in a full
+     * stop, which rendered `…absent from this build.. Unit:`. A punctuation mark
+     * split across a constant and its caller is one sentence with two authors. */
+    const overText = md(m.over);
+    L.push(`_Computed over ${overText}${/[.!?]$/.test(overText) ? '' : '.'} Unit: **${md(m.unit)}**._`);
     L.push('');
     /* ⛔ ITEM 2 GETS ITS OWN COLUMN HERE RATHER THAN A TRAILING SENTENCE. A
      * markdown table row is one line, so a per-row qualifier appended to the
@@ -978,7 +983,13 @@ export function renderMarkdown(doc: ReportDocument): string {
     L.push('| --- | --- | --- | --- |');
     for (const row of m.rows)
       L.push(`| \`${md(row.resource)}\` | ${md(row.value)} | ${row.forced ? `**no** — ${md(row.forced)}` : 'yes'} | ${row.link ? `\`${md(row.link)}\`` : `_${md(row.linkCause ?? LINK_NOT_CAPTURED)}_`} |`);
-    if (m.total !== null) L.push(`| **Total** | **${m.total} ${md(m.unit)}** | _sum of the ${m.rows.length} row(s) above_ |`);
+    /* ⚠ FOUR CELLS, BECAUSE THE HEADER HAS FOUR COLUMNS. It emitted three after
+     * the `Could vary?` column was added, so the "sum of the rows above" caption
+     * rendered UNDER that heading and the Link cell vanished — a total row
+     * claiming to answer whether the figure could have varied. A header and its
+     * rows are two places one column count is written, and the second one is
+     * what drifts. */
+    if (m.total !== null) L.push(`| **Total** | **${m.total} ${md(m.unit)}** | — | _sum of the ${m.rows.length} row(s) above_ |`);
     L.push('');
   }
 

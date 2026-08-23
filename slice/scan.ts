@@ -255,7 +255,7 @@ async function readDatabaseFacts(
   databaseId: string,
   spend: { left: number },
 ): Promise<DbFacts> {
-  const facts: DbFacts = { dataSourceIds: null, schemas: [], cause: null, views: null, viewCause: null };
+  const facts: DbFacts = { dataSourceIds: null, schemas: [], cause: null, lastEditedTime: null, views: null, viewCause: null };
 
   if (spend.left <= 0) {
     facts.cause = `measurement request budget of ${MEASUREMENT_REQUEST_BUDGET} exhausted before this database was read — the counts below are unobtained, not zero`;
@@ -271,6 +271,14 @@ async function readDatabaseFacts(
     /* A reference the API returned without an id is not a data source this scan
      * can ask about. Dropped here rather than passed on as an empty string,
      * which would 404 one call later and read as a permission problem. */
+    /* ⛔ ITEM 0'S DEFECT, ONE CALL FURTHER ALONG, AND IT WAS REINTRODUCED HERE.
+     * `GET /v1/databases/{id}` returns `last_edited_time` — the SDK's
+     * `DatabaseObjectResponse` declares it and this port keeps it — and reading
+     * only `data_sources` off the response threw it away, so a database whose
+     * retrieve SUCCEEDED still printed "last edited: not read" while the run
+     * held the value. This is the strongest provenance available for a database,
+     * so it also overrides anything its block listing supplied. */
+    facts.lastEditedTime = db.value.last_edited_time ?? null;
     const ids = (db.value.data_sources ?? []).map(d => d.id).filter((x): x is string => typeof x === 'string' && x.length > 0);
     facts.dataSourceIds = ids;
 
@@ -321,7 +329,18 @@ async function countViews(
     if (step.state === 'unreachable') return { count: null, cause: `the view listing failed — ${step.cause}` };
     count += step.value.results.length;
     if (!step.value.has_more) return { count, cause: null };
-    cursor = step.value.next_cursor ?? undefined;
+    /* ⛔ `has_more` TRUE WITH A NULL CURSOR IS MALFORMED AND IS NAMED, NOT
+     * LOOPED. `next_cursor ?? undefined` would reset to page one and re-request
+     * it until the page budget ran out — spending a third of the whole scan's
+     * measurement budget on one database, starving the databases after it into
+     * reporting a "budget exhausted" cause that is not their own fault, and then
+     * blaming "abandoned after N pages" rather than the pagination it actually
+     * saw. ⚠ THE SAME IDIOM IS IN `listAllChildren` ABOVE and is left alone
+     * here: it is pre-existing, on the traversal spine rather than on a
+     * measurement, and changing it is not this ticket's business. */
+    if (step.value.next_cursor === null)
+      return { count: null, cause: 'the view listing reported more pages but returned no cursor to fetch them, so the count would be a page size rather than a total' };
+    cursor = step.value.next_cursor;
   }
   return { count: null, cause: `the view listing was abandoned after ${VIEW_PAGE_BUDGET} pages — the remaining number of views is unknown` };
 }
@@ -724,7 +743,14 @@ export async function scan(opts: ScanOptions): Promise<ScanResult> {
        * "we now call the database endpoint" as discharging this gap, and that
        * is exactly the applicability filter #50 forbids. */
       const dbFacts = await readDatabaseFacts(port, observer, c.id, measurementSpend);
-      manifest.mark({ id: c.id, alias, stage: 'enumerated', db: dbFacts, loss: { cause: DATA_SOURCE_CAUSE, bounded: true, target: 'present' } });
+      manifest.mark({
+        id: c.id, alias, stage: 'enumerated', db: dbFacts,
+        /* THE DATABASE'S OWN RETRIEVE OUTRANKS ITS BLOCK IN THE PARENT LISTING,
+         * and `mark` enforces that direction. Omitted when the retrieve carried
+         * nothing, so the block-listing value stamped above survives. */
+        ...(dbFacts.lastEditedTime === null ? {} : { lastEditedTime: dbFacts.lastEditedTime, lastEditedSource: 'retrieve' as const }),
+        loss: { cause: DATA_SOURCE_CAUSE, bounded: true, target: 'present' },
+      });
       continue;
     }
     /* The label is the ID, NOT the alias. The alias is a page title, the call
@@ -812,6 +838,23 @@ export async function scan(opts: ScanOptions): Promise<ScanResult> {
        * ceiling the pages most likely to be in scope are exactly the ones that
        * doubled. A 429 on the second call turns a conforming pair into a gap. */
       propertiesOf.set(keyOf(targetId), target.value.properties);
+      /* ⛔ AND ITS TIMESTAMP, ON THE RESOURCE ENTRY — the third site that was
+       * discarding the field this response carries. The mark above is on the
+       * REF001 unit, which is the REFERENCE; this one is on the RESOURCE, which
+       * is what the last-edited measurement rows. Marking only the reference
+       * would have written the timestamp into an entry that measurement never
+       * reads. `manifest.ts`'s override rule names exactly this case as its
+       * reason: a child of the declared root that is ALSO a link target is
+       * enumerated first and retrieved here later, and without this it kept the
+       * weaker block-listing provenance purely because that arrived second.
+       *
+       * ⛔ `observeLastEdited`, NOT `mark` — AND THE DIFFERENCE IS A DENOMINATOR.
+       * `mark` CREATES an absent entry, and most reference targets are not
+       * resources under the declared root, so marking one here would add a
+       * resource the scan never enumerated and grow every figure built on
+       * `of(RESOURCES)`. The guarded form updates an existing entry and is a
+       * silent no-op otherwise, which is the normal case. */
+      manifest.observeLastEdited(targetId, target.value.last_edited_time, 'retrieve');
       continue;
     }
 

@@ -522,6 +522,9 @@ export const INBOUND_REFS: Record<string, FakeResource> = {
  * count, and one config with no readable `type` so the `unreadable` bucket is
  * exercised rather than assumed.
  */
+/** What `GET /v1/databases/{id}` returns, DIFFERENT from the block's value. */
+export const DB_RETRIEVE_EDITED = '2026-05-11T09:00:00.000Z';
+
 export const DS_OF_DATASET = '7ab5795b0ee8c554c1a900f12f33f187';
 export const DS_OF_DATASET_B = '8bc6806c1ff9d665d2ba11023044f298';
 
@@ -529,15 +532,22 @@ export const DB_SCHEMA: Record<string, FakeResource> = {
   [ROOT]: {
     steps: [page([
       dbMentionPara('block-db-ref', DATASET),
-      childDb(DATASET, 'wl-dataset'),
+      childDb(DATASET, 'wl-dataset', BLOCK_EDITED_DB),
       childDb(DATASET_B, 'wl-quiet-dataset'),
       childPage(PAGE_B, 'wl-revoke-parent'),
     ])],
   },
   [PAGE_B]: { steps: [page([])] },
+  /* ⛔ TWO SOURCES FOR THIS DATABASE'S TIMESTAMP, AND THEY DISAGREE ON PURPOSE.
+   * Its `child_database` block carries `BLOCK_EDITED_DB` and its own retrieve
+   * carries `DB_RETRIEVE_EDITED`. The retrieve must win — it is the object's own
+   * documented timestamp, while the block's is the database's only under an n=1
+   * empirical finding. Two fixtures agreeing would leave the precedence rule
+   * unexercised and a reversed override indistinguishable from a correct one. */
   [DATASET]: {
     steps: [page([])],
     pageFail: { status: 404, code: 'object_not_found' },
+    lastEditedTime: DB_RETRIEVE_EDITED,
     dataSources: [{ id: DS_OF_DATASET, name: 'main' }],
     viewSteps: [viewPage(3)],
   },

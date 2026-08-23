@@ -229,20 +229,27 @@ export function totalIsReconstructible(m: Measurement): boolean {
 const SCANNED_SET = 'from the scanned set';
 
 /**
- * The last-write half when this build cannot read one, naming OUR boundary.
+ * The last-write half when this run did not obtain one, naming OUR boundary.
  *
- * ⛔ IT NAMES THE MISSING CALL, NOT A MISSING FACT. Notion returns
+ * ⛔ IT NAMES A MISSING OBSERVATION, NOT A MISSING FACT. Notion returns
  * `last_edited_time` on a database — the SDK's own `DatabaseObjectResponse` and
  * `DataSourceObjectResponse` both declare it — so a line reading "no timestamp"
- * would assert something false about the vendor. What is missing is a method on
- * OUR port, whose entire surface is three GETs and none of them retrieves a
- * database. Widening it is #51 and is ask-first, not a thing to do here.
+ * would assert something false about the vendor.
  *
- * When that call lands, this branch stops being taken with NO change to this
- * file: the row reads `Entry.lastEditedTime`, which the new retrieve would
- * populate exactly as `GET /v1/pages` populates it for a page today.
+ * ⚠ AND IT NO LONGER NAMES A MISSING CALL EITHER, WHICH IS WHY THIS DOCSTRING
+ * WAS REWRITTEN RATHER THAN LEFT. It read "a method on OUR port, whose entire
+ * surface is three GETs and none of them retrieves a database", and #158 item 1
+ * added `retrieveDatabase` — so the sentence became a report of an obstacle the
+ * build no longer has, inside the file that authors the report's cause strings.
+ * That is this repository's own named defect class, and it survived a green gate
+ * because no assertion reads a comment.
+ *
+ * WHAT THE BRANCH MEANS NOW: two sources were available for this database — its
+ * own retrieve and its `child_database` block in the parent's listing — and
+ * NEITHER carried a value on this run. That is a fact about this run, which a
+ * re-run or a permission change may alter.
  */
-const NO_DATABASE_RETRIEVE = 'last edited: not read (no database retrieve, and its block carried no timestamp)';
+const NO_DATABASE_RETRIEVE = 'last edited: not read (neither this database\'s retrieve nor its block in the parent listing carried one)';
 
 /**
  * Why a database row carries no link, stated for the database case specifically.
@@ -269,7 +276,7 @@ const NO_DATABASE_LINK =
  * move the manifest makes with `Loss.cause` and the disclosure block.
  */
 const NO_DATABASE_RETRIEVE_DETAIL =
-  'where a last-write timestamp is unread on a row, both sources were silent: this scan retrieves pages only (GET /v1/pages/{id}) and makes no database retrieve, and that database\'s own child_database block in the parent listing carried no last_edited_time either — the boundary is this tool\'s, not the vendor\'s, and it widens under #51';
+  'where a last-write timestamp is unread on a row, BOTH sources were silent for that database: its own GET /v1/databases/{id} retrieve did not succeed or carried no last_edited_time, and its child_database block in the parent listing carried none either — the boundary is this tool\'s reach on this run, not the vendor\'s, since the API does return the field on both';
 
 /**
  * The resources this scan OBSERVED a timestamp for, from either call.
@@ -414,7 +421,16 @@ export function measurementsFrom(manifest: Manifest): Measurement[] {
         /* THE DENOMINATOR, PRINTED. Both numbers, so the reader can see how much
          * of the reached set this measurement is silent about, rather than
          * reading the rows as the whole picture. */
-        over: `${rows.length} of ${all.length} reached resource(s) — those whose timestamp this scan observed, from a retrieve of the resource itself or from its block in the parent's listing; the remainder returned a partial block object carrying no timestamp and have no row here. ${BLOCK_TIMESTAMP_LICENCE}`,
+        /* ⚠ THE REMAINDER CLAUSE NAMES NO RESPONSE SHAPE, AND THAT IS A
+         * CORRECTION. It said the remainder "returned a partial block object
+         * carrying no timestamp" — false for the DECLARED ROOT, which has no
+         * parent block listing at all and reaches this set through its own
+         * retrieve or not at all. Reachable whenever the root's retrieve carries
+         * no timestamp while a child's block does, and the report would then
+         * assert an API response shape that never occurred. The honest claim is
+         * the one the run can actually support: nothing it read carried a value
+         * for those resources. */
+        over: `${rows.length} of ${all.length} reached resource(s) — those whose timestamp this scan observed, from a retrieve of the resource itself or from its block in the parent's listing; for the remainder neither source carried one, so they have no row here rather than a blank or an invented value. ${BLOCK_TIMESTAMP_LICENCE}`,
         /* Null, and not zero. A zero total would be a number the run did not
          * compute, printed where a real one goes. */
         total: null,
@@ -432,24 +448,33 @@ export function measurementsFrom(manifest: Manifest): Measurement[] {
   ];
 }
 
-/* ------------------------------------------ the boundary lines (#143, #145) --
+/* --------------------------------- the maintenance counters (#143, #145) --
  *
- * ⛔ THESE THREE ARE `computed: false` ON TODAY'S BUILD, AND THAT IS THE HONEST
- * ANSWER RATHER THAN AN UNFINISHED ONE. `NotionPort` declares three methods —
- * `GET /v1/users/me`, `GET /v1/pages/{id}`, `GET /v1/blocks/{id}/children` — and
- * `scan.ts`'s `child_database` branch returns before spending a request. No
- * schema, no view listing and no row has ever entered the manifest, so there is
- * nothing here to count and no fixture, offline or live, that could change that:
- * the limit is the PORT'S SHAPE, not the grant and not the data.
+ * ⚠ TWO OF THESE THREE NOW COMPUTE, AND THIS BLOCK USED TO SAY ALL THREE COULD
+ * NOT. It read: "`NotionPort` declares three methods … `scan.ts`'s
+ * `child_database` branch returns before spending a request. No schema, no view
+ * listing and no row has ever entered the manifest … the limit is the PORT'S
+ * SHAPE." Every clause of that was true when it was written and false after
+ * #158 item 1 added `retrieveDatabase`, `retrieveDataSource` and `listViews`.
+ * ⛔ A COMMENT DESCRIBING AN OBSTACLE THE BUILD NO LONGER HAS IS THIS
+ * REPOSITORY'S OWN DEFECT CLASS, and it is worse here than anywhere: this is
+ * the file that authors the cause strings a reader acts on. No assertion reads
+ * a comment, so a green gate says nothing about it.
  *
- * ⛔ SO THE CAUSE MUST NAME THE ENDPOINT, AND MUST NAME THE RIGHT OBSTACLE. The
- * three lines do not share one: the schema endpoint is authorized, the view
- * endpoint needs no grant a read-only integration lacks, and the row endpoint is
- * an ASK FIRST decision that has NOT been granted. An operator told only "not
- * computed" reaches for the wrong remedy, and one told "insufficient permission"
- * about the view line would be told something false about their own token.
+ * WHERE THE THREE STAND NOW:
+ *   typedProperties  COMPUTES from GET /v1/databases/{id} → GET /v1/data_sources/{id}
+ *   viewCounts       COMPUTES from GET /v1/views
+ *   peopleEmpty      DOES NOT, and cannot be built by making a call — the rows
+ *                    need POST /v1/data_sources/{id}/query, ask-first, ungranted
  *
- * WHY THEY ARE PRINTED AT ALL — ADR-0017 decision 5. A quiet report and an
+ * ⛔ SO A CAUSE MUST NAME THE RIGHT OBSTACLE, AND THE THREE NO LONGER SHARE ONE.
+ * The first two fail only when a call was MADE and carried nothing — "not read",
+ * a fact about this run. The third is blocked on an operator and says so in its
+ * first clause. An operator told only "not computed" reaches for the wrong
+ * remedy, and one told "insufficient permission" about the view line would be
+ * told something false about their own token.
+ *
+ * WHY A BOUNDARY IS PRINTED AT ALL — ADR-0017 decision 5. A quiet report and an
  * absent report look identical. Baca et al., DOI 10.1002/spe.2109: a static
  * analysis tool at Ericsson "had been abandoned after it stopped reporting
  * faults; this was caused by an expired license that was not discovered before
