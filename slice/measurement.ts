@@ -53,6 +53,25 @@ export type MeasurementRow = {
   numeric: number | null;
   /** ADR-0017 rule 2: every number resolves to a link, or says why it does not. */
   link: string | null;
+  /**
+   * WHY THIS ROW HAS NO LINK, when the shared default would state it wrongly.
+   *
+   * ⛔ IT EXISTS BECAUSE THE SHARED CONSTANT WENT FALSE ON THE FIRST TABLE THAT
+   * ROWED A DATABASE. `report.ts` prints `LINK_NOT_CAPTURED` for a null link —
+   * "GET /v1/pages runs for the declared root and for reference targets only, so
+   * no url exists for this resource" — and the inbound-reference measurement
+   * rows databases that ARE reference targets. The row refuted that sentence on
+   * its own line: it read "1 inbound reference from the scanned set … not
+   * captured — … for reference targets only." The real reason is that a database
+   * target short-circuits before the retrieve, because this slice retrieves
+   * pages only.
+   *
+   * A generic constant is right until a new caller's boundary differs from the
+   * one it names, and this repository has now shipped that shape three times
+   * with column widths. Null here keeps the shared default; a string overrides
+   * it for callers whose reason is genuinely different.
+   */
+  linkCause?: string;
 };
 
 /**
@@ -183,6 +202,18 @@ const SCANNED_SET = 'from the scanned set';
  * populate exactly as `GET /v1/pages` populates it for a page today.
  */
 const NO_DATABASE_RETRIEVE = 'last edited: not read (this scan makes no database retrieve)';
+
+/**
+ * Why a database row carries no link, stated for the database case specifically.
+ *
+ * ⛔ THE SHARED CONSTANT IS FALSE HERE AND THE ROW REFUTED IT ON ITS OWN LINE.
+ * `LINK_NOT_CAPTURED` reads "GET /v1/pages runs for the declared root and for
+ * reference targets only, so no url exists for this resource" — printed beside
+ * "1 inbound reference from the scanned set", on a resource that is a reference
+ * target. Both halves of that line cannot be true.
+ */
+const NO_DATABASE_LINK =
+  'no link — a database reference target short-circuits before the retrieve (this slice retrieves pages only), so no response carrying a url was ever received for it';
 
 /**
  * The same boundary at full length, printed ONCE beside the rows.
@@ -480,6 +511,11 @@ function inboundReferences(manifest: Manifest): Measurement {
         value: `${count} ${count === 1 ? 'inbound reference' : 'inbound references'} ${SCANNED_SET}  ·  ${written}`,
         numeric: count,
         link: e.link,
+        /* The shared default would say "GET /v1/pages runs for … reference
+         * targets only", which is false of a row that IS a reference target.
+         * A database target short-circuits before the retrieve — scan.ts's
+         * database branch — so no response carrying a url was ever received. */
+        linkCause: NO_DATABASE_LINK,
       };
     })
     /* Ascending, so the reader's eye lands on the zeros first WITHOUT the report
@@ -490,13 +526,27 @@ function inboundReferences(manifest: Manifest): Measurement {
       ? (a.resource < b.resource ? -1 : a.resource > b.resource ? 1 : 0)
       : (a.numeric ?? 0) - (b.numeric ?? 0)));
 
+  /* How many of the resolved targets actually landed on a database this scan
+   * reached — the population the rows are about, as distinct from every target
+   * the scan resolved. Computed from the rows, so it cannot disagree with them. */
+  const landed = rows.filter(x => (x.numeric ?? 0) > 0).length;
+
   return {
     id: MEASUREMENT_IDS.inboundReferences,
     label,
     unit: INBOUND_UNIT,
     computed: true,
     rows,
-    over: `${rows.length} reached data source(s), counted against the ${inbound.size} reference target(s) this scan resolved — ${SCANNED_SET} only, never the workspace: the connection cannot enumerate its own grant (ADR-0002). ${DEDUPE_CAVEAT}. ${NO_DATABASE_RETRIEVE_DETAIL}`,
+    /* ⚠ THE DENOMINATOR NAMES ITS POPULATION, because it is not the rows'.
+     * `inbound.size` counts every resolved reference target — pages included —
+     * so beside a two-row database table it can read "47", a figure over a
+     * different set than the rows beneath it. ADR-0017 decision 6 is precisely
+     * about a denominator a reader can trust, so the line says which targets it
+     * counted and reports the database-landing subset separately. Some of those
+     * targets are databases OUTSIDE the scanned subtree, which have no row here
+     * at all; naming the population is what makes that legible rather than
+     * looking like a missing row. */
+    over: `${rows.length} reached data source(s), of ${landed} reference target(s) that landed on one; this scan resolved ${inbound.size} reference target(s) of any kind, and the remainder point at pages or at databases outside the scanned subtree, which have no row here — ${SCANNED_SET} only, never the workspace: the connection cannot enumerate its own grant (ADR-0002). ${DEDUPE_CAVEAT}. ${NO_DATABASE_RETRIEVE_DETAIL}`,
     /* THESE ROWS DO SUM, unlike the timestamp measurement's. The total is the
      * number of inbound references this scan saw landing on any reached
      * database, and it is COMPUTED from the rows printed beside it, so a

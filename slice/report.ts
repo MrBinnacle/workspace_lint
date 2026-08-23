@@ -621,8 +621,14 @@ export function renderReport(r: ScanResult, opts: RenderOptions = {}): string[] 
      * and that shape has now shipped three times in this repository — the
      * manifest's unit column, and `heading.length + 20` in CHECK-harness.ts. */
     const rw = Math.max(12, ...m.rows.map(x => x.resource.length));
+    /* THE ROW'S OWN REASON WINS OVER THE SHARED DEFAULT — #144. `LINK_NOT_CAPTURED`
+     * names the boundary for a resource the page retrieve never covered, and that
+     * sentence is FALSE for a database that was itself a reference target: it says
+     * "for reference targets only" on a row which is one. A measurement whose
+     * link-absence has a different cause states it, and the constant stays for
+     * everyone whose cause it still describes. */
     for (const row of m.rows)
-      out.push(`      ${row.resource.padEnd(rw)}  ${row.value}  ${row.link ?? LINK_NOT_CAPTURED}`);
+      out.push(`      ${row.resource.padEnd(rw)}  ${row.value}  ${row.link ?? row.linkCause ?? LINK_NOT_CAPTURED}`);
     /* ADR-0017 decision 3. A total prints only beside the rows it sums, and it
      * is COMPUTED from them rather than supplied, so the reader's recount cannot
      * disagree with it. `null` means the rows do not sum — a column of instants
@@ -895,7 +901,7 @@ export function renderMarkdown(doc: ReportDocument): string {
     L.push(`| Resource | Value | Link |`);
     L.push('| --- | --- | --- |');
     for (const row of m.rows)
-      L.push(`| \`${md(row.resource)}\` | ${md(row.value)} | ${row.link ? `\`${md(row.link)}\`` : `_${md(LINK_NOT_CAPTURED)}_`} |`);
+      L.push(`| \`${md(row.resource)}\` | ${md(row.value)} | ${row.link ? `\`${md(row.link)}\`` : `_${md(row.linkCause ?? LINK_NOT_CAPTURED)}_`} |`);
     if (m.total !== null) L.push(`| **Total** | **${m.total} ${md(m.unit)}** | _sum of the ${m.rows.length} row(s) above_ |`);
     L.push('');
   }

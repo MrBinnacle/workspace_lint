@@ -180,13 +180,19 @@ console.log('    #101 is frozen and is NOT decided by this — its tier is a tie
 head('TEST 3 — a measurement that could not be computed says so, and says why');
 
 const rUntimed = await scan({ config: cfg(ROOT, 1.0), port: fakePort(UNTIMED), now: clock() });
-const untimed = rUntimed.measurements.find(m => m.id === MEASUREMENT_IDS.lastEdited)!;
+/* ⚠ NO NON-NULL ASSERTION HERE. It read `.find(…)!` with an `!== undefined`
+ * check on the next line — so if the measurement ever went missing the check
+ * would print one FAIL and the line after it would throw, aborting the suite
+ * mid-run. A crashed suite prints no further FAIL and reports its failure only
+ * through the exit code, which is the shape that has already misread twice in
+ * this repository. Optional chaining fails cleanly and keeps the rest running. */
+const untimed = rUntimed.measurements.find(m => m.id === MEASUREMENT_IDS.lastEdited);
 
 check('the measurement is still PRESENT when it could not be computed', untimed !== undefined, true);
-check('  and it is marked not computed', untimed.computed, false);
-check('  carrying a named cause', !untimed.computed && untimed.cause.length > 0, true);
+check('  and it is marked not computed', untimed?.computed, false);
+check('  carrying a named cause', untimed && !untimed.computed ? untimed.cause.length > 0 : false, true);
 check('  which names the endpoint boundary rather than shrugging',
-  !untimed.computed && /GET \/v1\/pages/.test(untimed.cause), true);
+  untimed && !untimed.computed ? /GET \/v1\/pages/.test(untimed.cause) : false, true);
 
 const untimedTerm = renderReport(rUntimed, {}).join('\n');
 /* GUARD THE SUBJECT FIRST. An assertion over a blank report passes while proving
@@ -194,7 +200,8 @@ const untimedTerm = renderReport(rUntimed, {}).join('\n');
 check('the report is non-empty, so the assertions below mean something', untimedTerm.length > 0, true);
 check('the MEASUREMENTS section renders even with nothing computed', /MEASUREMENTS/.test(untimedTerm), true);
 check('  and prints the not-computed line', /not computed —/.test(untimedTerm), true);
-check('  the cause is printed, not swallowed', untimedTerm.includes(!untimed.computed ? untimed.cause : 'NEVER'), true);
+check('  the cause is printed, not swallowed',
+  untimedTerm.includes(untimed && !untimed.computed ? untimed.cause : 'NEVER'), true);
 console.log('  ^ Baca et al. (10.1002/spe.2109): a tool at Ericsson was abandoned after an');
 console.log('    expired licence silently stopped it analysing. A quiet report and an absent');
 console.log('    report look identical, so this section may never be silently empty.');
@@ -494,6 +501,35 @@ check('    and the deduplication caveat travels with the counts',
   /deduplicated by target/.test(inOver), true);
 console.log('  ^ the row widens with no code change when a database retrieve is granted (#51):');
 console.log('    it reads Entry.lastEditedTime, which that call would populate.');
+
+head('TEST 7d(i) — the link cell states the DATABASE boundary, not the shared page one');
+
+/* ⛔ THE SHARED DEFAULT WENT FALSE ON THIS TABLE AND THE ROW REFUTED IT ON ITS
+ * OWN LINE. `LINK_NOT_CAPTURED` reads "GET /v1/pages runs for the declared root
+ * and for reference targets only", and it was printing beside "1 inbound
+ * reference from the scanned set" — on a resource that IS a reference target.
+ * Both halves of that line cannot be true. A generic constant is right until a
+ * caller's boundary differs from the one it names. */
+check('the row states its own link-absence reason', inRows.every(x => (x.linkCause ?? '').length > 0), true);
+check('  and the shared page-only sentence appears on NO database row',
+  inRows.some(x => (x.linkCause ?? '') === LINK_NOT_CAPTURED), false);
+/* ⚠ SCOPED TO THE DATABASE ROWS, NOT TO THE WHOLE REPORT, and the first draft
+ * got that wrong. `LINK_NOT_CAPTURED` is CORRECT everywhere else it prints — it
+ * describes a page the retrieve never covered, which is most of them. Asserting
+ * its absence report-wide failed for the right reason and would have been the
+ * wrong fix: a control that forbids a true sentence elsewhere to protect one
+ * table. The claim is that no DATABASE row carries it. */
+/* ⚠ MATCHED ON THE RESOURCE **AND** THE VALUE. On the ID alone this selected ten
+ * lines for two rows — the manifest section prints every resource by ID too — and
+ * the emptiness guard below is what caught it. The pair is unique to the
+ * measurement's own row. */
+const dbRowLines = inTerm.split('\n').filter(l => inRows.some(x => l.includes(x.resource) && l.includes(x.value)));
+check('  the database row lines were actually located, so the check below is not over an empty set',
+  dbRowLines.length, inRows.length);
+check('  and none of them carries the page-only sentence',
+  dbRowLines.some(l => l.includes(LINK_NOT_CAPTURED)), false);
+check('    while the constant under test is itself non-empty, so that is not vacuous',
+  LINK_NOT_CAPTURED.length > 0, true);
 
 head('TEST 7d(ii) — an EXTERNAL reference changes no count, and the fixtures differ by one href');
 

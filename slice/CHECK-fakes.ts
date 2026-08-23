@@ -367,8 +367,20 @@ export const INBOUND_REFS: Record<string, FakeResource> = {
     ])],
   },
   [PAGE_B]: { steps: [page([])] },
-  [DATASET]: { steps: [page([])] },
-  [DATASET_B]: { steps: [page([])] },
+  /* ⛔ A DATABASE ID MUST NOT ANSWER `retrievePage` SUCCESSFULLY, because Notion
+   * does not — `GET /v1/pages/{id}` on a database is exactly the call whose
+   * failure `scan.ts`'s database branch exists to avoid making. These entries
+   * previously read `{ steps: [page([])] }`, which answered the page retrieve
+   * with a page. Nothing reads it today, since the guard short-circuits first,
+   * so this is not a green-mutation hole — it is worse in a quieter way: a
+   * fixture encoding a falsehood about the API, which is the "defect in the
+   * instrument that looks exactly like a defect in the product" this file's own
+   * `fakePort` docstring names.
+   *
+   * `steps` stays, because the block listing IS reachable for a database and the
+   * traversal is entitled to ask; only the page retrieve is made to fail. */
+  [DATASET]: { steps: [page([])], pageFail: { status: 404, code: 'object_not_found' } },
+  [DATASET_B]: { steps: [page([])], pageFail: { status: 404, code: 'object_not_found' } },
 };
 
 /**
