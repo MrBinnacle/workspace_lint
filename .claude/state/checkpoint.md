@@ -405,6 +405,14 @@ without a triage-role label**, reading the roles from `docs/agents/triage-labels
   content capabilities"* — a capability the read-only integration **holds**. ⚠ It is a POST and a
   fifth endpoint: **ASK FIRST, not granted.** The `10,000` cap has a locator on that same page and on
   the 2026-07-08 changelog entry, stated **per query**.
+  ⚠ **THAT DATE IS PROBABLY WRONG AND IS LEFT WRONG ON PURPOSE. It stands in TWO surfaces — this
+  line and `docs/vendor/WATCH.md` — and a sweep that fixes one and stops has failed.** A fresh fetch
+  (S042) dates the cap entry `2026-04-20`. It was not corrected because the verifying fetch covered
+  one changelog page and left the archive unpaged, and *"not located in one fetch"* is not *"does not
+  exist"* — correcting on a single negative is the negation-as-failure this repo gates against.
+  **Fix both surfaces together, from a paged fetch, or leave both.** Hoisted from the S042 band on
+  2026-08-23 because archiving that band would have destroyed the only record naming the second
+  surface.
 - ⛔ **THE CORPUS IS A CASSETTE UNLESS IT IS RE-FETCHED.** `docs/vendor/` holds fetched vendor
   evidence and is **deliberately not** in `CHECK-claims.ts`'s `ANNOTATED` list — dated records must
   not be corrected to match the present. **A stored quote passes forever unless re-fetched and
@@ -669,6 +677,18 @@ evaluated issue is simply false. The defect was an under-specified document, not
   like a green gate.** Print the substitution count, or grep for the mutated text, before believing
   the exit byte. **This extends the standing rule that a green mutation names dead code: it may
   instead name a mutation that never happened.**
+- ⛔ **A HAND-KEPT `include` LIST MAKES A GREEN TYPECHECK VACUOUS, AND `prototypes/` HAD ONE UNTIL
+  2026-08-23.** `slice/` fixed this under #60 by globbing; `prototypes/tsconfig.json` kept a list, so
+  `trash-page.ts` was written, reported `exit 0`, and committed **without ever being compiled.** It
+  is a glob now (`"include": ["*.ts"]`), which also pulled in four `live-db51*.ts` files that had
+  never been checked at all. ⭐ **Generalise past tsconfig: any hand-kept list of what to check is
+  the same defect, and the tell is that adding a file makes the run pass FASTER.** Verify a glob is
+  non-vacuous the same way a mutation is scored — append a type error and confirm the failure
+  **names that file**, which is how this one was proven.
+- ⚠ **THE MOST COMPELLING FINDING IS THE ONE MOST LIKELY TO BE A SCOPE-CONFLATION ARTIFACT.** A
+  cross-population comparison produces a dramatic-looking contradiction, and S042's strongest seat
+  claim was exactly that — reference targets pooled into a `(unit: resources)` figure. **Verify the
+  dramatic one FIRST**, against the population each figure is actually scoped over.
 - ⛔ **A MUTATION THAT FAILS IN THE WRONG FILE IS A FINDING ABOUT THE CONTROL, NOT A PASS.** Wiring a
   measurement into the exit byte's inputs turned the gate red through `CHECK-sys001`, **not** through
   `CHECK-measurements`, because that isolation test compared the real derivation against a
@@ -737,193 +757,141 @@ the S040 session before either was archived.
 
 ---
 
-## S042 — 2026-08-23 — the counter surface read as noise, and the flagship counter turned out to be broken rather than bounded
+## S043 — 2026-08-23 — the probe answered, and the answer was nearly lost to the instrument twice
 
-**PHASE:** VERDICT SPRINT — **run 2 is ADJUDICATED. The branch is SURVIVES-NARROW.** PR #159 merged
-(operator, mid-session). Issue #158 filed and then widened. Nothing in the sprint now waits on a read.
+**PHASE:** VERDICT SPRINT. **The vendor question that blocked #158's cheapest item is CLOSED.** PRs
+#161 and #162 merged (operator; #161 mid-session, see the dead letter below). **PR #163 merged mid-close** (operator, third mid-session merge this session — the
+pre-commit re-read caught it). **Nothing is open at close.**
 
-**TESTS:** Gate green on `main` at session start and again before the close — 16 suites, exit 0,
-typecheck first. **No `slice/` change this session**; the instrument ran as merged and every finding
-below is about it, not from changing it.
+**TESTS:** Gate green on `main`, 16 suites, exit 0, typecheck first — run before each commit. **No
+`slice/` change this session.** `prototypes/tsconfig.json` changed; see the vacuity finding.
 
-**Model:** run on **Opus 5** by explicit operator override of the S041 close's `NEXT-MODEL: Fable 5`
-line. He asked for the Fable requirement to be proven empirically; it could not be. See the ruling
-below — it is the durable output of that exchange.
+**Model:** Opus 5, per the S042 close's `NEXT-MODEL` line.
 
-### What the read found
+### The answer, read off a table fixed before any data existed
 
-Four isolated SME seats — product manager, data analyst, UX/content design, support/CS — each given
-the read protocol verbatim, a closed bin enum and a fixed output block. **Order was counterbalanced,
-two seats A→E and two E→A**, so an order effect would be visible rather than baked in. It did not
-fire. All four returned `status: nominal`.
+A `child_page` block's `last_edited_time` **moved with its page's on every content-only edit and was
+equal to it at every measurement, across four runs.** Registered decision table, second row:
+**LABELLING LICENSED — as an EMPIRICAL finding, never a documented guarantee.** So S042's first
+branch is the live one: *the product is declining to compute a figure it already holds.*
 
-**Twenty independent bin decisions returned ZERO SIGNAL.** Four roots unanimous NOISE; ROOT-A
-CANT-TELL from three of four seats, reached by three different routes. Density joined
-NOISE-BETWEEN-READER-AND-NUMBERS three of four, the fourth MIXED and splitting the axis rather than
-dissenting.
+`docs/proof/results-block-vs-page-timestamp.md` is the record. **P1 HELD**, which matters beyond this
+question — its refutation would have refuted S042's instrument-defect finding itself.
 
-The mechanism, and it is sharper than "the counters are boring": **on four of five reports the
-numbers could not have come out any other way.** ROOT-D/E resolved zero references of any kind, so
-every inbound row is arithmetically forced to 0 — and is still printed sorted and totalled, in the
-furniture of a distribution. ROOT-B's single row can only be 0 or 1. ROOT-C reached no data source.
-A figure that cannot vary with the state of the workspace is not a measurement of the workspace.
+⚠ **Three limits travel with the licence and none is optional.** Every downstream claim says
+**"observed n=1, vendor silent"** and cites the results file. The **partial-block-object** case was
+never forced, so P1 held on a full object and says nothing about a partial one. And see the
+truncation finding below.
 
-**P7 REFUTED on its first clause.** Second clause held — exactly one CANT-TELL — so the registered
-"defect rate dominates the signal" failure did **not** fire: there is no signal to dominate. Run 2
-closes **five hold, two refuted**, both refutations on the registered embarrassing branch, both at
-full strength.
+### ⛔ RUN 1 REPORTED NONDETERMINISM IN NOTION. IT WAS THE INSTRUMENT, TWICE.
 
-### ⛔ THE FLAGSHIP COUNTER IS BROKEN, NOT BOUNDED — the session's most consequential finding
+Run 1 scored **P4 REFUTED** — "the two edits disagree, behaviour is nondeterministic" — and that was
+false. Two defects, neither a fact about the vendor, **and each was one grep away before the run.**
 
-`slice/measurement.ts:240` asserts, unqualified, that a child page enumerated from the root's block
-listing has no retrieve *"so no response carrying its `last_edited_time` exists"*, and `:302` renders
-that as the `over` line. **It is false.** `GET /v1/blocks/{block_id}/children` returns block objects,
-a full block object carries `last_edited_time`, a `child_page` is a block object — **and the scan
-already makes that call.** The field arrives on every run and is discarded because `listChildren`
-declares `results: unknown[]` (`slice/notion-port.ts:61`).
+**1. RESOLUTION.** The wait was 2500ms under a comment asserting *"Notion timestamps are
+second-granularity."* **The API truncates `last_edited_time` to the MINUTE — 24 of 24 observed values
+across four runs end `:00.000Z`.** So edit 1 fell inside the creation minute and could not move the
+page timestamp while edit 2 crossed a boundary and did; P4 compared the two and read the difference
+as the vendor being nondeterministic. **The clock was coarser than the experiment.**
 
-**The fix is precedented in the same file for the sibling method.** `notion-port.ts:81-87` widened
-`retrievePage` for exactly this reason (#58, #142), recording the governance ruling with it:
-*"Keeping more of one response is not a new endpoint, so … #51's ASK-FIRST precedent for adding an
-endpoint does not apply here."* **No new endpoint, no new grant, no ask-first — a type widening.**
+⭐ **The fix is a wait BEFORE each edit, not after it.** What must differ is the truncated minute of
+one edit event and the next; a wait placed between an edit and its read changes neither. This is the
+non-obvious half — the original wait was in the intuitive place and was useless there.
 
-Two limits ride with it and neither rescues the sentence. **Whether a block's `last_edited_time` is
-the same instant as its page's is UNLOCATABLE** — four vendor pages fetched, all silent; *"Pages are
-also blocks"* is strong indirect support and is not a guarantee, and an edit-and-diff test would
-settle it. **Capturing the field and labelling it the page's edit age are two decisions and only the
-first is licensed today** — shipping the second uncited would be a measurement-validity defect, which
-is worse than the boundary line it replaces. And the partial-vs-full block case is undocumented,
-which bounds the fix.
+**The vendor is silent AND its example misleads.** `/reference/page` (fetched 2026-08-23, 200 OK)
+says nothing about precision and its own example reads `"2020-03-17T19:10:04.968Z"`. **A documented
+example is not a documented contract, and here the two point opposite ways.** ⛔ **No design may rely
+on edit ordering or elapsed time below one minute.**
 
-### The scheduling consequence, which is the useful half
+**2. ROLLBACK — and it left a page live in the operator's workspace.** Run 1 sent `archived: true`;
+API version `2026-03-11` rejects it at validation (`body.archived should be not present`). The field
+is **`in_trash`**, and the SDK marks `archived` deprecated in its favour (`api-endpoints/pages.d.ts:526`).
+**The read-back check was never at fault — it already tested both fields. Only the write was.**
 
-All three `computed: false` causes were re-verified against freshly fetched vendor pages and **all
-three are accurate** — none misattributes a governance gap to the vendor or the reverse. With the
-flagship defect above, **THREE of the uncomputed counters are UNBUILT rather than UNGRANTED**:
-relation/rollup/formula counts need two already-authorized GETs; the view count needs a call whose
-read-content capability is already held; the flagship needs a type widening. **Only people-type
-empty values needs the ask-first POST.** The counter work is far cheaper than the boundary lines made
-it look, and #158 carries that scope with the widened part bannered at the top of the body.
+`prototypes/trash-page.ts` was written to remove the orphan and is the standing rollback tool: it
+takes an explicit id, **refuses to run without one**, never enumerates, and verifies by read-back.
+**All four scratch pages across four runs are accounted for** — runs 2 and 3 rolled back in-run, runs
+1 and 4 via the tool, every one verified by read-back.
 
-### Two things deliberately NOT done, and the reasons are the point
+### ⭐ THE OPERATOR'S CORRECTION, AND IT WAS THE RIGHT ONE
 
-- **A seat's headline claim was REJECTED at the hub.** The analyst reported the last-edited `over`
-  line "false as written", citing 36/11/76 retrieves against a one-row table. Verified directly: the
-  line is scoped `(unit: resources)` and reference targets sit in the **references** unit — the seat
-  pooled them, which is the hazard this file already documents. **The most compelling seat finding
-  was the one most likely to be a scope-conflation artifact**, because a cross-population comparison
-  produces a dramatic-looking contradiction. Verify the dramatic one first.
-- **A changelog locator was left WRONG on purpose.** A fresh fetch dates the 10,000-cap entry
-  `2026-04-20`, not the `2026-07-08` asserted in **two** surfaces — this file (the `#51` block) and
-  `docs/vendor/WATCH.md`. Not corrected: the verifying fetch covered one changelog page and left the
-  archive unpaged, and "not located in one fetch" is not "does not exist". Correcting on a single
-  negative would be the negation-as-failure this repo gates against. **Both surfaces are named here
-  so a future sweep does not find one and stop.**
+Mid-session, after the second failure: *"Maybe if you'd just finish building the instrument it
+wouldn't seem broken all the time."* Both defects were knowable before run 1 — the SDK's own `.d.ts`
+marked the field deprecated, and the granularity was readable from a single response before any wait
+constant was chosen. **Diagnosing them one run at a time reads as an instrument that is broken all
+the time, when it is really an instrument that was never finished.**
 
-### ⭐ OPERATOR RULING — the model-routing rule is UNMEASURED, and he ruled on it
+So run 3 added the three preconditions the probe had been *assuming*, each the same shape as the
+defects that voided run 1 — a belief written into the instrument with nothing able to falsify it:
 
-Asked to prove the Fable-5 reservation empirically, the honest answer was that nothing measures it.
-`gate_events.jsonl` has no model field; `retrospection.jsonl` mentions a model once, describing the
-routing change itself; **44 `NEXT-MODEL:` declarations across the 41 archived bands are all
-prospective, and ZERO record an outcome attributable to tier.** The escalation rule has never been
-recorded catching anything. Published vendor material orders the tiers but publishes no head-to-head
-eval.
-⚠ **That count shipped in draft as "31", read off a `head -30`-truncated grep, and was caught inside
-this same close by dereferencing it — the fastest-rotting claim there is, failing exactly as this
-file predicts.** The load-bearing half survived correction unchanged: tier-attributable outcomes = 0.
-Re-derive, never re-quote: `grep -cE '^\*\*NEXT-MODEL|^NEXT-MODEL' .claude/state/checkpoint-archive.md`.
+1. **The append proves it landed**, by child-block count. Without it a dead append and a genuine
+   vendor finding produce the **same line**, because a page timestamp that does not move is exactly
+   what a no-op edit should cause. Run 1's output was consistent with both and could not distinguish
+   them. An unlanded append now refuses to score any prediction.
+2. **The wait checks itself.** The smallest non-zero gap between observed values bounds the
+   granularity above, since the real quantum divides it. Measured 60s against a 70s wait: ADEQUATE.
+   **The constant no longer rests on a belief; the run derives the check from its own data.**
+3. **A run that leaves a page in the workspace cannot exit 0.** This is the one that let run 1's
+   orphan pass: it printed `REMOVE THIS PAGE BY HAND` and **exited 0 anyway**, so the orphan was
+   visible only to a human reading the whole log and to nothing downstream at all.
 
-**He overrode to Opus 5 and the session shipped its deliverable.** That is one data point, not a
-refutation. **The routing rule fails this repository's own audit standard** — no mechanism can
-falsify it and its central term is defined so a tier assignment can never be wrong in a checkable
-way. *Revisit if:* a `model` field is added to the close record plus a retrospection line naming any
-later-reversed decision; ~10 sessions then gives a denominator. **Until then say UNMEASURED, not
-"required".**
+Run 3 replicated run 2 exactly on a separate subject page. **Run 4 was the mutation**, because
+control 3 had never fired on a happy-path run and a control that has never fired is not a control.
+Rollback mutated back to `archived`: **caught** — exit `0` → `5`, P5 flipped, and it reproduced run
+1's error string **verbatim**, which confirms the run-1 diagnosis rather than leaving it plausible.
+
+⚠ **Controls 1 and 2 are exercised on the happy path and have NOT been adversarially mutated.** Not
+claimed as proven. ⛔ **Exit `5` is reachable from THREE branches** — its meaning is "there is a page
+to remove" — so **a mutation run must not be scored on it**; the rollback branch is identified by
+P1/P2/P4 holding while P5 flips. That is documented in an exit-code table in the probe's header.
+
+### Two traps that fired inside the verification itself
+
+- ⛔ **A `grep -c` OVER A WHOLE FILE CAN COUNT YOUR OWN DOCUMENTATION.** Scoring the mutation's
+  substitution, `grep -c "archived: true"` returned **3** — two were the probe's own header comment
+  *describing* run 1's defect. **A grep that counts your prose is not a substitution check.** Score
+  on the full call expression, and confirm the replaced form is absent.
+- ⛔ **`prototypes/tsconfig.json` HAD A HAND-KEPT `include` LIST AND `trash-page.ts` WAS NEVER
+  COMPILED.** It was written, reported `exit 0`, and committed unchecked. **The S042 band predicted
+  this exact failure and named the file**; it fired on the next session, as predicted, and was caught
+  only because rotating that band forced the line to be read. Now globbed. Hoisted to the standing
+  block, generalised past tsconfig.
+
+### ⚠ A DEAD LETTER, and the failure mode is in this file already
+
+**PR #161 merged at 04:14:18Z, mid-session, while run 3 was executing.** The hardening commit was
+pushed after that and **landed on a closed PR** — it never reached `main`. Caught by
+`git merge-base --is-ancestor`, **not** by the badge, and recovered as PR #162.
+⭐ **The standing constraint said this would happen and it still did.** The push exit code was `0`.
+**Verify against `main` after every push in a session where a PR is open.**
 
 ### EXACT NEXT STEPS
 
-**⚠ Corrected in place after the close shipped — the test named in step 1 is now BUILT. See the
-addendum at the foot of this band for what changed and when.**
+0. **Take #158.** Its out-of-scope bullet is updated in place: the vendor question is answered and
+   that item is no longer blocked on it. The flagship is the cheapest of the three unbuilt counters —
+   widen `listChildren`'s declared return type (`slice/notion-port.ts:61`) and let the edit-age table
+   render the reached set. **Read the banner at the top of #158's body before the body.**
+   ⛔ **The label is licensed but the licence is narrow** — n=1, vendor silent, minute-truncated, and
+   the partial-object case untested. Cite `docs/proof/results-block-vs-page-timestamp.md` on every
+   downstream claim. **The remaining question is COST, not permission:** whether to spend a
+   per-child `GET /v1/pages/{id}` is a separate call and this run does not settle it.
+1. **Then the two authorized GETs** — `GET /v1/databases/{id}` → `GET /v1/data_sources/{id}` for the
+   schema's `properties` map, and `GET /v1/views`. Neither needs an operator decision. ⛔ Do not
+   "simplify" the two-call path to one; the shipped cause text is correct.
+2. **Render a forced value as forced.** A zero is not an absence.
+3. **Do not re-run the read.** Adjudicated at SURVIVES-NARROW.
 
-0. **RUN THE PROBE FIRST — one command, no arguments, from the repo root:**
-   `cd prototypes && npx tsx block-vs-page-timestamp.ts`
-   It is built, typechecked and **unrun**, on **PR #161** (open at close — merge it first).
-   Pre-registration: `docs/proof/prereg-block-vs-page-timestamp.md`, committed before the probe so
-   the predictions cannot be aimed after the data. It **scores P1–P5 and prints the verdict itself**
-   off a decision table fixed in advance — do not re-derive one.
-   ⛔ **THIS PROBE WRITES** — the first in the repo that does. It creates its own scratch child page
-   under the fixture root, edits it twice, archives it, verifies by read-back; no existing page,
-   block or property is touched. Rollback is in a `finally` and prints the id by hand if it fails.
-   The fixture root's own `last_edited_time` moves and cannot be rolled back — disclosed, accepted,
-   and no other proof reads it. Record the run in `docs/proof/results-block-vs-page-timestamp.md`,
-   role labels only.
-   ⭐ **If P1 comes back REFUTED, STOP** — that refutes the S042 instrument-defect finding itself and
-   reopens both `dispositions-run2.md` and #158's banner. Proceeding past a refuted P1 is the one
-   way this sequence goes badly wrong.
-1. **Then take #158.** Three counters are unbuilt-not-ungranted and the flagship is the cheapest —
-   widen `listChildren`'s declared return type and let the edit-age table render the reached set.
-   **Read the banner at the top of #158's body before the body**; the scope was widened after filing.
-   ⛔ **Capture the field; label it the page's edit age ONLY if step 0 licensed that** — and if it
-   did, the licence is empirical on n=1 with the vendor silent, never a documented guarantee, and
-   every downstream claim must say so and cite the prereg.
-2. **Then the two authorized GETs** — `GET /v1/databases/{id}` (already authorized) →
-   `GET /v1/data_sources/{id}` for the schema's `properties` map, and `GET /v1/views`. Neither needs
-   an operator decision. ⛔ `GET /v1/databases/{id}` no longer returns a property schema on the API
-   version in force; it returns a `data_sources` list. The shipped cause text already says so — do
-   not "simplify" it to one call.
-3. **Render a forced value as forced.** Where a row cannot be non-zero, say so instead of sorting and
-   totalling it. Same family as the quadratic-coverage hazard already in this file: a zero is not an
-   absence.
-4. **Do not re-run the read.** It is adjudicated. Any later claim that the policy-free counters carry
-   the entry point must cite SURVIVES-NARROW against itself, per the pre-registration.
+**NEXT-MODEL: Opus 5 at `/effort high`** — #158 is execution against a written scope whose governance
+question is settled in-file and whose vendor question is now closed by this session. Nothing in
+steps 0–3 calcifies judgement the gate cannot falsify. ⛔ **If the cost question in step 0 turns into
+a design decision about what the counter measures rather than how it is fetched, close early and take
+it to a Fable session** rather than deciding it on the wrong tier.
 
-**NEXT-MODEL: Opus 5 at `/effort xhigh`** — #158 is execution against a written scope with the
-governance question already settled in-file, which is Opus-tier by the routing rule's own terms. The
-one genuinely open decision it contains — whether a captured block timestamp may be *labelled* page
-edit age — is a measurement-validity call; **if the empirical test comes back ambiguous, close early
-and take that question to a Fable session rather than deciding it on the wrong tier.**
-
-**NEXT-REPO/CWD:** the `workspace_lint` repository root.
+**NEXT-REPO/CWD:** the `workspace_lint` repository root — state surfaces, the resume ritual and the
+gate all live here.
 
 ### WHAT ONLY THE OPERATOR CAN DO
 
-Merge the next PR. Volunteer the KILL sentence if he ever wants to — **nobody asks, and
-SURVIVES-NARROW has not foreclosed it.** Close the `.claude/hooks/` + `.claude/settings.json` guard
-hole.
-
-**Skills: DONE this session, not pending.** He approved promotion in-session, so
-`context7-serves-deprecated-api-pages` and `declined-computation-hides-a-discarded-field` are **live**
-in `~/.claude/skills/` (both real directories, neither a symlink into the canonical skills repo),
-each with a `gotchas.md`, and `llm-judge-calibration` is at **1.1.0** with Discipline 8 — the
-categorical/isolated-seat variant where pairwise does not apply and order counterbalancing replaces
-position swap. Quarantine is back to 22. ⚠ **`write-a-skill` is operator-only (`disable-model-invocation`)
-and the Skill tool refuses it**, so §1.5 conventions were applied by hand; if he wants the
-authored-by-the-skill treatment on any of the three, only he can fire it. Grant the ask-first
-POST if people-type empty values are ever worth it. Install `mewt`.
-
-**POST-CLOSE ADDENDUM (S042, after `ba2ebc7` shipped) — the edit-and-diff test that gates #158's
-cheapest item is now BUILT and UNRUN, on PR #161.**
-
-The close named that test as the thing standing between capture and labelling, and left it as work
-for someone else. The operator asked for it staged to standard instead, saying he did not know how
-to run it. So it was built the same session the close shipped: pre-registration first
-(`docs/proof/prereg-block-vs-page-timestamp.md`, P1–P5 plus a five-row decision table fixed before
-any data), then `prototypes/block-vs-page-timestamp.ts`, then one copy-pasteable command.
-
-Design call worth carrying forward: **the probe creates its own subject rather than editing existing
-fixture content.** Same measurement, no risk to content other proofs depend on. It is the first
-writing probe here and it inherits `live-ref001`'s token discipline verbatim.
-
-**Found while wiring it, and not yet fixed:** `prototypes/tsconfig.json` carries a **hand-kept
-`include` list** — the same defect `slice/` fixed under #60 by globbing. The new file typechecked
-clean only because it was not being checked at all; **exit 0 was vacuous until the file was added to
-the list.** It is added and compiles, the list is still hand-kept, and the next probe will hit this
-again. Low stakes — `prototypes/` is not the product tree — but it is the identical shape the gate
-exists to catch, living one directory over from the gate.
-
-~~The close's step 1 said the test was unbuilt and that "nobody has run it".~~ Half of that is now
-wrong: it is built. **It is still unrun**, and the EXACT NEXT STEPS above were corrected in place —
-per the amendment convention, forward-looking surfaces are fixed directly rather than left for the
-next session to reconcile against an addendum it reads second.
-
-No bin, no branch and no adjudication is touched. Run 2 stays adjudicated at SURVIVES-NARROW.
+Merge PRs. Close the `.claude/hooks/` + `.claude/settings.json` guard hole — still the largest
+structural risk and the cheapest to fix. Grant the ask-first POST if people-type empty values are
+ever worth it. Install `mewt`. The `_quarantine/` promotion review remains owed and operator-only.

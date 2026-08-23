@@ -1,7 +1,7 @@
 {
   "project": "workspace_lint",
   "updated": "2026-08-23",
-  "session": "S042",
+  "session": "S043",
   "phase": "VERDICT SPRINT - run 2 ADJUDICATED, branch SURVIVES-NARROW. The entry point survives on the reference/coverage half only; the counter surface read as noise at n=1 across four isolated SME seats (zero of five bins SIGNAL, twenty independent decisions). Obligation discharged as issue 158. Nothing in the sprint now waits on a read.",
   "standing_rule_adopted_S025": "AMENDED 2026-08-18 on the operator's instruction to scrutinise it. ORIGINAL: no new decision ticket opens until four rules ship, unless it blocks a rule. It limited RECORDING where the problem was SCHEDULING, which pushed decisions into prose in a state file - the one medium this project has proven six times it cannot trust - and made the `decision` label expensive, corrupting the instrument the rule was counted with. AMENDED FORM: record always, schedule never. Every decision question is FILED. At most ONE decision ticket may be active (labelled `decision` and NOT `deferred`) while any v0.1 rule is unbuilt; 'unless it blocks a rule' is unchanged and now gates scheduling rather than recording. `deferred` is a new supplementary label and a deferred issue MUST name what would make it active. Prior art, unanimous across three domains and none of it consulted when the rule was written: Kanban/theory-of-constraints put WIP limits on work in progress and never on the backlog; aviation's Minimum Equipment List permits deferring a defect only by logging it; ordinary defect triage answers backlog pressure with severity plus an explicit deferred resolution. Full reasoning in docs/agents/triage-labels.md 'The standing rule, as amended'. Check: gh issue list --label decision --state open, minus those labelled deferred, must be <= 1. Measured at S027 close: ONE active (#70 decision 1, which genuinely blocks #59), nine deferred.",
   "phase_detail_s024": "S024: EVIDENCE, then a decision. #51 worked to a recorded decision; PR #86 merged as 818aba0.",
@@ -704,5 +704,36 @@
       "SME-seat read of the Measurements sections; dispositions-run2.md; adjudication read-off. Delegation ruled by the operator: no bin, ratification or density answer routes to him."
     ]
   },
-  "phase_detail_s042": "Four SME seats (PM, data analyst, UX/content design, support/CS), isolated, order counterbalanced two forward two reverse - no order effect fired. ZERO SIGNAL across twenty bin decisions; four roots unanimous NOISE, ROOT-A CANT-TELL 3-of-4. Density joined noise-between-reader-and-numbers 3-of-4. P7 refuted on clause one; clause two held at exactly one CANT-TELL. Run 2 closes five-hold two-refuted, both refutations the registered embarrassing branch at full strength. FLAGSHIP COUNTER DEFECT: measurement.ts:240's unqualified claim that no response carries a child page's last_edited_time is false - blocks/children returns block objects carrying it, the scan already makes that call, notion-port.ts:61 discards it as unknown[]. Precedented fix in the same file (retrievePage, 58/142): keeping more of one response is not a new endpoint, so ask-first does not apply. THREE counters are unbuilt not ungranted; only people-type empty values needs the ask-first POST. Open and deliberately unresolved: block-vs-page last_edited_time equivalence UNLOCATABLE across four fetched pages (capture licensed, labelling NOT); partial-vs-full block objects undocumented; 10,000-cap changelog locator dated 2026-04-20 by one fetch against 2026-07-08 asserted in checkpoint.md and docs/vendor/WATCH.md, left uncorrected because one fetch is not an absence. Gate green throughout, no slice/ change. PR 159 merged by operator mid-session."
+  "phase_detail_s042": "Four SME seats (PM, data analyst, UX/content design, support/CS), isolated, order counterbalanced two forward two reverse - no order effect fired. ZERO SIGNAL across twenty bin decisions; four roots unanimous NOISE, ROOT-A CANT-TELL 3-of-4. Density joined noise-between-reader-and-numbers 3-of-4. P7 refuted on clause one; clause two held at exactly one CANT-TELL. Run 2 closes five-hold two-refuted, both refutations the registered embarrassing branch at full strength. FLAGSHIP COUNTER DEFECT: measurement.ts:240's unqualified claim that no response carries a child page's last_edited_time is false - blocks/children returns block objects carrying it, the scan already makes that call, notion-port.ts:61 discards it as unknown[]. Precedented fix in the same file (retrievePage, 58/142): keeping more of one response is not a new endpoint, so ask-first does not apply. THREE counters are unbuilt not ungranted; only people-type empty values needs the ask-first POST. Open and deliberately unresolved: block-vs-page last_edited_time equivalence UNLOCATABLE across four fetched pages (capture licensed, labelling NOT); partial-vs-full block objects undocumented; 10,000-cap changelog locator dated 2026-04-20 by one fetch against 2026-07-08 asserted in checkpoint.md and docs/vendor/WATCH.md, left uncorrected because one fetch is not an absence. Gate green throughout, no slice/ change. PR 159 merged by operator mid-session.",
+  "phase_detail_s043": {
+    "headline": "The block-vs-page vendor question is CLOSED and labelling is LICENSED as empirical. Run 1 reported Notion as nondeterministic and it was the instrument twice.",
+    "answer": "A child_page block last_edited_time moved with its page on every content-only edit and was equal at every measurement, across four runs. Registered decision table second row: LABELLING LICENSED as an EMPIRICAL finding, never a documented guarantee.",
+    "limits_that_travel_with_the_licence": [
+      "observed n=1, vendor silent - every downstream claim says so and cites docs/proof/results-block-vs-page-timestamp.md",
+      "the partial-block-object case was never forced; P1 held on a FULL object and says nothing about a partial one",
+      "last_edited_time is MINUTE-truncated (24 of 24 values across four runs); no design may rely on edit ordering or elapsed time below one minute"
+    ],
+    "remaining_question_on_158": "COST, not permission. Whether to spend a per-child GET /v1/pages/{id} is a separate call this run does not settle.",
+    "instrument_defects_found": [
+      "RESOLUTION: 2500ms wait under a comment asserting second-granularity, which is false. Fix is a wait BEFORE each edit, not after - what must differ is the truncated minute of one edit event and the next.",
+      "ROLLBACK: sent archived:true, rejected by API version 2026-03-11, left a page live in the workspace. Field is in_trash; SDK marks archived deprecated. Read-back check was never at fault, only the write.",
+      "EXIT CODE: the failure path printed a warning and exited 0, so the orphan was invisible downstream."
+    ],
+    "controls_added_and_their_status": {
+      "append_landed_by_child_count": "exercised on happy path, NOT adversarially mutated - not claimed proven",
+      "wait_checks_itself_from_own_data": "exercised on happy path, NOT adversarially mutated - not claimed proven",
+      "nonzero_exit_when_page_left_behind": "PROVEN by deliberate mutation - exit 0->5, P5 flipped, run 1 error string reproduced verbatim"
+    },
+    "verification_traps_that_fired": [
+      "grep -c over the whole file counted the probe own header comment describing the defect, not the code site - returned 3 where 1 was correct",
+      "exit 5 is reachable from THREE branches so a mutation must not be scored on it; the rollback branch is identified by P1/P2/P4 holding while P5 flips"
+    ],
+    "tsconfig_vacuity": "prototypes/tsconfig.json had a hand-kept include list; trash-page.ts was written, reported exit 0 and committed WITHOUT EVER BEING COMPILED. The S042 band predicted this and named the file. Now globbed; also pulled in four live-db51 files never checked at all. Verified non-vacuous by mutation.",
+    "dead_letter": "PR 161 merged 04:14:18Z mid-session; the hardening commit pushed after landed on a closed PR and never reached main. Push exit code was 0. Caught by merge-base, recovered as PR 162.",
+    "vendor_fetch": "developers.notion.com/reference/page fetched 2026-08-23 200 OK - silent on precision, and its own example 2020-03-17T19:10:04.968Z implies milliseconds, contradicting observed behaviour.",
+    "tracker": "158 out-of-scope bullet updated IN PLACE (not a comment) - the vendor question is answered and that item is no longer blocked on it. Verified by read-back.",
+    "open_at_close": "nothing - PR #163 merged mid-close (operator). PRs #161, #162, #163 all on main.",
+    "next_model": "Opus 5 at /effort high",
+    "slice_changed": false
+  }
 }
