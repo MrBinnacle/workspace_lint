@@ -777,9 +777,15 @@ one.** The recognizer is behaviour-preserved, not lines reclaimed.
 
 ### EXACT NEXT STEPS
 
+⛔ **0. DO NOT RESUME FROM THIS FILE. Open a FRESH context and run `/implement` on #144.** The ticket
+is self-contained and is the resume surface; this file is not. Reloading 800 lines of standing block
+before an implementation ticket is the habit that produced the mess — see the addendum below for why.
+**Approved plan: `~/.claude/plans/fluttering-drifting-hamming.md`.**
+
 1. **#144 first, then #143 and #145** — unchanged from S038 and still correct. #144 is the only one of
    the three with real input: inbound reference counts come from the scan's own reference set.
-   Thresholdless, every zero scoped.
+   Thresholdless, every zero scoped. ⛔ **`/clear` between each ticket** — do not write a close
+   between them.
 2. **#143 and #145 ship boundary lines, not counts** — the standing block holds why, and the fact that
    #143's view-count vendor question is **already discharged** in `docs/vendor/list-views.md`.
 3. ⚠ **The S038 plan is STILL LIVE and its Files table still authorises the chain** —
@@ -806,3 +812,49 @@ price. `#102`'s fixture backlog. ⛔ **Re-check the nine flipped `mattpocock-ski
 update** — the frontmatter fix lives in the plugin cache and an update restores the flag, which would
 leave 21 router rules nudging toward skills the Skill tool refuses. Zhou & Walker (2016), DOI
 `10.1145/2950290.2950298`, still unread.
+
+---
+
+**POST-CLOSE ADDENDUM (S039, after `87fa6db` shipped) — the operator named the actual goal, and the
+state apparatus turns out to be a shadow copy of a state system this project already runs.**
+
+⛔ **THE GOAL IS TO FINISH `workspace_lint`, NOT TO FIX THE STATE SYSTEM.** Stated directly:
+*"I want workspace_lint finished already."* Every hygiene, schema and memory-tooling thread is
+subordinate to that and none of them ship a rule.
+
+⭐ **THE GIANT STEP, AND IT WAS ALREADY INSTALLED HERE.** `ask-matt/SKILL.md` line 22:
+*"kick off `/implement` per ticket, **`/clear`ing context between each one**. Each ticket is
+self-contained, so the last one's context is disposable."* In that methodology state lives in exactly
+three places — **`CONTEXT.md`** (glossary), **ADRs** (hard-to-reverse decisions), and **the tracker**
+(spec + tickets carrying blocking edges) — and **context between tickets is disposable by design.**
+There is no checkpoint, no band and no standing block, because a self-contained ticket plus the
+tracker *is* the resume surface.
+
+⛔ **THIS REPO RUNS THAT FLOW CORRECTLY UP TO `/to-tickets` AND THEN INVERTS IT.** `CONTEXT.md`, the
+ADRs, spec #139 and tickets with `blocked_by` all exist and are right. Instead of clearing between
+tickets, the project built `session-end-to-state`, `session-start-from-state` and an 800-line
+checkpoint **to carry across the boundary the methodology says to cut.**
+
+**Measured, not asserted:** of 106 standing constraints, **59% duplicate a surface that is already
+authoritative** — 19 decided in an ADR, 11 tracked as an issue, 14 enforced by a gate or hook — and
+**1 of 106 carries an expiry condition.** That is why a correct, lossless trim could only reach
+−7.9%: it was compressing a shadow copy, and a mirror rots by definition because the authoritative
+copy moves and the copy does not.
+
+⛔ **THE COLLISION IS WITH THE OPERATOR'S OWN §1.6/§11, AND IT IS NOT A DEFECT IN EITHER RULE.** Both
+say `/clear`. They disagree on **what you resume from** — a durable state file, or the ticket. Running
+both means paying for both, and the state file grew to 704 lines trying to be a second tracker.
+**The fix is to resume from the ticket. It is NOT a better schema, and it is NOT a memory server** —
+retrieval tooling indexes duplicates, and a full system prompt suppresses the retrieval call anyway.
+
+⚠ **A CORRECTION TO THIS SESSION'S OWN NUMBERS, recorded because the finding is about bad numbers.**
+An earlier pass reported **53 of 106** constraints as mechanism-backed. **That was wrong** — the grep
+counted matching *lines* rather than *constraints*. Re-measured per constraint: **14–16**. The
+59%-duplication figure above is from the corrected per-constraint classifier.
+
+⛔ **NOT DONE, AND DELIBERATELY:** none of this was acted on. No constraint was retired, no surface
+routed, no schema built. **It is recorded and deferred because it does not ship a rule.** The only
+behavioural change adopted now is the cheap half: **`/implement` per ticket with `/clear` between, and
+no close ritual between tickets.** *Revisit if:* the three Measurement tickets land and the checkpoint
+is still being read at the head of an implementation session — that would mean the habit outlived the
+finding, and the routing work has to be scheduled rather than deferred again.
