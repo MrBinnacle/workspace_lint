@@ -772,32 +772,78 @@ of the body. Nothing gated run 2.
 - **Predictions: P1, P2, P3, P4, P6 HOLD; P5 REFUTED (the registered embarrassing branch, at
   full strength); P7 PENDING the operator's cold read.**
 
-### EXACT NEXT STEPS
+### EXACT NEXT STEPS — REWRITTEN BY THE POST-CLOSE ADDENDUM BELOW (operator ruling: the read is delegated to SME seats)
 
-1. **Operator merges or amends PR #155**, then cold-reads the five `--show-titles` copies —
-   `.scratch/r2-ROOT-A-titles.txt` … `r2-ROOT-E-titles.txt` — under the protocol in
-   `docs/proof/prereg-run2-kill-criterion-read.md`: findings unchanged from run 1 inherit their
-   bins; the five Measurements sections get one bin each (SIGNAL / NOISE / CANT-TELL); the
-   density question is answered in his own words and recorded verbatim.
-2. **Bins land in `docs/proof/dispositions-run2.md`**, same redaction rule (role labels only;
-   the label→ID map is machine-local at `.scratch/real-roots-map.md`, gitignored, never
-   committed).
-3. **The adjudication branch — SURVIVES / SURVIVES-NARROW / KILL — is read off the
-   pre-registered procedure, never re-derived.** SURVIVES-NARROW obliges a filed ticket on the
-   counter surface. A KILL is the operator's values call in his own words and no bin arithmetic
-   reaches it for him.
+1. **Dispatch the SME-seat read.** The five Measurements bins and the density question go to
+   subagent seats playing the roles a full tech product team would assign to a report-readout.
+   Recommended seats, revisable at dispatch: **product manager** (signal vs noise for the
+   owner), **UX / content design** (the density question and report readability), **data
+   analyst** (measurement validity and denominator honesty), **support / customer success**
+   (actionability by a reader who is not the owner). Dispatch discipline is standing:
+   `verbatim-content-subagent-dispatch` — embed the read protocol from
+   `docs/proof/prereg-run2-kill-criterion-read.md` VERBATIM, never by pointer;
+   `parallel-review-disposition-schema` so the seat outputs join; the return channel NAMED
+   (`SendMessage` to `main` plus one scratchpad path). Seats read the machine-local copies
+   `.scratch/r2-ROOT-A-titles.txt` … `r2-ROOT-E-titles.txt`; **their written outputs use role
+   labels only** — no title, ID or URL from the workspace leaves the seat.
+2. **Every seat bin is a DELEGATED bin, final at its own layer, and the record says so.** Run
+   1's SYS001 row set the precedent: "a delegated bin is not a cold-read bin and the distinction
+   is part of the record." `docs/proof/dispositions-run2.md` marks each bin "SME-advised" and
+   names the layer every figure is computed at. **Nothing routes back to the operator and
+   nothing waits on him** — his ruling is that these decisions never reach him; he may override
+   any bin at any time, and an override is appended as its own dated line, never edited in. The
+   protocol deviation — the prereg assigned the read to the operator cold — is declared at the
+   top of that file as an operator-ruled amendment made AFTER registration and BEFORE any read,
+   with this band as its locator.
+3. **The adjudication branch is read off the pre-registered procedure, never re-derived, and
+   resolves between SURVIVES and SURVIVES-NARROW from the seat bins alone.** SURVIVES-NARROW
+   obliges a filed ticket on the counter surface. **KILL is unreachable by delegation exactly as
+   the prereg wrote it: "If he does not volunteer it, it did not happen."** No seat can produce
+   it, no bin arithmetic reaches it, and nobody asks him for it.
 4. Two facts are fixed for that adjudication regardless of bins, from results §3: two of the six
    countable signals render as boundary text on this build, and a third is structurally 0-or-1.
 
-**NEXT-MODEL: Fable 5 at `/effort high`** — unchanged from S040's declaration and re-derived:
-the next session is disposition synthesis and the kill-criterion adjudication, the
-calcifying-judgement class the routing rule reserves for Fable. If the operator instead wants
-mechanical work first (e.g. #96), that is an Opus session and the adjudication waits.
+**NEXT-MODEL: Fable 5 at `/effort high`** — the next session is seat dispatch plus disposition
+synthesis plus the adjudication read-off, the calcifying-judgement class the routing rule
+reserves for Fable. Seats inherit the session model; none are decision-owners.
 
 **NEXT-REPO/CWD:** the `workspace_lint` repository root.
 
 ### WHAT ONLY THE OPERATOR CAN DO
 
-Merge PR #155. The cold read, the five bins, the density answer, and — if he reaches it — the
-KILL sentence. Close the `.claude/hooks/` + `.claude/settings.json` guard hole. `#102`'s fixture
-backlog. Install `mewt` if the hand-run mutation cost is worth removing.
+Merge the next session's PR. The KILL sentence, if he ever volunteers it — nobody asks. Close
+the `.claude/hooks/` + `.claude/settings.json` guard hole. `#102`'s fixture backlog. Install
+`mewt` if the hand-run mutation cost is worth removing.
+
+---
+
+**POST-CLOSE ADDENDUM (S041, after `d1922e2` shipped) — both PRs merged, and the read protocol's
+step 2 is delegated by operator ruling.**
+
+PR #155 (merged 2026-08-23T03:05:48Z) and PR #156 (03:05:57Z) are both on `main`,
+ancestry-verified with `git merge-base --is-ancestor`, never the badge; the two-second
+auto-close window was checked and closed nothing. The band's "PR #155 is OPEN and unmerged"
+lines above stand as dated record.
+
+**Operator ruling, 2026-08-22 (in-session, verbatim intent):** step 2 of the read protocol —
+the five Measurements bins and the density question — is handed next session to "whoever SME(s)
+would manage this on a full tech product team," and **"these are decisions that should never
+make it to me … not because I don't care, but because there's simply a correct answer — this is
+a linter."** That is §0.6's own test applied by the operator to this project's read layer:
+whether a linter's report carries actionable signal is a **determinate practitioner question**,
+not a values fork, and competent practitioners in the named roles converge on it. The S040
+close's framing of the density question as "the operator's felt-surface call" was therefore a
+misclassification of the §0.6 kind — surfaced three times before on the state role, now caught
+on the read layer too. Consequences, recorded here because the prereg cannot be edited after
+registration:
+
+- ~~"The operator reads the five `--show-titles` copies cold — no agent annotation before the
+  read"~~ is amended for the Measurements half: SME seats read and bin, final at their own
+  layer; nothing routes to the operator. The run-1 findings bins are untouched — they were his
+  cold read and they stand.
+- The amendment happened **after registration and before any read**, so no bin was moved after
+  being seen. The deviation is declared in `dispositions-run2.md`, not smoothed over.
+- **P7 is scored against the SME-advised bins, and every published figure names that layer** —
+  per run 1's two-layer doctrine. The criterion's wording says "a workspace owner recognises";
+  a delegated read is a proxy for the owner and the record must say "SME-advised", never imply
+  a cold owner read. The layer distinction is the record's honesty, not a routing obligation.
