@@ -225,6 +225,34 @@ one has a one-command check and no gate. #103 owns making prose like this annota
 - **Research agents cannot reach Reddit.** The solo and small-team willingness-to-configure verdicts
   are produced by a blocked crawler, not by an absence in the world.
 
+**The block-vs-page timestamp licence.** Hoisted from the S043 band on 2026-08-23 before archiving
+it, because the product now depends on it and the band was its only record.
+
+- ⭐ **A `child_page` BLOCK's `last_edited_time` MOVED WITH ITS PAGE'S ON EVERY CONTENT-ONLY EDIT AND
+  WAS EQUAL AT EVERY MEASUREMENT**, across four runs. `docs/proof/results-block-vs-page-timestamp.md`,
+  pre-registered at `cc0eb1c` before any data existed. Read off the registered decision table:
+  **LABELLING IS LICENSED — as an EMPIRICAL finding, never a documented guarantee.**
+- ⛔ **THREE LIMITS TRAVEL WITH IT AND NONE IS OPTIONAL.** Every downstream claim says **"observed
+  n=1, vendor silent"** and cites the results file. The **partial-block-object** case was never
+  forced, so P1 held on a FULL object and says nothing about a partial one. And the API **truncates
+  `last_edited_time` to the MINUTE** — 24 of 24 observed values end `:00.000Z` — which the vendor
+  does not document and whose own example (`/reference/page`, fetched 2026-08-23, 200 OK, reading
+  `"2020-03-17T19:10:04.968Z"`) contradicts. ⛔ **NO DESIGN MAY RELY ON EDIT ORDERING OR ELAPSED TIME
+  BELOW ONE MINUTE.** ⚠ **A documented example is not a documented contract**, and here the two point
+  opposite ways.
+- ⭐ **A WAIT MUST GO BEFORE EACH EDIT, NEVER AFTER IT.** What must differ is the truncated minute of
+  one edit event and the next; a wait between an edit and its read changes neither. The original wait
+  was in the intuitive place and was useless there, and reading the difference as vendor
+  nondeterminism is what voided run 1.
+- **`prototypes/trash-page.ts` is the STANDING ROLLBACK TOOL.** Takes an explicit id, **refuses to
+  run without one**, never enumerates, verifies by read-back. The field is **`in_trash`**, not
+  `archived` — API version `2026-03-11` rejects `archived` at validation (`body.archived should be
+  not present`) and the SDK marks it deprecated in `api-endpoints/pages.d.ts`.
+- ⛔ **THE PROBE'S EXIT `5` IS REACHABLE FROM THREE BRANCHES** — its meaning is *"there is a page to
+  remove"* — so **a mutation run must not be scored on it**. The rollback branch is identified by
+  P1/P2/P4 holding while P5 flips. ⚠ **Its controls 1 and 2 are exercised on the happy path and have
+  NOT been adversarially mutated.** Not claimed as proven.
+
 **Numbers and facts that are unverified, and stay labelled so.**
 
 - **The `10,000` cap constant is vendor-documented and unobserved.**
@@ -303,9 +331,22 @@ without a triage-role label**, reading the roles from `docs/agents/triage-labels
   edit, so a mutated run still reports one gap and is still `qualified` — and the byte is green
   regardless, because ADR-0012 decision 2 makes it compare the coverage **vector**. Nothing sits
   behind the denominator decision.
-- ⛔ **`notion-port.ts`'s header still says THREE read endpoints and there are four.**
-  `GET /v1/databases/{id}` was authorized 2026-08-18 (#51). `/v1/data_sources/{id}` was neither
-  requested nor granted. #51 stays open behind two operator-only preconditions.
+- ⭐ **THE PORT IS SIX GETs AS OF PR #165, AND THE HEADER'S COUNT IS NOW CORRECT AND CLAIM-GATED
+  IN THE SUITE.** `GET /v1/users/me`, `GET /v1/pages/{id}`, `GET /v1/blocks/{id}/children`,
+  `GET /v1/databases/{id}`, `GET /v1/data_sources/{data_source_id}`, `GET /v1/views`.
+  ⚠ **This line read "still says THREE and there are four" for five sessions** — a count is the
+  fastest-rotting claim there is. **Re-derive it, never re-quote it:**
+  `sed -n '/^export interface NotionPort {/,/^}/p' slice/notion-port.ts | grep -cE "^  [a-zA-Z]+\("`
+  ⛔ **The obvious form of that command — the same grep WITHOUT the `sed` range — returns 7, because
+  it also matches `PortError`'s `constructor(`.** It was written into this line as the check, run,
+  and found wrong inside the same close. **A re-derivation command is itself a claim, and an
+  unverified one is worse than a quoted count because it reads as a mechanism.**
+  ⚠ **Both numbers are true only where PR #165 has landed.** On `main` before that merge the
+  interface has THREE members and the header says three; verify which tree you are in first.
+  ⛔ **`POST /v1/data_sources/{data_source_id}/query` — the ROWS — is STILL ask-first and
+  UNGRANTED**, and is deliberately absent from the port. Do not add it to make a counter compute.
+  ⛔ **#51's three operator-only preconditions are UNCHANGED by this.** The endpoints landed; the
+  fixture work below did not.
 - ⛔ **Three operator-only items block #51 and nothing else.** One `link_to_page` block pointing at
   `wl-dataset`, made in the Notion UI — `references.ts` line 245 reads `link_to_page.database_id` and
   no Markdown form produces that block, so the field is **unobserved**. A permanent database
@@ -689,6 +730,23 @@ evaluated issue is simply false. The defect was an under-specified document, not
   cross-population comparison produces a dramatic-looking contradiction, and S042's strongest seat
   claim was exactly that — reference targets pooled into a `(unit: resources)` figure. **Verify the
   dramatic one FIRST**, against the population each figure is actually scoped over.
+- ⛔ **AND ONE LEVEL IN: A MUTATION THAT DIES BY THE WRONG *ASSERTION* IS THE SAME FINDING, AND THE
+  EXIT CODE CANNOT SEE IT.** A fixture with one column of each of three types in one schema made the
+  expected count `3` — and so was the number of TYPES, and so was (types × schemas). Mutating the
+  type lookup to *"one per type per schema"* still produced `3`, the count assertion passed straight
+  through it, and an unrelated forced-zero test did the killing. ⭐ **PICK A FIXTURE NUMBER NO WRONG
+  DERIVATION OF THE SAME SHAPE CAN PRODUCE** — two relations made the answer `4`, which nothing else
+  in that fixture yields. **Prefer asymmetric fixtures; tidy symmetric ones make small numbers
+  collide by default.** Read WHICH named assertion failed, always.
+- ⛔ **A DOCUMENT-SCOPED ASSERTION OF A PER-ROW PROPERTY MISFIRES FROM BOTH DIRECTIONS.**
+  `CHECK-report` TEST 11b guarded against a finding printing an empty source cell with an unanchored
+  `/source: *$/m` over the whole rendered report, and a new DISCLOSURES heading ending *"per reached
+  data source:"* — four sections away, in a section with no findings in it — turned it red. The
+  documented shape is a lookahead spanning too far; **this is the same family arriving as a subject
+  that was never scoped to the rows.** Anchor to the row separator the format actually uses, and
+  ⚠ **verify the tightened form still catches what it was written for, by mutation** — done here by
+  blanking `SOURCE_NOT_APPLICABLE`. **The identical defect was then committed once more inside the
+  regression test written FOR it.**
 - ⛔ **A MUTATION THAT FAILS IN THE WRONG FILE IS A FINDING ABOUT THE CONTROL, NOT A PASS.** Wiring a
   measurement into the exit byte's inputs turned the gate red through `CHECK-sys001`, **not** through
   `CHECK-measurements`, because that isolation test compared the real derivation against a
@@ -707,20 +765,36 @@ evaluated issue is simply false. The defect was an under-specified document, not
   THREAD.** The eight operational rules, the eight worked examples, the reconstructibility gate test
   and the no-channel-at-any-level decision all live there as of PR #149. The state file's job here is
   a pointer; restating any of it is the mirror this file has been burned by four times.
-- ⛔ **`#143` AND `#145` WILL SHIP BOUNDARY LINES, NOT COUNTS, AND THAT IS THE SPEC'S OWN FALLBACK.**
-  `NotionPort` has three methods and none retrieves a database; `scan.ts` marks every
-  `child_database` a drop-out. So per-database relation/rollup/formula counts and people-type
-  empty-value counts have **no input available** and render "not computed" with the cause. The
-  consequence is load-bearing and is the operator's call, not the agent's: **run 2 would then read a
-  surface where two of four measurements are boundary lines**, which prices `#51`'s fifth-endpoint
-  grant in terms of what the kill-criterion test can actually test. Do not request an endpoint;
-  surface the price.
+- ⭐ **`#143` AND `#145` ARE BOTH CLOSED (COMPLETED, 2026-08-23) — THIS ENTRY IS A FACT ABOUT THE
+  CODE, NOT AN OPEN QUEUE ITEM.** Their boundary lines shipped and closed the tickets; PR #165 then
+  made two of the three compute. **Do not re-open either from this entry.**
+  ⭐ **`#143`'s TWO COUNTERS NOW COMPUTE; ONLY `#145`'s LINE REMAINS A BOUNDARY.** This entry read
+  *"#143 AND #145 WILL SHIP BOUNDARY LINES, NOT COUNTS"* over *"`NotionPort` has three methods and
+  none retrieves a database"*, and PR #165 refuted both halves. Relation/rollup/formula counts come
+  from `GET /v1/databases/{id}` → `GET /v1/data_sources/{data_source_id}`; view counts from
+  `GET /v1/views`. ⛔ **`#145` DOES NOT WIDEN BY MAKING A CALL** — the property TYPES are in hand
+  from the schema, and the empties need ROWS, which need the ungranted POST. Its rendered cause now
+  leads with `[BLOCKED — needs an operator grant, not a call]`, and the suite asserts that marker
+  appears on **exactly one** measurement so it discriminates rather than decorates.
+  ⚠ **The pricing question this entry framed is therefore DEAD, and must not be revived from the
+  archive.** Run 2 would now read a surface with **one** boundary line, not two of four.
 - ⭐ **`#143`'s VIEW-COUNT VENDOR CHECK IS ALREADY DISCHARGED IN THIS REPO — do not re-fetch and do
   not answer it from memory.** `docs/vendor/list-views.md`, fetched 2026-08-19: `GET /v1/views`
-  returns view metadata for a specified database and the read-only capability suffices. **It is a
-  NEW ENDPOINT**, so it is outside spec #139's scope (*"No new endpoint enters the scan for a
-  measurement"*) and outside the current grant. The claim is POSITIVE and therefore monotonic under
-  vendor change, so it needs no expiry — unlike a negative one.
+  returns view metadata for a specified database and the read-only capability suffices. The claim is
+  POSITIVE and therefore monotonic under vendor change, so it needs no expiry — unlike a negative one.
+  ⭐ **IT IS BUILT AS OF PR #165, AND SPEC #139's NON-NEGOTIABLE WAS AMENDED TO ALLOW IT.** This
+  entry used to end *"outside spec #139's scope and outside the current grant"*, which conflated two
+  constraints: #158's table answers the GRANT question and says none is needed; #139's
+  *"Non-negotiable: read-only, and no new endpoint"* is a DESIGN-SCOPE clause that #158 never
+  mentions. Surfaced as a fork; the operator ruled the clause superseded for GET-only measurement
+  calls (comment on **#139**, 2026-08-23).
+  ⛔ **WHAT WAS NOT AMENDED:** the row-query POST stays ask-first and ungranted, ADR-0014 stands,
+  read-only is untouched, and the data-source gap is **not** discharged. **Do not read the amendment
+  wider than that.**
+  ⚠ **THE GENERAL SHAPE IS A FOURTH ONE, ALONGSIDE THE THREE METHOD RULES:** a LATER TICKET silently
+  overriding an EARLIER SPEC's scope clause is caught by none of them, exactly as #25 found for an
+  ADR contradicting an ADR. **Read the governing spec's Scope / Non-negotiable / Out-of-scope
+  sections before adding a call, a dependency or a surface a ticket authorises.**
 - **`#145`'s owner signal selects properties by TYPE `people`, never by NAME.** Matching a property
   called "Owner" infers meaning from a label, which Principle 4 forbids. The property's own name
   prints as data beside the count.
@@ -744,6 +818,16 @@ the S040 session before either was archived.
   ⚠ **The guard hole is real and unclosed, and only the operator can close it** — hook wiring is
   write-denied to the agent. The correct home for an agent-behaviour nudge is the user or plugin
   layer, and that restriction is a feature rather than an obstacle to route around.
+- ⭐ **FOR AN INSTALLED LIBRARY, `node_modules` OUTRANKS CONTEXT7 AND THE VENDOR'S DOCS SITE.** The
+  `.d.ts` is the artifact the code compiles against, at the exact resolved version. Used 2026-08-23
+  to settle three endpoints before writing a line: `@notionhq/client@5.25.2`'s
+  `build/src/Client.d.ts` and `build/src/api-endpoints/*.d.ts` gave the method names, the parameter
+  shapes (`listDatabaseViews` is `queryParams`, **not** `pathParams`) and the response fields —
+  `DatabaseObjectResponse` carries `data_sources` and **no** `properties` map, which is what proves
+  ⛔ **THE TWO-CALL SCHEMA PATH IS NOT COLLAPSIBLE.** The same tier had the `archived` → `in_trash`
+  deprecation sitting in it one run before S043 found it the expensive way. **Check `node_modules`
+  first when the question is "what can this installed client do"; Context7 for vendor semantics,
+  versions and pages the SDK does not encode.**
 - ⛔ **CHECK WHAT IS INSTALLED BEFORE BUILDING AN INSTRUMENT, AND FIRE CONTEXT7 BEFORE ASSERTING A
   LIBRARY FACT.** `docs/agents/tooling.md` holds the rule, the re-derivation command and the
   relevance table; `CLAUDE.md` points at it. **The inventory is re-derived, never re-quoted** —
@@ -757,141 +841,108 @@ the S040 session before either was archived.
 
 ---
 
-## S043 — 2026-08-23 — the probe answered, and the answer was nearly lost to the instrument twice
+## S044 — 2026-08-23 — the figure was already in the response, and the report named a vendor for it
 
-**PHASE:** VERDICT SPRINT. **The vendor question that blocked #158's cheapest item is CLOSED.** PRs
-#161 and #162 merged (operator; #161 mid-session, see the dead letter below). **PR #163 merged mid-close** (operator, third mid-session merge this session — the
-pre-commit re-read caught it). **Nothing is open at close.**
+**PHASE:** VERDICT SPRINT. **#158 is BUILT, all seven items, and it is NOT merged** — PR **#165** is
+OPEN at close and **#158 is OPEN**. Three commits: `c42e89f`, `f1b40ba`, `cd9167b`. Re-verified
+against `origin/main` immediately before this close; nothing landed mid-session.
 
-**TESTS:** Gate green on `main`, 16 suites, exit 0, typecheck first — run before each commit. **No
-`slice/` change this session.** `prototypes/tsconfig.json` changed; see the vacuity finding.
+**TESTS:** Gate green on the branch, 16 suites, exit 0, typecheck first — run before each commit.
+No NUL bytes; line endings preserved (Edit tool throughout).
 
-**Model:** Opus 5, per the S042 close's `NEXT-MODEL` line.
+**Model:** Opus 5, per the S043 close's `NEXT-MODEL` line.
 
-### The answer, read off a table fixed before any data existed
+### The finding, and it was the same finding four times
 
-A `child_page` block's `last_edited_time` **moved with its page's on every content-only edit and was
-equal to it at every measurement, across four runs.** Registered decision table, second row:
-**LABELLING LICENSED — as an EMPIRICAL finding, never a documented guarantee.** So S042's first
-branch is the live one: *the product is declining to compute a figure it already holds.*
+`measurement.ts` stated, unqualified, that a child page enumerated from its parent's block listing has
+no response carrying its `last_edited_time`. **The response exists.** `GET /v1/blocks/{block_id}/children`
+returns block objects, a full block object carries the field, a `child_page` IS a block object, and
+the scan already makes that call. It was discarded at **our own type boundary** —
+`BlockListResponse.results: unknown[]` — and the report then named a vendor-shaped obstacle for a
+figure the run already held. ⭐ **That is the inference this product exists to detect, committed by
+this product**, and it turned out to be the shape of the whole ticket: **three more sites** were
+discarding the same field, and **five sentences** in the same file described a port the build had
+outgrown.
 
-`docs/proof/results-block-vs-page-timestamp.md` is the record. **P1 HELD**, which matters beyond this
-question — its refutation would have refuted S042's instrument-defect finding itself.
+⛔ **EVERY ONE SURVIVED A GREEN GATE, AND THE REASON GENERALISES: no assertion reads a comment, and
+the constants that print were never asserted against.** `CHECK-measurements` TEST 10g now asserts
+that no rendered line names an obstacle this build no longer has, **with a positive control** so it
+cannot pass by the subject vanishing from the report.
 
-⚠ **Three limits travel with the licence and none is optional.** Every downstream claim says
-**"observed n=1, vendor silent"** and cites the results file. The **partial-block-object** case was
-never forced, so P1 held on a full object and says nothing about a partial one. And see the
-truncation finding below.
+### What landed
 
-### ⛔ RUN 1 REPORTED NONDETERMINISM IN NOTION. IT WAS THE INSTRUMENT, TWICE.
+Item 0 from the banner; items 1–6 from Scope. The two authorized-GET counters compute; a forced value
+is marked forced per row in both text emitters; the reference-population coverage ratio is printed
+rather than assembled from two clauses; *not computed* (call never made) is split from *not read*
+(call made, carried nothing); the ungranted marker leads the one line an operator must clear; and the
+boundary prose **moved to DISCLOSURES and was not deleted**.
 
-Run 1 scored **P4 REFUTED** — "the two edits disagree, behaviour is nondeterministic" — and that was
-false. Two defects, neither a fact about the vendor, **and each was one grep away before the run.**
+⚠ **ITEM 6 IS MET AT THE SECTION LEVEL AND NOT AT THE WHOLE-DOCUMENT LEVEL, AND THE SECOND NUMBER IS
+RECORDED SO NOBODY READS THE FIRST AS IT.** Boundary prose inside the MEASUREMENTS section went
+**2230 → 638** characters and the longest line **681 → 247**. The report as a whole grew
+**12296 → 15702**, because the relocated text sits in DISCLOSURES beside richer causes. **Measured,
+not asserted** — and the measuring is what found the view-boundary defect below.
 
-**1. RESOLUTION.** The wait was 2500ms under a comment asserting *"Notion timestamps are
-second-granularity."* **The API truncates `last_edited_time` to the MINUTE — 24 of 24 observed values
-across four runs end `:00.000Z`.** So edit 1 fell inside the creation minute and could not move the
-page timestamp while edit 2 crossed a boundary and did; P4 compared the two and read the difference
-as the vendor being nondeterministic. **The clock was coarser than the experiment.**
+### ⭐ THE GOVERNANCE FORK, SURFACED RATHER THAN ABSORBED
 
-⭐ **The fix is a wait BEFORE each edit, not after it.** What must differ is the truncated minute of
-one edit event and the next; a wait placed between an edit and its read changes neither. This is the
-non-obvious half — the original wait was in the intuitive place and was useless there.
+Spec **#139** declares *"Non-negotiable: read-only, and no new endpoint"* for measurements and lists
+*"Any new endpoint"* out of scope. **#158 item 1 crosses it.** #158's table answers the **GRANT**
+question only — *"grant needed: none"* — and never mentions the clause, so the work was **permitted at
+the credential layer and forbidden at the design layer**. Operator ruling: superseded for GET-only
+measurement calls, recorded as a comment on **#139** naming what is **not** amended.
 
-**The vendor is silent AND its example misleads.** `/reference/page` (fetched 2026-08-23, 200 OK)
-says nothing about precision and its own example reads `"2020-03-17T19:10:04.968Z"`. **A documented
-example is not a documented contract, and here the two point opposite ways.** ⛔ **No design may rely
-on edit ordering or elapsed time below one minute.**
+⛔ **A LATER TICKET SILENTLY OVERRIDING AN EARLIER SPEC'S SCOPE CLAUSE IS CAUGHT BY NONE OF THE THREE
+METHOD RULES** — a fourth shape, exactly as #25 found for an ADR contradicting an ADR. Hoisted into
+the standing block.
 
-**2. ROLLBACK — and it left a page live in the operator's workspace.** Run 1 sent `archived: true`;
-API version `2026-03-11` rejects it at validation (`body.archived should be not present`). The field
-is **`in_trash`**, and the SDK marks `archived` deprecated in its favour (`api-endpoints/pages.d.ts:526`).
-**The read-back check was never at fault — it already tested both fields. Only the write was.**
+### Three defects the verification found and no assertion did
 
-`prototypes/trash-page.ts` was written to remove the orphan and is the standing rollback tool: it
-takes an explicit id, **refuses to run without one**, never enumerates, and verifies by read-back.
-**All four scratch pages across four runs are accounted for** — runs 2 and 3 rolled back in-run, runs
-1 and 4 via the tool, every one verified by read-back.
+1. ⛔ **THE VIEW BOUNDARY QUOTED THE DATABASE RETRIEVE'S FAILURE.** Both causes read
+   `db.cause ?? db.viewCause`, so the view line named an obstacle that was not its own and pointed
+   the operator at the wrong remedy. `GET /v1/views` takes the database id as a **query parameter**
+   and is asked for even after the retrieve fails, precisely because they are two calls with two
+   failure modes. **Found by MEASURING the section for item 6.**
+2. ⛔ **A MUTATION DIED BY THE WRONG ASSERTION.** Detail and the generalisation are in the standing
+   block; the short form is that the fixture's expected `3` was also the type count and the
+   (types × schemas) product.
+3. ⛔ **THE FIRST FIX FOR THE REFERENCE-TARGET TIMESTAMP WAS WRONG, AND THE ERROR IS THE LESSON.**
+   `manifest.mark` **creates** an absent entry, and most reference targets are not resources under
+   the declared root — so marking one to keep its timestamp would have **added a resource the scan
+   never enumerated** and grown every figure built on `of(RESOURCES)`: the applicable set, every
+   coverage ratio, and the exit byte behind them. That is the flattering direction.
+   `Manifest.observeLastEdited` updates an existing entry and is a silent no-op otherwise.
 
-### ⭐ THE OPERATOR'S CORRECTION, AND IT WAS THE RIGHT ONE
-
-Mid-session, after the second failure: *"Maybe if you'd just finish building the instrument it
-wouldn't seem broken all the time."* Both defects were knowable before run 1 — the SDK's own `.d.ts`
-marked the field deprecated, and the granularity was readable from a single response before any wait
-constant was chosen. **Diagnosing them one run at a time reads as an instrument that is broken all
-the time, when it is really an instrument that was never finished.**
-
-So run 3 added the three preconditions the probe had been *assuming*, each the same shape as the
-defects that voided run 1 — a belief written into the instrument with nothing able to falsify it:
-
-1. **The append proves it landed**, by child-block count. Without it a dead append and a genuine
-   vendor finding produce the **same line**, because a page timestamp that does not move is exactly
-   what a no-op edit should cause. Run 1's output was consistent with both and could not distinguish
-   them. An unlanded append now refuses to score any prediction.
-2. **The wait checks itself.** The smallest non-zero gap between observed values bounds the
-   granularity above, since the real quantum divides it. Measured 60s against a 70s wait: ADEQUATE.
-   **The constant no longer rests on a belief; the run derives the check from its own data.**
-3. **A run that leaves a page in the workspace cannot exit 0.** This is the one that let run 1's
-   orphan pass: it printed `REMOVE THIS PAGE BY HAND` and **exited 0 anyway**, so the orphan was
-   visible only to a human reading the whole log and to nothing downstream at all.
-
-Run 3 replicated run 2 exactly on a separate subject page. **Run 4 was the mutation**, because
-control 3 had never fired on a happy-path run and a control that has never fired is not a control.
-Rollback mutated back to `archived`: **caught** — exit `0` → `5`, P5 flipped, and it reproduced run
-1's error string **verbatim**, which confirms the run-1 diagnosis rather than leaving it plausible.
-
-⚠ **Controls 1 and 2 are exercised on the happy path and have NOT been adversarially mutated.** Not
-claimed as proven. ⛔ **Exit `5` is reachable from THREE branches** — its meaning is "there is a page
-to remove" — so **a mutation run must not be scored on it**; the rollback branch is identified by
-P1/P2/P4 holding while P5 flips. That is documented in an exit-code table in the probe's header.
-
-### Two traps that fired inside the verification itself
-
-- ⛔ **A `grep -c` OVER A WHOLE FILE CAN COUNT YOUR OWN DOCUMENTATION.** Scoring the mutation's
-  substitution, `grep -c "archived: true"` returned **3** — two were the probe's own header comment
-  *describing* run 1's defect. **A grep that counts your prose is not a substitution check.** Score
-  on the full call expression, and confirm the replaced form is absent.
-- ⛔ **`prototypes/tsconfig.json` HAD A HAND-KEPT `include` LIST AND `trash-page.ts` WAS NEVER
-  COMPILED.** It was written, reported `exit 0`, and committed unchecked. **The S042 band predicted
-  this exact failure and named the file**; it fired on the next session, as predicted, and was caught
-  only because rotating that band forced the line to be read. Now globbed. Hoisted to the standing
-  block, generalised past tsconfig.
-
-### ⚠ A DEAD LETTER, and the failure mode is in this file already
-
-**PR #161 merged at 04:14:18Z, mid-session, while run 3 was executing.** The hardening commit was
-pushed after that and **landed on a closed PR** — it never reached `main`. Caught by
-`git merge-base --is-ancestor`, **not** by the badge, and recovered as PR #162.
-⭐ **The standing constraint said this would happen and it still did.** The push exit code was `0`.
-**Verify against `main` after every push in a session where a PR is open.**
+A `/code-review` pass found **eight** findings; each was verified against the files before being
+acted on, and all eight are fixed in `cd9167b` with regression tests for the four an assertion can
+reach.
 
 ### EXACT NEXT STEPS
 
-0. **Take #158.** Its out-of-scope bullet is updated in place: the vendor question is answered and
-   that item is no longer blocked on it. The flagship is the cheapest of the three unbuilt counters —
-   widen `listChildren`'s declared return type (`slice/notion-port.ts:61`) and let the edit-age table
-   render the reached set. **Read the banner at the top of #158's body before the body.**
-   ⛔ **The label is licensed but the licence is narrow** — n=1, vendor silent, minute-truncated, and
-   the partial-object case untested. Cite `docs/proof/results-block-vs-page-timestamp.md` on every
-   downstream claim. **The remaining question is COST, not permission:** whether to spend a
-   per-child `GET /v1/pages/{id}` is a separate call and this run does not settle it.
-1. **Then the two authorized GETs** — `GET /v1/databases/{id}` → `GET /v1/data_sources/{id}` for the
-   schema's `properties` map, and `GET /v1/views`. Neither needs an operator decision. ⛔ Do not
-   "simplify" the two-call path to one; the shipped cause text is correct.
-2. **Render a forced value as forced.** A zero is not an absence.
-3. **Do not re-run the read.** Adjudicated at SURVIVES-NARROW.
+0. ⛔ **VERIFY PR #165 REACHED `main` BEFORE ANYTHING ELSE** — `git merge-base --is-ancestor
+   cd9167b origin/main`, **never the MERGED badge**. It is open at close. #158 closes on merge.
+1. **Then `#51`'s three operator-only preconditions**, unchanged by this session: the `link_to_page`
+   block made in the Notion UI, the permanent database reference in the fixture (**re-pre-register
+   before the run, never correct after it**), and `findingFor(...)!` at three call sites in
+   `CHECK-sys001.ts`.
+2. ⛔ **`#145` IS CLOSED (COMPLETED) AND IS NOT WORK.** Caught by the close's own deref, which read
+   the tracker rather than this session's summary — the band asserted it as a next step before that
+   check ran. Its line is a *rendered boundary* that ships correctly; the rows behind it need the
+   ungranted POST. **Do not build it, do not request the endpoint, and do not re-open the ticket** —
+   surface the price if it ever comes up, per the standing rule.
+3. ⚠ **The `#51` changelog-date discrepancy still stands in TWO surfaces and is still left wrong on
+   purpose.** Fix both from a paged fetch, or leave both.
 
-**NEXT-MODEL: Opus 5 at `/effort high`** — #158 is execution against a written scope whose governance
-question is settled in-file and whose vendor question is now closed by this session. Nothing in
-steps 0–3 calcifies judgement the gate cannot falsify. ⛔ **If the cost question in step 0 turns into
-a design decision about what the counter measures rather than how it is fetched, close early and take
-it to a Fable session** rather than deciding it on the wrong tier.
+**NEXT-MODEL: Opus 5 at `/effort high`** — step 0 is verification and step 1 is fixture mechanics
+against a written scope. Nothing in 0–3 calcifies judgement the gate cannot falsify. ⛔ **If the
+`#145` question turns into whether the counter should measure something the schema alone can answer
+— rather than whether to request the POST — close early and take it to a Fable session**; that
+reverses a measurement's definition, not its plumbing.
 
 **NEXT-REPO/CWD:** the `workspace_lint` repository root — state surfaces, the resume ritual and the
 gate all live here.
 
 ### WHAT ONLY THE OPERATOR CAN DO
 
-Merge PRs. Close the `.claude/hooks/` + `.claude/settings.json` guard hole — still the largest
-structural risk and the cheapest to fix. Grant the ask-first POST if people-type empty values are
-ever worth it. Install `mewt`. The `_quarantine/` promotion review remains owed and operator-only.
+**Merge PR #165.** Close the `.claude/hooks/` + `.claude/settings.json` guard hole — still the
+largest structural risk and the cheapest to fix. Grant the ask-first POST if people-type empty values
+are ever worth it. Install `mewt`. The `_quarantine/` promotion review remains owed and operator-only.

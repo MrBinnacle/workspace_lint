@@ -5493,3 +5493,144 @@ per the amendment convention, forward-looking surfaces are fixed directly rather
 next session to reconcile against an addendum it reads second.
 
 No bin, no branch and no adjudication is touched. Run 2 stays adjudicated at SURVIVES-NARROW.
+
+---
+
+## S043 — 2026-08-23 — the probe answered, and the answer was nearly lost to the instrument twice
+
+**PHASE:** VERDICT SPRINT. **The vendor question that blocked #158's cheapest item is CLOSED.** PRs
+#161 and #162 merged (operator; #161 mid-session, see the dead letter below). **PR #163 merged mid-close** (operator, third mid-session merge this session — the
+pre-commit re-read caught it). **Nothing is open at close.**
+
+**TESTS:** Gate green on `main`, 16 suites, exit 0, typecheck first — run before each commit. **No
+`slice/` change this session.** `prototypes/tsconfig.json` changed; see the vacuity finding.
+
+**Model:** Opus 5, per the S042 close's `NEXT-MODEL` line.
+
+### The answer, read off a table fixed before any data existed
+
+A `child_page` block's `last_edited_time` **moved with its page's on every content-only edit and was
+equal to it at every measurement, across four runs.** Registered decision table, second row:
+**LABELLING LICENSED — as an EMPIRICAL finding, never a documented guarantee.** So S042's first
+branch is the live one: *the product is declining to compute a figure it already holds.*
+
+`docs/proof/results-block-vs-page-timestamp.md` is the record. **P1 HELD**, which matters beyond this
+question — its refutation would have refuted S042's instrument-defect finding itself.
+
+⚠ **Three limits travel with the licence and none is optional.** Every downstream claim says
+**"observed n=1, vendor silent"** and cites the results file. The **partial-block-object** case was
+never forced, so P1 held on a full object and says nothing about a partial one. And see the
+truncation finding below.
+
+### ⛔ RUN 1 REPORTED NONDETERMINISM IN NOTION. IT WAS THE INSTRUMENT, TWICE.
+
+Run 1 scored **P4 REFUTED** — "the two edits disagree, behaviour is nondeterministic" — and that was
+false. Two defects, neither a fact about the vendor, **and each was one grep away before the run.**
+
+**1. RESOLUTION.** The wait was 2500ms under a comment asserting *"Notion timestamps are
+second-granularity."* **The API truncates `last_edited_time` to the MINUTE — 24 of 24 observed values
+across four runs end `:00.000Z`.** So edit 1 fell inside the creation minute and could not move the
+page timestamp while edit 2 crossed a boundary and did; P4 compared the two and read the difference
+as the vendor being nondeterministic. **The clock was coarser than the experiment.**
+
+⭐ **The fix is a wait BEFORE each edit, not after it.** What must differ is the truncated minute of
+one edit event and the next; a wait placed between an edit and its read changes neither. This is the
+non-obvious half — the original wait was in the intuitive place and was useless there.
+
+**The vendor is silent AND its example misleads.** `/reference/page` (fetched 2026-08-23, 200 OK)
+says nothing about precision and its own example reads `"2020-03-17T19:10:04.968Z"`. **A documented
+example is not a documented contract, and here the two point opposite ways.** ⛔ **No design may rely
+on edit ordering or elapsed time below one minute.**
+
+**2. ROLLBACK — and it left a page live in the operator's workspace.** Run 1 sent `archived: true`;
+API version `2026-03-11` rejects it at validation (`body.archived should be not present`). The field
+is **`in_trash`**, and the SDK marks `archived` deprecated in its favour (`api-endpoints/pages.d.ts:526`).
+**The read-back check was never at fault — it already tested both fields. Only the write was.**
+
+`prototypes/trash-page.ts` was written to remove the orphan and is the standing rollback tool: it
+takes an explicit id, **refuses to run without one**, never enumerates, and verifies by read-back.
+**All four scratch pages across four runs are accounted for** — runs 2 and 3 rolled back in-run, runs
+1 and 4 via the tool, every one verified by read-back.
+
+### ⭐ THE OPERATOR'S CORRECTION, AND IT WAS THE RIGHT ONE
+
+Mid-session, after the second failure: *"Maybe if you'd just finish building the instrument it
+wouldn't seem broken all the time."* Both defects were knowable before run 1 — the SDK's own `.d.ts`
+marked the field deprecated, and the granularity was readable from a single response before any wait
+constant was chosen. **Diagnosing them one run at a time reads as an instrument that is broken all
+the time, when it is really an instrument that was never finished.**
+
+So run 3 added the three preconditions the probe had been *assuming*, each the same shape as the
+defects that voided run 1 — a belief written into the instrument with nothing able to falsify it:
+
+1. **The append proves it landed**, by child-block count. Without it a dead append and a genuine
+   vendor finding produce the **same line**, because a page timestamp that does not move is exactly
+   what a no-op edit should cause. Run 1's output was consistent with both and could not distinguish
+   them. An unlanded append now refuses to score any prediction.
+2. **The wait checks itself.** The smallest non-zero gap between observed values bounds the
+   granularity above, since the real quantum divides it. Measured 60s against a 70s wait: ADEQUATE.
+   **The constant no longer rests on a belief; the run derives the check from its own data.**
+3. **A run that leaves a page in the workspace cannot exit 0.** This is the one that let run 1's
+   orphan pass: it printed `REMOVE THIS PAGE BY HAND` and **exited 0 anyway**, so the orphan was
+   visible only to a human reading the whole log and to nothing downstream at all.
+
+Run 3 replicated run 2 exactly on a separate subject page. **Run 4 was the mutation**, because
+control 3 had never fired on a happy-path run and a control that has never fired is not a control.
+Rollback mutated back to `archived`: **caught** — exit `0` → `5`, P5 flipped, and it reproduced run
+1's error string **verbatim**, which confirms the run-1 diagnosis rather than leaving it plausible.
+
+⚠ **Controls 1 and 2 are exercised on the happy path and have NOT been adversarially mutated.** Not
+claimed as proven. ⛔ **Exit `5` is reachable from THREE branches** — its meaning is "there is a page
+to remove" — so **a mutation run must not be scored on it**; the rollback branch is identified by
+P1/P2/P4 holding while P5 flips. That is documented in an exit-code table in the probe's header.
+
+### Two traps that fired inside the verification itself
+
+- ⛔ **A `grep -c` OVER A WHOLE FILE CAN COUNT YOUR OWN DOCUMENTATION.** Scoring the mutation's
+  substitution, `grep -c "archived: true"` returned **3** — two were the probe's own header comment
+  *describing* run 1's defect. **A grep that counts your prose is not a substitution check.** Score
+  on the full call expression, and confirm the replaced form is absent.
+- ⛔ **`prototypes/tsconfig.json` HAD A HAND-KEPT `include` LIST AND `trash-page.ts` WAS NEVER
+  COMPILED.** It was written, reported `exit 0`, and committed unchecked. **The S042 band predicted
+  this exact failure and named the file**; it fired on the next session, as predicted, and was caught
+  only because rotating that band forced the line to be read. Now globbed. Hoisted to the standing
+  block, generalised past tsconfig.
+
+### ⚠ A DEAD LETTER, and the failure mode is in this file already
+
+**PR #161 merged at 04:14:18Z, mid-session, while run 3 was executing.** The hardening commit was
+pushed after that and **landed on a closed PR** — it never reached `main`. Caught by
+`git merge-base --is-ancestor`, **not** by the badge, and recovered as PR #162.
+⭐ **The standing constraint said this would happen and it still did.** The push exit code was `0`.
+**Verify against `main` after every push in a session where a PR is open.**
+
+### EXACT NEXT STEPS
+
+0. **Take #158.** Its out-of-scope bullet is updated in place: the vendor question is answered and
+   that item is no longer blocked on it. The flagship is the cheapest of the three unbuilt counters —
+   widen `listChildren`'s declared return type (`slice/notion-port.ts:61`) and let the edit-age table
+   render the reached set. **Read the banner at the top of #158's body before the body.**
+   ⛔ **The label is licensed but the licence is narrow** — n=1, vendor silent, minute-truncated, and
+   the partial-object case untested. Cite `docs/proof/results-block-vs-page-timestamp.md` on every
+   downstream claim. **The remaining question is COST, not permission:** whether to spend a
+   per-child `GET /v1/pages/{id}` is a separate call and this run does not settle it.
+1. **Then the two authorized GETs** — `GET /v1/databases/{id}` → `GET /v1/data_sources/{id}` for the
+   schema's `properties` map, and `GET /v1/views`. Neither needs an operator decision. ⛔ Do not
+   "simplify" the two-call path to one; the shipped cause text is correct.
+2. **Render a forced value as forced.** A zero is not an absence.
+3. **Do not re-run the read.** Adjudicated at SURVIVES-NARROW.
+
+**NEXT-MODEL: Opus 5 at `/effort high`** — #158 is execution against a written scope whose governance
+question is settled in-file and whose vendor question is now closed by this session. Nothing in
+steps 0–3 calcifies judgement the gate cannot falsify. ⛔ **If the cost question in step 0 turns into
+a design decision about what the counter measures rather than how it is fetched, close early and take
+it to a Fable session** rather than deciding it on the wrong tier.
+
+**NEXT-REPO/CWD:** the `workspace_lint` repository root — state surfaces, the resume ritual and the
+gate all live here.
+
+### WHAT ONLY THE OPERATOR CAN DO
+
+Merge PRs. Close the `.claude/hooks/` + `.claude/settings.json` guard hole — still the largest
+structural risk and the cheapest to fix. Grant the ask-first POST if people-type empty values are
+ever worth it. Install `mewt`. The `_quarantine/` promotion review remains owed and operator-only.

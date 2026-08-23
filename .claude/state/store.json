@@ -1,7 +1,7 @@
 {
   "project": "workspace_lint",
   "updated": "2026-08-23",
-  "session": "S043",
+  "session": "S044",
   "phase": "VERDICT SPRINT - run 2 ADJUDICATED, branch SURVIVES-NARROW. The entry point survives on the reference/coverage half only; the counter surface read as noise at n=1 across four isolated SME seats (zero of five bins SIGNAL, twenty independent decisions). Obligation discharged as issue 158. Nothing in the sprint now waits on a read.",
   "standing_rule_adopted_S025": "AMENDED 2026-08-18 on the operator's instruction to scrutinise it. ORIGINAL: no new decision ticket opens until four rules ship, unless it blocks a rule. It limited RECORDING where the problem was SCHEDULING, which pushed decisions into prose in a state file - the one medium this project has proven six times it cannot trust - and made the `decision` label expensive, corrupting the instrument the rule was counted with. AMENDED FORM: record always, schedule never. Every decision question is FILED. At most ONE decision ticket may be active (labelled `decision` and NOT `deferred`) while any v0.1 rule is unbuilt; 'unless it blocks a rule' is unchanged and now gates scheduling rather than recording. `deferred` is a new supplementary label and a deferred issue MUST name what would make it active. Prior art, unanimous across three domains and none of it consulted when the rule was written: Kanban/theory-of-constraints put WIP limits on work in progress and never on the backlog; aviation's Minimum Equipment List permits deferring a defect only by logging it; ordinary defect triage answers backlog pressure with severity plus an explicit deferred resolution. Full reasoning in docs/agents/triage-labels.md 'The standing rule, as amended'. Check: gh issue list --label decision --state open, minus those labelled deferred, must be <= 1. Measured at S027 close: ONE active (#70 decision 1, which genuinely blocks #59), nine deferred.",
   "phase_detail_s024": "S024: EVIDENCE, then a decision. #51 worked to a recorded decision; PR #86 merged as 818aba0.",
@@ -503,7 +503,7 @@
     "issue_158": "OPEN, ready-for-agent. The SURVIVES-NARROW obligation. Scope widened after filing and the widened part is BANNERED AT THE TOP OF THE BODY, not in a comment - read the banner first. Three counters unbuilt-not-ungranted incl. the flagship type widening; capture the field, do NOT label it page edit age until the block-vs-page equivalence is settled empirically."
   },
   "build": {
-    "branch": "main at a8d6b18 (PR #106). Working branch chore/s029-close for this close.",
+    "branch": "main at 8e2d3e9 (PR #164). Working branch feat/158-authorized-get-counters for #158; state/s044-close for this close.",
     "commits": [
       "0ac7c2d",
       "9dcb069",
@@ -517,7 +517,10 @@
       "fe93ff5 (ADR-0014 - search has no role in the v0.1 scan; the sixth surface ADR-0007 pre-registered)",
       "c3e4522 (docs/spec/v0.1-hydration-map.md - the budget is bound by block-tree shape, not workspace size)",
       "1131f8f (the two living docs stopped asserting #19 was open; three claim comments, 693 -> 696)",
-      "c404e49 (.out-of-scope/ seeded with the Convex refusal; decision label; the router that missed 'plan')"
+      "c404e49 (.out-of-scope/ seeded with the Convex refusal; decision label; the router that missed 'plan')",
+      "c42e89f (#158 item 0 - the edit age was arriving in a call we already made)",
+      "f1b40ba (#158 items 1-6 - the two authorized GETs and the counter surface)",
+      "cd9167b (eight review findings, six of them prose the build outgrew)"
     ],
     "directory": "slice/",
     "modules": [
@@ -735,5 +738,55 @@
     "open_at_close": "nothing - PR #163 merged mid-close (operator). PRs #161, #162, #163 all on main.",
     "next_model": "Opus 5 at /effort high",
     "slice_changed": false
+  },
+  "phase_detail_s044": {
+    "headline": "#158 BUILT, all seven items, NOT merged - PR #165 OPEN at close and #158 OPEN. The report was naming a vendor-shaped obstacle for a figure it already held, and it was the same defect at four sites.",
+    "the_finding": "measurement.ts stated, unqualified, that a child page enumerated from its parent's block listing has no response carrying its last_edited_time. GET /v1/blocks/{block_id}/children returns block objects, a full block object carries the field, a child_page IS a block object, and the scan already makes that call. It was discarded at our own type boundary (BlockListResponse.results: unknown[]). Three further sites discarded the same field and five sentences in the same file described a port the build had outgrown.",
+    "why_a_green_gate_saw_none_of_it": "No assertion reads a comment, and the constants that print were never asserted against. CHECK-measurements TEST 10g now asserts that no rendered line names an obstacle this build no longer has, with a positive control so it cannot pass by the subject vanishing.",
+    "port_surface_now": [
+      "GET /v1/users/me",
+      "GET /v1/pages/{id}",
+      "GET /v1/blocks/{id}/children",
+      "GET /v1/databases/{id}",
+      "GET /v1/data_sources/{data_source_id}",
+      "GET /v1/views"
+    ],
+    "still_ungranted": "POST /v1/data_sources/{data_source_id}/query - the ROWS - remains ask-first and UNGRANTED and is deliberately absent from NotionPort. #145 does not widen by making a call.",
+    "spec_139_conflict": {
+      "what": "Spec #139 declares 'Non-negotiable: read-only, and no new endpoint' for measurements and lists 'Any new endpoint' out of scope. #158 item 1 crosses it.",
+      "why_it_was_not_absorbed": "#158's table answers the GRANT question only ('grant needed: none') and never mentions the clause, so the work was permitted at the credential layer and forbidden at the design layer.",
+      "ruling": "Operator ruled the clause superseded for GET-only measurement calls, 2026-08-23, recorded as a comment on #139.",
+      "not_amended": [
+        "POST /v1/data_sources/{id}/query stays ask-first and ungranted",
+        "ADR-0014 stands - search has no role in the scan",
+        "read-only is untouched; all three additions are GETs",
+        "the data-source gap is NOT discharged - reading a schema enumerates no rows and closes no gap, which CHECK-scan-scaffold asserts"
+      ],
+      "general_shape": "A LATER TICKET silently overriding an EARLIER SPEC's scope clause is caught by none of the three method rules - a fourth shape, exactly as #25 found for an ADR contradicting an ADR."
+    },
+    "item_6_measured": {
+      "section_boundary_prose_chars": "2230 -> 638",
+      "longest_boundary_line_chars": "681 -> 247",
+      "whole_report_chars": "12296 -> 15702",
+      "honest_reading": "Met at the section level and NOT at the whole-document level. The section a reader scans for figures is lighter; the document is longer, because the relocated text sits in DISCLOSURES beside richer causes. Recorded so the first number is not read as the second."
+    },
+    "defects_the_verification_found": [
+      "The view boundary quoted the DATABASE retrieve's failure - both causes read db.cause ?? db.viewCause, so the view line named an obstacle that was not its own. Found by MEASURING the section for item 6, by no assertion.",
+      "A mutation died by the WRONG ASSERTION: the fixture's expected count 3 was also the type count and the (types x schemas) product, so a wrong derivation produced 3 too and an unrelated forced-zero test did the killing. Fixed by making the fixture asymmetric so the answer is 4.",
+      "The first fix for the reference-target timestamp was WRONG: manifest.mark CREATES an absent entry, and most reference targets are not resources under the declared root, so it would have added a resource the scan never enumerated and grown every figure built on of(RESOURCES) including the exit byte. Manifest.observeLastEdited updates an existing entry and no-ops otherwise.",
+      "A DISCLOSURES heading ending 'per reached data source:' reddened CHECK-report TEST 11b, whose unanchored /source: *$/m guard matched a heading four sections away in a section with no findings. Anchored, and the tightened form verified by mutation. The identical defect was then committed once more inside the regression test written FOR it."
+    ],
+    "sdk_facts_verified_from_node_modules": "@notionhq/client 5.25.2, build/src/Client.d.ts and build/src/api-endpoints/*.d.ts: client.databases.retrieve, client.dataSources.retrieve, client.views.list. DatabaseObjectResponse declares data_sources and NO properties map, which is what proves the two-call schema path is not collapsible. listDatabaseViews declares pathParams: [] and queryParams database_id/data_source_id/start_cursor/page_size.",
+    "budgets": "MEASUREMENT_REQUEST_BUDGET 30 per scan, VIEW_PAGE_BUDGET 10 per database. Exhaustion becomes a named cause on the affected rows, never a silent stop. A partial view listing is reported as NO count rather than a small one.",
+    "gate": "16 suites, exit 0, typecheck first, green before each commit. Four mutations scored on the exit code with the substitution confirmed absent each time.",
+    "open_at_close": "PR #165 OPEN. #158 OPEN. Verified against origin/main immediately before the close commit; nothing landed mid-session.",
+    "tracker_state_at_close": {
+      "PR_165": "OPEN - not merged at close; verify with git merge-base --is-ancestor cd9167b origin/main, never the MERGED badge",
+      "issue_158": "OPEN - closes on merge of PR #165",
+      "issue_139": "OPEN - spec; carries the amendment comment",
+      "issue_51": "OPEN - three operator-only preconditions, unchanged by this session",
+      "issue_143": "CLOSED COMPLETED 2026-08-23 - its two counters now compute; not an open queue item",
+      "issue_145": "CLOSED COMPLETED 2026-08-23 - its boundary line ships correctly; the rows behind it need the ungranted POST. NOT work, and the band asserted it as a next step until the close's own deref read the tracker."
+    }
   }
 }
