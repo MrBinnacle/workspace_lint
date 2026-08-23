@@ -712,149 +712,119 @@ making for four sessions. **Do not schedule a buyer conversation, a segment decl
 question ahead of a measured rate.** `#117` owns the upstream half and names the three routes in cost
 order.
 
+**Placement, tooling, and the two things this file must not become.** Hoisted from the S039 band and
+the S040 session before either was archived.
+
+- ⛔ **AGENT CONFIGURATION IS NOT PART OF THE PRODUCT AND DOES NOT GO IN THIS TREE.** The product is
+  `slice/`. A `UserPromptSubmit` hook was built into `.claude/` in S040, argued for in a commit
+  message, and removed before merge. **The guarded set — `CLAUDE.md`, `CONTEXT.md`, `PRODUCT.md`,
+  `docs/adr/**`, `docs/spec/**` — does NOT include `.claude/hooks/` or `.claude/settings.json`**, so
+  a hook committed there is an always-firing instruction channel through no plan gate and no claim
+  check. `CLAUDE.md` now carries an `absent` claim on that directory and it is verified to fire.
+  ⚠ **The guard hole is real and unclosed, and only the operator can close it** — hook wiring is
+  write-denied to the agent. The correct home for an agent-behaviour nudge is the user or plugin
+  layer, and that restriction is a feature rather than an obstacle to route around.
+- ⛔ **CHECK WHAT IS INSTALLED BEFORE BUILDING AN INSTRUMENT, AND FIRE CONTEXT7 BEFORE ASSERTING A
+  LIBRARY FACT.** `docs/agents/tooling.md` holds the rule, the re-derivation command and the
+  relevance table; `CLAUDE.md` points at it. **The inventory is re-derived, never re-quoted** —
+  plugin skills nest under a version directory, so a shallow find reports nothing and that is not an
+  absence. `trailofbits/mutation-testing` targets TypeScript and sat unopened through a whole sprint
+  of hand-run mutations. `mewt` v4.0.0 exists and is **not installed**.
+- ⭐ **RESUME FROM THE TICKET, NOT FROM THIS FILE.** `/implement` per ticket, `/clear` between, and no
+  close ritual between tickets — only at the end of the unit. Adopted S039 and used successfully in
+  S040 for three tickets in one branch. *Revisit if:* an implementation session is still opening by
+  reading 700 lines of standing block.
+
 ---
 
-## S039 — 2026-08-22 — a context-hygiene pass on this file, and the trim found its own floor
 
-**PHASE:** VERDICT SPRINT — **unchanged and untouched. No rule work happened this session.** The
-implement layer still stands where S038 left it: #140/#141/#142 closed, **#143, #144 and #145 open,
-`ready-for-agent`, nothing blocking** (re-read at close).
+## S040 — 2026-08-23 — the Measurements set completed, and an agent-config channel caught before it merged
 
-**TESTS:** Gate green at open and at close, **15 suites, exit 0**, before and after the trim.
-`CHECK-claims.ts` reads this file, so the trim was itself gate-checked.
+**PHASE:** VERDICT SPRINT. **The Measurements set is COMPLETE.** #140/#141/#142 closed in S038;
+**#143 and #144 closed this session**, #145 is built and left OPEN on a scope call that is the
+operator's. Spec #139 owes nothing further. **Run 2 is now unblocked and is the next real move.**
+
+**TESTS:** Gate green on `main` at **16 suites, exit 0** — verified after merge, not before.
+The suite count moved 15 -> 16; the claim comment in this file caught the stale count on the first
+run after registration, which is the mechanism doing its job unprompted.
+
+**MERGED:** PR #153, merge commit `157757e`, **ancestry-verified with `git merge-base --is-ancestor`,
+never the badge**. Checked for accidental auto-closes in the two seconds after the merge: none.
 
 ### What landed
 
-**PR #151 merged** (`1d8ec26`, merge `52ba365`) — **ancestry-verified with `merge-base`, not the
-badge.** The trim took `checkpoint.md` **871 → 820 lines** (−7.9%), standing block 737 → 688. ⚠ **Do
-not read those as this file's current size** — the close then hoisted two S038 constraints in and
-rotated the band out, so re-derive from the file rather than quoting these; they are the trim's
-delta, not a measurement of the file you are reading.
+**#144 — inbound references per reached database**, beside the last-write half, sorted by inbound
+count ascending then resource ID so the order is total. Two facts the ticket did not anticipate, both
+surfaced on the ticket rather than absorbed: **the count is structurally 0-or-1**, because the
+reference set is deduplicated by target (#141), so it answers *is anything pointing here* and not
+*how many links exist*; and **the last-write half is a boundary line** naming this tool's missing
+database retrieve, because Notion DOES return the field and a row reading "no timestamp" would be
+false about the vendor.
 
-**`.claude/reference/constraint-evidence.md` is new and is NOT always-loaded.** It holds the incident
-narrative behind the standing constraints — dates, counterfactuals, blow-by-blow. ⛔ **The split rule:
-the constraint and its mechanical check stay HERE, because a rule has to fire from the always-loaded
-surface; only the receipt moves.** ⚠ **That file is not in `CHECK-claims.ts`'s `ANNOTATED` list, so a
-claim comment moved into it silently stops being evaluated** — neither of this file's two claim
-comments was moved.
+**#143 and #145 — three boundary lines**, all `computed: false`, which is the branch #143's AC3
+pre-authorises. ⛔ **The three do NOT share an obstacle and the causes must not flatten them:** the
+schema endpoint is authorized, the views endpoint needs no grant a read-only integration lacks, and
+the row endpoint is ask-first and **not granted**. An operator told only "not computed" three times
+reaches for the wrong lever.
 
-⛔ **The hygiene working, the per-pass measurements and the method live in that reference file, NOT in
-this band.** The close is the writer that refills what a hygiene pass just evacuated, and this band is
-deliberately short for that reason.
+**`Entry.kind`** is new — stamped by the block-listing site that observes it, and on the retrieve's
+**success branch**, so a root's kind is an observation rather than an inference from build capability.
 
-### The instrument, because the audit key was the weak step
+**`slice/CHECK-assertions.ts`** — the tautology lint, suite 16. Five shapes this repo has actually
+shipped, all mechanically detectable. **Comments are blanked before scanning**, because every one of
+those shapes is described in a comment here and a lint that read those as hits would be switched off
+within a day. It reported **itself** on its first run.
 
-⭐ **A HAND-TRANSCRIBED CLAIM INVENTORY IS A SUBSTITUTABLE CONTROL.** Step 1 of the hygiene skill says
-to extract every normative claim into a flat list and says nothing about how — so it gets transcribed
-by the same reader who is about to decide what to cut, and **a claim never written down appears in
-neither inventory, so the superset check goes green over it.**
+### ⛔ The finding that outranks the rule work
 
-**The fix: derive the key from a typographic convention the file already follows.** Every normative
-claim here is bolded, so extraction became one pipeline, run before and after over the trimmed file
-**plus every relocation target**: 275 spans in, 41 flagged disappearances, each dispositioned — 12
-provenance preambles, 8 relocations, 19 rewordings and merges, 2 grep artifacts. ⚠ **It is line-based
-and so over-reports on a re-wrap** (the safe direction, but every flag then needs a content grep), and
-⛔ **it cannot see a control-flow change or a firing discipline going quiet.** Both were checked
-separately. Full entry, with its three limits: the skill's `gotchas.md`, `[workspace_lint S039]`.
+**An agent-config channel was built into `.claude/` and nearly merged.** See the standing block above
+for the rule and the guard hole; it is recorded there rather than here because it must fire from the
+always-loaded surface. The short version: availability drove placement — `~/.claude/hooks/` is
+write-denied, so the agent wrote where it was *permitted* and reasoned backwards into calling it
+correct, in the same session it correctly ran the plan gate for a five-line pointer in `CLAUDE.md`.
 
-### ⛔ THE FLOOR IS SET BY THE ENFORCEMENT LAYER, AND −7.9% IS THE CORRECT ANSWER
+⭐ **The generalisation worth carrying: a restriction that forces work to the operator's layer is a
+control, not an obstacle.** Routing around it produced a change no gate could see.
 
-**A file 4× over the 200-line trigger yielded 8% because its content is all firing discipline.**
-Measured: **21.5% of the standing block sits inside bold markers, and the unbolded remainder is not
-padding** — it is the mechanical checks, the qualifying clauses that make each rule precise, and the
-paths. There was no prose left to cut, only rules.
+### Two controls that were wrong, both caught by their own guards
 
-⛔ **The demote-a-firing-discipline lever was available on paper and closed in fact, for two different
-reasons.** `.claude/rules/<topic>.md` `paths:` scoping cannot fire on method, tracker and research
-constraints — they are not path-shaped. And `skill-rules.json`, the other licensed trigger, is
-**write-denied to the agent**; the operator ran that script himself last session. ⭐ **So the ceiling
-on any future trim is set by what the enforcement layer can absorb, and while that layer is one
-un-backed machine, the disciplines have to live in the always-loaded file.** This is the standing risk
-already recorded above, now with a measured consequence.
-
-⛔ **Do not re-run this pass expecting a bigger number, and do not relocate a firing discipline to get
-one.** The recognizer is behaviour-preserved, not lines reclaimed.
+- ⛔ **A recompute control whose FIXTURE could not exercise it.** The reconstructibility loop ran over
+  a fixture reaching no database, so every measurement had a null total and the `total === sum` branch
+  was never taken. Skewing a real total by +41 reddened the gate through OTHER assertions and left the
+  loop silent. **An isolation control needs an arm where the thing under test is present in the FORM
+  under test, not merely one where the code path is entered.** Receipt:
+  `docs/proof/results-143-total-skew.md`.
+- ⛔ **A negative lookaround followed by `.*` enforces "somewhere in the document", not "on this row".**
+  It caught a mutation in two emitters and passed it in the third, which was the only tell. Now scoped
+  per row, and the shape is in the new lint.
 
 ### EXACT NEXT STEPS
 
-⛔ **0. DO NOT RESUME FROM THIS FILE. Open a FRESH context and run `/implement` on #144.** The ticket
-is self-contained and is the resume surface; this file is not. Reloading 800 lines of standing block
-before an implementation ticket is the habit that produced the mess — see the addendum below for why.
-**Approved plan: `~/.claude/plans/fluttering-drifting-hamming.md`.**
+⛔ **0. DO NOT RESUME FROM THIS FILE. Open a fresh context and run `/implement` or the run-2 protocol
+directly.** This file is the standing block, not the resume surface.
 
-1. **#144 first, then #143 and #145** — unchanged from S038 and still correct. #144 is the only one of
-   the three with real input: inbound reference counts come from the scan's own reference set.
-   Thresholdless, every zero scoped. ⛔ **`/clear` between each ticket** — do not write a close
-   between them.
-2. **#143 and #145 ship boundary lines, not counts** — the standing block holds why, and the fact that
-   #143's view-count vendor question is **already discharged** in `docs/vendor/list-views.md`.
-3. ⚠ **The S038 plan is STILL LIVE and its Files table still authorises the chain** —
-   `~/.claude/plans/wobbly-fluttering-hippo.md`, last modified 2026-08-22 19:11, so the guard's 24h
-   window runs to **2026-08-23 19:11**. **Dereference that before relying on it**; past the window a
-   canonical-doc edit needs a fresh §5 plan gate, and the guard reads the plan's **Files table** as
-   the authorisation token, not its prose. *(This close first asserted the window had expired. It had
-   not — 1.4h old at the time — and the deref step is what caught it.)*
-4. **Run 2 is still downstream of the counters** and remains the kill-criterion reading.
+1. **Run 2 is the next move and it is the KILL-CRITERION READ.** All six countable signals now exist.
+   ⚠ **The Measurements section renders four boundary paragraphs to one computed table** — every line
+   required by ADR-0017 decision 5, but whether that reads as honest or as noise is a felt-surface
+   judgement bearing directly on the verdict. Flagged on #143 and #145; **not decided**.
+2. **#145 needs one operator call and is `ready-for-human`:** AC1 is unsatisfiable — `fakePort`
+   implements `NotionPort`, which has no query method, so rows are unreachable **offline too**.
+   Recommendation on the ticket: amend AC1, move the row half to #51's acceptance.
+3. **The guard hole is unclosed.** `.claude/hooks/` and `.claude/settings.json` are outside the
+   guarded set. Operator-only.
+4. **`mewt` is not installed** and this repo hand-runs mutations one at a time.
 
-**NEXT-MODEL: Opus 5 at `/effort medium`** — unchanged from S038 and re-derived, not copied: #144,
-#143 and #145 are execution against a written spec and an ADR that already decided the open questions,
-so nothing in them is calcifying judgement the gate cannot falsify. Raise to `high` only if #143's
-boundary framing needs a call about what the report may claim. **The first Fable-class session in this
-queue is still run 2's disposition synthesis and kill-criterion adjudication.**
+**NEXT-MODEL: Fable 5 at `/effort high`** — and this is a CHANGE from S039's Opus declaration,
+re-derived rather than copied. Run 2 is disposition synthesis and a kill-criterion adjudication, which
+is exactly the calcifying-judgement class the routing rule reserves for Fable: the gate cannot falsify
+a verdict about whether an owner reads the counters as noise. The felt-surface call in step 1 is the
+same class.
 
 **NEXT-REPO/CWD:** the `workspace_lint` repository root — where the state surfaces, the resume ritual
 and the gate all live.
 
 ### WHAT ONLY THE OPERATOR CAN DO
 
-**Merge the PR carrying this close.** Decide `#51`'s fifth-endpoint grant when #143/#145 surface its
-price. `#102`'s fixture backlog. ⛔ **Re-check the nine flipped `mattpocock-skills` after any plugin
-update** — the frontmatter fix lives in the plugin cache and an update restores the flag, which would
-leave 21 router rules nudging toward skills the Skill tool refuses. Zhou & Walker (2016), DOI
-`10.1145/2950290.2950298`, still unread.
-
----
-
-**POST-CLOSE ADDENDUM (S039, after `87fa6db` shipped) — the operator named the actual goal, and the
-state apparatus turns out to be a shadow copy of a state system this project already runs.**
-
-⛔ **THE GOAL IS TO FINISH `workspace_lint`, NOT TO FIX THE STATE SYSTEM.** Stated directly:
-*"I want workspace_lint finished already."* Every hygiene, schema and memory-tooling thread is
-subordinate to that and none of them ship a rule.
-
-⭐ **THE GIANT STEP, AND IT WAS ALREADY INSTALLED HERE.** `ask-matt/SKILL.md` line 22:
-*"kick off `/implement` per ticket, **`/clear`ing context between each one**. Each ticket is
-self-contained, so the last one's context is disposable."* In that methodology state lives in exactly
-three places — **`CONTEXT.md`** (glossary), **ADRs** (hard-to-reverse decisions), and **the tracker**
-(spec + tickets carrying blocking edges) — and **context between tickets is disposable by design.**
-There is no checkpoint, no band and no standing block, because a self-contained ticket plus the
-tracker *is* the resume surface.
-
-⛔ **THIS REPO RUNS THAT FLOW CORRECTLY UP TO `/to-tickets` AND THEN INVERTS IT.** `CONTEXT.md`, the
-ADRs, spec #139 and tickets with `blocked_by` all exist and are right. Instead of clearing between
-tickets, the project built `session-end-to-state`, `session-start-from-state` and an 800-line
-checkpoint **to carry across the boundary the methodology says to cut.**
-
-**Measured, not asserted:** of 106 standing constraints, **59% duplicate a surface that is already
-authoritative** — 19 decided in an ADR, 11 tracked as an issue, 14 enforced by a gate or hook — and
-**1 of 106 carries an expiry condition.** That is why a correct, lossless trim could only reach
-−7.9%: it was compressing a shadow copy, and a mirror rots by definition because the authoritative
-copy moves and the copy does not.
-
-⛔ **THE COLLISION IS WITH THE OPERATOR'S OWN §1.6/§11, AND IT IS NOT A DEFECT IN EITHER RULE.** Both
-say `/clear`. They disagree on **what you resume from** — a durable state file, or the ticket. Running
-both means paying for both, and the state file grew to 704 lines trying to be a second tracker.
-**The fix is to resume from the ticket. It is NOT a better schema, and it is NOT a memory server** —
-retrieval tooling indexes duplicates, and a full system prompt suppresses the retrieval call anyway.
-
-⚠ **A CORRECTION TO THIS SESSION'S OWN NUMBERS, recorded because the finding is about bad numbers.**
-An earlier pass reported **53 of 106** constraints as mechanism-backed. **That was wrong** — the grep
-counted matching *lines* rather than *constraints*. Re-measured per constraint: **14–16**. The
-59%-duplication figure above is from the corrected per-constraint classifier.
-
-⛔ **NOT DONE, AND DELIBERATELY:** none of this was acted on. No constraint was retired, no surface
-routed, no schema built. **It is recorded and deferred because it does not ship a rule.** The only
-behavioural change adopted now is the cheap half: **`/implement` per ticket with `/clear` between, and
-no close ritual between tickets.** *Revisit if:* the three Measurement tickets land and the checkpoint
-is still being read at the head of an implementation session — that would mean the habit outlived the
-finding, and the routing work has to be scheduled rather than deferred again.
+Decide #145's AC1 amendment. Close the `.claude/hooks/` + `.claude/settings.json` guard hole. Decide
+the Measurements density question when run 2 surfaces it. `#102`'s fixture backlog. Install `mewt` if
+the hand-run mutation cost is worth removing.
