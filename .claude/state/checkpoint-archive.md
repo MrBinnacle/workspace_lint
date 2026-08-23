@@ -4836,3 +4836,124 @@ Fable-class session is **run 2's disposition synthesis and kill-criterion adjudi
 Merge this close's PR. Type `/implement` (or assign) at the frontier — #140 and/or #141. Decide
 #51's fifth-endpoint grant when it surfaces (still ask-first; #145's width is part of that case).
 `#102`'s fixture backlog. Zhou & Walker (2016), DOI `10.1145/2950290.2950298`, still unread.
+
+## S038 — 2026-08-22 — Session D, implement layer: three of the six Measurements tickets, in one batch
+
+**PHASE:** VERDICT SPRINT — **the implement layer is under way.** #140, #141 and #142 are built and
+committed on `build/s038-measurements`. ~~PR #149 is open and NOT merged.~~ **PR #149 MERGED
+mid-close** (merge commit `6b92aef`); **#140, #141 and #142 are CLOSED**; the three feature commits
+are confirmed on `main` by `merge-base --is-ancestor`, not by the badge.
+
+✅ **#143, #144 and #145 are UNBLOCKED — `blocked_by=0` on all three, re-read after the merge.**
+
+⚠ **This line was wrong twice in one close, in opposite directions, and both are kept because the
+pair is the lesson.** The first draft said they were unblocked *because #142 had landed* — false:
+GitHub's dependency gate counts **open** blockers, and a written commit is not a closed ticket. The
+close's own deref step caught that and corrected it to `blocked_by=1`, verified live. Then **the
+operator merged PR #149 while this close was being written**, which made the correction stale in the
+forward direction. ⛔ **The standing rule earned its place again: re-read external state immediately
+before committing a close, and the close commit itself was a DEAD LETTER** — pushed successfully to
+a branch whose PR had already merged, exit code 0 and nothing reaching `main`. **Verify with
+`merge-base`, never with the push exit code and never with the MERGED badge.**
+
+**TESTS:** Gate green at open (`main@e3b883d`, 14 suites) and at close (**15 suites** —
+`CHECK-measurements.ts` registered). The typecheck runs first and the chain is `&&`.
+
+### What happened
+
+1. **One approved plan gated the whole chain**, per the S037 ruling that blocking edges order work
+   *inside* a session rather than partitioning sessions. The plan's Files table named the ADR,
+   `CONTEXT.md`, `PRODUCT.md` and the REF001 spec. ⚠ **The guard blocked the first ADR write** because
+   the slug had drifted from the one the plan named — the plan is the authorisation token, so the
+   fix was to use its filename, never to edit the plan to match the file.
+2. **#140 — ADR-0017.** Additive: supersedes nothing, extends ADR-0001 decision 4. It promotes the
+   counting/scoring boundary out of the #70 comment thread and gives it the mechanical form:
+   **every aggregate printed must be arithmetically reconstructible from the per-item rows printed
+   in the same report.** `CONTEXT.md` gained the Measurement row and an eighth distinction;
+   `PRODUCT.md`'s sixth signal **lost its threshold wording** (narrowing, not widening).
+3. **#141 — REF001 anchor text**, title-class under the existing `--show-titles` flag, no second
+   flag. Stored raw and resolved at exactly one point.
+4. **#142 — the Measurement class end to end.** Own module, own field on `ScanResult` and
+   `ReportDocument`, own section in all three renderers. **No new endpoint** — `last_edited_time`
+   was always on the `GET /v1/pages` response.
+
+### What the mutations found — and one of them found a defect in MY control
+
+⭐ **A MUTATION THAT FAILS IN THE WRONG FILE IS A FINDING ABOUT THE CONTROL, NOT A PASS.** Wiring a
+measurement into the exit byte's inputs turned the gate red — through `CHECK-sys001`, **not** through
+`CHECK-measurements`. Cause: the isolation test compared the real derivation against a deliberately
+extreme one, and **both arms HAVE measurements**, so it could only ever detect a channel keyed on
+measurement CONTENT and was blind to one keyed on mere PRESENCE. A third arm was added
+(present vs. absent), re-run against the still-live mutation, and it now fails in its own file.
+**Generalise this: an isolation control needs an arm where the thing under test is ABSENT, not only
+one where it differs.**
+
+⚠ **A vacuous assertion shipped into the first draft and is recorded at the site.** It read
+`x.link !== null || /link:/.test(term) || …` — the middle disjunct is TRUE for every report ever
+rendered, because the findings section prints `link:` four lines up. **A disjunction whose second
+term is a tautology asserts nothing about the first and passes exactly as loudly as a real check.**
+Third instance of this family here, after `x.includes('')` and `rendered.includes(BLANKED)`.
+
+Both live mutations were **verified as APPLIED by grepping their marker before the run was scored**,
+and **scored on the exit code**. Marker counts back to zero after revert.
+
+### ⛔ THE MACHINE'S SKILL LAYER WAS THE HANDBRAKE, AND IT IS ONLY HALF FIXED
+
+The operator said he had hardcoded the Pocock methodology into his configuration repeatedly and it
+"hasn't done a darn thing." **He was right, and the cause was mechanical, in two compounding halves:**
+
+- **20 of 35 installed `mattpocock-skills` carried `disable-model-invocation: true`.** The Skill tool
+  does not deprioritise those — it **refuses** them, and they never enter the session listing.
+- **`~/.claude/hooks/skill-rules.json` held 15 router rules and NOT ONE named a Pocock skill.** The
+  router is correctly wired on `UserPromptSubmit` and works; it had never been pointed at them.
+
+So the methodology lived only in `~/.claude/CLAUDE.md` §14 prose — which §1 itself classifies as
+unreliable model-pull. **DONE:** the flag is removed from 9 workflow skills across both cached plugin
+versions (18 files). ⚠ **That lives in the plugin CACHE and a plugin update wipes it.**
+~~STILL OWED — the router half is BLOCKED to the agent~~ ✅ **BOTH HALVES ARE NOW IN. The operator
+ran the script during this close** (writing to `~/.claude/hooks/` is denied to the agent by the
+auto-mode classifier, so it had to be him). **`skill-rules.json` went 15 → 21 rules**, six of them
+naming a Pocock skill where none did before: `implement`, `to-spec`, `to-tickets`, `triage`,
+`grilling`, `code-review`. All ten probes passed — 7 positives matched, 3 negatives stayed quiet —
+and the script refuses to write on any probe failure.
+
+**Verified after the write, because a router rule naming a skill that does not resolve is a SILENT
+NO-OP** and would have looked exactly like success: all six names resolve to a real `SKILL.md` and
+all six are model-invocable. ⚠ **Re-run that verification after any `mattpocock-skills` update** —
+the frontmatter edits live in the plugin CACHE and an update restores the flag, which would leave 21
+router rules nudging toward six skills the Skill tool refuses. That failure mode is worse than the
+original, because the nudge would fire and the call would fail.
+
+### EXACT NEXT STEPS
+
+0. ✅ **PR #149 is MERGED and verified on `main` (`6b92aef`); #140/#141/#142 CLOSED; #143/#144/#145
+   at `blocked_by=0`. Nothing gates the next session — branch from `main` and start.** ⚠ The
+   S038 close itself rode a SECOND PR, because the first close commit was pushed onto the
+   already-merged #149 and never reached `main`.
+1. **#144 first, then #143 and #145.** #144 is the only one of the three with real input — inbound
+   reference counts come from the scan's own reference set. Thresholdless, every zero scoped.
+2. **#143 and #145 ship boundary lines, not counts** — see the standing block above for why, and for
+   the fact that `#143`'s view-count vendor question is **already discharged** in `docs/vendor/`.
+3. **The plan for #140–#145 is already approved and its Files table still authorises the chain**, but
+   it is time-boxed to 24h by the guard — a fresh session past that window re-runs the plan gate.
+4. **Run 2 is still downstream of the counters** and remains the kill-criterion reading.
+
+**NEXT-MODEL: Opus 5 at `/effort medium`** — #144, #143 and #145 are execution against a written spec
+and an ADR that already decided the open questions, so nothing in them is calcifying judgement the
+gate cannot falsify. Raise to `high` only if #143's boundary framing turns out to need a call about
+what the report may claim. **The first Fable-class session in this queue is still run 2's disposition
+synthesis and kill-criterion adjudication**, unchanged.
+
+**NEXT-REPO/CWD:** the `workspace_lint` repository root.
+
+### WHAT ONLY THE OPERATOR CAN DO
+
+~~Merge PR #149~~ (done, `6b92aef`). ~~Run the router-rules script~~ (done during this close;
+`skill-rules.json` is at 21 rules and verified). **Merge PR #150**, which carries this close.
+Decide `#51`'s fifth-endpoint grant when #143/#145 surface its price. `#102`'s fixture backlog.
+Zhou & Walker (2016), DOI `10.1145/2950290.2950298`, still unread.
+
+⛔ **And one new standing item: after any `mattpocock-skills` plugin update, re-check that the nine
+flipped skills are still model-invocable.** The router now nudges toward six of them, so a restored
+flag turns a working path into a nudge the Skill tool refuses.
+
