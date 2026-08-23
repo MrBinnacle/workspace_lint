@@ -443,7 +443,21 @@ check('the MARKDOWN states the reason', md1.includes(SOURCE_NOT_APPLICABLE), tru
 /* Independent of the constant, so a future edit to it cannot take these with it. */
 check('  and the terminal line is recognisable without reading the constant', /source: none — /.test(term1), true);
 check('  as is the Markdown line', /- Source: _none — /.test(md1), true);
-check('  and neither prints an empty cell instead', /source: *$/m.test(term1) || /- Source: *$/m.test(md1), false);
+/* ⛔ ANCHORED TO A LINE THAT IS *ONLY* THE LABEL, which is what an empty cell
+ * actually looks like. Unanchored, `/source: *$/m` matched ANY line ending in
+ * the word "source" followed by a colon — and #158 item 6 added one four
+ * sections away, a DISCLOSURES heading reading "…per reached data source:",
+ * which turned this control red over a section that contains no findings at all.
+ * A whole-document regex asserting a per-row property is the defect
+ * `document-scoped-regex-defeats-a-per-row-claim` records; this is the same
+ * family arriving from the other direction — not a lookahead that spans too far,
+ * but a subject that was never scoped to the rows in the first place.
+ *
+ * ⚠ THE MUTATION IT WAS WRITTEN FOR IS STILL CAUGHT. Blanking
+ * SOURCE_NOT_APPLICABLE makes `report.ts` emit `      source: ` with nothing
+ * after it, and the anchored form matches that exactly. Verified by mutation
+ * rather than by reading. */
+check('  and neither prints an empty cell instead', /^\s*source: *$/m.test(term1) || /^\s*- Source: *$/m.test(md1), false);
 /* JSON carries the null itself — a serialised `null` is unambiguous where a
  * blank string would not be, so the reason belongs to the two rendered formats
  * and the structure belongs to JSON. */

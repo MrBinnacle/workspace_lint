@@ -82,7 +82,24 @@ const entry = (id: string) => r2.manifest.all().find(e => e.key === hyphenate(id
 check('applicable set is 4 — the root and all three children', r2.verdict.applicable, 4);
 check('the data source is IN the denominator', entry(DATASET) !== undefined, true);
 check('  and it stalled at enumerated', entry(DATASET)!.stages.has('fetched'), false);
-check('  with a named, specific cause', /data-source enumeration is not implemented/.test(entry(DATASET)!.loss!.cause), true);
+check('  with a named, specific cause', /data-source ROW enumeration is not implemented/.test(entry(DATASET)!.loss!.cause), true);
+/* ⛔ THE GAP SURVIVED #158 ITEM 1 AND THE CAUSE STOPPED CLAIMING THE SCHEMA IS
+ * UNREAD. The scan now makes GET /v1/databases/{id} and
+ * GET /v1/data_sources/{data_source_id}, so a cause saying "rows and schemas"
+ * would be false — and this repository's own defect class is a report naming an
+ * obstacle it no longer has. The assertion below is the one that would fail if a
+ * future session restored the old wording out of habit. */
+check('    and it names ROWS, since the column schema IS read now',
+  /the column schema IS read/.test(entry(DATASET)!.loss!.cause), true);
+/* ⛔ AND READING A SCHEMA DID NOT DISCHARGE THE GAP. This is the assertion that
+ * stands between #158 item 1 and the applicability filter #50 forbids: if a
+ * schema read ever closed this gap, the coverage ratio would rise because the
+ * TOOL learned something, which makes every denominator a function of build
+ * state and lets each new capability raise the score. */
+check('    and reading the schema did NOT enumerate the rows or close the gap',
+  entry(DATASET)!.loss !== null && !entry(DATASET)!.stages.has('evaluated'), true);
+check('      the facts were recorded on the entry all the same',
+  entry(DATASET)!.db !== null, true);
 check('the two child pages were fetched', [entry(PAGE_A)!, entry(PAGE_B)!].every(e => e.stages.has('fetched')), true);
 /* CHANGED BY T2. This read "NOTHING was evaluated — this slice implements no
  * rule", want 0. SYS001 exists now and judges the three resources the funnel

@@ -208,6 +208,45 @@ function DISCLOSURES(r: ScanResult): string[] {
     '(CONTEXT.md settled defaults). The link is REDACTED — a Notion URL copied from the UI',
     'carries the page title inside its path. A DATA SOURCE url is still not retrieved: that',
     'is issue #51 and it is open.',
+    /* ⛔ THE RELOCATED MEASUREMENT BOUNDARIES — #158 item 6, and the whole of the
+     * "moved, not deleted" half of it. Every uncomputed measurement's FULL cause
+     * lands here, verbatim, with its endpoints and its vendor citations. The
+     * MEASUREMENTS section keeps the one-line blocker and a pointer to this
+     * section, so ADR-0017 decision 5 still holds — the boundary is printed on
+     * every run, a reader can still tell a limit from a pass, and the text they
+     * need to act on it is one section away rather than in the middle of the
+     * figures.
+     *
+     * ⚠ DERIVED FROM `r.measurements`, NOT RE-TYPED HERE. A second copy of these
+     * sentences is a mirror, and this repository has been burned by a hand-kept
+     * mirror four times; the causes have exactly one author, which is
+     * measurement.ts. */
+    ...measurementBoundaries(r),
+  ];
+}
+
+/**
+ * The full cause of every measurement that could not be computed.
+ *
+ * EMPTY WHEN EVERY MEASUREMENT COMPUTED, and that is correct rather than a
+ * missing disclosure: there is no boundary to disclose. The heading is emitted
+ * only alongside at least one cause, so no run prints a bare label over nothing.
+ */
+function measurementBoundaries(r: ScanResult): string[] {
+  const uncomputed = r.measurements.filter((m): m is Extract<Measurement, { computed: false }> => !m.computed);
+  if (uncomputed.length === 0) return [];
+  return [
+    `MEASUREMENT BOUNDARIES — the full text behind the ${uncomputed.length} "not computed" line(s) above.`,
+    /* ⚠ NO TRAILING COLON ON THE LABEL LINE, AND THAT IS NOT COSMETIC. The
+     * people-type label ends with the words "data source", so `${m.label}:`
+     * produced a line ending `…data source:` — which satisfied
+     * CHECK-report TEST 11b's `/source: *$/m` guard against a finding printing
+     * an EMPTY source cell, in a section that has no findings in it. A
+     * whole-document regex cannot tell a finding's blank cell from a heading
+     * four sections away that happens to end in the same word. The assertion has
+     * been anchored since; this line stays colon-free so two independent things
+     * have to fail before the guard misfires again. */
+    ...uncomputed.flatMap(m => [m.label, `  ${m.cause}`]),
   ];
 }
 
@@ -607,9 +646,24 @@ export function renderReport(r: ScanResult, opts: RenderOptions = {}): string[] 
     out.push('');
     out.push(`  ${m.label}`);
     if (!m.computed) {
-      /* THE BOUNDARY, NAMED. "not computed" plus its cause is the whole of
-       * decision 5: a reader can tell a limit from a pass. */
-      out.push(`      not computed — ${m.cause}`);
+      /* THE BOUNDARY, NAMED — ONE LINE, WITH THE LEVER IN IT.
+       *
+       * ⛔ THE FULL CAUSE MOVED TO DISCLOSURES AND WAS NOT DELETED — #158
+       * item 6. It printed here, in full, per measurement, per root, per run, at
+       * roughly a thousand characters of prose for every rendered figure; three
+       * of four SME seats in the run-2 read binned that density as noise between
+       * the reader and the numbers, and no seat proposed cutting a word — all
+       * four proposed relocating it. A statement identical on every run of a
+       * build is a property of the build, not a measurement of the workspace,
+       * and this section is where measurements of the workspace go.
+       *
+       * ⚠ DECISION 5 IS UNCHANGED AND STILL BINDING: a quiet report and an
+       * absent report look identical (Baca et al., DOI 10.1002/spe.2109). The
+       * line below still prints on every run, still names what is missing, and
+       * still says which lever moves it — and the pointer to the full text is
+       * part of the line, so the boundary is one section away and never gone. */
+      out.push(`      not computed — ${m.blocker}`);
+      out.push('        full boundary, with endpoints and citations: DISCLOSURES');
       continue;
     }
     /* THE DENOMINATOR, PRINTED BESIDE THE ROWS — decision 6. Without it a
@@ -627,8 +681,19 @@ export function renderReport(r: ScanResult, opts: RenderOptions = {}): string[] 
      * "for reference targets only" on a row which is one. A measurement whose
      * link-absence has a different cause states it, and the constant stays for
      * everyone whose cause it still describes. */
-    for (const row of m.rows)
+    for (const row of m.rows) {
       out.push(`      ${row.resource.padEnd(rw)}  ${row.value}  ${row.link ?? row.linkCause ?? LINK_NOT_CAPTURED}`);
+      /* ⛔ A FORCED VALUE IS MARKED ON ITS OWN ROW — #158 item 2, and the
+       * placement is the point. `document-scoped-regex-defeats-a-per-row-claim`
+       * is the shape to avoid in the assertion, and the same logic governs the
+       * rendering: a qualifier printed once for the table would leave a reader
+       * unable to tell which rows it applies to when only some are forced.
+       *
+       * ⚠ INDENTED UNDER ITS ROW, NOT APPENDED TO THE VALUE, because the value
+       * column is what a reader compares across rows and a per-row essay in it
+       * is the density item 6 is removing elsewhere in this same section. */
+      if (row.forced) out.push(`      ${' '.repeat(rw)}  ⚠ ${row.forced}`);
+    }
     /* ADR-0017 decision 3. A total prints only beside the rows it sums, and it
      * is COMPUTED from them rather than supplied, so the reader's recount cannot
      * disagree with it. `null` means the rows do not sum — a column of instants
@@ -892,17 +957,39 @@ export function renderMarkdown(doc: ReportDocument): string {
     L.push(`### ${md(m.label)}`);
     L.push('');
     if (!m.computed) {
-      L.push(`_Not computed — ${md(m.cause)}_`);
+      /* THE SAME RELOCATION THE TERMINAL EMITTER MAKES — #158 item 6. ⛔ AN
+       * EMITTER THAT KEEPS THE FULL PROSE WHILE ANOTHER MOVES IT IS THIS
+       * REPOSITORY'S OLDEST FAILURE SHAPE, and the assertion for item 6 is
+       * written over both renderers for that reason. The full cause is in
+       * Disclosures below, from the same single author. */
+      L.push(`_Not computed — ${md(m.blocker)}_`);
+      L.push('');
+      L.push('_Full boundary, with endpoints and citations: see **Disclosures**._');
       L.push('');
       continue;
     }
-    L.push(`_Computed over ${md(m.over)}. Unit: **${md(m.unit)}**._`);
+    /* ⚠ THE TEMPLATE SUPPLIES THE SENTENCE BREAK ONLY WHEN `over` DOES NOT.
+     * `over` is prose written per measurement and some of them end in a full
+     * stop, which rendered `…absent from this build.. Unit:`. A punctuation mark
+     * split across a constant and its caller is one sentence with two authors. */
+    const overText = md(m.over);
+    L.push(`_Computed over ${overText}${/[.!?]$/.test(overText) ? '' : '.'} Unit: **${md(m.unit)}**._`);
     L.push('');
-    L.push(`| Resource | Value | Link |`);
-    L.push('| --- | --- | --- |');
+    /* ⛔ ITEM 2 GETS ITS OWN COLUMN HERE RATHER THAN A TRAILING SENTENCE. A
+     * markdown table row is one line, so a per-row qualifier appended to the
+     * value cell is the density this ticket is removing; a column makes "could
+     * this figure have come out otherwise" answerable by scanning down it. */
+    L.push(`| Resource | Value | Could vary? | Link |`);
+    L.push('| --- | --- | --- | --- |');
     for (const row of m.rows)
-      L.push(`| \`${md(row.resource)}\` | ${md(row.value)} | ${row.link ? `\`${md(row.link)}\`` : `_${md(row.linkCause ?? LINK_NOT_CAPTURED)}_`} |`);
-    if (m.total !== null) L.push(`| **Total** | **${m.total} ${md(m.unit)}** | _sum of the ${m.rows.length} row(s) above_ |`);
+      L.push(`| \`${md(row.resource)}\` | ${md(row.value)} | ${row.forced ? `**no** — ${md(row.forced)}` : 'yes'} | ${row.link ? `\`${md(row.link)}\`` : `_${md(row.linkCause ?? LINK_NOT_CAPTURED)}_`} |`);
+    /* ⚠ FOUR CELLS, BECAUSE THE HEADER HAS FOUR COLUMNS. It emitted three after
+     * the `Could vary?` column was added, so the "sum of the rows above" caption
+     * rendered UNDER that heading and the Link cell vanished — a total row
+     * claiming to answer whether the figure could have varied. A header and its
+     * rows are two places one column count is written, and the second one is
+     * what drifts. */
+    if (m.total !== null) L.push(`| **Total** | **${m.total} ${md(m.unit)}** | — | _sum of the ${m.rows.length} row(s) above_ |`);
     L.push('');
   }
 

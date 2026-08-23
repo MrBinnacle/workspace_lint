@@ -26,7 +26,7 @@
  * ADR-0017, and a formatting choice is not either of those.
  */
 
-import type { Entry, Manifest } from './manifest.js';
+import type { DbFacts, Entry, Manifest } from './manifest.js';
 import { RESOURCES } from './manifest.js';
 import { hyphenate } from './ids.js';
 
@@ -72,6 +72,24 @@ export type MeasurementRow = {
    * it for callers whose reason is genuinely different.
    */
   linkCause?: string;
+  /**
+   * WHY THIS ROW'S VALUE COULD NOT HAVE COME OUT ANY OTHER WAY — #158 item 2.
+   *
+   * ⛔ IT EXISTS BECAUSE FOUR OF FIVE REPORTS IN THE RUN-2 READ PRINTED FIGURES
+   * THAT WERE ARITHMETICALLY FORCED, SORTED AND TOTALLED IN THE FURNITURE OF A
+   * DISTRIBUTION (`docs/proof/dispositions-run2.md`). Two roots resolved zero
+   * references of any kind, so every inbound row could only be 0; one root's
+   * single row could only be 0 or 1. **A figure that cannot vary with the state
+   * of the workspace is not a measurement of the workspace**, and printing it
+   * beside figures that can is what made the section read as noise.
+   *
+   * ⚠ FORCED IS NOT WRONG AND THE ROW IS NOT SUPPRESSED. The value is correct;
+   * what it lacks is informational content, and the honest fix is to say so on
+   * the row rather than to withhold it — withholding would be the silently-empty
+   * section ADR-0017 decision 5 forbids. Undefined means the value could have
+   * been otherwise, which is the ordinary case.
+   */
+  forced?: string;
 };
 
 /**
@@ -138,8 +156,31 @@ export type Measurement = {
        * computed says so and says why, so a reader can tell a boundary from a
        * pass. Never an empty string — an empty subject makes a downstream
        * `includes()` assertion vacuously true.
+       *
+       * ⚠ SINCE #158 ITEM 6 THIS IS THE LONG FORM AND IT NO LONGER PRINTS IN
+       * THE MEASUREMENTS SECTION. It moves to DISCLOSURES, in full, with its
+       * endpoints and citations intact — ⛔ MOVED, NEVER DELETED. No seat in the
+       * run-2 read proposed cutting a word of it; all four proposed relocating
+       * it, and a boundary a reader cannot find is the silent report ADR-0017
+       * decision 5 forbids.
        */
       cause: string;
+      /**
+       * The one line that prints beside the label — #158 item 6.
+       *
+       * ⛔ THE SECTION SPENT ROUGHLY A THOUSAND CHARACTERS OF PROSE PER RENDERED
+       * FIGURE, ON EVERY RUN, PER ROOT (`docs/proof/dispositions-run2.md`).
+       * Three of four SME seats binned the density as noise between the reader
+       * and the numbers. Worse, a statement identical on every run of a build is
+       * a property of the BUILD, not a measurement of the workspace, and it was
+       * printed where measurements of the workspace go.
+       *
+       * ⛔ IT MUST NAME THE LEVER, WHICH IS THE ONLY PART A READER CAN ACT ON —
+       * item 5. A line beginning `[BLOCKED — needs an operator grant, not a
+       * call]` and a line that is one authorized GET away are the same shrug
+       * without it.
+       */
+      blocker: string;
     }
 );
 
@@ -188,20 +229,27 @@ export function totalIsReconstructible(m: Measurement): boolean {
 const SCANNED_SET = 'from the scanned set';
 
 /**
- * The last-write half when this build cannot read one, naming OUR boundary.
+ * The last-write half when this run did not obtain one, naming OUR boundary.
  *
- * ⛔ IT NAMES THE MISSING CALL, NOT A MISSING FACT. Notion returns
+ * ⛔ IT NAMES A MISSING OBSERVATION, NOT A MISSING FACT. Notion returns
  * `last_edited_time` on a database — the SDK's own `DatabaseObjectResponse` and
  * `DataSourceObjectResponse` both declare it — so a line reading "no timestamp"
- * would assert something false about the vendor. What is missing is a method on
- * OUR port, whose entire surface is three GETs and none of them retrieves a
- * database. Widening it is #51 and is ask-first, not a thing to do here.
+ * would assert something false about the vendor.
  *
- * When that call lands, this branch stops being taken with NO change to this
- * file: the row reads `Entry.lastEditedTime`, which the new retrieve would
- * populate exactly as `GET /v1/pages` populates it for a page today.
+ * ⚠ AND IT NO LONGER NAMES A MISSING CALL EITHER, WHICH IS WHY THIS DOCSTRING
+ * WAS REWRITTEN RATHER THAN LEFT. It read "a method on OUR port, whose entire
+ * surface is three GETs and none of them retrieves a database", and #158 item 1
+ * added `retrieveDatabase` — so the sentence became a report of an obstacle the
+ * build no longer has, inside the file that authors the report's cause strings.
+ * That is this repository's own named defect class, and it survived a green gate
+ * because no assertion reads a comment.
+ *
+ * WHAT THE BRANCH MEANS NOW: two sources were available for this database — its
+ * own retrieve and its `child_database` block in the parent's listing — and
+ * NEITHER carried a value on this run. That is a fact about this run, which a
+ * re-run or a permission change may alter.
  */
-const NO_DATABASE_RETRIEVE = 'last edited: not read (this scan makes no database retrieve)';
+const NO_DATABASE_RETRIEVE = 'last edited: not read (neither this database\'s retrieve nor its block in the parent listing carried one)';
 
 /**
  * Why a database row carries no link, stated for the database case specifically.
@@ -228,24 +276,80 @@ const NO_DATABASE_LINK =
  * move the manifest makes with `Loss.cause` and the disclosure block.
  */
 const NO_DATABASE_RETRIEVE_DETAIL =
-  'last-write timestamps are unread for every row: this scan retrieves pages only (GET /v1/pages/{id}) and makes no database retrieve, so no response carrying a database\'s last_edited_time exists — the boundary is this tool\'s, not the vendor\'s, and it widens under #51';
+  'where a last-write timestamp is unread on a row, BOTH sources were silent for that database: its own GET /v1/databases/{id} retrieve did not succeed or carried no last_edited_time, and its child_database block in the parent listing carried none either — the boundary is this tool\'s reach on this run, not the vendor\'s, since the API does return the field on both';
 
 /**
- * The resources whose own retrieve this scan made.
+ * The resources this scan OBSERVED a timestamp for, from either call.
  *
- * ⛔ THIS IS A SMALLER SET THAN "RESOURCES THE SCAN REACHED", AND THE GAP IS THE
- * POINT. `GET /v1/pages/{id}` runs for the declared root, for reference targets,
- * and for resources a configured rule needed hydrated. A child page discovered
- * in the root's block listing is ENUMERATED and FETCHED without its own retrieve
- * ever being made, so no response carrying its `last_edited_time` exists.
+ * ⛔ IT USED TO SAY "the resources whose own retrieve this scan made", AND THE
+ * SENTENCE BENEATH IT WAS FALSE — #158 item 0. It read: a child page discovered
+ * in the root's block listing is enumerated and fetched without its own retrieve,
+ * "so no response carrying its `last_edited_time` exists". The response exists.
+ * `GET /v1/blocks/{block_id}/children` returns block objects, a full block
+ * object carries `last_edited_time`, a `child_page` IS a block object, and this
+ * scan already makes that call. The field was discarded at our own type boundary
+ * (`BlockListResponse.results: unknown[]`) and the report then named a
+ * vendor-shaped obstacle for a figure the run already held — which is precisely
+ * the inference this product exists to detect, committed by this product.
  *
- * The honest consequence is that this measurement's denominator is the retrieved
- * set and it says so, rather than quietly reporting rows for the resources it
- * happens to have and letting the reader infer the rest were not edited. That
- * inference is the defect this product exists to detect, and it would be this
- * product committing it.
+ * ⚠ THE SET IS STILL SMALLER THAN "RESOURCES THE SCAN REACHED" and the gap is
+ * still the point. A block object may arrive PARTIAL, carrying an id and no
+ * timestamp, and when the API does that is undocumented. Such a resource gets no
+ * row, and the denominator below prints both numbers so a reader cannot take the
+ * rows for the whole reached set.
  */
-const retrieved = (e: Entry): boolean => e.unit === RESOURCES && e.lastEditedTime !== null;
+const observed = (e: Entry): boolean => e.unit === RESOURCES && e.lastEditedTime !== null;
+
+/**
+ * How a row's timestamp was obtained, in the row's own words.
+ *
+ * ⛔ THE TWO PROVENANCES DO NOT CARRY THE SAME WEIGHT AND A BARE COLUMN OF
+ * INSTANTS HIDES THAT. A retrieve-sourced value is the page's own timestamp as
+ * the vendor documents it. A listing-sourced value is the BLOCK's timestamp, and
+ * that it equals the page's is an empirical finding at n=1 with the vendor
+ * silent. Printing them in one column without a marker asserts that they are the
+ * same kind of fact.
+ *
+ * ⚠ SHORT ON THE ROW, FULL ON THE MEASUREMENT — the split this file already
+ * makes with `NO_DATABASE_RETRIEVE` and its detail, and for the same reason: the
+ * full licence repeated on every row is four clauses of identical text between
+ * the reader and the only thing that varies.
+ */
+const provenanceOf = (e: Entry): string =>
+  e.lastEditedSource === 'retrieve'
+    ? 'from its own retrieve'
+    : "from the parent's block listing";
+
+/**
+ * THE LICENCE, PRINTED ONCE BESIDE THE ROWS, WITH ITS RECEIPT.
+ *
+ * ⛔ ALL THREE LIMITS ARE MANDATORY AND NONE IS OPTIONAL. A block timestamp
+ * labelled as its page's rests on `docs/proof/results-block-vs-page-timestamp.md`
+ * — pre-registered at `cc0eb1c` before any data existed, four runs, the block's
+ * value moving with its page's on every content-only edit and equal at every
+ * measurement. That is an OBSERVATION at n=1 and never a documented guarantee:
+ * the vendor has promised nothing and may change it without notice. The
+ * partial-block-object case was not forced, so the finding holds on a full
+ * object and says nothing about a partial one. And the API truncates the value
+ * to the MINUTE (24 of 24 observed), which the vendor does not document and its
+ * own example contradicts.
+ *
+ * ⛔ THE TRUNCATION IS LOAD-BEARING FOR A READER, NOT TRIVIA. Two edits inside
+ * one minute are indistinguishable in this column, so nothing here or downstream
+ * may order edits or measure elapsed time below that resolution.
+ */
+/**
+ * ⚠ IT NO LONGER SAYS "per resource the scan RETRIEVED" — #158 item 0. That
+ * label was correct while the retrieve was the only source and became a false
+ * narrowing the moment the block listing's field was kept: most rows in this
+ * table now belong to resources that were never retrieved. `observed` is the
+ * predicate, so `observed` is the word.
+ */
+const LAST_EDITED_LABEL =
+  'Last edited, per resource whose timestamp this scan observed (sorted by timestamp, oldest first)';
+
+const BLOCK_TIMESTAMP_LICENCE =
+  "a timestamp marked \"from the parent's block listing\" is the child_page or child_database BLOCK's last_edited_time, taken from GET /v1/blocks/{block_id}/children, which this scan already makes; that it is also the page's own is an OBSERVED finding and not a documented guarantee — observed n=1, vendor silent, four runs, docs/proof/results-block-vs-page-timestamp.md — and the API truncates every value in this column to the minute, so two edits within one minute are indistinguishable here and nothing may order edits below that resolution";
 
 /**
  * Derive the v0.1 measurement set from the manifest.
@@ -257,7 +361,7 @@ const retrieved = (e: Entry): boolean => e.unit === RESOURCES && e.lastEditedTim
  */
 export function measurementsFrom(manifest: Manifest): Measurement[] {
   const all = manifest.of(RESOURCES);
-  const withTimes = all.filter(retrieved);
+  const withTimes = all.filter(observed);
 
   /* SORTED BY A NAMED KEY, AND THE HEADER NAMES IT — ADR-0017 rule 6. Sorting is
    * allowed and ranking is not: the reader draws the conclusion from an ordered
@@ -269,37 +373,64 @@ export function measurementsFrom(manifest: Manifest): Measurement[] {
    * than of the workspace — ADR-0004, and the same reason SARIF Appendix F.3
    * sorts results. Without a tie-break two runs over an unchanged workspace
    * could differ, which would make this section the reason determinism fails. */
+  /* ⛔ SORTED ON THE INSTANT, NEVER ON THE RENDERED CELL. The cell carries the
+   * provenance marker after the timestamp, and sorting the rendered string would
+   * let two resources edited in the same minute be ordered by which call
+   * observed them — a property of this scan's traversal, not of the workspace,
+   * which is the class of field ADR-0004's normaliser exists to strip. The
+   * resource ID stays the tie-break, so the order is TOTAL and two runs over an
+   * unchanged workspace cannot differ. */
   const rows: MeasurementRow[] = withTimes
+    .slice()
+    .sort((a, b) => (a.lastEditedTime === b.lastEditedTime
+      ? (a.safeLabel < b.safeLabel ? -1 : a.safeLabel > b.safeLabel ? 1 : 0)
+      : (a.lastEditedTime as string) < (b.lastEditedTime as string) ? -1 : 1))
     .map(e => ({
       resource: e.safeLabel,
-      value: e.lastEditedTime as string,
+      /* THE PROVENANCE TRAVELS ON EVERY ROW, not only on the weaker one. Marking
+       * only the block-sourced values would make the unmarked ones read as a
+       * default the reader never had explained, and the two statuses are exactly
+       * what this column would otherwise flatten. */
+      value: `${e.lastEditedTime as string}  ·  ${provenanceOf(e)}`,
       /* Timestamps do not sum. ADR-0017 rule 3 forbids a number combining two
        * units, and a column of instants has no total that means anything. */
       numeric: null,
       link: e.link,
-    }))
-    .sort((a, b) => (a.value === b.value
-      ? (a.resource < b.resource ? -1 : a.resource > b.resource ? 1 : 0)
-      : a.value < b.value ? -1 : 1));
+    }));
 
   const lastEdited: Measurement = rows.length === 0
     ? {
         id: MEASUREMENT_IDS.lastEdited,
-        label: 'Last edited, per resource the scan retrieved (sorted by timestamp, oldest first)',
+        label: LAST_EDITED_LABEL,
         unit: 'resources',
+        /* ⛔ NOT READ, NOT "NOT COMPUTED" — #158 item 4. The call was made: this
+         * scan lists the root's children on every run. What is missing is the
+         * FIELD on the responses that came back, which is a different fact with
+         * a different remedy, and flattening the two into one apology is what
+         * item 4 of the ticket names. */
         computed: false,
-        cause: `no resource carried a last-edited timestamp — GET /v1/pages runs for the declared root, for reference targets, and for rule hydration only, so a resource enumerated in a parent's block listing has no response of its own to read one from (${all.length} resource(s) reached)`,
+        blocker: `NOT READ — the calls were made and no response carried a last-edited timestamp (${all.length} resource(s) reached)`,
+        cause: `no resource carried a last-edited timestamp — the calls were made and the field was absent from every response: GET /v1/pages/{id} runs for the declared root, for reference targets and for rule hydration, and GET /v1/blocks/{block_id}/children returns a block object per child, but a PARTIAL block object carries no last_edited_time and when the API returns one is undocumented (${all.length} resource(s) reached)`,
       }
     : {
         id: MEASUREMENT_IDS.lastEdited,
-        label: 'Last edited, per resource the scan retrieved (sorted by timestamp, oldest first)',
+        label: LAST_EDITED_LABEL,
         unit: 'resources',
         computed: true,
         rows,
         /* THE DENOMINATOR, PRINTED. Both numbers, so the reader can see how much
          * of the reached set this measurement is silent about, rather than
          * reading the rows as the whole picture. */
-        over: `${rows.length} of ${all.length} reached resource(s) — those the scan retrieved directly; the remainder were enumerated without their own retrieve, so no timestamp exists for them`,
+        /* ⚠ THE REMAINDER CLAUSE NAMES NO RESPONSE SHAPE, AND THAT IS A
+         * CORRECTION. It said the remainder "returned a partial block object
+         * carrying no timestamp" — false for the DECLARED ROOT, which has no
+         * parent block listing at all and reaches this set through its own
+         * retrieve or not at all. Reachable whenever the root's retrieve carries
+         * no timestamp while a child's block does, and the report would then
+         * assert an API response shape that never occurred. The honest claim is
+         * the one the run can actually support: nothing it read carried a value
+         * for those resources. */
+        over: `${rows.length} of ${all.length} reached resource(s) — those whose timestamp this scan observed, from a retrieve of the resource itself or from its block in the parent's listing; for the remainder neither source carried one, so they have no row here rather than a blank or an invented value. ${BLOCK_TIMESTAMP_LICENCE}`,
         /* Null, and not zero. A zero total would be a number the run did not
          * compute, printed where a real one goes. */
         total: null,
@@ -308,7 +439,7 @@ export function measurementsFrom(manifest: Manifest): Measurement[] {
   /* APPENDED, AND THE ORDER IS THE RENDER ORDER. `report.ts` iterates this array,
    * so `lastEdited` staying first is a choice rather than an accident: the
    * computed lines lead, and the boundary lines follow them. */
-  const reachedDatabases = all.filter(e => e.kind === 'data-source').length;
+  const reachedDatabases = all.filter(e => e.kind === 'data-source');
 
   return [
     lastEdited,
@@ -317,24 +448,33 @@ export function measurementsFrom(manifest: Manifest): Measurement[] {
   ];
 }
 
-/* ------------------------------------------ the boundary lines (#143, #145) --
+/* --------------------------------- the maintenance counters (#143, #145) --
  *
- * ⛔ THESE THREE ARE `computed: false` ON TODAY'S BUILD, AND THAT IS THE HONEST
- * ANSWER RATHER THAN AN UNFINISHED ONE. `NotionPort` declares three methods —
- * `GET /v1/users/me`, `GET /v1/pages/{id}`, `GET /v1/blocks/{id}/children` — and
- * `scan.ts`'s `child_database` branch returns before spending a request. No
- * schema, no view listing and no row has ever entered the manifest, so there is
- * nothing here to count and no fixture, offline or live, that could change that:
- * the limit is the PORT'S SHAPE, not the grant and not the data.
+ * ⚠ TWO OF THESE THREE NOW COMPUTE, AND THIS BLOCK USED TO SAY ALL THREE COULD
+ * NOT. It read: "`NotionPort` declares three methods … `scan.ts`'s
+ * `child_database` branch returns before spending a request. No schema, no view
+ * listing and no row has ever entered the manifest … the limit is the PORT'S
+ * SHAPE." Every clause of that was true when it was written and false after
+ * #158 item 1 added `retrieveDatabase`, `retrieveDataSource` and `listViews`.
+ * ⛔ A COMMENT DESCRIBING AN OBSTACLE THE BUILD NO LONGER HAS IS THIS
+ * REPOSITORY'S OWN DEFECT CLASS, and it is worse here than anywhere: this is
+ * the file that authors the cause strings a reader acts on. No assertion reads
+ * a comment, so a green gate says nothing about it.
  *
- * ⛔ SO THE CAUSE MUST NAME THE ENDPOINT, AND MUST NAME THE RIGHT OBSTACLE. The
- * three lines do not share one: the schema endpoint is authorized, the view
- * endpoint needs no grant a read-only integration lacks, and the row endpoint is
- * an ASK FIRST decision that has NOT been granted. An operator told only "not
- * computed" reaches for the wrong remedy, and one told "insufficient permission"
- * about the view line would be told something false about their own token.
+ * WHERE THE THREE STAND NOW:
+ *   typedProperties  COMPUTES from GET /v1/databases/{id} → GET /v1/data_sources/{id}
+ *   viewCounts       COMPUTES from GET /v1/views
+ *   peopleEmpty      DOES NOT, and cannot be built by making a call — the rows
+ *                    need POST /v1/data_sources/{id}/query, ask-first, ungranted
  *
- * WHY THEY ARE PRINTED AT ALL — ADR-0017 decision 5. A quiet report and an
+ * ⛔ SO A CAUSE MUST NAME THE RIGHT OBSTACLE, AND THE THREE NO LONGER SHARE ONE.
+ * The first two fail only when a call was MADE and carried nothing — "not read",
+ * a fact about this run. The third is blocked on an operator and says so in its
+ * first clause. An operator told only "not computed" reaches for the wrong
+ * remedy, and one told "insufficient permission" about the view line would be
+ * told something false about their own token.
+ *
+ * WHY A BOUNDARY IS PRINTED AT ALL — ADR-0017 decision 5. A quiet report and an
  * absent report look identical. Baca et al., DOI 10.1002/spe.2109: a static
  * analysis tool at Ericsson "had been abandoned after it stopped reporting
  * faults; this was caused by an expired license that was not discovered before
@@ -349,68 +489,315 @@ export function measurementsFrom(manifest: Manifest): Measurement[] {
  * to skip. A line that reads the same on every workspace is a line nobody reads.
  */
 const reachedClause = (databases: number): string =>
-  `${databases} data source(s) reached by this scan, none entered`;
+  `${databases} data source(s) reached by this scan`;
 
-function maintenanceLoad(databases: number): Measurement[] {
-  /* ⚠ NO `sorted by …` CLAUSE ON THESE LABELS, DELIBERATELY. #143 AC4 requires
-   * sorting to name its key in the header; nothing here sorts, because nothing
-   * here has rows. A label advertising a sort the run did not perform is a claim
-   * about work that did not happen. The clause is added in the same edit that
-   * adds the rows, and not before. */
-  const typedProperties: Measurement = {
+/**
+ * The three properties whose count IS the maintenance load — #143.
+ *
+ * ⛔ THE SELECTOR IS THE CONFIG'S `type` AND NEVER ITS NAME. Principle 4 forbids
+ * inferring meaning from a label, and a column called "Rollup" is a label.
+ */
+const MAINTENANCE_TYPES = ['relation', 'rollup', 'formula'] as const;
+
+/** The columns of one type, summed across every data source of one database. */
+const countType = (facts: DbFacts, type: string): number =>
+  facts.schemas.reduce((sum, s) => sum + (s.types[type] ?? 0), 0);
+
+/** Every column the schemas declared, so a type count has a denominator. */
+const countProperties = (facts: DbFacts): number =>
+  facts.schemas.reduce((sum, s) => sum + s.properties, 0);
+
+function maintenanceLoad(databases: Entry[]): Measurement[] {
+  return [typedProperties(databases), viewCounts(databases), peopleEmpty(databases)];
+}
+
+/* ------------------------------------------- relation/rollup/formula (#143) -- */
+
+/**
+ * ⭐ COMPUTED SINCE #158 ITEM 1, AND THE OBSTACLE WAS NEVER THE GRANT. The line
+ * used to read "no data-source schema was retrieved", naming a port with three
+ * methods. `GET /v1/databases/{id}` was authorized under #51 on 2026-08-18 and
+ * `GET /v1/data_sources/{data_source_id}` needs none, so what stood between this
+ * count and the report was two uncalled GETs — a fact about this build that had
+ * been rendering as a boundary a reader could do nothing about.
+ *
+ * ⛔ THE TWO-CALL PATH IS NOT AN IMPLEMENTATION DETAIL. A database retrieve on
+ * API version `2026-03-11` returns a `data_sources` list and no property map;
+ * the columns live one call further on. Collapsing them yields an empty schema
+ * and a confident zero, which is worse than an error because a zero prints like
+ * an observation.
+ */
+function typedProperties(databases: Entry[]): Measurement {
+  const label = 'Relation, rollup and formula properties, per reached database (sorted by count ascending, then by resource ID)';
+  const unit = 'properties (relation, rollup or formula)';
+
+  const readable = databases.filter(e => e.db !== null && e.db.schemas.length > 0);
+
+  if (readable.length === 0)
+    return {
+      id: MEASUREMENT_IDS.databaseTypedProperties,
+      label,
+      unit,
+      computed: false,
+      ...notReadCause(databases, 'schema',
+        `these counts are read off the schema that GET /v1/data_sources/{data_source_id} returns ("information that describes the structure and columns of a data source", docs/vendor/data-source-endpoints.md section 1, fetched 2026-08-19), reached through GET /v1/databases/{id} for the data-source IDs — ${BOTH_CALLS_AUTHORIZED}`,
+        f => f.cause),
+    };
+
+  const rows: MeasurementRow[] = readable
+    .map(e => {
+      const facts = e.db as DbFacts;
+      const count = MAINTENANCE_TYPES.reduce((sum, t) => sum + countType(facts, t), 0);
+      const properties = countProperties(facts);
+      const breakdown = MAINTENANCE_TYPES.map(t => `${t}: ${countType(facts, t)}`).join(', ');
+      return {
+        resource: e.safeLabel,
+        value: `${count} of ${properties} column(s)  ·  ${breakdown}  ·  ${facts.schemas.length} data source(s) read${facts.cause ? `  ·  ${facts.cause}` : ''}`,
+        numeric: count,
+        link: e.link,
+        linkCause: NO_DATABASE_LINK,
+        /* ⛔ ITEM 2. A schema with no columns at all cannot produce anything but
+         * zero, so the zero is arithmetic and not an observation about how this
+         * database is maintained. Saying so is the difference between "nothing
+         * here is a relation" and "there was nothing here to be one". */
+        forced: properties === 0
+          ? 'forced: the schemas read declared no columns at all, so every type count beneath them can only be 0'
+          : undefined,
+      };
+    })
+    .sort(byCountThenResource);
+
+  return {
     id: MEASUREMENT_IDS.databaseTypedProperties,
-    label: 'Relation, rollup and formula properties, per reached database',
-    unit: 'properties',
-    computed: false,
-    cause: `no data-source schema was retrieved — these counts are read off the schema that GET /v1/data_sources/{data_source_id} returns ("information that describes the structure and columns of a data source", docs/vendor/data-source-endpoints.md section 1, fetched 2026-08-19), and this scan's port declares three methods (GET /v1/users/me, GET /v1/pages/{id}, GET /v1/blocks/{id}/children), none of which retrieves a database or a data source; widening it means GET /v1/databases/{id} to list a database's data-source IDs, which IS already authorized, and then GET /v1/data_sources/{data_source_id} for each schema (${reachedClause(databases)})`,
+    label,
+    unit,
+    computed: true,
+    rows,
+    over: `${rows.length} of ${databases.length} reached data source(s) — those whose column schema this scan read. ${SCHEMA_SCOPE}${unreadClause(databases, readable.length)}`,
+    total: rows.reduce((sum, x) => sum + (x.numeric ?? 0), 0),
   };
+}
 
-  /* ⭐ THE VENDOR QUESTION #143 AC3 RAISES IS DISCHARGED IN THIS REPOSITORY AND
-   * IS NOT RE-ASKED FROM MEMORY. `docs/vendor/list-views.md`, fetched
-   * 2026-08-19 from the endpoint's own reference page: GET /v1/views "Returns a
-   * paginated list of View references for the specified database", carrying view
-   * metadata only, "an array of view-reference objects with `object` and `id`,
-   * plus pagination". An array with pagination is exactly countable — so the
-   * data IS obtainable and the read-content capability a read-only integration
-   * already holds is sufficient for it.
-   *
-   * ⛔ WHICH MAKES THE MISSING THING THE CALL, NOT THE GRANT, and this cause must
-   * say so. It is also why this line is not a NEGATIVE claim about Notion and
-   * needs no negation marker: it asserts nothing the vendor could falsify by
-   * shipping something. */
-  const views: Measurement = {
+/* ------------------------------------------------------- view counts (#143) -- */
+
+/**
+ * ⭐ THE VENDOR QUESTION #143 AC3 RAISED WAS DISCHARGED IN THIS REPOSITORY AND
+ * IS STILL NOT RE-ASKED FROM MEMORY. `docs/vendor/list-views.md`, fetched
+ * 2026-08-19: GET /v1/views "Returns a paginated list of View references for the
+ * specified database", carrying view metadata only. The read-content capability
+ * a read-only integration already holds is sufficient for it — so the missing
+ * thing was the CALL and never the grant, and since #158 item 1 the call is
+ * made. ⛔ A CAUSE HERE MAY NEVER BLAME THE CREDENTIAL: an operator told
+ * "insufficient permission" about this line would be told something false about
+ * their own token.
+ */
+function viewCounts(databases: Entry[]): Measurement {
+  const label = 'Views, per reached database (sorted by count ascending, then by resource ID)';
+  const counted = databases.filter(e => e.db !== null && e.db.views !== null);
+
+  if (counted.length === 0)
+    return {
+      id: MEASUREMENT_IDS.databaseViews,
+      label,
+      unit: 'views',
+      computed: false,
+      ...notReadCause(databases, 'view listing',
+        'a view count comes from GET /v1/views, which returns a paginated list of view references for a specified database and carries view metadata only (docs/vendor/list-views.md, fetched 2026-08-19); the read-content capability a read-only integration already holds is sufficient for it, so a missing count here is never a grant problem',
+        f => f.viewCause),
+    };
+
+  const rows: MeasurementRow[] = counted
+    .map(e => {
+      const facts = e.db as DbFacts;
+      return {
+        resource: e.safeLabel,
+        value: `${facts.views as number} view(s)`,
+        numeric: facts.views as number,
+        link: e.link,
+        linkCause: NO_DATABASE_LINK,
+      };
+    })
+    .sort(byCountThenResource);
+
+  /* ⚠ THE UNCOUNTED DATABASES CARRY THEIR OWN REASONS AND THEY ARE NOT ALL THE
+   * SAME REASON. A listing that 404'd, one abandoned after the page budget, and
+   * one never reached because the request budget ran out are three different
+   * facts, and a single "not counted" line would flatten them. Each row's own
+   * cause is written by the site that observed it. */
+  const missing = databases.filter(e => e.db === null || e.db.views === null);
+  const missingClause = missing.length === 0
+    ? ''
+    : ` ${missing.length} reached data source(s) have no count here: ${
+        missing.map(e => `${e.safeLabel} — ${e.db?.viewCause ?? 'no view listing was attempted for this resource'}`).join('; ')
+      }.`;
+
+  return {
     id: MEASUREMENT_IDS.databaseViews,
-    label: 'Views, per reached database',
+    label,
     unit: 'views',
-    computed: false,
-    cause: `no view listing was requested — a view count would come from GET /v1/views, which returns a paginated list of view references for a specified database and carries view metadata only (docs/vendor/list-views.md, fetched 2026-08-19); the read-content capability a read-only integration already holds is sufficient for it, so what is missing here is the call and not the grant — this scan's port declares three methods and GET /v1/views is not among them (${reachedClause(databases)})`,
+    computed: true,
+    rows,
+    over: `${rows.length} of ${databases.length} reached data source(s) — those whose view listing this scan read to completion. A partial listing is reported as NO count rather than as a small one, because a number smaller than the truth is indistinguishable on the page from an observed one.${missingClause}`,
+    total: rows.reduce((sum, x) => sum + (x.numeric ?? 0), 0),
   };
+}
 
-  /* ⛔ TWO THINGS ARE MISSING HERE AND THEY HAVE DIFFERENT REMEDIES — #145. The
-   * property TYPE lives in a data-source schema, and the empties are counted
-   * over ROWS. `docs/vendor/data-source-endpoints.md` section 2 records
-   * POST /v1/data_sources/{data_source_id}/query as "the endpoint that returns
-   * the rows", a POST whose addition to the port is a CLAUDE.md section 3 ASK
-   * FIRST decision that has not been granted. Flattening the two into one cause
-   * would hand the operator the wrong lever.
-   *
-   * ⛔ AND WHEN IT IS BUILT, THE SELECTOR IS THE TYPE AND NEVER THE NAME.
-   * Matching a property called "Owner" infers meaning from a label, which
-   * Principle 4 forbids; the property's own name prints as data beside the
-   * count. The emptiness test is the one REQ001 already settled —
-   * `readProperty(...)`.state === 'empty' in req001.ts, which already rules that
-   * an empty array is empty, that a run of blank spans is empty, and that
-   * `false` and `0` are values. Do not write a second predicate for it. */
-  const peopleEmpty: Measurement = {
+/* ---------------------------------------------- people-type empties (#145) -- */
+
+/**
+ * ⛔ STILL NOT COMPUTED, AND NOW FOR EXACTLY ONE REASON RATHER THAN TWO — #158
+ * items 1 and 5. The property TYPES arrive with the schema and this scan now
+ * reads them, so that half is DONE and the cause must stop claiming otherwise.
+ * What remains is the ROWS: `POST /v1/data_sources/{data_source_id}/query` is
+ * "the endpoint that returns the rows" (docs/vendor/data-source-endpoints.md
+ * §2, fetched 2026-08-19), it is a POST, and adding it to the port is a
+ * CLAUDE.md §3 ASK FIRST decision that has NOT been granted.
+ *
+ * ⭐ THAT DISTINCTION IS THE WHOLE VALUE OF THIS LINE NOW. Every other boundary
+ * in this section was one uncalled GET away and has been built; this one is not,
+ * and an operator reading the section can act on precisely one of them. Item 5
+ * of the ticket asks for that difference to be findable, and the line says which
+ * side it is on in its first clause.
+ *
+ * ⛔ THE SELECTOR STAYS THE TYPE WHEN THIS IS BUILT. The emptiness test is the
+ * one REQ001 already settled — `readProperty(...)`.state === 'empty' in
+ * req001.ts, which rules that an empty array is empty, that a run of blank spans
+ * is empty, and that `false` and `0` are values. Do not write a second predicate.
+ */
+function peopleEmpty(databases: Entry[]): Measurement {
+  /* THE SCHEMA HALF IS REPORTED EVEN THOUGH THE COUNT IS NOT, because it is the
+   * evidence that the remaining obstacle is the one named. A boundary line that
+   * cannot show what it already has is asking to be taken on trust. */
+  const peopleColumns = databases.reduce(
+    (sum, e) => sum + (e.db ? countType(e.db, 'people') : 0), 0);
+  const schemasRead = databases.filter(e => e.db !== null && e.db.schemas.length > 0).length;
+
+  return {
     id: MEASUREMENT_IDS.peoplePropertyEmpty,
     label: 'People-type properties with an empty value, per reached data source',
     unit: 'rows',
     computed: false,
-    cause: `no data-source row was read — this count needs the property TYPES from GET /v1/data_sources/{data_source_id} and the rows themselves from POST /v1/data_sources/{data_source_id}/query ("This is the endpoint that returns the rows", docs/vendor/data-source-endpoints.md section 2, fetched 2026-08-19); this scan's port declares three methods and neither is among them, and the row endpoint in particular has NOT been granted — it is a POST and adding it is an ask-first decision, so this line widens with that grant and not before (${reachedClause(databases)})`,
+    /* ⛔ THE BLOCKER LINE NAMES THE LEVER FIRST AND THE FIGURE SECOND. This is
+     * the ONE line in the section an operator cannot act on by re-running, and
+     * item 5 asks for exactly that to be findable rather than buried. */
+    blocker: `${UNGRANTED_MARKER} the property types are in hand (${peopleColumns} people-type column(s) across ${schemasRead} schema(s)); the empties need rows, and rows need POST /v1/data_sources/{data_source_id}/query, which is ungranted`,
+    cause: `${UNGRANTED_MARKER} no data-source ROW was read — the property TYPES are in hand (${peopleColumns} people-type column(s) across ${schemasRead} schema(s) this scan read), and the empties are counted over rows that come only from POST /v1/data_sources/{data_source_id}/query ("This is the endpoint that returns the rows", docs/vendor/data-source-endpoints.md section 2, fetched 2026-08-19); that endpoint is a POST, adding it to this port is an ask-first decision under CLAUDE.md section 3, and it has NOT been granted — so unlike every other boundary in this section this one does not widen by making a call (${reachedClause(databases.length)})`,
   };
-
-  return [typedProperties, views, peopleEmpty];
 }
+
+/* --------------------------------------------- the shared boundary language -- */
+
+/**
+ * ⛔ ITEM 5. THE ONE PREFIX A READER CAN ACT ON, AND IT MARKS THE LINE THEY
+ * CANNOT. Five boundary paragraphs that all read as apologies taught four SME
+ * seats to skip the section (`docs/proof/dispositions-run2.md`). The only part
+ * any of them could act on was which lever the line needs, and it was the
+ * hardest part to find. It is now the first thing on the line.
+ */
+const UNGRANTED_MARKER = '[BLOCKED — needs an operator grant, not a call]';
+
+/**
+ * ⛔ ITEM 4. "NOT COMPUTED" AND "NOT READ" ARE DIFFERENT FACTS AND HAD BEEN ONE
+ * APOLOGY. *Not computed* is the call was never made — a fact about this build,
+ * which a release changes. *Not read* is the call WAS made and the response did
+ * not carry the field, or failed — a fact about this run, which a re-run or a
+ * permission change may change. An operator handed one word for both reaches for
+ * the wrong remedy, and the report gave them one word.
+ */
+function notReadCause(
+  databases: Entry[],
+  what: string,
+  how: string,
+  /**
+   * ⛔ WHICH FACT'S CAUSE TO QUOTE, AND IT IS NOT OPTIONAL. Both callers used
+   * `db.cause ?? db.viewCause`, so the VIEW line quoted the DATABASE retrieve's
+   * failure — it named an obstacle that was not its own. `GET /v1/views` takes
+   * the database id as a query parameter and does not depend on the retrieve
+   * having succeeded, which is exactly why `readDatabaseFacts` asks for it even
+   * after that retrieve fails: they are two calls with two failure modes, and a
+   * report that quotes one under the other's heading reports one obstacle as two
+   * and points the reader at the wrong remedy. Found by MEASURING the section
+   * for item 6, not by reading it.
+   */
+  pick: (f: DbFacts) => string | null,
+): { cause: string; blocker: string } {
+  const attempted = databases.filter(e => e.db !== null);
+  const causes = attempted
+    .map(e => (e.db ? pick(e.db) : null))
+    .filter((c): c is string => typeof c === 'string' && c.length > 0);
+
+  if (attempted.length === 0)
+    return {
+      cause: `NOT COMPUTED — no ${what} call was made on this run: ${how} (${reachedClause(databases.length)})`,
+      blocker: `NOT COMPUTED — no ${what} call was made on this run (${reachedClause(databases.length)})`,
+    };
+
+  /* ⛔ THE DISTINCT CAUSES, WITH THEIR COUNTS — NEVER ONE CLAUSE PER DATABASE.
+   * Joining every database's cause reads fine on a two-database fixture and
+   * turns into fifty near-identical clauses on a real workspace, which is the
+   * density this ticket's item 6 exists to remove, returning at scale through a
+   * door item 6 did not cover. Distinct causes are the information; the
+   * repetition is not. The COUNT is kept beside each, so a reader can still tell
+   * one database failing from all of them. */
+  const distinct = new Map<string, number>();
+  for (const c of causes) distinct.set(c, (distinct.get(c) ?? 0) + 1);
+  const folded = [...distinct.entries()]
+    .map(([c, n]) => (n === 1 ? c : `${c} (and ${n - 1} other data source(s) with the same cause)`));
+
+  /* ⛔ AND A CAP, BECAUSE DEDUPLICATION ALONE DOES NOT BOUND THIS. Each cause
+   * carries the resource ID that produced it, so two databases failing the same
+   * way produce two DIFFERENT strings and nothing folds — the map above helps
+   * only when the ids happen to match, which at scale they never do. The cap is
+   * what actually bounds the line. ⚠ IT IS DISCLOSED, NEVER SILENT: the count of
+   * what was dropped is printed, because a truncated list that does not say it
+   * was truncated reads as the complete set, which is the defect this product
+   * exists to detect. */
+  const summarised = folded.length <= CAUSE_QUOTE_CAP
+    ? folded.join('; ')
+    : `${folded.slice(0, CAUSE_QUOTE_CAP).join('; ')}; and ${folded.length - CAUSE_QUOTE_CAP} further distinct cause(s), not quoted here`;
+
+  /* THE CALL WAS MADE. Saying "not computed" here would be false, and it is the
+   * false half this repository keeps shipping: an internal boundary rendered as
+   * an external one. */
+  return {
+    cause: `NOT READ — the ${what} call was made for ${attempted.length} of ${databases.length} reached data source(s) and carried nothing this count could use${
+      summarised.length > 0 ? `: ${summarised}` : ''
+    }. ${how} (${reachedClause(databases.length)})`,
+    blocker: `NOT READ — the ${what} call was made for ${attempted.length} of ${databases.length} reached data source(s) and carried nothing this count could use`,
+  };
+}
+
+/**
+ * How many distinct failure causes a boundary line quotes before it summarises.
+ *
+ * Three is enough to show that the failures differ, and few enough that the line
+ * stays a line. The remainder is COUNTED and said, never dropped in silence.
+ */
+const CAUSE_QUOTE_CAP = 3;
+
+const BOTH_CALLS_AUTHORIZED =
+  'both are GETs this integration is authorized to make, so a missing count here is never a grant problem';
+
+const SCHEMA_SCOPE =
+  'A column count is a fact about the SCHEMA and about nothing else: no row, page or value is read for it, because the rows come only from POST /v1/data_sources/{data_source_id}/query, which is ungranted and absent from this build.';
+
+const unreadClause = (databases: Entry[], read: number): string => {
+  const missing = databases.length - read;
+  return missing === 0 ? '' : ` ${missing} reached data source(s) contributed no schema and are absent from these rows rather than counted as zero.`;
+};
+
+/**
+ * Ascending by count, then by resource ID — ADR-0017 rule 6.
+ *
+ * Ascending so the reader's eye lands on the zeros without the report ranking
+ * anything. The ID tie-break makes the order TOTAL, so two runs over an
+ * unchanged workspace cannot differ: insertion order is traversal order, which
+ * is a property of the network rather than of the workspace (ADR-0004).
+ */
+const byCountThenResource = (a: MeasurementRow, b: MeasurementRow): number =>
+  a.numeric === b.numeric
+    ? (a.resource < b.resource ? -1 : a.resource > b.resource ? 1 : 0)
+    : (a.numeric ?? 0) - (b.numeric ?? 0);
 
 /* ------------------------------------------------ inbound references (#144) --
  *
@@ -489,6 +876,7 @@ function inboundReferences(manifest: Manifest): Measurement {
       label,
       unit: INBOUND_UNIT,
       computed: false,
+      blocker: `NOT COMPUTED — this scan reached no data source, so there is nothing to count references against (${manifest.of(RESOURCES).length} resource(s) reached)`,
       /* NOT "no databases exist". The scan reached none, which is a fact about
        * this scan's declared roots and its grant, and the two readings have
        * different remedies — widen the roots, or widen the grant. */
@@ -503,13 +891,28 @@ function inboundReferences(manifest: Manifest): Measurement {
        * a column of numbers reads the qualifier once, at most; putting it only
        * on the zeros would make the scoped phrasing look like a special case
        * rather than the standing terms of the whole column. */
+      /* THE PROVENANCE TRAVELS HERE TOO, for the same reason it travels on the
+       * last-edited table: a database's timestamp now reaches this row from its
+       * `child_database` block in the parent's listing, and that it is the
+       * database's own is an observation at n=1 rather than a documented
+       * guarantee. A cell reading a bare instant would assert the stronger
+       * thing. The licence itself is on the `over` line, once. */
       const written = e.lastEditedTime === null
         ? NO_DATABASE_RETRIEVE
-        : `last edited: ${e.lastEditedTime}`;
+        : `last edited: ${e.lastEditedTime} (${provenanceOf(e)})`;
       return {
         resource: e.safeLabel,
         value: `${count} ${count === 1 ? 'inbound reference' : 'inbound references'} ${SCANNED_SET}  ·  ${written}`,
         numeric: count,
+        /* ⛔ ITEM 2. WHEN THE SCAN RESOLVED NO REFERENCE TARGETS AT ALL, EVERY
+         * ROW IN THIS COLUMN IS ARITHMETICALLY FORCED TO ZERO. That is the exact
+         * shape the run-2 read found on four of five reports: a column of zeros
+         * sorted and totalled, which reads as "nothing links to any of these"
+         * when what it means is "this scan had nothing to link them with". The
+         * zero is correct and it is not evidence. */
+        forced: inbound.size === 0
+          ? 'forced: this scan resolved no reference targets of any kind, so every count in this column can only be 0 — the figure is arithmetic, not an observation about this database'
+          : undefined,
         link: e.link,
         /* The shared default would say "GET /v1/pages runs for … reference
          * targets only", which is false of a row that IS a reference target.
@@ -546,7 +949,18 @@ function inboundReferences(manifest: Manifest): Measurement {
      * targets are databases OUTSIDE the scanned subtree, which have no row here
      * at all; naming the population is what makes that legible rather than
      * looking like a missing row. */
-    over: `${rows.length} reached data source(s), of ${landed} reference target(s) that landed on one; this scan resolved ${inbound.size} reference target(s) of any kind, and the remainder point at pages or at databases outside the scanned subtree, which have no row here — ${SCANNED_SET} only, never the workspace: the connection cannot enumerate its own grant (ADR-0002). ${DEDUPE_CAVEAT}. ${NO_DATABASE_RETRIEVE_DETAIL}`,
+    /* ⛔ ITEM 3. THE COVERAGE RATIO IS PRINTED, NOT LEFT TO BE ASSEMBLED. Both
+     * figures were already on this line and a reader who wanted the fraction had
+     * to hunt them out of two clauses — on ROOT-A that is 1 of 39, and nothing
+     * said so. The project's own arithmetic-reconstructibility rule asks for the
+     * aggregate to be recoverable from the rows; printing the ratio is the
+     * cheaper half of the same obligation, and it stays beside its numerator and
+     * denominator rather than replacing them. ⚠ IT IS WRITTEN AS `a of b`, NEVER
+     * AS A PERCENTAGE: ADR-0017 rule 2 permits no ratio except over a
+     * denominator the operator supplied, and a percentage would also round the
+     * two small integers this is usually made of into a figure that looks
+     * precise. */
+    over: `reference-population coverage: ${landed} of ${inbound.size} reference target(s) this scan resolved landed on a data source it reached, and those ${landed} are what the ${rows.length} row(s) below are made of; the remainder point at pages or at databases outside the scanned subtree, which have no row here — ${SCANNED_SET} only, never the workspace: the connection cannot enumerate its own grant (ADR-0002). ${DEDUPE_CAVEAT}. ${NO_DATABASE_RETRIEVE_DETAIL}`,
     /* THESE ROWS DO SUM, unlike the timestamp measurement's. The total is the
      * number of inbound references this scan saw landing on any reached
      * database, and it is COMPUTED from the rows printed beside it, so a

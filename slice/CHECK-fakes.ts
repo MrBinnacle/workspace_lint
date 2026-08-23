@@ -11,7 +11,7 @@
  * deterministic.
  */
 
-import { PortError, type BlockListResponse, type NotionPort } from './notion-port.js';
+import { PortError, type BlockListResponse, type BlockObject, type NotionPort } from './notion-port.js';
 import { hyphenate } from './ids.js';
 import type { Config } from './config.js';
 
@@ -33,11 +33,29 @@ export const DATASET = '5db3573f8cf6a332afe7fee0d11db964';
  */
 export const DATASET_B = '6ec46840cf6a332afe7fee0d11db9642';
 
-export const childPage = (id: string, title: string) => ({ object: 'block', id, type: 'child_page', child_page: { title } });
-export const childDb = (id: string, title: string) => ({ object: 'block', id, type: 'child_database', child_database: { title } });
+/**
+ * A `child_page` block as the listing returns it — #158 item 0.
+ *
+ * `lastEdited` IS OMITTED WHEN NOT SUPPLIED, not sent as `undefined`, for the
+ * reason `retrievePage`'s fields are: the fake models a RESPONSE, and a response
+ * either carries the key or does not. That distinction is the whole fixture for
+ * the PARTIAL BLOCK OBJECT — the case Notion does not document and which
+ * `docs/proof/results-block-vs-page-timestamp.md` explicitly did not force. A
+ * fake that always supplied the key could not exercise the branch that has to
+ * survive one arriving without it.
+ */
+export const childPage = (id: string, title: string, lastEdited?: string) =>
+  ({ object: 'block', id, type: 'child_page', child_page: { title }, ...(lastEdited === undefined ? {} : { last_edited_time: lastEdited }) });
+export const childDb = (id: string, title: string, lastEdited?: string) =>
+  ({ object: 'block', id, type: 'child_database', child_database: { title }, ...(lastEdited === undefined ? {} : { last_edited_time: lastEdited }) });
 export const para = (id: string) => ({ object: 'block', id, type: 'paragraph', paragraph: { rich_text: [] } });
 
-export const page = (results: unknown[], extra: Partial<BlockListResponse> = {}): BlockListResponse =>
+/* `BlockObject[]` since #158 item 0 — the fake models the response, and the
+ * response's declared shape is no longer `unknown[]`. Every field on
+ * `BlockObject` is optional, so the fixture helpers above and the inline block
+ * literals throughout this file satisfy it unchanged; what it now rejects is a
+ * fixture block that is not an object at all. */
+export const page = (results: BlockObject[], extra: Partial<BlockListResponse> = {}): BlockListResponse =>
   ({ results, has_more: false, next_cursor: null, ...extra });
 
 export type Step = BlockListResponse | { throwStatus: number; throwCode: string };
@@ -67,7 +85,43 @@ export type FakeResource = {
    * empty.
    */
   lastEditedTime?: string;
+  /* --------------------------------------------------- #158 item 1 -------- */
+  /**
+   * What `GET /v1/databases/{id}` returns as `data_sources`.
+   *
+   * ⛔ THE TWO-CALL PATH IS MODELLED AS TWO CALLS, DELIBERATELY. On API version
+   * `2026-03-11` a database retrieve returns this LIST and no `properties` map —
+   * the SDK's `DatabaseObjectResponse` declares `data_sources` and no schema —
+   * and the columns live one call further on. A fake that answered the database
+   * retrieve with a schema would let the product collapse the pair and pass,
+   * which is the "defect in the instrument that looks exactly like a defect in
+   * the product" this file's `fakePort` docstring names.
+   */
+  dataSources?: Array<{ id?: string; name?: string }>;
+  dbFail?: { status: number; code: string };
+  /** What `GET /v1/data_sources/{data_source_id}` returns as `properties`. */
+  schema?: Record<string, unknown>;
+  schemaFail?: { status: number; code: string };
+  /** Pages of `GET /v1/views`, keyed on the DATABASE this resource is. */
+  viewSteps?: ViewStep[];
 };
+
+export type ViewList = { results: unknown[]; has_more: boolean; next_cursor: string | null };
+export type ViewStep = ViewList | { throwStatus: number; throwCode: string };
+
+/** One page of a view listing. `n` view references, which is all the count reads. */
+export const viewPage = (n: number, extra: Partial<ViewList> = {}): ViewList =>
+  ({ results: Array.from({ length: n }, (_, i) => ({ object: 'view', id: `view-${i}` })), has_more: false, next_cursor: null, ...extra });
+
+/**
+ * One entry of a data source's `properties` map — a property CONFIG, not a value.
+ *
+ * ⚠ A CONFIG AND A PAGE PROPERTY VALUE ARE DIFFERENT SHAPES and this fixture is
+ * the config. `richTextProp` below models what `GET /v1/pages/{id}` returns for
+ * one page's property; this models what the SCHEMA says the column is. The
+ * counters read `type` off this and nothing else.
+ */
+export const propConfig = (name: string, type: string) => ({ id: `p-${name}`, name, type, [type]: {} });
 
 /**
  * A page url of the shape Notion actually serves — THE TITLE IS INSIDE THE PATH.
@@ -117,6 +171,31 @@ export function fakePort(spec: Record<string, FakeResource>, meFails = false): N
       if ('throwStatus' in step) throw new PortError(step.throwStatus, step.throwCode);
       return step;
     },
+    /* ------------------------------------------------- #158 item 1 -------- */
+    /* ⛔ EACH DEFAULTS TO A 404, NOT TO AN EMPTY SUCCESS. A fixture that has not
+     * declared a schema has not declared that the schema is empty — those are
+     * the two observations `properties: undefined` vs `properties: {}` keeps
+     * apart everywhere else in this file, and collapsing them here would let a
+     * counter print a confident `0` for a call that was refused. */
+    async retrieveDatabase(id) {
+      const r = lookup(id);
+      if (!r || r.dbFail || !r.dataSources) throw new PortError(r?.dbFail?.status ?? 404, r?.dbFail?.code ?? 'object_not_found');
+      return { id, ...(r.lastEditedTime === undefined ? {} : { last_edited_time: r.lastEditedTime }), data_sources: r.dataSources };
+    },
+    async retrieveDataSource(id) {
+      const r = lookup(id);
+      if (!r || r.schemaFail) throw new PortError(r?.schemaFail?.status ?? 404, r?.schemaFail?.code ?? 'object_not_found');
+      return { id, ...(r.schema === undefined ? {} : { properties: r.schema }) };
+    },
+    async listViews(databaseId, cursor) {
+      const r = lookup(databaseId);
+      if (!r?.viewSteps) throw new PortError(404, 'object_not_found');
+      const i = cursor ? Number(cursor) : 0;
+      const step = r.viewSteps[i];
+      if (!step) throw new PortError(404, 'object_not_found');
+      if ('throwStatus' in step) throw new PortError(step.throwStatus, step.throwCode);
+      return step;
+    },
   };
 }
 
@@ -143,6 +222,46 @@ export const THREE_CHILDREN: Record<string, FakeResource> = {
   [PAGE_A]: { steps: [page([])] },
   [PAGE_B]: { steps: [page([])] },
   [DATASET]: { steps: [page([])] },
+};
+
+/**
+ * THE BLOCK LISTING CARRIES THE TIMESTAMPS — #158 item 0.
+ *
+ * The root retrieve supplies one; `PAGE_A` and `DATASET` carry one on their own
+ * `child_page` / `child_database` block; `PAGE_B` carries NONE. Three
+ * provenances in one fixture, deliberately:
+ *
+ *   ROOT     retrieve        — GET /v1/pages/{id} returned it
+ *   PAGE_A   block-listing   — the parent's listing returned it, no retrieve made
+ *   DATASET  block-listing   — likewise, and this slice makes no database retrieve
+ *   PAGE_B   none            — the partial-block-object case, undocumented and
+ *                              never forced live, so it must be survivable here
+ *
+ * ⛔ `PAGE_B` IS THE CONTROL AND MUST NOT BE GIVEN A TIMESTAMP AS A TIDY-UP. A
+ * fixture in which every resource has one cannot show that the denominator is
+ * still printed, and the denominator is the only thing standing between these
+ * rows and a reader taking them for the whole reached set.
+ *
+ * The three instants are distinct and ordered, so the sort is falsifiable: a
+ * derivation that dropped the sort would still pass against ties.
+ */
+export const BLOCK_EDITED_A = '2026-01-05T11:00:00.000Z';
+export const BLOCK_EDITED_DB = '2026-03-30T16:00:00.000Z';
+
+export const ROOT_EDITED = '2026-02-19T08:14:00.000Z';
+
+export const BLOCK_TIMES: Record<string, FakeResource> = {
+  [ROOT]: {
+    lastEditedTime: ROOT_EDITED,
+    steps: [page([
+      childPage(PAGE_A, 'wl-outside-grant', BLOCK_EDITED_A),
+      childPage(PAGE_B, 'wl-revoke-parent'),
+      childDb(DATASET, 'wl-dataset', BLOCK_EDITED_DB),
+    ])],
+  },
+  [PAGE_A]: { steps: [page([])] },
+  [PAGE_B]: { steps: [page([])] },
+  [DATASET]: { steps: [page([])], pageFail: { status: 404, code: 'object_not_found' } },
 };
 
 /* The root resolves, then its child list is never retrieved at all. The scan can
@@ -381,6 +500,82 @@ export const INBOUND_REFS: Record<string, FakeResource> = {
    * traversal is entitled to ask; only the page retrieve is made to fail. */
   [DATASET]: { steps: [page([])], pageFail: { status: 404, code: 'object_not_found' } },
   [DATASET_B]: { steps: [page([])], pageFail: { status: 404, code: 'object_not_found' } },
+};
+
+/**
+ * TWO REACHED DATABASES WHOSE SCHEMAS AND VIEWS ARE READABLE — #158 item 1.
+ *
+ * `DATASET` has one data source with a mixed schema and three views. `DATASET_B`
+ * has one data source with NO columns at all and one view — ⛔ AND THAT EMPTY
+ * SCHEMA IS THE ITEM-2 CONTROL, not an oversight. Its relation/rollup/formula
+ * count can only be 0 because there is nothing there to be one, which is a
+ * forced value, and a fixture where every schema has columns could not tell a
+ * forced zero from an observed one.
+ *
+ * ⛔ THE DATA-SOURCE IDs ARE DISTINCT FROM THEIR DATABASE IDs, DELIBERATELY. On
+ * API version `2026-03-11` they are different objects with different IDs, and a
+ * fixture that reused one ID for both would let the product pass while calling
+ * `GET /v1/data_sources/{database_id}` — which is the collapse of the two-call
+ * path this whole fixture exists to make visible.
+ *
+ * The schema carries one `people` column so #145's schema half has something to
+ * count, and one config with no readable `type` so the `unreadable` bucket is
+ * exercised rather than assumed.
+ */
+/** What `GET /v1/databases/{id}` returns, DIFFERENT from the block's value. */
+export const DB_RETRIEVE_EDITED = '2026-05-11T09:00:00.000Z';
+
+export const DS_OF_DATASET = '7ab5795b0ee8c554c1a900f12f33f187';
+export const DS_OF_DATASET_B = '8bc6806c1ff9d665d2ba11023044f298';
+
+export const DB_SCHEMA: Record<string, FakeResource> = {
+  [ROOT]: {
+    steps: [page([
+      dbMentionPara('block-db-ref', DATASET),
+      childDb(DATASET, 'wl-dataset', BLOCK_EDITED_DB),
+      childDb(DATASET_B, 'wl-quiet-dataset'),
+      childPage(PAGE_B, 'wl-revoke-parent'),
+    ])],
+  },
+  [PAGE_B]: { steps: [page([])] },
+  /* ⛔ TWO SOURCES FOR THIS DATABASE'S TIMESTAMP, AND THEY DISAGREE ON PURPOSE.
+   * Its `child_database` block carries `BLOCK_EDITED_DB` and its own retrieve
+   * carries `DB_RETRIEVE_EDITED`. The retrieve must win — it is the object's own
+   * documented timestamp, while the block's is the database's only under an n=1
+   * empirical finding. Two fixtures agreeing would leave the precedence rule
+   * unexercised and a reversed override indistinguishable from a correct one. */
+  [DATASET]: {
+    steps: [page([])],
+    pageFail: { status: 404, code: 'object_not_found' },
+    lastEditedTime: DB_RETRIEVE_EDITED,
+    dataSources: [{ id: DS_OF_DATASET, name: 'main' }],
+    viewSteps: [viewPage(3)],
+  },
+  /* ⛔ TWO RELATIONS, AND THE SECOND ONE IS A CONTROL RATHER THAN FLAVOUR. With
+   * one column per type the maintenance count is 3 — and so is the number of
+   * types, and so is (types x schemas). A hand-run mutation replacing the type
+   * lookup with "one per type per schema" produced 3 as well and the count
+   * assertion passed straight through it; the forced-zero test caught it, which
+   * is a mutation killed by the wrong mechanism. A second relation makes the
+   * answer 4, which no other reading of this fixture produces. */
+  [DS_OF_DATASET]: {
+    schema: {
+      Title: propConfig('Title', 'title'),
+      Owner: propConfig('Owner', 'people'),
+      Project: propConfig('Project', 'relation'),
+      Epic: propConfig('Epic', 'relation'),
+      Total: propConfig('Total', 'rollup'),
+      Score: propConfig('Score', 'formula'),
+      Broken: { id: 'p-Broken', name: 'Broken' },
+    },
+  },
+  [DATASET_B]: {
+    steps: [page([])],
+    pageFail: { status: 404, code: 'object_not_found' },
+    dataSources: [{ id: DS_OF_DATASET_B, name: 'main' }],
+    viewSteps: [viewPage(1)],
+  },
+  [DS_OF_DATASET_B]: { schema: {} },
 };
 
 /**

@@ -245,7 +245,7 @@ check('  its conformity is ABSENT, never `conforms`', r3.outcomes.UNQ001?.confor
  * here so a reader does not take an empty vector row as evidence the pair
  * arithmetic ran — CHECK-unq001.ts is where that is scored. */
 check('  and it counted no pairs, because no scope was configured', r3.coverage.filter(c => c.rule === 'UNQ001').length, 0);
-check('the data source is a named drop-out, not an evaluated resource', r3.gaps.some(g => /data-source enumeration is not implemented/.test(g.cause)), true);
+check('the data source is a named drop-out, not an evaluated resource', r3.gaps.some(g => /data-source ROW enumeration is not implemented/.test(g.cause)), true);
 console.log('  ^ a result reported as closing #10 would be a coverage claim over an unrun');
 console.log('    set, which is the defect class this product exists to detect. Spec §1.3.');
 

@@ -426,7 +426,7 @@ const withDataset = await run({
 }, ROOT);
 check('a data source is a scope member, so its pairs are declared', unqRow(withDataset)?.applicable ?? -1, 3);
 check('  and the two pairs touching it are gaps, never violations', unqRow(withDataset)?.evaluated ?? -1, 1);
-check('  named as the data-source limitation', withDataset.gaps.some(g => /data-source enumeration is not implemented/.test(g.cause)), true);
+check('  named as the data-source limitation', withDataset.gaps.some(g => /data-source ROW enumeration is not implemented/.test(g.cause)), true);
 check('  evidence sufficiency is unreached', withDataset.outcomes[UNQ001_ID]?.evidence, 'unreached');
 
 /* The property is in neither map: located nowhere, so unreached. */

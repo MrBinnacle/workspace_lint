@@ -26,7 +26,7 @@ import { buildReportDocument, renderJson, renderMarkdown, renderReport } from '.
 import { measurementsFrom, totalIsReconstructible, MEASUREMENT_IDS, type Measurement } from './measurement.js';
 import { LINK_NOT_CAPTURED } from './finding.js';
 import { hyphenate } from './ids.js';
-import { ROOT, PAGE_B, DATASET, DATASET_B, cfg, clock, fakePort, DEAD_LINK, INBOUND_REFS, INBOUND_REFS_PLUS_EXTERNAL, THREE_CHILDREN, TITLED_URL, TITLE_IN_URL } from './CHECK-fakes.js';
+import { ROOT, PAGE_A, PAGE_B, DATASET, DATASET_B, BLOCK_TIMES, BLOCK_EDITED_DB, DB_RETRIEVE_EDITED, DB_SCHEMA, cfg, clock, fakePort, DEAD_LINK, INBOUND_REFS, INBOUND_REFS_PLUS_EXTERNAL, THREE_CHILDREN, TITLED_URL, TITLE_IN_URL } from './CHECK-fakes.js';
 
 const { check, head, finish } = createHarness();
 
@@ -493,8 +493,16 @@ check('  the boundary line is not a silent blank', inRows.every(x => x.value.tri
  * the `over` line is checked for the specific endpoint — a short row marker with
  * no explanation anywhere is the shrug ADR-0017 decision 5 forbids. */
 const inOver = inbound?.computed ? inbound.over : '';
+/* ⚠ THE ENDPOINT NAMED HERE CHANGED WITH #158 ITEM 1, AND THE OLD ONE WOULD NOW
+ * BE THE WRONG ANSWER. The detail line used to say "this scan retrieves pages
+ * only (GET /v1/pages/{id}) and makes no database retrieve" — true until
+ * `retrieveDatabase` shipped, false after. A row whose timestamp is unread now
+ * means BOTH available sources were silent for that database, and the endpoint
+ * the reader needs named is the database retrieve that did not carry one. */
 check('  the measurement names the ENDPOINT boundary in full, beside the rows',
-  /GET \/v1\/pages\/\{id\}/.test(inOver), true);
+  /GET \/v1\/databases\/\{id\}/.test(inOver), true);
+check('    and no longer blames a database retrieve this build does not make',
+  /makes no database retrieve/.test(inOver), false);
 check('    and attributes it to this tool rather than to the vendor',
   /not the vendor/.test(inOver), true);
 check('    and the deduplication caveat travels with the counts',
@@ -591,34 +599,154 @@ check('the fixture really did reach data sources, so this is not a vacuous pass'
 const typed = rDb.measurements.find(m => m.id === MEASUREMENT_IDS.databaseTypedProperties);
 const views = rDb.measurements.find(m => m.id === MEASUREMENT_IDS.databaseViews);
 
+/* ⛔ THIS FIXTURE'S DATABASES ANSWER NO SCHEMA AND NO VIEW CALL, so both
+ * counters land on the NOT-READ branch — and that is now a DIFFERENT branch from
+ * the one this test used to exercise. Before #158 item 1 the port had no such
+ * methods and the honest word was "not computed". The calls are made now, so a
+ * line still saying "not computed" would be false about this build: item 4 of
+ * the ticket is exactly this distinction, and it is asserted rather than
+ * described. */
 check('the typed-property measurement is present', typed !== undefined, true);
-check('  and is NOT computed on this build', typed?.computed, false);
+check('  and is NOT computed on this fixture, whose data sources answer no schema call', typed?.computed, false);
 check('  its cause is non-empty, so the assertions below are not vacuously true',
   typed && !typed.computed ? typed.cause.length > 0 : false, true);
-check('  the cause names the SCHEMA endpoint that would supply the counts',
+check('  the cause says NOT READ, because the call WAS made — item 4',
+  typed && !typed.computed ? typed.cause.startsWith('NOT READ') : false, true);
+check('    and does not claim the call was never made',
+  typed && !typed.computed ? /^NOT COMPUTED/.test(typed.cause) : false, false);
+check('  the cause names the SCHEMA endpoint the counts are read off',
   typed && !typed.computed ? typed.cause.includes('GET /v1/data_sources/{data_source_id}') : false, true);
-check('  and the traversal endpoint that would reach it',
+check('  and the traversal endpoint that reaches it',
   typed && !typed.computed ? typed.cause.includes('GET /v1/databases/{id}') : false, true);
+/* ⛔ ITEM 5. BOTH ARE AUTHORIZED GETs, so this line must not read like the
+ * people line, which needs an operator. A reader who cannot tell them apart
+ * cannot act on either. */
+check('  and it states that neither call is a grant problem — item 5',
+  typed && !typed.computed ? /never a grant problem/.test(typed.cause) : false, true);
+check('    so it does NOT carry the ungranted marker',
+  typed && !typed.computed ? /\[BLOCKED/.test(typed.cause) : false, false);
 
 check('the view measurement is present', views !== undefined, true);
-check('  and is NOT computed on this build', views?.computed, false);
+check('  and is NOT computed on this fixture', views?.computed, false);
 check('  the cause names GET /v1/views — the vendor question is DISCHARGED, not open',
   views && !views.computed ? views.cause.includes('GET /v1/views') : false, true);
 
 /* ⛔ THE HONEST HALF, AND THE ONE MOST EASILY GOT WRONG. `docs/vendor/list-views.md`
  * (fetched 2026-08-19) records that read-content capability — which a read-only
- * integration already holds — is sufficient for GET /v1/views. So the missing
- * thing is the CALL, not the grant, and a cause blaming the credential would be
- * a false claim about the operator's own token. */
-check('  and it blames the missing CALL, never the grant',
-  views && !views.computed ? /not the grant/.test(views.cause) : false, true);
+ * integration already holds — is sufficient for GET /v1/views. A cause blaming
+ * the credential would be a false claim about the operator's own token. */
+check('  and it never blames the grant',
+  views && !views.computed ? /never a grant problem/.test(views.cause) : false, true);
 check('  the grant is not falsely implicated anywhere in it',
   views && !views.computed ? /(insufficient|lacks?|denied) (permission|capability|grant)/i.test(views.cause) : true, false);
+/* ⛔ AND IT QUOTES ITS OWN CALL'S FAILURE, NOT THE DATABASE RETRIEVE'S. Both
+ * boundary causes read `db.cause ?? db.viewCause`, so this line reported the
+ * database retrieve failing — an obstacle that is not its own. `GET /v1/views`
+ * takes the database id as a query parameter and is asked for even after the
+ * retrieve fails, precisely because they are two calls with two failure modes.
+ * Quoting one under the other's heading reports one obstacle as two and points
+ * the operator at the wrong remedy. */
+check('  and it quotes the VIEW listing\'s own failure, not the database retrieve\'s',
+  views && !views.computed ? /view listing failed/.test(views.cause) : false, true);
+check('    so it does not blame the database retrieve, which is the other line\'s obstacle',
+  views && !views.computed ? /the database retrieve failed/.test(views.cause) : false, false);
+check('  while the SCHEMA line does quote the database retrieve, because that IS its obstacle',
+  typed && !typed.computed ? /the database retrieve failed/.test(typed.cause) : false, true);
 
-/* THE CAUSE IS SCOPED TO WHAT WAS ACTUALLY REACHED, so "not computed" is an
+/* THE CAUSE IS SCOPED TO WHAT WAS ACTUALLY REACHED, so the boundary is an
  * observation about this scan rather than a standing disclaimer. */
 check('  the cause counts the data sources it is silent about',
   typed && !typed.computed ? /2 data source\(s\) reached/.test(typed.cause) : false, true);
+
+head('TEST 8b — #158 item 1. The two authorized GETs, COMPUTED');
+
+/* ⛔ A SECOND FIXTURE, BECAUSE THE ARM ABOVE CANNOT SHOW THIS ONE. `INBOUND_REFS`
+ * answers no schema call, so every assertion above is about the boundary branch
+ * and NONE of them would fail if the computed branch were never reachable. This
+ * fixture answers both calls, and it is the only thing standing between "the
+ * counters compute" and a pair of causes that merely read well. */
+const rSchema = await scan({ config: cfg(ROOT, 0.0), port: fakePort(DB_SCHEMA), now: clock() });
+const typedC = rSchema.measurements.find(m => m.id === MEASUREMENT_IDS.databaseTypedProperties);
+const viewsC = rSchema.measurements.find(m => m.id === MEASUREMENT_IDS.databaseViews);
+
+check('the typed-property counter COMPUTES when the schema answers', typedC?.computed, true);
+const typedRows = typedC?.computed ? typedC.rows : [];
+check('  and it produced rows, so nothing below is over an empty set', typedRows.length, 2);
+
+/* ⛔ THE FIXTURE IS TWO relations, ONE rollup AND ONE formula, SO THE COUNT IS 4
+ * — AND THE ASYMMETRY IS THE CONTROL. With one column per type the answer is 3,
+ * which is also the number of types and also (types x schemas); a hand-run
+ * mutation replacing the type lookup with "one per type per schema" produced 3
+ * and this assertion passed straight through it, leaving the forced-zero test in
+ * TEST 8c to kill it. That is a mutation caught by the wrong mechanism. Four is
+ * a number no other reading of this fixture yields.
+ *
+ * ⚠ ASSERTED AS A LITERAL, never recomputed from the fixture: a check that
+ * re-derives its expectation from the same data the code reads is a restatement
+ * and not a control. */
+const datasetRow = typedRows.find(x => x.resource === hyphenate(DATASET));
+check('  the mixed schema counts 4 of its 7 columns', datasetRow?.numeric, 4);
+check('    and the row prints the per-type breakdown, so the 4 is reconstructible',
+  /relation: 2, rollup: 1, formula: 1/.test(datasetRow?.value ?? ''), true);
+/* ⛔ THE DENOMINATOR IS EVERY COLUMN, INCLUDING THE ONE WHOSE `type` THE
+ * RESPONSE DID NOT CARRY. Dropping an unreadable config would shrink the
+ * denominator to match what this code can name — the 2/2-over-three-children
+ * defect (results-ref001-live.md section 3) in a new place. */
+check('    and the denominator counts all seven columns, unreadable config included',
+  /of 7 column\(s\)/.test(datasetRow?.value ?? ''), true);
+
+check('the view counter COMPUTES when the listing answers', viewsC?.computed, true);
+const viewRows = viewsC?.computed ? viewsC.rows : [];
+check('  one row per database whose listing was read to completion', viewRows.length, 2);
+check('  the three-view database reads 3',
+  viewRows.find(x => x.resource === hyphenate(DATASET))?.numeric, 3);
+check('  and the total is the sum of the rows printed beside it',
+  viewsC?.computed ? viewsC.total : 'no total', 4);
+check('  which the reconstructibility predicate agrees with',
+  viewsC ? totalIsReconstructible(viewsC) : false, true);
+
+head('TEST 8c — #158 item 2. A FORCED value is not rendered as an observed one');
+
+/* ⛔ `DATASET_B`'s SCHEMA DECLARES NO COLUMNS, so its relation/rollup/formula
+ * count can only be 0. That zero is arithmetic, not an observation about how
+ * this database is maintained, and the run-2 read found four of five reports
+ * printing exactly this shape — figures that could not have come out any other
+ * way, sorted and totalled in the furniture of a distribution. */
+const forcedRow = typedRows.find(x => x.resource === hyphenate(DATASET_B));
+check('the empty-schema row exists and reads zero', forcedRow?.numeric, 0);
+check('  and it is MARKED forced', (forcedRow?.forced ?? '').length > 0, true);
+check('    naming why it could not have varied',
+  /no columns at all/.test(forcedRow?.forced ?? ''), true);
+/* ⛔ THE CONTRAST IS THE CONTROL. A fixture where every row is forced could not
+ * show that the marker discriminates — it would be indistinguishable from a
+ * derivation that marks everything. */
+check('  while the row that COULD have varied is not marked',
+  datasetRow?.forced, undefined);
+
+head('TEST 8d — the forced marker reaches the reader in both text emitters');
+
+const schemaTerm = renderReport(rSchema, {}).join('\n');
+const schemaMd = renderMarkdown(buildReportDocument(rSchema, {}));
+
+check('the terminal report is non-empty, so this is not vacuous', schemaTerm.length > 0, true);
+check('  the terminal emitter prints the forced marker', schemaTerm.includes('no columns at all'), true);
+/* ⛔ ASSERTED OVER BOTH, because an emitter that keeps a qualifier while another
+ * drops it is this repository's oldest failure shape and has now shipped in
+ * three sections. */
+check('  and so does the Markdown emitter', schemaMd.includes('no columns at all'), true);
+check('  the Markdown table carries a column for it rather than a trailing sentence',
+  /\| Resource \| Value \| Could vary\? \| Link \|/.test(schemaMd), true);
+
+/* ⛔ PER ROW, NOT PER DOCUMENT. A document-wide regex would pass on output where
+ * the qualifier sits anywhere at all, which is the defect
+ * `document-scoped-regex-defeats-a-per-row-claim` records: the negative
+ * lookahead spans the rest of the document, so a qualifier four sections later
+ * satisfies it. The rows are split on the separator the format actually uses. */
+const mdRows = schemaMd.split('\n').filter(l => l.startsWith('| `') && l.includes(hyphenate(DATASET_B) ?? ''));
+check('  the forced row was actually located in the Markdown, so the next check is not vacuous',
+  mdRows.length > 0, true);
+check('    and the marker is on that ROW, not merely somewhere in the document',
+  mdRows.some(l => l.includes('no columns at all')), true);
 
 head('TEST 9 — #145. The owner signal names the ROW endpoint it does not have');
 
@@ -629,14 +757,33 @@ check('  and is NOT computed on this build', people?.computed, false);
 check('  its cause is non-empty', people && !people.computed ? people.cause.length > 0 : false, true);
 check('  the cause names the ROW endpoint, which is the one that is missing',
   people && !people.computed ? people.cause.includes('POST /v1/data_sources/{data_source_id}/query') : false, true);
-check('  and the SCHEMA endpoint, where the property TYPE would come from',
-  people && !people.computed ? people.cause.includes('GET /v1/data_sources/{data_source_id}') : false, true);
-/* ⚠ THE TWO ENDPOINTS HAVE DIFFERENT REMEDIES AND THE CAUSE MUST NOT FLATTEN
- * THEM. The schema endpoint is authorized; the row endpoint is a POST whose
- * addition is an ASK FIRST decision that has not been granted. An operator told
- * only "not computed" would reach for the wrong one. */
+/* ⛔ THE SCHEMA HALF IS DONE SINCE #158 ITEM 1 AND THE CAUSE MUST STOP CLAIMING
+ * OTHERWISE. It used to name GET /v1/data_sources/{data_source_id} as missing
+ * alongside the POST; that GET is now made on every reached database, so naming
+ * it as an obstacle would be this product reporting a boundary it no longer has
+ * — the defect class it exists to detect. */
+check('  and it reports the property TYPES as IN HAND rather than missing',
+  people && !people.computed ? /types are in hand/i.test(people.cause) : false, true);
+/* ⚠ THE TWO HALVES HAVE DIFFERENT REMEDIES AND THE CAUSE MUST NOT FLATTEN THEM.
+ * The schema is read; the rows need a POST whose addition is an ASK FIRST
+ * decision that has not been granted. An operator told only "not computed"
+ * reaches for the wrong one. */
 check('  and it records that the ROW endpoint is ungranted, not merely uncalled',
   people && !people.computed ? /not been granted/i.test(people.cause) : false, true);
+/* ⛔ ITEM 5, AND THIS IS THE LINE THE MARKER EXISTS FOR. Every other boundary in
+ * this section is one authorized GET away and has been built; this one needs an
+ * operator. The marker leads the line so the difference is findable rather than
+ * buried three clauses in. */
+check('  the ungranted marker LEADS the line, so the lever is the first thing read',
+  people && !people.computed ? people.cause.startsWith('[BLOCKED') : false, true);
+check('    and it leads the one-line blocker too',
+  people && !people.computed ? people.blocker.startsWith('[BLOCKED') : false, true);
+/* ⛔ THE MARKER MUST DISCRIMINATE. If it appeared on the authorized-GET lines
+ * as well it would carry no information, which is the tautological-assertion
+ * family this suite already records: a marker true of everything asserts
+ * nothing about anything. */
+check('    while NO other measurement carries it, so the marker discriminates',
+  rDb.measurements.filter(m => !m.computed && m.cause.startsWith('[BLOCKED')).length, 1);
 
 /* #145 AC3: the type is the only selector. Principle 4 forbids inferring meaning
  * from a label, and "Owner" is a label. */
@@ -667,5 +814,246 @@ check('  and into the JSON artifact', /"cause"/.test(dbJson), true);
 console.log('  ^ ADR-0017 decision 5: a quiet report and an absent report look identical.');
 console.log('    Baca et al. (10.1002/spe.2109) — an expired licence stopped a tool analysing');
 console.log('    and nobody noticed. Every boundary here is printed, with the endpoint named.');
+
+head('TEST 9c — #158 item 6. The boundary prose MOVED to DISCLOSURES, and was not deleted');
+
+/* ⛔ THE MEASURE OF THIS TICKET'S ITEM 6 IS A RATIO, NOT A VIBE. The section
+ * spent roughly a thousand characters of prose per rendered figure, on every run
+ * and per root, and three of four SME seats binned that density as noise between
+ * the reader and the numbers (docs/proof/dispositions-run2.md). The acceptance
+ * criterion is stated as arithmetic on the ticket: a run whose counters are all
+ * uncomputed must not spend more characters explaining that than the rest of the
+ * report spends reporting. */
+const boundaryLine = dbTerm.split('\n').filter(l => l.includes('not computed —'));
+check('the boundary lines were located, so the length check below is not vacuous',
+  boundaryLine.length >= 3, true);
+/* A ONE-LINE BLOCKER, not a paragraph. The bound is generous on purpose: it is
+ * a guard against the thousand-character paragraph coming back, not a style
+ * rule, and a tight bound would fail on an honest cause. */
+check('  every one of them fits on a line rather than being a paragraph',
+  boundaryLine.every(l => l.length < 260), true);
+check('  and each still names the lever, so the short form is not a shrug',
+  boundaryLine.every(l => /NOT READ|NOT COMPUTED|\[BLOCKED/.test(l)), true);
+
+/* ⛔ MOVED, NEVER DELETED — the half that makes this safe. ADR-0017 decision 5
+ * is unchanged and still binding: a quiet report and an absent report look
+ * identical. The full text with its endpoints and vendor citations must still be
+ * in the document, and a reader must be told where. */
+check('  the full text is still in the document, in DISCLOSURES',
+  /MEASUREMENT BOUNDARIES/.test(dbTerm), true);
+check('    with the endpoint that would widen it, at full length',
+  /POST \/v1\/data_sources\/\{data_source_id\}\/query/.test(dbTerm), true);
+check('    and the vendor citation that backs it',
+  /docs\/vendor\/data-source-endpoints\.md/.test(dbTerm), true);
+check('  and the short line points the reader there',
+  /full boundary, with endpoints and citations/i.test(dbTerm), true);
+/* ⛔ BOTH TEXT EMITTERS, for the reason every other cross-emitter assertion in
+ * this suite exists: one renderer relocating the prose while another keeps it is
+ * the divergence this repository has shipped three times. */
+check('  the Markdown emitter relocated it too, rather than keeping the long form',
+  /Full boundary, with endpoints and citations/i.test(dbMd), true);
+check('    and still carries the full text under Disclosures',
+  /MEASUREMENT BOUNDARIES/.test(dbMd), true);
+
+/* ⛔ THE JSON ARTIFACT KEEPS BOTH FIELDS AND LOSES NEITHER. A consumer reading
+ * the artifact rather than the page must be able to get the full cause, and a
+ * relocation in the text emitters that silently dropped it from the data would
+ * be a worse loss than the density it fixed. */
+check('  the JSON artifact still carries the full cause', /"cause"/.test(dbJson), true);
+check('    and the one-line blocker beside it', /"blocker"/.test(dbJson), true);
+
+/* =========================================================================
+ * TEST 10d — the four defects a REVIEW found and no assertion did.
+ *
+ * ⛔ EACH ONE SURVIVED A GREEN GATE, and the common shape is that none of them
+ * is reachable from a value the suite already read: two are prose, one is a
+ * table's column arithmetic, one is a field discarded at a third call site. A
+ * suite that only checks the numbers it computes cannot see any of them.
+ * ========================================================================= */
+
+head('TEST 10d — a Markdown table row has as many cells as its header has columns');
+
+/* ⛔ THE TOTAL ROW EMITTED THREE CELLS UNDER A FOUR-COLUMN HEADER after the
+ * `Could vary?` column was added, so "sum of the N row(s) above" rendered under
+ * that heading — a total row answering whether the figure could have varied —
+ * and the Link cell disappeared. A header and its rows are two places one column
+ * count is written and the second is what drifts. Counted rather than eyeballed. */
+const mdTableLines = schemaMd.split('\n').filter(l => l.startsWith('|'));
+const cellsIn = (line: string): number => line.split('|').length - 2;
+const headerLines = mdTableLines.filter(l => l.includes('Could vary?'));
+check('the measurement tables were located, so this is not vacuous', headerLines.length > 0, true);
+const totalLines = mdTableLines.filter(l => l.includes('**Total**'));
+check('  and at least one Total row was rendered', totalLines.length > 0, true);
+check('  every Total row has the same cell count as the header',
+  totalLines.every(t => cellsIn(t) === cellsIn(headerLines[0]!)), true);
+/* ⚠ SCOPED TO THE SEPARATOR THAT FOLLOWS *THIS* HEADER, and the first draft was
+ * not — it collected every `| --- |` line in the document, which includes the
+ * Gaps, Residuals and Findings tables, and compared all of them to a measurement
+ * header. It failed for the right reason and would have been the wrong fix: a
+ * control that forbids other tables from having their own column count. The
+ * defect is the one this suite already records as
+ * `document-scoped-regex-defeats-a-per-row-claim` — a per-table property
+ * asserted over a whole document — committed while writing the test FOR it. */
+const headerAt = mdTableLines.indexOf(headerLines[0]!);
+const separator = mdTableLines[headerAt + 1] ?? '';
+check('  the separator row directly under it was located', /^\|\s*---/.test(separator), true);
+check('    and has the same cell count as the header',
+  cellsIn(separator), cellsIn(headerLines[0]!));
+
+head('TEST 10e — no `over` line renders a doubled full stop');
+
+/* An `over` string ending in a full stop met the template's own ". Unit:" and
+ * printed `…from this build.. Unit:`. A punctuation mark split across a constant
+ * and its caller is one sentence with two authors. */
+check('the Markdown carries no doubled sentence break before the unit',
+  /\.\. Unit:/.test(schemaMd), false);
+check('  and the unit is still printed, so the check above is not passing by absence',
+  /Unit: \*\*/.test(schemaMd), true);
+
+head('TEST 10f — a database\'s OWN retrieve supplies its timestamp');
+
+/* ⛔ ITEM 0'S DEFECT, ONE CALL FURTHER ALONG. `GET /v1/databases/{id}` returns
+ * `last_edited_time` and `readDatabaseFacts` read only `data_sources` off the
+ * response, so a database whose retrieve SUCCEEDED still printed "last edited:
+ * not read" while the run held the value. `DB_SCHEMA`'s databases carry a
+ * timestamp on their block AND answer the retrieve, and the retrieve must win:
+ * it is the object's own, documented and unqualified, while the block's is the
+ * database's only under an n=1 empirical finding. */
+const schemaEdited = rSchema.measurements.find(m => m.id === MEASUREMENT_IDS.lastEdited);
+const schemaEditedRows = schemaEdited?.computed ? schemaEdited.rows : [];
+check('the last-edited table has rows on this fixture', schemaEditedRows.length > 0, true);
+const dbEditedRow = schemaEditedRows.find(x => x.resource === hyphenate(DATASET));
+check('  the reached database has a row at all', dbEditedRow !== undefined, true);
+check('  and it credits the RETRIEVE, not the parent block listing',
+  dbEditedRow?.value.includes('from its own retrieve'), true);
+/* ⛔ AND IT CARRIES THE RETRIEVE'S VALUE, NOT THE BLOCK'S. The two disagree in
+ * this fixture deliberately: a provenance label that said "retrieve" beside the
+ * block's instant would be a correct-looking row asserting the stronger status
+ * over the weaker value, which is worse than an unlabelled one. */
+check('    carrying the retrieve\'s instant, not the block\'s',
+  dbEditedRow?.value.startsWith(DB_RETRIEVE_EDITED), true);
+check('    and the block\'s instant does not appear on that row',
+  dbEditedRow?.value.includes(BLOCK_EDITED_DB), false);
+
+head('TEST 10g — no rendered line names an obstacle this build no longer has');
+
+/* ⛔ THE FILE THAT AUTHORS THE CAUSE STRINGS HAD GONE STALE INSIDE ITSELF. Three
+ * constants and two block comments still said the port has three methods and
+ * retrieves no database, after #158 item 1 added `retrieveDatabase`. Comments
+ * are beyond any assertion's reach; the CONSTANTS are not, and these are the
+ * ones that print. Asserted over both text emitters. */
+const bothEmitters = schemaTerm + '\n' + renderReport(rDb, {}).join('\n') + '\n' + dbMd;
+check('no line claims this scan makes no database retrieve',
+  /makes no database retrieve/.test(bothEmitters), false);
+check('  nor that the port declares three methods',
+  /port declares three methods/.test(bothEmitters), false);
+/* THE POSITIVE CONTROL: the endpoint IS named, so the two negatives above are
+ * not passing because the subject vanished from the report altogether. */
+check('  while the database endpoint is still named where a reader needs it',
+  /GET \/v1\/databases\/\{id\}/.test(bothEmitters), true);
+
+/* =========================================================================
+ * TEST 10 — #158 item 0. THE FIELD ARRIVES IN A CALL THE SCAN ALREADY MAKES.
+ *
+ * ⛔ THIS TEST EXISTS BECAUSE THE PRODUCT MADE A FALSE NEGATIVE CLAIM ABOUT
+ * ITSELF. `measurement.ts` asserted, unqualified, that a child page enumerated
+ * from its parent's block listing has no response carrying its
+ * `last_edited_time`. `GET /v1/blocks/{block_id}/children` returns block
+ * objects, a full block object carries `last_edited_time`, and a `child_page`
+ * is a block object — so the response exists and the scan already receives it.
+ * The field was discarded at THIS TOOL'S OWN TYPE BOUNDARY, `BlockListResponse.
+ * results: unknown[]`, and the report then named a vendor-shaped obstacle for a
+ * figure it already held. That is the exact defect this product exists to detect
+ * and it was committing it.
+ *
+ * ⚠ WHAT THE LICENCE COVERS AND WHAT IT DOES NOT. Whether the block's timestamp
+ * IS the page's is an EMPIRICAL finding at n=1 with the vendor silent —
+ * `docs/proof/results-block-vs-page-timestamp.md`, pre-registered at `cc0eb1c`
+ * before any data existed, four runs, moved together on every content-only edit
+ * and equal at every measurement. It is never a documented guarantee, the
+ * partial-block-object case was not forced, and the API truncates the value to
+ * the MINUTE (24 of 24 observed), so nothing may order edits below that
+ * resolution. Every one of those limits is asserted below, because a licence
+ * that travels only in a comment does not travel.
+ * ========================================================================= */
+
+head('TEST 10 — a resource enumerated from the block listing gets its edit age');
+
+const rBlk = await scan({ config: cfg(ROOT, 0.0), port: fakePort(BLOCK_TIMES), now: clock() });
+const blkEdited = rBlk.measurements.find(m => m.id === MEASUREMENT_IDS.lastEdited);
+
+check('the last-edited measurement is computed on this fixture', blkEdited?.computed, true);
+
+const blkRows = blkEdited?.computed ? blkEdited.rows : [];
+
+/* THE SUBJECT IS GUARDED BEFORE ANYTHING IS ASSERTED ABOUT IT. An empty row set
+ * would make every `every()` below vacuously true — the family of failure this
+ * suite already records under `x.includes('')`. */
+check('  and it produced rows, so the assertions below are not over an empty set',
+  blkRows.length > 0, true);
+
+/* ⛔ THE COUNT IS THE WHOLE POINT AND IT IS THREE, NOT ONE. Before this ticket
+ * only the declared root had a retrieve, so this table had exactly one row on
+ * this shape of fixture. PAGE_A and DATASET are enumerated and never retrieved,
+ * and both now carry a timestamp that came from the parent's listing. */
+check('  one row per resource whose timestamp was observed, from EITHER provenance',
+  blkRows.map(x => x.resource).sort().join(' '),
+  [hyphenate(ROOT), hyphenate(PAGE_A), hyphenate(DATASET)].sort().join(' '));
+
+/* ⛔ PAGE_B IS THE PARTIAL-OBJECT CONTROL. Its block carried no
+ * `last_edited_time`, which is the case Notion does not document and which the
+ * live probe never forced. It must produce NO row rather than a null, a blank or
+ * an invented instant — and the denominator below is what keeps its absence
+ * visible instead of letting the three rows read as the whole reached set. */
+check('  a block object that carried NO timestamp produces no row at all',
+  blkRows.some(x => x.resource === hyphenate(PAGE_B)), false);
+
+head('TEST 10a — every row states WHERE its timestamp came from');
+
+/* ⛔ PROVENANCE IS NOT DECORATION HERE. A retrieve-sourced timestamp is the
+ * page's own, documented and unqualified. A block-listing-sourced one is the
+ * page's only under an n=1 empirical finding the vendor has never promised. Two
+ * different epistemic statuses printed in one column, and a reader cannot tell
+ * them apart unless the row says which it is. */
+check('every row names its provenance', blkRows.every(x => /from (its own retrieve|the parent's block listing)/.test(x.value)), true);
+check('  the retrieved root says so',
+  blkRows.find(x => x.resource === hyphenate(ROOT))?.value.includes('its own retrieve'), true);
+check('  and the enumerated child says the listing',
+  blkRows.find(x => x.resource === hyphenate(PAGE_A))?.value.includes("the parent's block listing"), true);
+check('  both provenances are actually present, so neither branch is unrun',
+  new Set(blkRows.map(x => /its own retrieve/.test(x.value) ? 'retrieve' : 'listing')).size, 2);
+
+head('TEST 10b — the licence travels with the figure, once, and cites its receipt');
+
+const blkOver = blkEdited?.computed ? blkEdited.over : '';
+
+check('the over line is non-empty', blkOver.length > 0, true);
+/* A LOCATOR A THIRD PARTY CAN FOLLOW. The project's citation standard: a claim
+ * carries a file plus a section, a URL plus a fetch date, or a commit SHA. */
+check('  it cites the proof file by path', blkOver.includes('docs/proof/results-block-vs-page-timestamp.md'), true);
+check('  it states the observation count rather than implying a guarantee', /n=1/.test(blkOver), true);
+check('  it records that the vendor never promised this', /vendor silent|vendor (has )?never/i.test(blkOver), true);
+check('  and it names the minute truncation, so nothing downstream orders edits below it',
+  /minute/i.test(blkOver), true);
+/* ⛔ THE DENOMINATOR SURVIVES THE WIDENING. It is the only thing standing
+ * between three rows and a reader taking them for the whole reached set, and a
+ * ticket that adds rows is exactly when it is most likely to be dropped. */
+check('  and the denominator still prints both numbers',
+  /3 of 4 reached resource\(s\)/.test(blkOver), true);
+
+head('TEST 10c — the false sentence is GONE from every emitter');
+
+const blkTerm = renderReport(rBlk, {}).join('\n');
+const blkMd = renderMarkdown(buildReportDocument(rBlk, {}));
+
+check('the rendered report is non-empty, so this is not vacuous', blkTerm.length > 0, true);
+/* ⛔ THE CLAIM UNDER TEST IS THE UNQUALIFIED NEGATIVE, and it is asserted over
+ * BOTH emitters because a sentence deleted in one renderer and left in another
+ * is this repository's oldest failure shape. Note this is a NEGATIVE about our
+ * own code path, not about Notion — no negation marker is owed. */
+check('  no emitter claims a response carrying last_edited_time does not exist',
+  /no response carrying (its|a database's) last_edited_time exists/.test(blkTerm + blkMd), false);
+console.log('  ^ the sentence was true of GET /v1/pages and false of the scan as a whole,');
+console.log('    because GET /v1/blocks/{id}/children was already returning the field.');
 
 finish('A measurement is a counted fact. It makes no conformity claim, and ADR-0017 decision 4 gives it no channel to the exit byte — not even a rule-level one, because it owns no rule ID.');
