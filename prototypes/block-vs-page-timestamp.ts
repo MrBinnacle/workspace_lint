@@ -19,6 +19,20 @@
  * The token is read from .env by this process and is NEVER printed. Every line of output
  * passes through scrub() before it reaches stdout, and the SDK is constructed with
  * logLevel 'error' because its own warn logger bypasses application redaction.
+ *
+ * ── RUN 1 (2026-08-23) WAS VOID. Two instrument defects, both fixed here; NO
+ * prediction and NO decision-table row was changed, and none may be. ──
+ *
+ *   1. RESOLUTION. The wait was 2500ms under a comment asserting second-granularity.
+ *      The API truncates last_edited_time to the MINUTE, so edit 1 landed in the
+ *      creation minute and could not move the page timestamp while edit 2 crossed a
+ *      boundary and did. P4 read that as nondeterminism. See PRE_EDIT_MS.
+ *   2. ROLLBACK. It sent `archived: true`, which API version 2026-03-11 rejects, and
+ *      left the scratch page live in the workspace. It is `in_trash`. The orphan was
+ *      removed with prototypes/trash-page.ts and verified by read-back.
+ *
+ * A run whose rollback fails is an instrument failure under P5 and its page must be
+ * removed before anything else runs.
  */
 
 import { Client } from '@notionhq/client';
@@ -64,8 +78,35 @@ const notion = new Client({
 
 const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
 
-/** Notion timestamps are second-granularity. Wait past it so a moved value is visible. */
+/** How long to wait after a write before reading, for the write to propagate.
+ *  This is NOT the resolution wait — see PRE_EDIT_MS. */
 const SETTLE_MS = 2500;
+
+/** ⛔ THE RESOLUTION WAIT, and run 1's defect.
+ *
+ * Run 1 (2026-08-23) set a single 2500ms wait under a comment asserting "Notion
+ * timestamps are second-granularity". That is FALSE. Every one of run 1's six
+ * observed values ended `:00.000Z` — the API truncates last_edited_time to the
+ * MINUTE. The vendor does not say so; /reference/page (fetched 2026-08-23) is
+ * silent on precision and its own example reads "2020-03-17T19:10:04.968Z",
+ * which implies milliseconds and is misleading.
+ *
+ * The consequence: edit 1 landed in the SAME minute as page creation, so the
+ * page timestamp could not move, while edit 2 crossed a boundary and moved.
+ * P4 scored the two edits as disagreeing and reported nondeterminism. It was
+ * the instrument's resolution, not the API's behaviour.
+ *
+ * The fix is a wait BEFORE each edit, not after it. What must differ is the
+ * minute of the PREVIOUS edit event and the minute of the NEXT one; waiting
+ * after an edit and before the read cannot change either. Any wait >= 60s
+ * crosses at least one minute boundary; 70s carries margin for clock skew and
+ * for the append call's own latency.
+ */
+const PRE_EDIT_MS = 70_000;
+
+/** Does this timestamp look minute-truncated? Recorded per observation so the run
+ *  EVIDENCES the resolution finding instead of the results file asserting it. */
+const isMinuteTruncated = (ts: string | null) => !!ts && /:00\.000Z$/.test(ts);
 
 function hyphenate(id: string): string {
   const h = id.replace(/-/g, '');
@@ -177,6 +218,14 @@ async function main() {
 
     /* -- 3+4. edit content, re-measure. Twice (P4). --------------------- */
     for (const n of [1, 2]) {
+      /* Cross a minute boundary BEFORE editing, so this edit event falls in a
+       * different truncated minute from the previous one. Without this the page
+       * timestamp cannot move and P3's precondition is unobservable — run 1's
+       * defect exactly. See PRE_EDIT_MS. */
+      say('');
+      say(`waiting ${PRE_EDIT_MS / 1000}s to cross a minute boundary before edit ${n}...`);
+      await sleep(PRE_EDIT_MS);
+
       await notion.blocks.children.append({
         block_id: pageId,
         children: [{
@@ -203,7 +252,13 @@ async function main() {
     say('');
     say('ROLLBACK (P5)');
     try {
-      await notion.pages.update({ page_id: pageId, archived: true } as any);
+      /* ⚠ `in_trash`, NEVER `archived`. Run 1 sent `archived: true` and API version
+       * 2026-03-11 rejected it at validation — "body.archived should be not present,
+       * instead was `true`" — which left the scratch page LIVE in the workspace and
+       * needed a hand removal. The SDK marks `archived` deprecated in favour of
+       * `in_trash` (v5.25.2, api-endpoints/pages.d.ts:526). The read-back below was
+       * never the problem: it already tested both fields. Only the write was wrong. */
+      await notion.pages.update({ page_id: pageId, in_trash: true } as any);
       const back: any = await notion.pages.retrieve({ page_id: pageId });
       rolledBack = back?.archived === true || back?.in_trash === true;
       say(`  archived: ${rolledBack ? 'VERIFIED by read-back' : 'NOT VERIFIED — REMOVE BY HAND'}`);
@@ -229,6 +284,17 @@ async function main() {
   say(`  t0  page=${t0.page}  block=${t0.block}`);
   say(`  t1  page=${t1.page}  block=${t1.block}`);
   say(`  t2  page=${t2.page}  block=${t2.block}`);
+  say('');
+
+  /* Resolution, recorded as an observation rather than assumed by the wait constant.
+   * Run 1 assumed seconds, waited 2500ms, and produced a false nondeterminism verdict. */
+  const stamps = [t0.page, t0.block, t1.page, t1.block, t2.page, t2.block];
+  const truncated = stamps.filter(isMinuteTruncated).length;
+  say('=== RESOLUTION (not a registered prediction — instrument evidence) ===');
+  say(`  values ending :00.000Z : ${truncated} of ${stamps.length}`);
+  say(`  reading: ${truncated === stamps.length
+    ? 'every value is minute-truncated. Sub-minute waits cannot resolve a move.'
+    : 'NOT all values are minute-truncated — the run-1 resolution finding does not reproduce.'}`);
   say('');
 
   const p1 = t0.blockKeys.includes('last_edited_time');
