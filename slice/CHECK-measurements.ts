@@ -26,7 +26,7 @@ import { buildReportDocument, renderJson, renderMarkdown, renderReport } from '.
 import { measurementsFrom, totalIsReconstructible, MEASUREMENT_IDS, type Measurement } from './measurement.js';
 import { LINK_NOT_CAPTURED } from './finding.js';
 import { hyphenate } from './ids.js';
-import { ROOT, PAGE_A, PAGE_B, DATASET, DATASET_B, BLOCK_TIMES, cfg, clock, fakePort, DEAD_LINK, INBOUND_REFS, INBOUND_REFS_PLUS_EXTERNAL, THREE_CHILDREN, TITLED_URL, TITLE_IN_URL } from './CHECK-fakes.js';
+import { ROOT, PAGE_A, PAGE_B, DATASET, DATASET_B, BLOCK_TIMES, DB_SCHEMA, cfg, clock, fakePort, DEAD_LINK, INBOUND_REFS, INBOUND_REFS_PLUS_EXTERNAL, THREE_CHILDREN, TITLED_URL, TITLE_IN_URL } from './CHECK-fakes.js';
 
 const { check, head, finish } = createHarness();
 
@@ -591,34 +591,154 @@ check('the fixture really did reach data sources, so this is not a vacuous pass'
 const typed = rDb.measurements.find(m => m.id === MEASUREMENT_IDS.databaseTypedProperties);
 const views = rDb.measurements.find(m => m.id === MEASUREMENT_IDS.databaseViews);
 
+/* ⛔ THIS FIXTURE'S DATABASES ANSWER NO SCHEMA AND NO VIEW CALL, so both
+ * counters land on the NOT-READ branch — and that is now a DIFFERENT branch from
+ * the one this test used to exercise. Before #158 item 1 the port had no such
+ * methods and the honest word was "not computed". The calls are made now, so a
+ * line still saying "not computed" would be false about this build: item 4 of
+ * the ticket is exactly this distinction, and it is asserted rather than
+ * described. */
 check('the typed-property measurement is present', typed !== undefined, true);
-check('  and is NOT computed on this build', typed?.computed, false);
+check('  and is NOT computed on this fixture, whose data sources answer no schema call', typed?.computed, false);
 check('  its cause is non-empty, so the assertions below are not vacuously true',
   typed && !typed.computed ? typed.cause.length > 0 : false, true);
-check('  the cause names the SCHEMA endpoint that would supply the counts',
+check('  the cause says NOT READ, because the call WAS made — item 4',
+  typed && !typed.computed ? typed.cause.startsWith('NOT READ') : false, true);
+check('    and does not claim the call was never made',
+  typed && !typed.computed ? /^NOT COMPUTED/.test(typed.cause) : false, false);
+check('  the cause names the SCHEMA endpoint the counts are read off',
   typed && !typed.computed ? typed.cause.includes('GET /v1/data_sources/{data_source_id}') : false, true);
-check('  and the traversal endpoint that would reach it',
+check('  and the traversal endpoint that reaches it',
   typed && !typed.computed ? typed.cause.includes('GET /v1/databases/{id}') : false, true);
+/* ⛔ ITEM 5. BOTH ARE AUTHORIZED GETs, so this line must not read like the
+ * people line, which needs an operator. A reader who cannot tell them apart
+ * cannot act on either. */
+check('  and it states that neither call is a grant problem — item 5',
+  typed && !typed.computed ? /never a grant problem/.test(typed.cause) : false, true);
+check('    so it does NOT carry the ungranted marker',
+  typed && !typed.computed ? /\[BLOCKED/.test(typed.cause) : false, false);
 
 check('the view measurement is present', views !== undefined, true);
-check('  and is NOT computed on this build', views?.computed, false);
+check('  and is NOT computed on this fixture', views?.computed, false);
 check('  the cause names GET /v1/views — the vendor question is DISCHARGED, not open',
   views && !views.computed ? views.cause.includes('GET /v1/views') : false, true);
 
 /* ⛔ THE HONEST HALF, AND THE ONE MOST EASILY GOT WRONG. `docs/vendor/list-views.md`
  * (fetched 2026-08-19) records that read-content capability — which a read-only
- * integration already holds — is sufficient for GET /v1/views. So the missing
- * thing is the CALL, not the grant, and a cause blaming the credential would be
- * a false claim about the operator's own token. */
-check('  and it blames the missing CALL, never the grant',
-  views && !views.computed ? /not the grant/.test(views.cause) : false, true);
+ * integration already holds — is sufficient for GET /v1/views. A cause blaming
+ * the credential would be a false claim about the operator's own token. */
+check('  and it never blames the grant',
+  views && !views.computed ? /never a grant problem/.test(views.cause) : false, true);
 check('  the grant is not falsely implicated anywhere in it',
   views && !views.computed ? /(insufficient|lacks?|denied) (permission|capability|grant)/i.test(views.cause) : true, false);
+/* ⛔ AND IT QUOTES ITS OWN CALL'S FAILURE, NOT THE DATABASE RETRIEVE'S. Both
+ * boundary causes read `db.cause ?? db.viewCause`, so this line reported the
+ * database retrieve failing — an obstacle that is not its own. `GET /v1/views`
+ * takes the database id as a query parameter and is asked for even after the
+ * retrieve fails, precisely because they are two calls with two failure modes.
+ * Quoting one under the other's heading reports one obstacle as two and points
+ * the operator at the wrong remedy. */
+check('  and it quotes the VIEW listing\'s own failure, not the database retrieve\'s',
+  views && !views.computed ? /view listing failed/.test(views.cause) : false, true);
+check('    so it does not blame the database retrieve, which is the other line\'s obstacle',
+  views && !views.computed ? /the database retrieve failed/.test(views.cause) : false, false);
+check('  while the SCHEMA line does quote the database retrieve, because that IS its obstacle',
+  typed && !typed.computed ? /the database retrieve failed/.test(typed.cause) : false, true);
 
-/* THE CAUSE IS SCOPED TO WHAT WAS ACTUALLY REACHED, so "not computed" is an
+/* THE CAUSE IS SCOPED TO WHAT WAS ACTUALLY REACHED, so the boundary is an
  * observation about this scan rather than a standing disclaimer. */
 check('  the cause counts the data sources it is silent about',
   typed && !typed.computed ? /2 data source\(s\) reached/.test(typed.cause) : false, true);
+
+head('TEST 8b — #158 item 1. The two authorized GETs, COMPUTED');
+
+/* ⛔ A SECOND FIXTURE, BECAUSE THE ARM ABOVE CANNOT SHOW THIS ONE. `INBOUND_REFS`
+ * answers no schema call, so every assertion above is about the boundary branch
+ * and NONE of them would fail if the computed branch were never reachable. This
+ * fixture answers both calls, and it is the only thing standing between "the
+ * counters compute" and a pair of causes that merely read well. */
+const rSchema = await scan({ config: cfg(ROOT, 0.0), port: fakePort(DB_SCHEMA), now: clock() });
+const typedC = rSchema.measurements.find(m => m.id === MEASUREMENT_IDS.databaseTypedProperties);
+const viewsC = rSchema.measurements.find(m => m.id === MEASUREMENT_IDS.databaseViews);
+
+check('the typed-property counter COMPUTES when the schema answers', typedC?.computed, true);
+const typedRows = typedC?.computed ? typedC.rows : [];
+check('  and it produced rows, so nothing below is over an empty set', typedRows.length, 2);
+
+/* ⛔ THE FIXTURE IS TWO relations, ONE rollup AND ONE formula, SO THE COUNT IS 4
+ * — AND THE ASYMMETRY IS THE CONTROL. With one column per type the answer is 3,
+ * which is also the number of types and also (types x schemas); a hand-run
+ * mutation replacing the type lookup with "one per type per schema" produced 3
+ * and this assertion passed straight through it, leaving the forced-zero test in
+ * TEST 8c to kill it. That is a mutation caught by the wrong mechanism. Four is
+ * a number no other reading of this fixture yields.
+ *
+ * ⚠ ASSERTED AS A LITERAL, never recomputed from the fixture: a check that
+ * re-derives its expectation from the same data the code reads is a restatement
+ * and not a control. */
+const datasetRow = typedRows.find(x => x.resource === hyphenate(DATASET));
+check('  the mixed schema counts 4 of its 7 columns', datasetRow?.numeric, 4);
+check('    and the row prints the per-type breakdown, so the 4 is reconstructible',
+  /relation: 2, rollup: 1, formula: 1/.test(datasetRow?.value ?? ''), true);
+/* ⛔ THE DENOMINATOR IS EVERY COLUMN, INCLUDING THE ONE WHOSE `type` THE
+ * RESPONSE DID NOT CARRY. Dropping an unreadable config would shrink the
+ * denominator to match what this code can name — the 2/2-over-three-children
+ * defect (results-ref001-live.md section 3) in a new place. */
+check('    and the denominator counts all seven columns, unreadable config included',
+  /of 7 column\(s\)/.test(datasetRow?.value ?? ''), true);
+
+check('the view counter COMPUTES when the listing answers', viewsC?.computed, true);
+const viewRows = viewsC?.computed ? viewsC.rows : [];
+check('  one row per database whose listing was read to completion', viewRows.length, 2);
+check('  the three-view database reads 3',
+  viewRows.find(x => x.resource === hyphenate(DATASET))?.numeric, 3);
+check('  and the total is the sum of the rows printed beside it',
+  viewsC?.computed ? viewsC.total : 'no total', 4);
+check('  which the reconstructibility predicate agrees with',
+  viewsC ? totalIsReconstructible(viewsC) : false, true);
+
+head('TEST 8c — #158 item 2. A FORCED value is not rendered as an observed one');
+
+/* ⛔ `DATASET_B`'s SCHEMA DECLARES NO COLUMNS, so its relation/rollup/formula
+ * count can only be 0. That zero is arithmetic, not an observation about how
+ * this database is maintained, and the run-2 read found four of five reports
+ * printing exactly this shape — figures that could not have come out any other
+ * way, sorted and totalled in the furniture of a distribution. */
+const forcedRow = typedRows.find(x => x.resource === hyphenate(DATASET_B));
+check('the empty-schema row exists and reads zero', forcedRow?.numeric, 0);
+check('  and it is MARKED forced', (forcedRow?.forced ?? '').length > 0, true);
+check('    naming why it could not have varied',
+  /no columns at all/.test(forcedRow?.forced ?? ''), true);
+/* ⛔ THE CONTRAST IS THE CONTROL. A fixture where every row is forced could not
+ * show that the marker discriminates — it would be indistinguishable from a
+ * derivation that marks everything. */
+check('  while the row that COULD have varied is not marked',
+  datasetRow?.forced, undefined);
+
+head('TEST 8d — the forced marker reaches the reader in both text emitters');
+
+const schemaTerm = renderReport(rSchema, {}).join('\n');
+const schemaMd = renderMarkdown(buildReportDocument(rSchema, {}));
+
+check('the terminal report is non-empty, so this is not vacuous', schemaTerm.length > 0, true);
+check('  the terminal emitter prints the forced marker', schemaTerm.includes('no columns at all'), true);
+/* ⛔ ASSERTED OVER BOTH, because an emitter that keeps a qualifier while another
+ * drops it is this repository's oldest failure shape and has now shipped in
+ * three sections. */
+check('  and so does the Markdown emitter', schemaMd.includes('no columns at all'), true);
+check('  the Markdown table carries a column for it rather than a trailing sentence',
+  /\| Resource \| Value \| Could vary\? \| Link \|/.test(schemaMd), true);
+
+/* ⛔ PER ROW, NOT PER DOCUMENT. A document-wide regex would pass on output where
+ * the qualifier sits anywhere at all, which is the defect
+ * `document-scoped-regex-defeats-a-per-row-claim` records: the negative
+ * lookahead spans the rest of the document, so a qualifier four sections later
+ * satisfies it. The rows are split on the separator the format actually uses. */
+const mdRows = schemaMd.split('\n').filter(l => l.startsWith('| `') && l.includes(hyphenate(DATASET_B) ?? ''));
+check('  the forced row was actually located in the Markdown, so the next check is not vacuous',
+  mdRows.length > 0, true);
+check('    and the marker is on that ROW, not merely somewhere in the document',
+  mdRows.some(l => l.includes('no columns at all')), true);
 
 head('TEST 9 — #145. The owner signal names the ROW endpoint it does not have');
 
@@ -629,14 +749,33 @@ check('  and is NOT computed on this build', people?.computed, false);
 check('  its cause is non-empty', people && !people.computed ? people.cause.length > 0 : false, true);
 check('  the cause names the ROW endpoint, which is the one that is missing',
   people && !people.computed ? people.cause.includes('POST /v1/data_sources/{data_source_id}/query') : false, true);
-check('  and the SCHEMA endpoint, where the property TYPE would come from',
-  people && !people.computed ? people.cause.includes('GET /v1/data_sources/{data_source_id}') : false, true);
-/* ⚠ THE TWO ENDPOINTS HAVE DIFFERENT REMEDIES AND THE CAUSE MUST NOT FLATTEN
- * THEM. The schema endpoint is authorized; the row endpoint is a POST whose
- * addition is an ASK FIRST decision that has not been granted. An operator told
- * only "not computed" would reach for the wrong one. */
+/* ⛔ THE SCHEMA HALF IS DONE SINCE #158 ITEM 1 AND THE CAUSE MUST STOP CLAIMING
+ * OTHERWISE. It used to name GET /v1/data_sources/{data_source_id} as missing
+ * alongside the POST; that GET is now made on every reached database, so naming
+ * it as an obstacle would be this product reporting a boundary it no longer has
+ * — the defect class it exists to detect. */
+check('  and it reports the property TYPES as IN HAND rather than missing',
+  people && !people.computed ? /types are in hand/i.test(people.cause) : false, true);
+/* ⚠ THE TWO HALVES HAVE DIFFERENT REMEDIES AND THE CAUSE MUST NOT FLATTEN THEM.
+ * The schema is read; the rows need a POST whose addition is an ASK FIRST
+ * decision that has not been granted. An operator told only "not computed"
+ * reaches for the wrong one. */
 check('  and it records that the ROW endpoint is ungranted, not merely uncalled',
   people && !people.computed ? /not been granted/i.test(people.cause) : false, true);
+/* ⛔ ITEM 5, AND THIS IS THE LINE THE MARKER EXISTS FOR. Every other boundary in
+ * this section is one authorized GET away and has been built; this one needs an
+ * operator. The marker leads the line so the difference is findable rather than
+ * buried three clauses in. */
+check('  the ungranted marker LEADS the line, so the lever is the first thing read',
+  people && !people.computed ? people.cause.startsWith('[BLOCKED') : false, true);
+check('    and it leads the one-line blocker too',
+  people && !people.computed ? people.blocker.startsWith('[BLOCKED') : false, true);
+/* ⛔ THE MARKER MUST DISCRIMINATE. If it appeared on the authorized-GET lines
+ * as well it would carry no information, which is the tautological-assertion
+ * family this suite already records: a marker true of everything asserts
+ * nothing about anything. */
+check('    while NO other measurement carries it, so the marker discriminates',
+  rDb.measurements.filter(m => !m.computed && m.cause.startsWith('[BLOCKED')).length, 1);
 
 /* #145 AC3: the type is the only selector. Principle 4 forbids inferring meaning
  * from a label, and "Owner" is a label. */
@@ -667,6 +806,53 @@ check('  and into the JSON artifact', /"cause"/.test(dbJson), true);
 console.log('  ^ ADR-0017 decision 5: a quiet report and an absent report look identical.');
 console.log('    Baca et al. (10.1002/spe.2109) — an expired licence stopped a tool analysing');
 console.log('    and nobody noticed. Every boundary here is printed, with the endpoint named.');
+
+head('TEST 9c — #158 item 6. The boundary prose MOVED to DISCLOSURES, and was not deleted');
+
+/* ⛔ THE MEASURE OF THIS TICKET'S ITEM 6 IS A RATIO, NOT A VIBE. The section
+ * spent roughly a thousand characters of prose per rendered figure, on every run
+ * and per root, and three of four SME seats binned that density as noise between
+ * the reader and the numbers (docs/proof/dispositions-run2.md). The acceptance
+ * criterion is stated as arithmetic on the ticket: a run whose counters are all
+ * uncomputed must not spend more characters explaining that than the rest of the
+ * report spends reporting. */
+const boundaryLine = dbTerm.split('\n').filter(l => l.includes('not computed —'));
+check('the boundary lines were located, so the length check below is not vacuous',
+  boundaryLine.length >= 3, true);
+/* A ONE-LINE BLOCKER, not a paragraph. The bound is generous on purpose: it is
+ * a guard against the thousand-character paragraph coming back, not a style
+ * rule, and a tight bound would fail on an honest cause. */
+check('  every one of them fits on a line rather than being a paragraph',
+  boundaryLine.every(l => l.length < 260), true);
+check('  and each still names the lever, so the short form is not a shrug',
+  boundaryLine.every(l => /NOT READ|NOT COMPUTED|\[BLOCKED/.test(l)), true);
+
+/* ⛔ MOVED, NEVER DELETED — the half that makes this safe. ADR-0017 decision 5
+ * is unchanged and still binding: a quiet report and an absent report look
+ * identical. The full text with its endpoints and vendor citations must still be
+ * in the document, and a reader must be told where. */
+check('  the full text is still in the document, in DISCLOSURES',
+  /MEASUREMENT BOUNDARIES/.test(dbTerm), true);
+check('    with the endpoint that would widen it, at full length',
+  /POST \/v1\/data_sources\/\{data_source_id\}\/query/.test(dbTerm), true);
+check('    and the vendor citation that backs it',
+  /docs\/vendor\/data-source-endpoints\.md/.test(dbTerm), true);
+check('  and the short line points the reader there',
+  /full boundary, with endpoints and citations/i.test(dbTerm), true);
+/* ⛔ BOTH TEXT EMITTERS, for the reason every other cross-emitter assertion in
+ * this suite exists: one renderer relocating the prose while another keeps it is
+ * the divergence this repository has shipped three times. */
+check('  the Markdown emitter relocated it too, rather than keeping the long form',
+  /Full boundary, with endpoints and citations/i.test(dbMd), true);
+check('    and still carries the full text under Disclosures',
+  /MEASUREMENT BOUNDARIES/.test(dbMd), true);
+
+/* ⛔ THE JSON ARTIFACT KEEPS BOTH FIELDS AND LOSES NEITHER. A consumer reading
+ * the artifact rather than the page must be able to get the full cause, and a
+ * relocation in the text emitters that silently dropped it from the data would
+ * be a worse loss than the density it fixed. */
+check('  the JSON artifact still carries the full cause', /"cause"/.test(dbJson), true);
+check('    and the one-line blocker beside it', /"blocker"/.test(dbJson), true);
 
 /* =========================================================================
  * TEST 10 — #158 item 0. THE FIELD ARRIVES IN A CALL THE SCAN ALREADY MAKES.

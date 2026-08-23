@@ -304,6 +304,66 @@ export type Entry = {
    * `mark` below.
    */
   lastEditedSource: 'retrieve' | 'block-listing' | null;
+  /**
+   * What the two authorized GETs observed about this database — #158 item 1.
+   *
+   * NULL FOR EVERY RESOURCE THAT IS NOT A REACHED DATABASE, and null is not a
+   * zero: it means no schema call and no view call were made about this entry,
+   * which is the correct state for a page. `DbFacts` distinguishes "asked and
+   * got nothing" from "never asked" inside itself, because those are the two
+   * readings #158 item 4 exists to keep apart.
+   *
+   * ⛔ IT IS NOT AN ENUMERATION AND DOES NOT DISCHARGE THE DATA-SOURCE GAP.
+   * Reading a schema tells the scan what the COLUMNS are; the ROWS are still
+   * unenumerated, still outside every rule's judgement, and still a named gap in
+   * the funnel. Letting a schema read close that gap would be the applicability
+   * filter #50 forbids — the ratio would rise because the tool learned
+   * something, which makes every denominator a function of build state.
+   */
+  db: DbFacts | null;
+};
+
+/**
+ * ⛔ THE COUNTS ARE FACTS ABOUT THE SCHEMA, NEVER ABOUT THE ROWS. `GET
+ * /v1/data_sources/{data_source_id}` returns "information that describes the
+ * structure and columns of a data source" (`docs/vendor/data-source-endpoints.md`
+ * §1, fetched 2026-08-19). Nothing here counts a page, a row or an empty value:
+ * that needs `POST /v1/data_sources/{id}/query`, which is ask-first and
+ * ungranted, and is not on `NotionPort`.
+ */
+export type DbFacts = {
+  /**
+   * Data-source IDs the database retrieve named. NULL means that call did not
+   * succeed, and `cause` says why — distinct from `[]`, a database the API
+   * says has no data sources.
+   */
+  dataSourceIds: string[] | null;
+  /** Schemas actually read, one per data source whose own retrieve succeeded. */
+  schemas: Array<{
+    id: string;
+    /** Property config `type` → how many columns carry it. Nothing else is read off a config. */
+    types: Record<string, number>;
+    /** How many columns the schema declared, so the type counts have a denominator. */
+    properties: number;
+    /**
+     * The NAMES of the people-type columns — #145's schema half.
+     *
+     * ⛔ SELECTED BY TYPE AND PRINTED AS DATA. Matching a column called "Owner"
+     * would infer meaning from a label, which Principle 4 forbids. The type is
+     * the selector; the name travels beside the count as evidence, never as one.
+     */
+    peopleProperties: string[];
+  }>;
+  /**
+   * Why some part of this is missing, in the run's own words, or null when
+   * nothing was. Never an empty string — an empty subject makes a downstream
+   * `includes()` assertion vacuously true.
+   */
+  cause: string | null;
+  /** Views counted across every page of the listing. NULL means not obtained. */
+  views: number | null;
+  /** Why the view count is null, or null when it is not. */
+  viewCause: string | null;
 };
 
 /**
@@ -338,6 +398,8 @@ export type MarkArgs = {
    * page's own.
    */
   lastEditedSource?: 'retrieve' | 'block-listing';
+  /** Recorded by the site that made the schema and view calls. See Entry.db. */
+  db?: DbFacts;
 };
 
 export class Manifest {
@@ -364,7 +426,7 @@ export class Manifest {
     const slot = Manifest.slot(unit, key);
     const e =
       this.entries.get(slot) ??
-      { key, unit, kind: 'unknown', alias: args.alias || key, safeLabel: args.safeLabel || key, stages: new Set<Stage>(), loss: null, link: null, isRoot: false, ref: null, req: null, unq: null, enumeration: null, lastEditedTime: null, lastEditedSource: null };
+      { key, unit, kind: 'unknown', alias: args.alias || key, safeLabel: args.safeLabel || key, stages: new Set<Stage>(), loss: null, link: null, isRoot: false, ref: null, req: null, unq: null, enumeration: null, lastEditedTime: null, lastEditedSource: null, db: null };
     if (args.kind) e.kind = args.kind;
     if (args.alias) e.alias = args.alias;
     if (args.safeLabel) e.safeLabel = args.safeLabel;
@@ -374,6 +436,7 @@ export class Manifest {
     if (args.req) e.req = args.req;
     if (args.unq) e.unq = args.unq;
     if (args.enumeration) e.enumeration = args.enumeration;
+    if (args.db) e.db = args.db;
     /* ⛔ THE TIMESTAMP AND ITS PROVENANCE ARE ONE WRITE, and a timestamp offered
      * without one is DROPPED rather than stored unlabelled. An unlabelled value
      * would print in the same column as a retrieve-sourced one and claim the

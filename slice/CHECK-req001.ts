@@ -237,7 +237,7 @@ const dataset = await run(REQ_WITH_DATASET, ROOT, 'Owner');
 const datasetPair = pairEntry(dataset, id(DATASET), 'Owner');
 check('a data source under the scope is IN the denominator', datasetPair !== undefined, true);
 check('  as a gap with the named cause, never an applicability filter (#50)',
-  datasetPair?.loss?.cause.startsWith('data-source enumeration is not implemented') ?? false, true);
+  datasetPair?.loss?.cause.startsWith('data-source ROW enumeration is not implemented') ?? false, true);
 check('  so the ratio falls rather than reading 1.0 over what the tool can do',
   `${req001Row(dataset)?.evaluated}/${req001Row(dataset)?.applicable}`, '2/3');
 

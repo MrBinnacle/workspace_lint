@@ -36,9 +36,9 @@
  */
 
 import type { Config, RuleDecl } from './config.js';
-import { attestationOf, BLOCK_CHILDREN, type NotionPort } from './notion-port.js';
+import { attestationOf, BLOCK_CHILDREN, DATABASE_RETRIEVE, DATA_SOURCE_RETRIEVE, DATABASE_VIEWS, type NotionPort } from './notion-port.js';
 import { createObserver, listAllChildren, readBlockTree, type Call, type Observer } from './observed.js';
-import { Manifest, gapsFrom, residualsFrom, RESOURCES, type Enumeration, type Loss, type Residual } from './manifest.js';
+import { Manifest, gapsFrom, residualsFrom, RESOURCES, type DbFacts, type Enumeration, type Loss, type Residual } from './manifest.js';
 import { measurementsFrom, type Measurement } from './measurement.js';
 import { deriveVerdict, type Gap, type Verdict } from './verdict.js';
 import { SYS001 } from './sys001.js';
@@ -50,8 +50,35 @@ import { dedupeReferences, extractReferences, redactHref, type Reference, type T
 import type { Rule } from './rule.js';
 import type { CoverageRow, Finding, Outcome } from './finding.js';
 
+/**
+ * ⚠ THE WORD IS **ROWS**, AND IT WAS "rows and schemas" UNTIL #158 ITEM 1.
+ * Schemas are now read — `GET /v1/databases/{id}` then
+ * `GET /v1/data_sources/{data_source_id}` — so a cause naming them is false.
+ * ⛔ THE GAP ITSELF IS UNCHANGED AND MUST STAY. Reading a schema tells the scan
+ * what the COLUMNS are; the rows beneath remain unenumerated, unjudged by every
+ * rule, and therefore a named gap in the funnel. A schema read closing this gap
+ * would be the applicability filter #50 forbids: the ratio would rise because
+ * the tool learned something, which makes every denominator a function of build
+ * state and lets each new capability RAISE the score.
+ */
 const DATA_SOURCE_CAUSE =
-  'data-source enumeration is not implemented in this slice — rows and schemas are REQ001/UNQ001 concerns, out of scope per spec §1.2';
+  'data-source ROW enumeration is not implemented in this slice — the rows are a REQ001/UNQ001 concern, out of scope per spec §1.2; the column schema IS read (GET /v1/data_sources/{data_source_id}) and feeds the measurements only, which enumerates nothing and closes no gap';
+
+/**
+ * How many requests the measurement calls may spend across one scan.
+ *
+ * ⛔ A DISCLOSED LIMIT, NEVER A SILENT ONE — the discipline `readBlockTree`'s
+ * budget already follows. A database costs one retrieve, one call per data
+ * source it names, and at least one view page; a workspace with many databases
+ * could otherwise turn a report into a traversal. Exhaustion is written into the
+ * facts as a cause and printed, so a reader sees a bounded count rather than a
+ * confident one, and Notion's ~3 req/s ceiling is a resource limit — which
+ * ⛔ MAY NEVER BE REPORTED AS A REFUTATION (SMT-LIB 2.6 makes `unknown` a
+ * first-class answer carrying its cause, and this is that answer).
+ */
+const MEASUREMENT_REQUEST_BUDGET = 30;
+/** Pages of `GET /v1/views` read per database before the count is called bounded. */
+const VIEW_PAGE_BUDGET = 10;
 
 /**
  * What the exit byte was computed on, recorded per run.
@@ -200,6 +227,131 @@ function asChildBlock(b: unknown): ChildBlock | null {
  */
 const blockEditedTime = (b: ChildBlock): string | undefined =>
   typeof b.last_edited_time === 'string' && b.last_edited_time.length > 0 ? b.last_edited_time : undefined;
+
+/**
+ * The two authorized GETs, per reached database — #158 item 1.
+ *
+ * ⛔ THREE CALLS, AND THE FIRST TWO ARE NOT INTERCHANGEABLE. On API version
+ * `2026-03-11` `GET /v1/databases/{id}` returns a `data_sources` LIST and no
+ * property map; the columns come from `GET /v1/data_sources/{data_source_id}`,
+ * once per data source. A future session that "simplifies" this to one call gets
+ * an empty schema and a counter that reads a confident zero — worse than an
+ * error, because a zero prints like an observation.
+ *
+ * ⛔ IT RETURNS FACTS, NOT PROSE, and every partial state is a named field
+ * rather than a sentence a later reader has to parse back. This repository has
+ * twice recovered structure from a cause string and inverted its answer both
+ * times: `dataSourceIds: null` is "the retrieve did not succeed", `[]` is "the
+ * API says there are none", and `views: null` beside a `viewCause` is "not
+ * obtained" rather than "zero views".
+ *
+ * ⛔ NOTHING HERE READS A ROW. `POST /v1/data_sources/{id}/query` is ask-first,
+ * ungranted, and absent from `NotionPort`. Every count below is a fact about
+ * the SCHEMA.
+ */
+async function readDatabaseFacts(
+  port: NotionPort,
+  observer: Observer,
+  databaseId: string,
+  spend: { left: number },
+): Promise<DbFacts> {
+  const facts: DbFacts = { dataSourceIds: null, schemas: [], cause: null, views: null, viewCause: null };
+
+  if (spend.left <= 0) {
+    facts.cause = `measurement request budget of ${MEASUREMENT_REQUEST_BUDGET} exhausted before this database was read — the counts below are unobtained, not zero`;
+    facts.viewCause = facts.cause;
+    return facts;
+  }
+
+  spend.left--;
+  const db = await observer.observe(`${DATABASE_RETRIEVE} ${databaseId}`, () => port.retrieveDatabase(databaseId));
+  if (db.state === 'unreachable') {
+    facts.cause = `the database retrieve failed — ${db.cause}`;
+  } else {
+    /* A reference the API returned without an id is not a data source this scan
+     * can ask about. Dropped here rather than passed on as an empty string,
+     * which would 404 one call later and read as a permission problem. */
+    const ids = (db.value.data_sources ?? []).map(d => d.id).filter((x): x is string => typeof x === 'string' && x.length > 0);
+    facts.dataSourceIds = ids;
+
+    const unread: string[] = [];
+    for (const dsId of ids) {
+      if (spend.left <= 0) { unread.push(dsId); continue; }
+      spend.left--;
+      const ds = await observer.observe(`${DATA_SOURCE_RETRIEVE} ${dsId}`, () => port.retrieveDataSource(dsId));
+      if (ds.state === 'unreachable') { unread.push(dsId); continue; }
+      facts.schemas.push(schemaFactsOf(dsId, ds.value.properties));
+    }
+    if (unread.length > 0)
+      facts.cause = `${unread.length} of ${ids.length} data source(s) named by this database were not read — the counts below are over the ${facts.schemas.length} that were`;
+  }
+
+  /* ⚠ THE VIEW LISTING IS ASKED FOR EVEN WHEN THE DATABASE RETRIEVE FAILED,
+   * because it is a different call with a different failure mode: `GET /v1/views`
+   * takes the DATABASE id as a query parameter and does not depend on the
+   * retrieve having succeeded. Skipping it on the first failure would report one
+   * obstacle as two. */
+  const views = await countViews(port, observer, databaseId, spend);
+  facts.views = views.count;
+  facts.viewCause = views.cause;
+
+  return facts;
+}
+
+/** Every page of `GET /v1/views`, or a named reason the count is not a count. */
+async function countViews(
+  port: NotionPort,
+  observer: Observer,
+  databaseId: string,
+  spend: { left: number },
+): Promise<{ count: number | null; cause: string | null }> {
+  let count = 0;
+  let cursor: string | undefined = undefined;
+
+  for (let pageNo = 0; pageNo < VIEW_PAGE_BUDGET; pageNo++) {
+    if (spend.left <= 0)
+      return { count: null, cause: `measurement request budget of ${MEASUREMENT_REQUEST_BUDGET} exhausted before the view listing was read` };
+    spend.left--;
+    const step = await observer.observe(`${DATABASE_VIEWS} ?database_id=${databaseId}`, () => port.listViews(databaseId, cursor));
+    /* ⛔ A PARTIAL COUNT IS NOT A COUNT. Returning what was read so far would
+     * print a number smaller than the truth in the column a reader compares
+     * across databases, and nothing on the row would say so. Null with a cause
+     * is the honest answer — the same choice `Loss` makes for an enumeration
+     * that died mid-stream. */
+    if (step.state === 'unreachable') return { count: null, cause: `the view listing failed — ${step.cause}` };
+    count += step.value.results.length;
+    if (!step.value.has_more) return { count, cause: null };
+    cursor = step.value.next_cursor ?? undefined;
+  }
+  return { count: null, cause: `the view listing was abandoned after ${VIEW_PAGE_BUDGET} pages — the remaining number of views is unknown` };
+}
+
+/**
+ * The counts one schema supports, read off each property config's `type`.
+ *
+ * ⛔ `type` IS THE ONLY FIELD READ, and the property NAME is never a selector —
+ * Principle 4 forbids inferring meaning from a label, and "Owner" is a label.
+ * The names of the people-type columns travel as DATA beside their count, which
+ * is #145's own rule.
+ */
+function schemaFactsOf(id: string, properties: Record<string, unknown> | undefined): DbFacts['schemas'][number] {
+  const types: Record<string, number> = {};
+  const peopleProperties: string[] = [];
+
+  for (const [name, config] of Object.entries(properties ?? {})) {
+    /* A config whose own `type` the response did not carry is counted under
+     * `unreadable` rather than dropped. Dropping it would shrink the
+     * denominator to match what this code can name, which is the 2/2-over-three-
+     * children defect (results-ref001-live.md §3) in a new place. */
+    const t = typeof config === 'object' && config !== null && typeof (config as { type?: unknown }).type === 'string'
+      ? (config as { type: string }).type
+      : 'unreadable';
+    types[t] = (types[t] ?? 0) + 1;
+    if (t === 'people') peopleProperties.push(name);
+  }
+
+  return { id, types, properties: Object.keys(properties ?? {}).length, peopleProperties };
+}
 
 const titleOf = (b: ChildBlock): string =>
   String(b.child_page?.title ?? b.child_database?.title ?? b.id);
@@ -537,6 +689,13 @@ export async function scan(opts: ScanOptions): Promise<ScanResult> {
   for (const c of children) manifest.mark({ id: c.id, alias: titleOf(c), kind: kindOf(c), stage: 'declared', lastEditedTime: blockEditedTime(c), lastEditedSource: 'block-listing' });
   for (const c of children) manifest.mark({ id: c.id, alias: titleOf(c), kind: kindOf(c), stage: 'resolved' });
 
+  /* ONE BUDGET FOR THE WHOLE SCAN, not one per database. A per-database budget
+   * bounds each row and leaves the report unbounded, which is the shape a
+   * workspace with fifty databases turns into a traversal. Mutable by design:
+   * `readDatabaseFacts` decrements it, and exhaustion becomes a printed cause
+   * rather than a silent stop. */
+  const measurementSpend = { left: MEASUREMENT_REQUEST_BUDGET };
+
   /* -- descend one level -------------------------------------------------- */
   for (const c of children) {
     const alias = titleOf(c);
@@ -558,7 +717,14 @@ export async function scan(opts: ScanOptions): Promise<ScanResult> {
        * CHECK-sys001.ts TEST 10b implements the filter and prices it: the ratio
        * reads 3/3, the byte goes 3 → 0, and the gap SURVIVES in the report while
        * the run exits green. There is no second guard behind this line. */
-      manifest.mark({ id: c.id, alias, stage: 'enumerated', loss: { cause: DATA_SOURCE_CAUSE, bounded: true, target: 'present' } });
+      /* ⛔ THE FACTS ARE READ AND THE GAP STILL STANDS — #158 item 1. The two
+       * authorized GETs answer what the COLUMNS are; the ROWS beneath this
+       * database remain unenumerated and unjudged, so the loss below is
+       * unchanged in kind and in boundedness. It would be very easy to read
+       * "we now call the database endpoint" as discharging this gap, and that
+       * is exactly the applicability filter #50 forbids. */
+      const dbFacts = await readDatabaseFacts(port, observer, c.id, measurementSpend);
+      manifest.mark({ id: c.id, alias, stage: 'enumerated', db: dbFacts, loss: { cause: DATA_SOURCE_CAUSE, bounded: true, target: 'present' } });
       continue;
     }
     /* The label is the ID, NOT the alias. The alias is a page title, the call
