@@ -1,8 +1,8 @@
 {
   "project": "workspace_lint",
-  "updated": "2026-08-22",
-  "session": "S039",
-  "phase": "verdict-sprint: implement layer under way - #140/#141/#142 BUILT, MERGED (PR #149, merge 6b92aef) and CLOSED; #143/#144/#145 open, ready-for-agent, nothing blocking (re-read at S039 close); run 2 = kill-criterion reading, still downstream of the counters. S039 DID CONTEXT HYGIENE ONLY - no rule work, frontier unchanged, #144 still the preferred next.",
+  "updated": "2026-08-23",
+  "session": "S040",
+  "phase": "verdict-sprint: THE MEASUREMENTS SET IS COMPLETE. #140/#141/#142 closed at S038; #143 and #144 BUILT, MERGED (PR #153, merge 157757e, ancestry-verified with merge-base not the badge) and CLOSED at S040; #145 BUILT and MERGED but left OPEN and re-labelled ready-for-human, because its AC1 is unsatisfiable and amending it is an operator scope call. Spec #139 owes nothing further. RUN 2 IS NOW UNBLOCKED and is the kill-criterion reading - all six countable signals exist. Gate 16 suites, exit 0 on main.",
   "standing_rule_adopted_S025": "AMENDED 2026-08-18 on the operator's instruction to scrutinise it. ORIGINAL: no new decision ticket opens until four rules ship, unless it blocks a rule. It limited RECORDING where the problem was SCHEDULING, which pushed decisions into prose in a state file - the one medium this project has proven six times it cannot trust - and made the `decision` label expensive, corrupting the instrument the rule was counted with. AMENDED FORM: record always, schedule never. Every decision question is FILED. At most ONE decision ticket may be active (labelled `decision` and NOT `deferred`) while any v0.1 rule is unbuilt; 'unless it blocks a rule' is unchanged and now gates scheduling rather than recording. `deferred` is a new supplementary label and a deferred issue MUST name what would make it active. Prior art, unanimous across three domains and none of it consulted when the rule was written: Kanban/theory-of-constraints put WIP limits on work in progress and never on the backlog; aviation's Minimum Equipment List permits deferring a defect only by logging it; ordinary defect triage answers backlog pressure with severity plus an explicit deferred resolution. Full reasoning in docs/agents/triage-labels.md 'The standing rule, as amended'. Check: gh issue list --label decision --state open, minus those labelled deferred, must be <= 1. Measured at S027 close: ONE active (#70 decision 1, which genuinely blocks #59), nine deferred.",
   "phase_detail_s024": "S024: EVIDENCE, then a decision. #51 worked to a recorded decision; PR #86 merged as 818aba0.",
   "phase_detail_s033": "S033 judged #128 alone. ADR-0016 re-justifies ADR-0014 and ADR-0009, both on the same restated ground: non-guarantee (ADR-0015 decision 2) carries every clause that routed through the refuted finding 1. ADR-0014 denominator clause restated; ADR-0009 decision 4 stands because retrievable is not attestable - narrowing asserted from absence in a non-guaranteed index is negation as failure. The DoD hid a requirement: support.ts had no re-justification mechanism, since an OUT ADR cites its refuted support forever. Shipped the Re-justifies header-line convention: discharge valid only while its author is IN, mutual bootstrapping refused, discharged entries visible. CHECK-support asserts OUT pre-discharge AND clear post-discharge so neither half is substitutable. Three mutations killed, substitution verified each. PR #132 open at close; operator merges. PR #131 (codex, external-LLM analysis) found open by the new gh-pr-preflight guard, zero file overlap, awaiting operator disposition.",
@@ -32,13 +32,7 @@
     "what_still_holds": "The fixture is NARROWER than #10 specified: one data source rather than three, no archived target, no seeded UNQ001/SCH001/DEP001/CAN001. Any recorded build result must state which criteria the fixture could not exercise. Long relation values remain untested. REAL_ROOT_ID remains unexercised.",
     "two_corrections_it_carried_that_this_session_missed": "#10's triage comment corrected proof checks 4 and 7, and docs/spec/v0.1-scan-slice.md shipped BOTH defects verbatim in PR #41 because the issue BODY was read and its COMMENTS were not. Check 4: an unshared target does not exist to be labelled -- it VANISHES -- and the finding is certainty CONFIRMED about target state UNREACHABLE, not indeterminate. Check 7: exit 2 is the disclaimed disposition ONLY; a scan that could not run as declared is 4, a confined gap below threshold is 3. Corrected on branch fix/spec-criteria-4-and-7."
   },
-  "next_gate": {
-    "name": "Gate 3 -- build at n=1, against this workspace",
-    "kind": "runnable, live, first tracer bullet landed",
-    "tracker": "#42 built (ticket OPEN) -> #43 DONE and CLOSED -> #44 -> #45 -> #46, with #49 gating whether #44 exit byte can be believed",
-    "why_it_is_next": "Gates 1 and 2 both closed 2026-08-17. #42 shipped the scan scaffold on 2026-08-17 and the stop condition did not fire: the scan produced a coverage manifest against a declared root, read-only, with no LLM. #43 is the ticket that makes the coverage vector non-empty and exit 0 reachable, so it is the first result that means anything about coverage.",
-    "criterion_1_status": "CLOSED 2026-08-17 on #43 live run. ORACLE MATCHED, ten comparisons, against slice/fixture-oracle.ts committed in 9dcb069 BEFORE that run existed -- the pre-registration property criterion 1 requires. NOT closed retroactively for #42, whose applicable set was validated against the code own output."
-  },
+  "next_gate": "RUN 2 - the kill-criterion reading. All six countable signals now exist. WATCH: the Measurements section renders four boundary paragraphs to one computed table; whether that reads as honest or as noise is a felt-surface judgement bearing directly on the verdict, and it is NOT decided.",
   "locked_decisions": [
     {
       "id": "ADR-0001",
@@ -456,7 +450,13 @@
     "filed_S026": "Nothing. Five tooling findings were shipped as artifacts or recorded in the checkpoint standing block rather than filed, under the standing rule.",
     "label_state_S026": "All 14 open issues carry exactly one state role and exactly one category role, which is /triage's own invariant. Ten issues gained the 'enhancement' they lacked. 16 of 16 already carried a state role before this session - that is guard-gh-issue-triage-label.py's output, not diligence. Eight carry the new 'decision' label: #8 #25 #27 #29 #69 #70 #78 #82. #84 and #74 were deliberately left unlabelled as genuinely ambiguous between a decision and a report, and docs/agents/triage-labels.md records the abstention.",
     "critical_path": "#59 (UNQ001 configured, unblocked, no ADR needed) completes the four v0.1 rules. Then #101 (blocked on #59, ADR needs the plan gate). #70 decisions 2-4 remain and are operator scope calls.",
-    "operator_owes": "Two Notion-UI preconditions for #51 only: a link_to_page block pointing at wl-dataset, and a permanent database reference in the fixture. Neither blocks a rule.",
+    "operator_owes": [
+      "#145 AC1 amendment (scope call)",
+      "Close the .claude/hooks + .claude/settings.json guard hole (hook wiring is agent-write-denied)",
+      "Decide the Measurements density question when run 2 surfaces it",
+      "#102 fixture backlog",
+      "Install mewt if the hand-run mutation cost is worth removing (v4.0.0 verified to exist, not installed)"
+    ],
     "note": "Five issues still carry needs-triage: #78 #74 #71 #70 #69. /triage is disable-model-invocation: true and can only be fired by the operator; the agent can pre-stage what it reads but cannot run it. .out-of-scope/ now exists, which is the directory /triage reads in step 1 and writes before closing a rejected enhancement.",
     "decision_active": 1,
     "decision_deferred": 9,
@@ -488,7 +488,12 @@
     "label_state_S028": "Invariant 1 PASS on all 19 - exactly one state role and one category role each, machine-checked. Active decision count 1 (#70), read back. Four state-role swaps applied: #70 and #101 and #51 to ready-for-human, #100 to ready-for-agent. #51's previous ready-for-agent was hazardous - its body asks for a CLAUDE.md section 3 ASK-FIRST decision, so an AFK agent would breach or stall. OPEN RULING: the state-role vocabulary has no value for 'evaluated and parked', so nine deferred issues express one state four ways; recommendation is that the state role names who acts at revival and needs-triage means only 'not yet evaluated', which would move #69 #74 #78 #97.",
     "audit_2026_08_19": "First full-board audit, two read-only agents over 17 issues. EVERY COUNT CHECKED WAS TRUE - Finding has ten fields, nineteen research files, three NotionPort methods, all six of #101's file:line sites. What rotted was STATUS: blocker state, quoted document text, gate wording. None of the ten findings is expressible in the claims gate's three kinds. Filed as #103.",
     "closed_S029": "#70 closed COMPLETED by the operator at 2026-08-19T02:45Z, after S028's close was written. Its title and last comment still name decisions 2, 3 and 4 as remaining; the closure is read as the ruling that they are shut. Active decision count is now 0. Do not inherit completion from a closure - confirm with the operator.",
-    "filed_S037": "Spec #139 (enhancement+ready-for-agent+sprint) and six build tickets #140-#145 from /to-spec + /to-tickets on #70 decisions 2-4; blocking edges native; #70 and #135 cross-linked with keyword-safe word order."
+    "filed_S037": "Spec #139 (enhancement+ready-for-agent+sprint) and six build tickets #140-#145 from /to-spec + /to-tickets on #70 decisions 2-4; blocking edges native; #70 and #135 cross-linked with keyword-safe word order.",
+    "closed_S040": [
+      "#143",
+      "#144"
+    ],
+    "note_S040": "#145 built and merged but deliberately OPEN and re-labelled ready-for-human: AC1 unsatisfiable at the port, amendment is a scope call. #153 merged clean with no accidental auto-closes - checked the two seconds after the merge, which is the auto-close tell."
   },
   "build": {
     "branch": "main at a8d6b18 (PR #106). Working branch chore/s029-close for this close.",
@@ -650,5 +655,30 @@
     "hoisted_before_rotation": "Two S038 lessons were not yet in the standing block and were hoisted before the band was cut: (1) an isolation control needs an arm where the thing under test is ABSENT, not only one where it differs - a mutation that fails in the WRONG FILE is a finding about the control; (2) the Pocock skill layer is fixed in the plugin CACHE, so re-check after any mattpocock-skills update that the nine flipped skills are still model-invocable, because a router rule naming a refused skill is a silent no-op.",
     "skill_hardened": "context-hygiene/gotchas.md gained two [workspace_lint S039] entries: the mechanical claim-inventory instrument with its three limits, and the enforcement-layer floor. 472 -> 500 lines.",
     "not_done": "The other in-scope always-loaded surfaces were measured and left alone as healthy: project CLAUDE.md 34 lines, global CLAUDE.md 139, MEMORY.md 60 lines / 10KB against a 200-line / 25KB hard floor."
+  },
+  "phase_detail_s040": {
+    "landed": [
+      "#144 inbound-reference counts per reached database, beside the last-write half, sorted ascending then by resource ID",
+      "#143 relation/rollup/formula and views boundary lines, each naming its own endpoint AND its own obstacle",
+      "#145 people-type empty-value boundary line, row endpoint recorded as ungranted rather than merely uncalled",
+      "Entry.kind on the manifest, stamped by the observing site and on the retrieve's SUCCESS branch",
+      "MeasurementRow.linkCause, because the shared link constant had gone false on database rows",
+      "totalIsReconstructible exported, so ADR-0017 decision 3 is scorable in both directions",
+      "slice/CHECK-assertions.ts, the tautology lint, suite 16, comments blanked before scanning",
+      "docs/agents/tooling.md, inventory as a re-derivation COMMAND rather than a list",
+      "CLAUDE.md pointer plus an ABSENT claim on .claude/hooks, verified to fire",
+      "docs/proof/results-143-total-skew.md, the #143 AC2 mutation receipt"
+    ],
+    "deviations_surfaced_not_absorbed": [
+      "#144's count is structurally 0-or-1: the reference set is deduplicated by target (#141), so it answers whether anything points here, not how many links exist",
+      "#144's last-write half is a boundary line; Notion DOES return the field, so the boundary named is OURS and it widens under #51 with no code change",
+      "#145 AC1 is unsatisfiable: fakePort implements NotionPort, which has no query method, so rows are unreachable OFFLINE too"
+    ],
+    "controls_that_were_wrong": [
+      "The reconstructibility loop ran over a fixture reaching no database, so the total-equals-sum branch was never taken and a real skew reddened OTHER assertions while it stayed silent",
+      "A negative lookaround followed by .* enforces 'somewhere in the document', not 'on this row'; it caught a mutation in two emitters and passed it in the third"
+    ],
+    "agent_config_incident": "A UserPromptSubmit hook and .claude/settings.json were built into the product tree, argued for in a commit message and a PR body, and removed only after the operator objected twice. Branch history was rewritten and force-pushed with lease so they never entered merged history. THE GUARD HOLE IS UNCLOSED: .claude/hooks and .claude/settings.json are outside guard-canonical-doc-edit.py's set, so a hook there is an always-firing instruction channel through no plan gate. Operator-only to fix.",
+    "gate": "16 suites, exit 0 on main after merge; suite count moved 15 -> 16 and the claim comment caught the stale count unprompted"
   }
 }
