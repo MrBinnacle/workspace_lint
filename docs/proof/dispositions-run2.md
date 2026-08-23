@@ -233,6 +233,42 @@ or bin NOISE *because* it is defective.
 with a named cause and enter no ratio. No unattested enumeration was converted into a gap or a
 denominator anywhere in the five reports. ADR-0013 holds on this surface.
 
+**⛔ THE FLAGSHIP COUNTER'S ONE-ROW BEHAVIOUR IS AN INSTRUMENT DEFECT, NOT A SCOPE BOUNDARY.**
+Resolved by vendor fetch after the seats reported and before this file was committed; every
+file:line below was then verified directly at the hub rather than taken from the report.
+
+`slice/measurement.ts:240` states, unqualified, that a child page enumerated from the root's block
+listing has no retrieve *"so no response carrying its `last_edited_time` exists"*, and
+`measurement.ts:302` renders that as the `over` line the reader sees. **The claim is false.**
+`GET /v1/blocks/{block_id}/children` returns block objects, a full block object carries
+`last_edited_time` (`/reference/block`, fetched 2026-08-22), and a `child_page` is a block object.
+**The scan already makes that call.** The field arrives and is thrown away: `listChildren` declares
+`results: unknown[]` (`slice/notion-port.ts:61`).
+
+The precedent for the fix is in the same file, for the sibling method. `notion-port.ts:81-87`
+records that `GET /v1/pages/{id}` "has always returned" `properties` and that the declared return
+type discarded them (#58, #142) — fixed by widening the type, with the reasoning stated there:
+*"Keeping more of one response is not a new endpoint, so … #51's ASK-FIRST precedent for adding an
+endpoint does not apply here."* The same reasoning covers `listChildren`. **No new endpoint, no new
+grant, no ask-first — a type widening.**
+
+Two things this does **not** settle, and neither is a reason to leave a false sentence standing:
+
+- **Whether a block's `last_edited_time` is the same instant as its page's is UNLOCATABLE.**
+  `/reference/block`, `/reference/page`, `/reference/get-block-children` and
+  `/reference/retrieve-a-page` were all fetched (200 OK, 2026-08-22) and all are silent. Vendor
+  prose says *"Pages are also blocks"* and *"you can use the page ID as a block ID"*, which is
+  strong indirect support and is **not** a guarantee. An empirical test — edit a page, diff the two
+  timestamps — would settle it and was not run. **Capturing the field and labelling it the page's
+  edit age are two decisions, and only the first is licensed today.**
+- **When the API returns a partial rather than a full block object is not documented** — a partial
+  carries `object` and `id` only. Not located on any of the pages above. This bounds the fix; it
+  does not rescue the sentence, because one documented case where the field is present refutes an
+  unqualified "no response … exists".
+
+Consequence for scheduling: **three** of the uncomputed counters are unbuilt rather than ungranted,
+and the flagship is the cheapest of the three.
+
 **One claim raised by a seat and REJECTED at the hub after direct verification.** The analyst seat
 reported the last-edited `over` line as "false as written", citing 36/11/76 successful page
 retrieves against a one-row table. Verified directly rather than deferred: the `over` line is
@@ -245,15 +281,6 @@ stand as stated.** What survives is narrower and is recorded as open below.
 
 ## Open, and deliberately not resolved here
 
-- **Does a block-children listing carry a usable page-level timestamp?** ROOT-A's funnel reports
-  `10/20 resources fetched` while the last-edited `over` line reports `1 of 20 … retrieved
-  directly`, both in the resources unit. Whether that is a contradiction turns on whether a
-  `child_page` block's `last_edited_time` is the page's or the block's own — two different objects
-  may legitimately carry the field and mean different things. **If the block timestamp is the
-  page's, the product is declining to compute a figure it already holds and its stated cause is
-  wrong. If it is the block's own, the restraint is correct and printing it would be a
-  measurement-validity defect — the worse error.** Verification is in flight; nothing is asserted
-  either way, and no correction is made to the product or to any document until it returns.
 - **The `2026-07-08` changelog locator for the 10,000 cap may be wrong.** A fresh fetch dates the
   entry `2026-04-20`. The date is asserted in **two** surfaces — `.claude/state/checkpoint.md:407`
   and `docs/vendor/WATCH.md:42`. **Not corrected**, because the verifying fetch covered one
