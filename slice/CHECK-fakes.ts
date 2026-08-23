@@ -22,6 +22,16 @@ export const ROOT = '2d41c2631b5945f196c5688cde44cdf9';
 export const PAGE_A = '3bf1351d6af481108dc5dcc8bffb9742';
 export const PAGE_B = '4ca2462e7bf592219ed6edd9c00ca853';
 export const DATASET = '5db3573f8cf6a332afe7fee0d11db964';
+/**
+ * A SECOND data source, and its whole job is to be the ZERO — #144.
+ *
+ * The inbound-reference measurement's hardest line is the scoped zero, and a
+ * fixture holding one database can never produce one alongside a non-zero: a
+ * single row is consistent with a derivation that always returns the count it
+ * happened to find. Two databases where exactly one is referenced is the
+ * smallest fixture in which a wrong join is visible.
+ */
+export const DATASET_B = '6ec46840cf6a332afe7fee0d11db9642';
 
 export const childPage = (id: string, title: string) => ({ object: 'block', id, type: 'child_page', child_page: { title } });
 export const childDb = (id: string, title: string) => ({ object: 'block', id, type: 'child_database', child_database: { title } });
@@ -322,6 +332,65 @@ export const DB_MENTION: Record<string, FakeResource> = {
     ])],
   },
   [PAGE_B]: { steps: [page([])] },
+};
+
+/**
+ * A database mention, as a reusable block — #144. Same shape `DB_MENTION` uses
+ * inline; extracted so a fixture can point one at a database the scan actually
+ * reached rather than at an unreachable target.
+ */
+export const dbMentionPara = (id: string, databaseId: string) =>
+  ({ object: 'block', id, type: 'paragraph',
+     paragraph: { rich_text: [{ type: 'mention', mention: { type: 'database', database: { id: databaseId } } }] } });
+
+/**
+ * TWO reached data sources, ONE of them referenced — #144.
+ *
+ * `DATASET` is `@`-mentioned from the root's own block content, so it has one
+ * inbound reference in the scan's reference set. `DATASET_B` has none, and is
+ * the fixture's whole point: it drives the SCOPED ZERO, which is the line this
+ * measurement can most easily get wrong. An unscoped "unreferenced" asserted
+ * over a workspace the connection cannot enumerate is negation as failure
+ * (ADR-0002), and only a real zero row can demonstrate the scoped phrasing.
+ *
+ * `PAGE_B` is here so the reached set is not databases alone — a derivation that
+ * forgot to filter by kind would put a page in this table, and a fixture without
+ * one could not catch that.
+ */
+export const INBOUND_REFS: Record<string, FakeResource> = {
+  [ROOT]: {
+    steps: [page([
+      dbMentionPara('block-db-ref', DATASET),
+      childDb(DATASET, 'wl-dataset'),
+      childDb(DATASET_B, 'wl-quiet-dataset'),
+      childPage(PAGE_B, 'wl-revoke-parent'),
+    ])],
+  },
+  [PAGE_B]: { steps: [page([])] },
+  [DATASET]: { steps: [page([])] },
+  [DATASET_B]: { steps: [page([])] },
+};
+
+/**
+ * The SAME two data sources, plus an external link — #144.
+ *
+ * The only difference from `INBOUND_REFS` is one `https://example.com` href, so
+ * any change in the inbound counts between the two fixtures is attributable to
+ * that href and to nothing else. An external reference is not a reference to
+ * anything in this workspace, and letting one raise a count would make the
+ * figure answer a different question than its label claims.
+ */
+export const INBOUND_REFS_PLUS_EXTERNAL: Record<string, FakeResource> = {
+  ...INBOUND_REFS,
+  [ROOT]: {
+    steps: [page([
+      dbMentionPara('block-db-ref', DATASET),
+      linkPara('block-ext', EXTERNAL_LINK),
+      childDb(DATASET, 'wl-dataset'),
+      childDb(DATASET_B, 'wl-quiet-dataset'),
+      childPage(PAGE_B, 'wl-revoke-parent'),
+    ])],
+  },
 };
 
 /* A PAGE mention of a target the connection cannot read. Route A states the

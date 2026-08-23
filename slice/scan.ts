@@ -363,7 +363,11 @@ export async function scan(opts: ScanOptions): Promise<ScanResult> {
   /* -- the declared root -------------------------------------------------- */
   const root = config.roots[0]!;
   const rootAlias = root.alias ?? root.id;
-  manifest.mark({ id: root.id, alias: rootAlias, stage: 'declared', isRoot: true });
+  /* The declared root is retrieved with `GET /v1/pages/{id}`, so this build can
+   * only ever have a page here — a root naming a database would fail that call.
+   * Stamped rather than left `unknown` so the root is positively excluded from
+   * the database table instead of falling out of it by accident. */
+  manifest.mark({ id: root.id, alias: rootAlias, kind: 'page', stage: 'declared', isRoot: true });
 
   const page = await observer.observe('GET /v1/pages/{root}', () => port.retrievePage(root.id));
   if (page.state === 'unreachable') {
@@ -470,8 +474,15 @@ export async function scan(opts: ScanOptions): Promise<ScanResult> {
     childKeys.push(keyOf(c.id));
     resourceKind.set(keyOf(c.id), c.type === 'child_database' ? 'data-source' : 'page');
   }
-  for (const c of children) manifest.mark({ id: c.id, alias: titleOf(c), stage: 'declared' });
-  for (const c of children) manifest.mark({ id: c.id, alias: titleOf(c), stage: 'resolved' });
+  /* THE KIND IS STAMPED HERE, AT THE ONLY SITE THAT KNOWS IT — #144. The block
+   * type in the parent's listing is the sole statement of what this resource is;
+   * nothing downstream can recover it without pattern-matching prose, which this
+   * repository has done twice and been wrong twice. Same fact the local
+   * `resourceKind` map above records for REQ001's scope check, now written into
+   * the manifest so the inbound-reference measurement can select on it. */
+  const kindOf = (c: ChildBlock) => (c.type === 'child_database' ? 'data-source' as const : 'page' as const);
+  for (const c of children) manifest.mark({ id: c.id, alias: titleOf(c), kind: kindOf(c), stage: 'declared' });
+  for (const c of children) manifest.mark({ id: c.id, alias: titleOf(c), kind: kindOf(c), stage: 'resolved' });
 
   /* -- descend one level -------------------------------------------------- */
   for (const c of children) {

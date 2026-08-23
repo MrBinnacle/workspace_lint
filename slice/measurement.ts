@@ -28,6 +28,7 @@
 
 import type { Entry, Manifest } from './manifest.js';
 import { RESOURCES } from './manifest.js';
+import { hyphenate } from './ids.js';
 
 /**
  * One row of a measurement. The unit lives on the Measurement, not here, because
@@ -126,7 +127,51 @@ export type Measurement = {
 /** Every measurement's stable key, in one place so a rename is a visible edit. */
 export const MEASUREMENT_IDS = {
   lastEdited: 'measurement/last-edited@1',
+  inboundReferences: 'measurement/inbound-references@1',
 } as const;
+
+/**
+ * THE SCOPE, SPELLED THE SAME WAY EVERY TIME IT IS PRINTED — #144.
+ *
+ * A zero is scoped or it is not printed (ADR-0017 decision 6). The connection
+ * cannot enumerate its own grant (ADR-0002), so "0 inbound references" asserted
+ * of the workspace is negation as failure; asserted of the scanned set it is a
+ * fact. This is a constant rather than four string literals because the phrasing
+ * IS the guarantee, and a guarantee re-typed at each call site is one typo away
+ * from a row that quietly makes the unscoped claim.
+ */
+const SCANNED_SET = 'from the scanned set';
+
+/**
+ * The last-write half when this build cannot read one, naming OUR boundary.
+ *
+ * ⛔ IT NAMES THE MISSING CALL, NOT A MISSING FACT. Notion returns
+ * `last_edited_time` on a database — the SDK's own `DatabaseObjectResponse` and
+ * `DataSourceObjectResponse` both declare it — so a line reading "no timestamp"
+ * would assert something false about the vendor. What is missing is a method on
+ * OUR port, whose entire surface is three GETs and none of them retrieves a
+ * database. Widening it is #51 and is ask-first, not a thing to do here.
+ *
+ * When that call lands, this branch stops being taken with NO change to this
+ * file: the row reads `Entry.lastEditedTime`, which the new retrieve would
+ * populate exactly as `GET /v1/pages` populates it for a page today.
+ */
+const NO_DATABASE_RETRIEVE = 'last edited: not read (this scan makes no database retrieve)';
+
+/**
+ * The same boundary at full length, printed ONCE beside the rows.
+ *
+ * ⚠ SPLIT IN TWO BECAUSE THE ONE-PIECE VERSION MADE THE SECTION UNREADABLE, and
+ * that was found by rendering it rather than by any assertion. The full sentence
+ * repeated on every row is three clauses of identical text between the reader
+ * and the only thing that varies, which is the count. The short marker keeps the
+ * row self-explanatory — it says what is missing and whose fault it is — and the
+ * detail sits on the measurement, where a cause that is identical for every row
+ * belongs. Splitting it into "row says what, measurement says why" is the same
+ * move the manifest makes with `Loss.cause` and the disclosure block.
+ */
+const NO_DATABASE_RETRIEVE_DETAIL =
+  'last-write timestamps are unread for every row: this scan retrieves pages only (GET /v1/pages/{id}) and makes no database retrieve, so no response carrying a database\'s last_edited_time exists — the boundary is this tool\'s, not the vendor\'s, and it widens under #51';
 
 /**
  * The resources whose own retrieve this scan made.
@@ -203,5 +248,129 @@ export function measurementsFrom(manifest: Manifest): Measurement[] {
         total: null,
       };
 
-  return [lastEdited];
+  return [lastEdited, inboundReferences(manifest)];
+}
+
+/* ------------------------------------------------ inbound references (#144) --
+ *
+ * Per reached database: how many references in the scan's own reference set
+ * point at it, printed BESIDE its last-write timestamp.
+ *
+ * WHY THE TWO TRAVEL TOGETHER AND NEITHER SHIPS ALONE. A database nobody links
+ * to that was edited this morning is in use. One edited fourteen months ago that
+ * nothing points at is the structure the owner is actually looking for. Either
+ * figure on its own reads as noise, and the pair is the signal — which is also
+ * why there is no threshold: the operator reads the rows and draws the
+ * conclusion. A threshold here would be a vendor default with worse provenance
+ * (Beller et al., DOI 10.1109/SANER.2016.105: 80%+ of config files are never
+ * changed after creation, so a number we pick once is a number nobody revisits).
+ * -------------------------------------------------------------------------- */
+
+/**
+ * ⚠ THE UNIT IS THE REFERENCE, AND THE REFERENCE SET IS DEDUPLICATED BY TARGET.
+ * `dedupeReferences` keys internal references on `i|<targetId>`, so fifty links
+ * to one database are ONE reference — #141 settled that deliberately, because
+ * the alternative makes every printed figure move with where an editor pasted a
+ * link rather than with what the workspace contains.
+ *
+ * The honest consequence is that this count is structurally 0 or 1 on today's
+ * build: it answers *is anything in the scanned set pointing here*, not *how
+ * many links exist*. The unit string says so, because a reader who takes `1` for
+ * a link count has been misled by a number that is technically correct. This is
+ * surfaced on the ticket rather than patched here — widening it would mean
+ * changing the reference unit, which is #141's decision and not this one's.
+ */
+const INBOUND_UNIT = 'inbound references from the scanned set';
+
+/**
+ * The deduplication caveat, printed once on the `over` line rather than in the
+ * unit. ADR-0017 rule 1 has the unit travelling with every figure, so a unit
+ * that is a sentence is a sentence printed on every figure — the total rendered
+ * as "1 inbound references from the scanned set (one per referencing target,
+ * deduplicated)" before this was split out.
+ */
+const DEDUPE_CAVEAT =
+  'counted per referencing TARGET, not per link: the reference set is deduplicated by target (#141), so a row reading 1 means at least one link points here and not that exactly one does';
+
+/**
+ * Count the references pointing at each reached database.
+ *
+ * ⛔ SELECTED BY `Entry.kind`, WHICH THE BLOCK LISTING STATED — never by parsing
+ * a drop-out cause. Every reached database in this build is a drop-out carrying
+ * a named cause, and reading "data source" out of that string would be the third
+ * time this repository recovered structure from prose; the first two recoveries
+ * both inverted their answer.
+ *
+ * EXTERNAL REFERENCES CANNOT ENTER THIS COUNT AND THE EXCLUSION IS STRUCTURAL:
+ * `registerReferences` skips `kind === 'external'` before the manifest is
+ * touched, so an external href has no entry to be counted. The filter below
+ * additionally requires a `targetId`, which drops the unrecognised candidates —
+ * they were never classified to a target, so they cannot be evidence that
+ * anything points at this database.
+ */
+function inboundReferences(manifest: Manifest): Measurement {
+  const label = 'Inbound references and last write, per reached database (sorted by inbound count ascending, then by resource ID)';
+
+  const databases = manifest.of(RESOURCES).filter(e => e.kind === 'data-source');
+
+  /* The references that reached a target, indexed by the target they name. */
+  const inbound = new Map<string, number>();
+  for (const e of manifest.all()) {
+    const targetId = e.ref?.targetId;
+    if (!targetId) continue;
+    const key = hyphenate(targetId) ?? targetId;
+    inbound.set(key, (inbound.get(key) ?? 0) + 1);
+  }
+
+  if (databases.length === 0) {
+    return {
+      id: MEASUREMENT_IDS.inboundReferences,
+      label,
+      unit: INBOUND_UNIT,
+      computed: false,
+      /* NOT "no databases exist". The scan reached none, which is a fact about
+       * this scan's declared roots and its grant, and the two readings have
+       * different remedies — widen the roots, or widen the grant. */
+      cause: `no data source was reached by this scan, so there is nothing to count references against (${manifest.of(RESOURCES).length} resource(s) reached, none of kind data-source)`,
+    };
+  }
+
+  const rows: MeasurementRow[] = databases
+    .map(e => {
+      const count = inbound.get(e.key) ?? 0;
+      /* THE SCOPE TRAVELS ON EVERY ROW, not only on the zero. A reader scanning
+       * a column of numbers reads the qualifier once, at most; putting it only
+       * on the zeros would make the scoped phrasing look like a special case
+       * rather than the standing terms of the whole column. */
+      const written = e.lastEditedTime === null
+        ? NO_DATABASE_RETRIEVE
+        : `last edited: ${e.lastEditedTime}`;
+      return {
+        resource: e.safeLabel,
+        value: `${count} ${count === 1 ? 'inbound reference' : 'inbound references'} ${SCANNED_SET}  ·  ${written}`,
+        numeric: count,
+        link: e.link,
+      };
+    })
+    /* Ascending, so the reader's eye lands on the zeros first WITHOUT the report
+     * ranking anything — ADR-0017 rule 6. The resource ID is the tie-break, so
+     * the order is total and two runs over an unchanged workspace cannot differ;
+     * insertion order is traversal order, which is a property of the network. */
+    .sort((a, b) => (a.numeric === b.numeric
+      ? (a.resource < b.resource ? -1 : a.resource > b.resource ? 1 : 0)
+      : (a.numeric ?? 0) - (b.numeric ?? 0)));
+
+  return {
+    id: MEASUREMENT_IDS.inboundReferences,
+    label,
+    unit: INBOUND_UNIT,
+    computed: true,
+    rows,
+    over: `${rows.length} reached data source(s), counted against the ${inbound.size} reference target(s) this scan resolved — ${SCANNED_SET} only, never the workspace: the connection cannot enumerate its own grant (ADR-0002). ${DEDUPE_CAVEAT}. ${NO_DATABASE_RETRIEVE_DETAIL}`,
+    /* THESE ROWS DO SUM, unlike the timestamp measurement's. The total is the
+     * number of inbound references this scan saw landing on any reached
+     * database, and it is COMPUTED from the rows printed beside it, so a
+     * reader's recount cannot disagree with it. */
+    total: rows.reduce((sum, x) => sum + (x.numeric ?? 0), 0),
+  };
 }
