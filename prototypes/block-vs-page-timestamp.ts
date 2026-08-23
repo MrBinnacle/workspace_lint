@@ -33,6 +33,24 @@
  *
  * A run whose rollback fails is an instrument failure under P5 and its page must be
  * removed before anything else runs.
+ *
+ * ── EXIT CODES, and how NOT to score them ──
+ *
+ *   0  scored cleanly, and the subject page was rolled back.
+ *   1  unhandled throw.
+ *   2  the subject could not be created; nothing to roll back.
+ *   3  no result (measurements missing, or an append did not land) — rollback CLEAN.
+ *   4  refused to start: missing token or missing root key. Nothing was called.
+ *   5  ⛔ A SUBJECT PAGE IS STILL LIVE IN THE WORKSPACE. Remove it.
+ *
+ * ⚠ `5` is reached from THREE branches — incomplete measurements, an unlanded append,
+ * and a failed rollback — because its meaning is "there is a page to remove", which is
+ * the same obligation in all three. **So exit 5 alone does NOT tell you which fired,
+ * and a mutation run must not be scored on it.** Read the PREDICTIONS block: P5 REFUTED
+ * with P1/P2/P4 holding is the rollback branch; a run that never printed PREDICTIONS at
+ * all took one of the other two. Verified 2026-08-23 by mutating the rollback field back
+ * to `archived` — P1/P2/P4 held, P5 flipped, exit went 0 -> 5, and the deliberately
+ * orphaned page was removed with trash-page.ts and verified by read-back.
  */
 
 import { Client } from '@notionhq/client';
@@ -121,6 +139,27 @@ const sameId = (a: string, b: string) => hyphenate(a) === hyphenate(b);
 
 type Shot = { page: string | null; block: string | null; blockKeys: string[] };
 
+/** How many children does this block have? Used to PROVE an append landed rather than
+ *  assuming it did. An append that silently no-ops makes P3's precondition fail, and
+ *  that failure is indistinguishable from a finding about the vendor unless it is
+ *  checked here. Returns null if the count could not be taken. */
+async function childCount(blockId: string): Promise<number | null> {
+  try {
+    let n = 0;
+    let cursor: string | undefined;
+    do {
+      const r: any = await notion.blocks.children.list({
+        block_id: blockId, page_size: 100, start_cursor: cursor,
+      });
+      n += (r.results ?? []).length;
+      cursor = r.has_more ? r.next_cursor : undefined;
+    } while (cursor);
+    return n;
+  } catch {
+    return null;
+  }
+}
+
 /** One measurement: the page's own last_edited_time, and the block's, read the two ways. */
 async function measure(pageId: string, label: string): Promise<Shot> {
   let page: string | null = null;
@@ -197,6 +236,8 @@ async function main() {
 
   const shots: Shot[] = [];
   let rolledBack = false;
+  /** Did every append demonstrably land? If not, no prediction may be scored. */
+  let editsLanded = true;
 
   try {
     /* -- 2. measure at rest -------------------------------------------- */
@@ -226,6 +267,12 @@ async function main() {
       say(`waiting ${PRE_EDIT_MS / 1000}s to cross a minute boundary before edit ${n}...`);
       await sleep(PRE_EDIT_MS);
 
+      /* PROVE the edit lands. P3 asks whether a content edit moves the page timestamp;
+       * if the append never happened, the page timestamp correctly does not move and
+       * the run reports a vendor finding that is really a dead call. Run 1 had no such
+       * check and its "page did not move on edit 1" line was consistent with both. */
+      const before = await childCount(pageId);
+
       await notion.blocks.children.append({
         block_id: pageId,
         children: [{
@@ -241,6 +288,12 @@ async function main() {
       say('');
       say(`AFTER CONTENT EDIT ${n} (P3: expect page MOVES, block DOES NOT)`);
       await sleep(SETTLE_MS);
+
+      const after = await childCount(pageId);
+      const landed = before !== null && after !== null && after > before;
+      say(`  edit landed: ${landed} (child blocks ${before} -> ${after})`);
+      if (!landed) editsLanded = false;
+
       shots.push(await measure(pageId, `t${n}`));
     }
   } catch (e: any) {
@@ -278,7 +331,16 @@ async function main() {
   if (!has(t0) || !has(t1) || !has(t2)) {
     say('INCOMPLETE — not all three measurements landed. No prediction is scored.');
     say('Re-run before drawing any conclusion. Rollback status above still applies.');
-    process.exit(3);
+    process.exit(rolledBack ? 3 : 5);
+  }
+
+  /* An unverified edit is an instrument failure, not a finding. Refuse to score
+   * rather than publish a P3 line that a dead append would produce identically. */
+  if (!editsLanded) {
+    say('INSTRUMENT FAILURE — an append did not demonstrably land (child count did not rise).');
+    say('A page timestamp that does not move is EXPECTED when no edit happened, so P3');
+    say('cannot be read here. No prediction is scored. Fix the append and re-run.');
+    process.exit(rolledBack ? 3 : 5);
   }
 
   say(`  t0  page=${t0.page}  block=${t0.block}`);
@@ -295,6 +357,22 @@ async function main() {
   say(`  reading: ${truncated === stamps.length
     ? 'every value is minute-truncated. Sub-minute waits cannot resolve a move.'
     : 'NOT all values are minute-truncated — the run-1 resolution finding does not reproduce.'}`);
+
+  /* Is PRE_EDIT_MS actually big enough? Derive the apparent quantum from the data
+   * instead of trusting the constant. The smallest non-zero gap between observed
+   * values is an UPPER BOUND on the granularity: the real quantum divides it.
+   * If that bound ever exceeds the wait, the wait is too short and the run
+   * reproduces run 1's failure mode — a false nondeterminism verdict. */
+  const ms = stamps.filter(Boolean).map(s => Date.parse(s as string));
+  const gaps = ms.flatMap((a, i) => ms.slice(i + 1).map(b => Math.abs(a - b))).filter(g => g > 0);
+  const quantumBound = gaps.length ? Math.min(...gaps) : null;
+  say(`  smallest non-zero gap  : ${quantumBound === null ? 'none — all values identical' : `${quantumBound / 1000}s`}`);
+  if (quantumBound !== null) {
+    say(`  wait adequacy          : PRE_EDIT_MS=${PRE_EDIT_MS / 1000}s vs quantum bound ${quantumBound / 1000}s — ${
+      PRE_EDIT_MS >= quantumBound ? 'ADEQUATE' : '⛔ TOO SHORT, this run reproduces run 1\'s defect'}`);
+  } else {
+    say('  wait adequacy          : ⛔ UNDETERMINED — nothing moved, so the wait proved nothing.');
+  }
   say('');
 
   const p1 = t0.blockKeys.includes('last_edited_time');
@@ -343,6 +421,19 @@ async function main() {
   say('');
   say('Record the run in docs/proof/results-block-vs-page-timestamp.md.');
   say('Role labels only — no page title, id or URL from the workspace enters that file.');
+
+  /* ⛔ A RUN THAT LEAVES A PAGE IN THE WORKSPACE MUST NOT EXIT 0.
+   * Run 1's rollback failed, printed REMOVE THIS PAGE BY HAND, and then exited 0
+   * anyway — so the orphan was visible only to someone reading the whole log, and
+   * nothing downstream could detect it. P5 is a registered prediction; a refuted
+   * prediction is not a successful run. Exit 5 means: the answer above may be
+   * sound, and there is a page to remove. */
+  if (!rolledBack) {
+    say('');
+    say('⛔ EXIT 5 — the subject page was NOT rolled back and is still live.');
+    say('   Remove it: cd prototypes && npx tsx trash-page.ts <page-id>');
+    process.exit(5);
+  }
 }
 
 main().catch((e: any) => {
