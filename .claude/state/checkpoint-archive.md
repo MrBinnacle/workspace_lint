@@ -5302,3 +5302,194 @@ registration:
   per run 1's two-layer doctrine. The criterion's wording says "a workspace owner recognises";
   a delegated read is a proxy for the owner and the record must say "SME-advised", never imply
   a cold owner read. The layer distinction is the record's honesty, not a routing obligation.
+
+## S042 — 2026-08-23 — the counter surface read as noise, and the flagship counter turned out to be broken rather than bounded
+
+**PHASE:** VERDICT SPRINT — **run 2 is ADJUDICATED. The branch is SURVIVES-NARROW.** PR #159 merged
+(operator, mid-session). Issue #158 filed and then widened. Nothing in the sprint now waits on a read.
+
+**TESTS:** Gate green on `main` at session start and again before the close — 16 suites, exit 0,
+typecheck first. **No `slice/` change this session**; the instrument ran as merged and every finding
+below is about it, not from changing it.
+
+**Model:** run on **Opus 5** by explicit operator override of the S041 close's `NEXT-MODEL: Fable 5`
+line. He asked for the Fable requirement to be proven empirically; it could not be. See the ruling
+below — it is the durable output of that exchange.
+
+### What the read found
+
+Four isolated SME seats — product manager, data analyst, UX/content design, support/CS — each given
+the read protocol verbatim, a closed bin enum and a fixed output block. **Order was counterbalanced,
+two seats A→E and two E→A**, so an order effect would be visible rather than baked in. It did not
+fire. All four returned `status: nominal`.
+
+**Twenty independent bin decisions returned ZERO SIGNAL.** Four roots unanimous NOISE; ROOT-A
+CANT-TELL from three of four seats, reached by three different routes. Density joined
+NOISE-BETWEEN-READER-AND-NUMBERS three of four, the fourth MIXED and splitting the axis rather than
+dissenting.
+
+The mechanism, and it is sharper than "the counters are boring": **on four of five reports the
+numbers could not have come out any other way.** ROOT-D/E resolved zero references of any kind, so
+every inbound row is arithmetically forced to 0 — and is still printed sorted and totalled, in the
+furniture of a distribution. ROOT-B's single row can only be 0 or 1. ROOT-C reached no data source.
+A figure that cannot vary with the state of the workspace is not a measurement of the workspace.
+
+**P7 REFUTED on its first clause.** Second clause held — exactly one CANT-TELL — so the registered
+"defect rate dominates the signal" failure did **not** fire: there is no signal to dominate. Run 2
+closes **five hold, two refuted**, both refutations on the registered embarrassing branch, both at
+full strength.
+
+### ⛔ THE FLAGSHIP COUNTER IS BROKEN, NOT BOUNDED — the session's most consequential finding
+
+`slice/measurement.ts:240` asserts, unqualified, that a child page enumerated from the root's block
+listing has no retrieve *"so no response carrying its `last_edited_time` exists"*, and `:302` renders
+that as the `over` line. **It is false.** `GET /v1/blocks/{block_id}/children` returns block objects,
+a full block object carries `last_edited_time`, a `child_page` is a block object — **and the scan
+already makes that call.** The field arrives on every run and is discarded because `listChildren`
+declares `results: unknown[]` (`slice/notion-port.ts:61`).
+
+**The fix is precedented in the same file for the sibling method.** `notion-port.ts:81-87` widened
+`retrievePage` for exactly this reason (#58, #142), recording the governance ruling with it:
+*"Keeping more of one response is not a new endpoint, so … #51's ASK-FIRST precedent for adding an
+endpoint does not apply here."* **No new endpoint, no new grant, no ask-first — a type widening.**
+
+Two limits ride with it and neither rescues the sentence. **Whether a block's `last_edited_time` is
+the same instant as its page's is UNLOCATABLE** — four vendor pages fetched, all silent; *"Pages are
+also blocks"* is strong indirect support and is not a guarantee, and an edit-and-diff test would
+settle it. **Capturing the field and labelling it the page's edit age are two decisions and only the
+first is licensed today** — shipping the second uncited would be a measurement-validity defect, which
+is worse than the boundary line it replaces. And the partial-vs-full block case is undocumented,
+which bounds the fix.
+
+### The scheduling consequence, which is the useful half
+
+All three `computed: false` causes were re-verified against freshly fetched vendor pages and **all
+three are accurate** — none misattributes a governance gap to the vendor or the reverse. With the
+flagship defect above, **THREE of the uncomputed counters are UNBUILT rather than UNGRANTED**:
+relation/rollup/formula counts need two already-authorized GETs; the view count needs a call whose
+read-content capability is already held; the flagship needs a type widening. **Only people-type
+empty values needs the ask-first POST.** The counter work is far cheaper than the boundary lines made
+it look, and #158 carries that scope with the widened part bannered at the top of the body.
+
+### Two things deliberately NOT done, and the reasons are the point
+
+- **A seat's headline claim was REJECTED at the hub.** The analyst reported the last-edited `over`
+  line "false as written", citing 36/11/76 retrieves against a one-row table. Verified directly: the
+  line is scoped `(unit: resources)` and reference targets sit in the **references** unit — the seat
+  pooled them, which is the hazard this file already documents. **The most compelling seat finding
+  was the one most likely to be a scope-conflation artifact**, because a cross-population comparison
+  produces a dramatic-looking contradiction. Verify the dramatic one first.
+- **A changelog locator was left WRONG on purpose.** A fresh fetch dates the 10,000-cap entry
+  `2026-04-20`, not the `2026-07-08` asserted in **two** surfaces — this file (the `#51` block) and
+  `docs/vendor/WATCH.md`. Not corrected: the verifying fetch covered one changelog page and left the
+  archive unpaged, and "not located in one fetch" is not "does not exist". Correcting on a single
+  negative would be the negation-as-failure this repo gates against. **Both surfaces are named here
+  so a future sweep does not find one and stop.**
+
+### ⭐ OPERATOR RULING — the model-routing rule is UNMEASURED, and he ruled on it
+
+Asked to prove the Fable-5 reservation empirically, the honest answer was that nothing measures it.
+`gate_events.jsonl` has no model field; `retrospection.jsonl` mentions a model once, describing the
+routing change itself; **44 `NEXT-MODEL:` declarations across the 41 archived bands are all
+prospective, and ZERO record an outcome attributable to tier.** The escalation rule has never been
+recorded catching anything. Published vendor material orders the tiers but publishes no head-to-head
+eval.
+⚠ **That count shipped in draft as "31", read off a `head -30`-truncated grep, and was caught inside
+this same close by dereferencing it — the fastest-rotting claim there is, failing exactly as this
+file predicts.** The load-bearing half survived correction unchanged: tier-attributable outcomes = 0.
+Re-derive, never re-quote: `grep -cE '^\*\*NEXT-MODEL|^NEXT-MODEL' .claude/state/checkpoint-archive.md`.
+
+**He overrode to Opus 5 and the session shipped its deliverable.** That is one data point, not a
+refutation. **The routing rule fails this repository's own audit standard** — no mechanism can
+falsify it and its central term is defined so a tier assignment can never be wrong in a checkable
+way. *Revisit if:* a `model` field is added to the close record plus a retrospection line naming any
+later-reversed decision; ~10 sessions then gives a denominator. **Until then say UNMEASURED, not
+"required".**
+
+### EXACT NEXT STEPS
+
+**⚠ Corrected in place after the close shipped — the test named in step 1 is now BUILT. See the
+addendum at the foot of this band for what changed and when.**
+
+0. **RUN THE PROBE FIRST — one command, no arguments, from the repo root:**
+   `cd prototypes && npx tsx block-vs-page-timestamp.ts`
+   It is built, typechecked and **unrun**, on **PR #161** (open at close — merge it first).
+   Pre-registration: `docs/proof/prereg-block-vs-page-timestamp.md`, committed before the probe so
+   the predictions cannot be aimed after the data. It **scores P1–P5 and prints the verdict itself**
+   off a decision table fixed in advance — do not re-derive one.
+   ⛔ **THIS PROBE WRITES** — the first in the repo that does. It creates its own scratch child page
+   under the fixture root, edits it twice, archives it, verifies by read-back; no existing page,
+   block or property is touched. Rollback is in a `finally` and prints the id by hand if it fails.
+   The fixture root's own `last_edited_time` moves and cannot be rolled back — disclosed, accepted,
+   and no other proof reads it. Record the run in `docs/proof/results-block-vs-page-timestamp.md`,
+   role labels only.
+   ⭐ **If P1 comes back REFUTED, STOP** — that refutes the S042 instrument-defect finding itself and
+   reopens both `dispositions-run2.md` and #158's banner. Proceeding past a refuted P1 is the one
+   way this sequence goes badly wrong.
+1. **Then take #158.** Three counters are unbuilt-not-ungranted and the flagship is the cheapest —
+   widen `listChildren`'s declared return type and let the edit-age table render the reached set.
+   **Read the banner at the top of #158's body before the body**; the scope was widened after filing.
+   ⛔ **Capture the field; label it the page's edit age ONLY if step 0 licensed that** — and if it
+   did, the licence is empirical on n=1 with the vendor silent, never a documented guarantee, and
+   every downstream claim must say so and cite the prereg.
+2. **Then the two authorized GETs** — `GET /v1/databases/{id}` (already authorized) →
+   `GET /v1/data_sources/{id}` for the schema's `properties` map, and `GET /v1/views`. Neither needs
+   an operator decision. ⛔ `GET /v1/databases/{id}` no longer returns a property schema on the API
+   version in force; it returns a `data_sources` list. The shipped cause text already says so — do
+   not "simplify" it to one call.
+3. **Render a forced value as forced.** Where a row cannot be non-zero, say so instead of sorting and
+   totalling it. Same family as the quadratic-coverage hazard already in this file: a zero is not an
+   absence.
+4. **Do not re-run the read.** It is adjudicated. Any later claim that the policy-free counters carry
+   the entry point must cite SURVIVES-NARROW against itself, per the pre-registration.
+
+**NEXT-MODEL: Opus 5 at `/effort xhigh`** — #158 is execution against a written scope with the
+governance question already settled in-file, which is Opus-tier by the routing rule's own terms. The
+one genuinely open decision it contains — whether a captured block timestamp may be *labelled* page
+edit age — is a measurement-validity call; **if the empirical test comes back ambiguous, close early
+and take that question to a Fable session rather than deciding it on the wrong tier.**
+
+**NEXT-REPO/CWD:** the `workspace_lint` repository root.
+
+### WHAT ONLY THE OPERATOR CAN DO
+
+Merge the next PR. Volunteer the KILL sentence if he ever wants to — **nobody asks, and
+SURVIVES-NARROW has not foreclosed it.** Close the `.claude/hooks/` + `.claude/settings.json` guard
+hole.
+
+**Skills: DONE this session, not pending.** He approved promotion in-session, so
+`context7-serves-deprecated-api-pages` and `declined-computation-hides-a-discarded-field` are **live**
+in `~/.claude/skills/` (both real directories, neither a symlink into the canonical skills repo),
+each with a `gotchas.md`, and `llm-judge-calibration` is at **1.1.0** with Discipline 8 — the
+categorical/isolated-seat variant where pairwise does not apply and order counterbalancing replaces
+position swap. Quarantine is back to 22. ⚠ **`write-a-skill` is operator-only (`disable-model-invocation`)
+and the Skill tool refuses it**, so §1.5 conventions were applied by hand; if he wants the
+authored-by-the-skill treatment on any of the three, only he can fire it. Grant the ask-first
+POST if people-type empty values are ever worth it. Install `mewt`.
+
+**POST-CLOSE ADDENDUM (S042, after `ba2ebc7` shipped) — the edit-and-diff test that gates #158's
+cheapest item is now BUILT and UNRUN, on PR #161.**
+
+The close named that test as the thing standing between capture and labelling, and left it as work
+for someone else. The operator asked for it staged to standard instead, saying he did not know how
+to run it. So it was built the same session the close shipped: pre-registration first
+(`docs/proof/prereg-block-vs-page-timestamp.md`, P1–P5 plus a five-row decision table fixed before
+any data), then `prototypes/block-vs-page-timestamp.ts`, then one copy-pasteable command.
+
+Design call worth carrying forward: **the probe creates its own subject rather than editing existing
+fixture content.** Same measurement, no risk to content other proofs depend on. It is the first
+writing probe here and it inherits `live-ref001`'s token discipline verbatim.
+
+**Found while wiring it, and not yet fixed:** `prototypes/tsconfig.json` carries a **hand-kept
+`include` list** — the same defect `slice/` fixed under #60 by globbing. The new file typechecked
+clean only because it was not being checked at all; **exit 0 was vacuous until the file was added to
+the list.** It is added and compiles, the list is still hand-kept, and the next probe will hit this
+again. Low stakes — `prototypes/` is not the product tree — but it is the identical shape the gate
+exists to catch, living one directory over from the gate.
+
+~~The close's step 1 said the test was unbuilt and that "nobody has run it".~~ Half of that is now
+wrong: it is built. **It is still unrun**, and the EXACT NEXT STEPS above were corrected in place —
+per the amendment convention, forward-looking surfaces are fixed directly rather than left for the
+next session to reconcile against an addendum it reads second.
+
+No bin, no branch and no adjudication is touched. Run 2 stays adjudicated at SURVIVES-NARROW.
