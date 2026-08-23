@@ -737,113 +737,148 @@ the S040 session before either was archived.
 
 ---
 
+## S042 — 2026-08-23 — the counter surface read as noise, and the flagship counter turned out to be broken rather than bounded
 
+**PHASE:** VERDICT SPRINT — **run 2 is ADJUDICATED. The branch is SURVIVES-NARROW.** PR #159 merged
+(operator, mid-session). Issue #158 filed and then widened. Nothing in the sprint now waits on a read.
 
+**TESTS:** Gate green on `main` at session start and again before the close — 16 suites, exit 0,
+typecheck first. **No `slice/` change this session**; the instrument ran as merged and every finding
+below is about it, not from changing it.
 
-## S041 — 2026-08-22 — run 2 executed under pre-registration; the adjudication now waits on the cold read
+**Model:** run on **Opus 5** by explicit operator override of the S041 close's `NEXT-MODEL: Fable 5`
+line. He asked for the Fable requirement to be proven empirically; it could not be. See the ruling
+below — it is the durable output of that exchange.
 
-**PHASE:** VERDICT SPRINT — the agent half of run 2 is COMPLETE. Pre-registration first, scans
-second, results third, in that commit order. **PR #155 is OPEN and unmerged** (`proof/run2-kill-criterion-read`,
-commits `ad69ab1` prereg → `66b0e34` results); the operator merges, never the agent.
+### What the read found
 
-**TESTS:** Gate green on `main@8d23fe8` at session start — 16 suites, exit 0, typecheck first.
-No slice/ code changed this session; the instrument ran as merged.
+Four isolated SME seats — product manager, data analyst, UX/content design, support/CS — each given
+the read protocol verbatim, a closed bin enum and a fixed output block. **Order was counterbalanced,
+two seats A→E and two E→A**, so an order effect would be visible rather than baked in. It did not
+fire. All four returned `status: nominal`.
 
-**One band claim was falsified at session start and it unblocked rather than blocked:** S040
-carried #145 as "left OPEN on a scope call". It was already CLOSED — AC1 amended exactly as the
-ticket's recommendation proposed, the row half moved to #51's acceptance, the banner at the top
-of the body. Nothing gated run 2.
+**Twenty independent bin decisions returned ZERO SIGNAL.** Four roots unanimous NOISE; ROOT-A
+CANT-TELL from three of four seats, reached by three different routes. Density joined
+NOISE-BETWEEN-READER-AND-NUMBERS three of four, the fourth MIXED and splitting the axis rather than
+dissenting.
 
-### What the run measured (full record: `docs/proof/results-run2-kill-criterion-read.md`)
+The mechanism, and it is sharper than "the counters are boring": **on four of five reports the
+numbers could not have come out any other way.** ROOT-D/E resolved zero references of any kind, so
+every inbound row is arithmetically forced to 0 — and is still printed sorted and totalled, in the
+furniture of a distribution. ROOT-B's single row can only be 0 or 1. ROOT-C reached no data source.
+A figure that cannot vary with the state of the workspace is not a measurement of the workspace.
 
-- **Same-day replication is exact.** Children, databases, exit bytes (3,3,2,3,3) and the request
-  total — **399, identical to run 1** — all reproduce. The counters cost zero requests, by
-  construction. ROOT-C reproduced its exit 2 through the same block-tree budget child (#136 data).
-- **The TARGET-3 repair is visible to the product in three places, untold:** the finding is gone
-  (ROOT-A: 2 REF001 findings, was 3); the replacement mention is a new 39th reference; and its
-  target — a database inside ROOT-A's own child set — is the ONLY nonzero inbound-reference row
-  in the whole run set. **The sting: the repair moved ROOT-A's REF001 coverage DOWN, 97.4% →
-  94.9%**, because the live replacement target is a database this slice cannot enter. That is a
-  price signal for #51 stated by the instrument itself.
-- **The flagship edit-age counter renders exactly one row per report — the declared root.** A
-  policy-free run hydrates nothing and reference targets sit in the references unit, so the
-  retrieved resource set is the root alone, on every root. The `over` line prices it honestly
-  ("1 of 20 reached"), and P5 was REFUTED structurally: no spread exists to measure, anywhere.
-- **Predictions: P1, P2, P3, P4, P6 HOLD; P5 REFUTED (the registered embarrassing branch, at
-  full strength); P7 PENDING the operator's cold read.**
+**P7 REFUTED on its first clause.** Second clause held — exactly one CANT-TELL — so the registered
+"defect rate dominates the signal" failure did **not** fire: there is no signal to dominate. Run 2
+closes **five hold, two refuted**, both refutations on the registered embarrassing branch, both at
+full strength.
 
-### EXACT NEXT STEPS — REWRITTEN BY THE POST-CLOSE ADDENDUM BELOW (operator ruling: the read is delegated to SME seats)
+### ⛔ THE FLAGSHIP COUNTER IS BROKEN, NOT BOUNDED — the session's most consequential finding
 
-1. **Dispatch the SME-seat read.** The five Measurements bins and the density question go to
-   subagent seats playing the roles a full tech product team would assign to a report-readout.
-   Recommended seats, revisable at dispatch: **product manager** (signal vs noise for the
-   owner), **UX / content design** (the density question and report readability), **data
-   analyst** (measurement validity and denominator honesty), **support / customer success**
-   (actionability by a reader who is not the owner). Dispatch discipline is standing:
-   `verbatim-content-subagent-dispatch` — embed the read protocol from
-   `docs/proof/prereg-run2-kill-criterion-read.md` VERBATIM, never by pointer;
-   `parallel-review-disposition-schema` so the seat outputs join; the return channel NAMED
-   (`SendMessage` to `main` plus one scratchpad path). Seats read the machine-local copies
-   `.scratch/r2-ROOT-A-titles.txt` … `r2-ROOT-E-titles.txt`; **their written outputs use role
-   labels only** — no title, ID or URL from the workspace leaves the seat.
-2. **Every seat bin is a DELEGATED bin, final at its own layer, and the record says so.** Run
-   1's SYS001 row set the precedent: "a delegated bin is not a cold-read bin and the distinction
-   is part of the record." `docs/proof/dispositions-run2.md` marks each bin "SME-advised" and
-   names the layer every figure is computed at. **Nothing routes back to the operator and
-   nothing waits on him** — his ruling is that these decisions never reach him; he may override
-   any bin at any time, and an override is appended as its own dated line, never edited in. The
-   protocol deviation — the prereg assigned the read to the operator cold — is declared at the
-   top of that file as an operator-ruled amendment made AFTER registration and BEFORE any read,
-   with this band as its locator.
-3. **The adjudication branch is read off the pre-registered procedure, never re-derived, and
-   resolves between SURVIVES and SURVIVES-NARROW from the seat bins alone.** SURVIVES-NARROW
-   obliges a filed ticket on the counter surface. **KILL is unreachable by delegation exactly as
-   the prereg wrote it: "If he does not volunteer it, it did not happen."** No seat can produce
-   it, no bin arithmetic reaches it, and nobody asks him for it.
-4. Two facts are fixed for that adjudication regardless of bins, from results §3: two of the six
-   countable signals render as boundary text on this build, and a third is structurally 0-or-1.
+`slice/measurement.ts:240` asserts, unqualified, that a child page enumerated from the root's block
+listing has no retrieve *"so no response carrying its `last_edited_time` exists"*, and `:302` renders
+that as the `over` line. **It is false.** `GET /v1/blocks/{block_id}/children` returns block objects,
+a full block object carries `last_edited_time`, a `child_page` is a block object — **and the scan
+already makes that call.** The field arrives on every run and is discarded because `listChildren`
+declares `results: unknown[]` (`slice/notion-port.ts:61`).
 
-**NEXT-MODEL: Fable 5 at `/effort high`** — the next session is seat dispatch plus disposition
-synthesis plus the adjudication read-off, the calcifying-judgement class the routing rule
-reserves for Fable. Seats inherit the session model; none are decision-owners.
+**The fix is precedented in the same file for the sibling method.** `notion-port.ts:81-87` widened
+`retrievePage` for exactly this reason (#58, #142), recording the governance ruling with it:
+*"Keeping more of one response is not a new endpoint, so … #51's ASK-FIRST precedent for adding an
+endpoint does not apply here."* **No new endpoint, no new grant, no ask-first — a type widening.**
+
+Two limits ride with it and neither rescues the sentence. **Whether a block's `last_edited_time` is
+the same instant as its page's is UNLOCATABLE** — four vendor pages fetched, all silent; *"Pages are
+also blocks"* is strong indirect support and is not a guarantee, and an edit-and-diff test would
+settle it. **Capturing the field and labelling it the page's edit age are two decisions and only the
+first is licensed today** — shipping the second uncited would be a measurement-validity defect, which
+is worse than the boundary line it replaces. And the partial-vs-full block case is undocumented,
+which bounds the fix.
+
+### The scheduling consequence, which is the useful half
+
+All three `computed: false` causes were re-verified against freshly fetched vendor pages and **all
+three are accurate** — none misattributes a governance gap to the vendor or the reverse. With the
+flagship defect above, **THREE of the uncomputed counters are UNBUILT rather than UNGRANTED**:
+relation/rollup/formula counts need two already-authorized GETs; the view count needs a call whose
+read-content capability is already held; the flagship needs a type widening. **Only people-type
+empty values needs the ask-first POST.** The counter work is far cheaper than the boundary lines made
+it look, and #158 carries that scope with the widened part bannered at the top of the body.
+
+### Two things deliberately NOT done, and the reasons are the point
+
+- **A seat's headline claim was REJECTED at the hub.** The analyst reported the last-edited `over`
+  line "false as written", citing 36/11/76 retrieves against a one-row table. Verified directly: the
+  line is scoped `(unit: resources)` and reference targets sit in the **references** unit — the seat
+  pooled them, which is the hazard this file already documents. **The most compelling seat finding
+  was the one most likely to be a scope-conflation artifact**, because a cross-population comparison
+  produces a dramatic-looking contradiction. Verify the dramatic one first.
+- **A changelog locator was left WRONG on purpose.** A fresh fetch dates the 10,000-cap entry
+  `2026-04-20`, not the `2026-07-08` asserted in **two** surfaces — this file (the `#51` block) and
+  `docs/vendor/WATCH.md`. Not corrected: the verifying fetch covered one changelog page and left the
+  archive unpaged, and "not located in one fetch" is not "does not exist". Correcting on a single
+  negative would be the negation-as-failure this repo gates against. **Both surfaces are named here
+  so a future sweep does not find one and stop.**
+
+### ⭐ OPERATOR RULING — the model-routing rule is UNMEASURED, and he ruled on it
+
+Asked to prove the Fable-5 reservation empirically, the honest answer was that nothing measures it.
+`gate_events.jsonl` has no model field; `retrospection.jsonl` mentions a model once, describing the
+routing change itself; **44 `NEXT-MODEL:` declarations across the 41 archived bands are all
+prospective, and ZERO record an outcome attributable to tier.** The escalation rule has never been
+recorded catching anything. Published vendor material orders the tiers but publishes no head-to-head
+eval.
+⚠ **That count shipped in draft as "31", read off a `head -30`-truncated grep, and was caught inside
+this same close by dereferencing it — the fastest-rotting claim there is, failing exactly as this
+file predicts.** The load-bearing half survived correction unchanged: tier-attributable outcomes = 0.
+Re-derive, never re-quote: `grep -cE '^\*\*NEXT-MODEL|^NEXT-MODEL' .claude/state/checkpoint-archive.md`.
+
+**He overrode to Opus 5 and the session shipped its deliverable.** That is one data point, not a
+refutation. **The routing rule fails this repository's own audit standard** — no mechanism can
+falsify it and its central term is defined so a tier assignment can never be wrong in a checkable
+way. *Revisit if:* a `model` field is added to the close record plus a retrospection line naming any
+later-reversed decision; ~10 sessions then gives a denominator. **Until then say UNMEASURED, not
+"required".**
+
+### EXACT NEXT STEPS
+
+1. **Take #158.** Three counters are unbuilt-not-ungranted and the flagship is the cheapest — widen
+   `listChildren`'s declared return type and let the edit-age table render the reached set. **Read
+   the banner at the top of #158's body before the body**; the scope was widened after filing.
+   ⛔ **Capture the field; do NOT label it the page's edit age** until the block-vs-page equivalence
+   is settled by an empirical edit-and-diff test on the fixture. That test is cheap and nobody has
+   run it.
+2. **Then the two authorized GETs** — `GET /v1/databases/{id}` (already authorized) →
+   `GET /v1/data_sources/{id}` for the schema's `properties` map, and `GET /v1/views`. Neither needs
+   an operator decision. ⛔ `GET /v1/databases/{id}` no longer returns a property schema on the API
+   version in force; it returns a `data_sources` list. The shipped cause text already says so — do
+   not "simplify" it to one call.
+3. **Render a forced value as forced.** Where a row cannot be non-zero, say so instead of sorting and
+   totalling it. Same family as the quadratic-coverage hazard already in this file: a zero is not an
+   absence.
+4. **Do not re-run the read.** It is adjudicated. Any later claim that the policy-free counters carry
+   the entry point must cite SURVIVES-NARROW against itself, per the pre-registration.
+
+**NEXT-MODEL: Opus 5 at `/effort xhigh`** — #158 is execution against a written scope with the
+governance question already settled in-file, which is Opus-tier by the routing rule's own terms. The
+one genuinely open decision it contains — whether a captured block timestamp may be *labelled* page
+edit age — is a measurement-validity call; **if the empirical test comes back ambiguous, close early
+and take that question to a Fable session rather than deciding it on the wrong tier.**
 
 **NEXT-REPO/CWD:** the `workspace_lint` repository root.
 
 ### WHAT ONLY THE OPERATOR CAN DO
 
-Merge the next session's PR. The KILL sentence, if he ever volunteers it — nobody asks. Close
-the `.claude/hooks/` + `.claude/settings.json` guard hole. `#102`'s fixture backlog. Install
-`mewt` if the hand-run mutation cost is worth removing.
+Merge the next PR. Volunteer the KILL sentence if he ever wants to — **nobody asks, and
+SURVIVES-NARROW has not foreclosed it.** Close the `.claude/hooks/` + `.claude/settings.json` guard
+hole.
 
----
-
-**POST-CLOSE ADDENDUM (S041, after `d1922e2` shipped) — both PRs merged, and the read protocol's
-step 2 is delegated by operator ruling.**
-
-PR #155 (merged 2026-08-23T03:05:48Z) and PR #156 (03:05:57Z) are both on `main`,
-ancestry-verified with `git merge-base --is-ancestor`, never the badge; the two-second
-auto-close window was checked and closed nothing. The band's "PR #155 is OPEN and unmerged"
-lines above stand as dated record.
-
-**Operator ruling, 2026-08-22 (in-session, verbatim intent):** step 2 of the read protocol —
-the five Measurements bins and the density question — is handed next session to "whoever SME(s)
-would manage this on a full tech product team," and **"these are decisions that should never
-make it to me … not because I don't care, but because there's simply a correct answer — this is
-a linter."** That is §0.6's own test applied by the operator to this project's read layer:
-whether a linter's report carries actionable signal is a **determinate practitioner question**,
-not a values fork, and competent practitioners in the named roles converge on it. The S040
-close's framing of the density question as "the operator's felt-surface call" was therefore a
-misclassification of the §0.6 kind — surfaced three times before on the state role, now caught
-on the read layer too. Consequences, recorded here because the prereg cannot be edited after
-registration:
-
-- ~~"The operator reads the five `--show-titles` copies cold — no agent annotation before the
-  read"~~ is amended for the Measurements half: SME seats read and bin, final at their own
-  layer; nothing routes to the operator. The run-1 findings bins are untouched — they were his
-  cold read and they stand.
-- The amendment happened **after registration and before any read**, so no bin was moved after
-  being seen. The deviation is declared in `dispositions-run2.md`, not smoothed over.
-- **P7 is scored against the SME-advised bins, and every published figure names that layer** —
-  per run 1's two-layer doctrine. The criterion's wording says "a workspace owner recognises";
-  a delegated read is a proxy for the owner and the record must say "SME-advised", never imply
-  a cold owner read. The layer distinction is the record's honesty, not a routing obligation.
+**Skills: DONE this session, not pending.** He approved promotion in-session, so
+`context7-serves-deprecated-api-pages` and `declined-computation-hides-a-discarded-field` are **live**
+in `~/.claude/skills/` (both real directories, neither a symlink into the canonical skills repo),
+each with a `gotchas.md`, and `llm-judge-calibration` is at **1.1.0** with Discipline 8 — the
+categorical/isolated-seat variant where pairwise does not apply and order counterbalancing replaces
+position swap. Quarantine is back to 22. ⚠ **`write-a-skill` is operator-only (`disable-model-invocation`)
+and the Skill tool refuses it**, so §1.5 conventions were applied by hand; if he wants the
+authored-by-the-skill treatment on any of the three, only he can fire it. Grant the ask-first
+POST if people-type empty values are ever worth it. Install `mewt`.
