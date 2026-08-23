@@ -5194,3 +5194,111 @@ and the gate all live.
 Decide #145's AC1 amendment. Close the `.claude/hooks/` + `.claude/settings.json` guard hole. Decide
 the Measurements density question when run 2 surfaces it. `#102`'s fixture backlog. Install `mewt` if
 the hand-run mutation cost is worth removing.
+
+## S041 — 2026-08-22 — run 2 executed under pre-registration; the adjudication now waits on the cold read
+
+**PHASE:** VERDICT SPRINT — the agent half of run 2 is COMPLETE. Pre-registration first, scans
+second, results third, in that commit order. **PR #155 is OPEN and unmerged** (`proof/run2-kill-criterion-read`,
+commits `ad69ab1` prereg → `66b0e34` results); the operator merges, never the agent.
+
+**TESTS:** Gate green on `main@8d23fe8` at session start — 16 suites, exit 0, typecheck first.
+No slice/ code changed this session; the instrument ran as merged.
+
+**One band claim was falsified at session start and it unblocked rather than blocked:** S040
+carried #145 as "left OPEN on a scope call". It was already CLOSED — AC1 amended exactly as the
+ticket's recommendation proposed, the row half moved to #51's acceptance, the banner at the top
+of the body. Nothing gated run 2.
+
+### What the run measured (full record: `docs/proof/results-run2-kill-criterion-read.md`)
+
+- **Same-day replication is exact.** Children, databases, exit bytes (3,3,2,3,3) and the request
+  total — **399, identical to run 1** — all reproduce. The counters cost zero requests, by
+  construction. ROOT-C reproduced its exit 2 through the same block-tree budget child (#136 data).
+- **The TARGET-3 repair is visible to the product in three places, untold:** the finding is gone
+  (ROOT-A: 2 REF001 findings, was 3); the replacement mention is a new 39th reference; and its
+  target — a database inside ROOT-A's own child set — is the ONLY nonzero inbound-reference row
+  in the whole run set. **The sting: the repair moved ROOT-A's REF001 coverage DOWN, 97.4% →
+  94.9%**, because the live replacement target is a database this slice cannot enter. That is a
+  price signal for #51 stated by the instrument itself.
+- **The flagship edit-age counter renders exactly one row per report — the declared root.** A
+  policy-free run hydrates nothing and reference targets sit in the references unit, so the
+  retrieved resource set is the root alone, on every root. The `over` line prices it honestly
+  ("1 of 20 reached"), and P5 was REFUTED structurally: no spread exists to measure, anywhere.
+- **Predictions: P1, P2, P3, P4, P6 HOLD; P5 REFUTED (the registered embarrassing branch, at
+  full strength); P7 PENDING the operator's cold read.**
+
+### EXACT NEXT STEPS — REWRITTEN BY THE POST-CLOSE ADDENDUM BELOW (operator ruling: the read is delegated to SME seats)
+
+1. **Dispatch the SME-seat read.** The five Measurements bins and the density question go to
+   subagent seats playing the roles a full tech product team would assign to a report-readout.
+   Recommended seats, revisable at dispatch: **product manager** (signal vs noise for the
+   owner), **UX / content design** (the density question and report readability), **data
+   analyst** (measurement validity and denominator honesty), **support / customer success**
+   (actionability by a reader who is not the owner). Dispatch discipline is standing:
+   `verbatim-content-subagent-dispatch` — embed the read protocol from
+   `docs/proof/prereg-run2-kill-criterion-read.md` VERBATIM, never by pointer;
+   `parallel-review-disposition-schema` so the seat outputs join; the return channel NAMED
+   (`SendMessage` to `main` plus one scratchpad path). Seats read the machine-local copies
+   `.scratch/r2-ROOT-A-titles.txt` … `r2-ROOT-E-titles.txt`; **their written outputs use role
+   labels only** — no title, ID or URL from the workspace leaves the seat.
+2. **Every seat bin is a DELEGATED bin, final at its own layer, and the record says so.** Run
+   1's SYS001 row set the precedent: "a delegated bin is not a cold-read bin and the distinction
+   is part of the record." `docs/proof/dispositions-run2.md` marks each bin "SME-advised" and
+   names the layer every figure is computed at. **Nothing routes back to the operator and
+   nothing waits on him** — his ruling is that these decisions never reach him; he may override
+   any bin at any time, and an override is appended as its own dated line, never edited in. The
+   protocol deviation — the prereg assigned the read to the operator cold — is declared at the
+   top of that file as an operator-ruled amendment made AFTER registration and BEFORE any read,
+   with this band as its locator.
+3. **The adjudication branch is read off the pre-registered procedure, never re-derived, and
+   resolves between SURVIVES and SURVIVES-NARROW from the seat bins alone.** SURVIVES-NARROW
+   obliges a filed ticket on the counter surface. **KILL is unreachable by delegation exactly as
+   the prereg wrote it: "If he does not volunteer it, it did not happen."** No seat can produce
+   it, no bin arithmetic reaches it, and nobody asks him for it.
+4. Two facts are fixed for that adjudication regardless of bins, from results §3: two of the six
+   countable signals render as boundary text on this build, and a third is structurally 0-or-1.
+
+**NEXT-MODEL: Fable 5 at `/effort high`** — the next session is seat dispatch plus disposition
+synthesis plus the adjudication read-off, the calcifying-judgement class the routing rule
+reserves for Fable. Seats inherit the session model; none are decision-owners.
+
+**NEXT-REPO/CWD:** the `workspace_lint` repository root.
+
+### WHAT ONLY THE OPERATOR CAN DO
+
+Merge the next session's PR. The KILL sentence, if he ever volunteers it — nobody asks. Close
+the `.claude/hooks/` + `.claude/settings.json` guard hole. `#102`'s fixture backlog. Install
+`mewt` if the hand-run mutation cost is worth removing.
+
+---
+
+**POST-CLOSE ADDENDUM (S041, after `d1922e2` shipped) — both PRs merged, and the read protocol's
+step 2 is delegated by operator ruling.**
+
+PR #155 (merged 2026-08-23T03:05:48Z) and PR #156 (03:05:57Z) are both on `main`,
+ancestry-verified with `git merge-base --is-ancestor`, never the badge; the two-second
+auto-close window was checked and closed nothing. The band's "PR #155 is OPEN and unmerged"
+lines above stand as dated record.
+
+**Operator ruling, 2026-08-22 (in-session, verbatim intent):** step 2 of the read protocol —
+the five Measurements bins and the density question — is handed next session to "whoever SME(s)
+would manage this on a full tech product team," and **"these are decisions that should never
+make it to me … not because I don't care, but because there's simply a correct answer — this is
+a linter."** That is §0.6's own test applied by the operator to this project's read layer:
+whether a linter's report carries actionable signal is a **determinate practitioner question**,
+not a values fork, and competent practitioners in the named roles converge on it. The S040
+close's framing of the density question as "the operator's felt-surface call" was therefore a
+misclassification of the §0.6 kind — surfaced three times before on the state role, now caught
+on the read layer too. Consequences, recorded here because the prereg cannot be edited after
+registration:
+
+- ~~"The operator reads the five `--show-titles` copies cold — no agent annotation before the
+  read"~~ is amended for the Measurements half: SME seats read and bin, final at their own
+  layer; nothing routes to the operator. The run-1 findings bins are untouched — they were his
+  cold read and they stand.
+- The amendment happened **after registration and before any read**, so no bin was moved after
+  being seen. The deviation is declared in `dispositions-run2.md`, not smoothed over.
+- **P7 is scored against the SME-advised bins, and every published figure names that layer** —
+  per run 1's two-layer doctrine. The criterion's wording says "a workspace owner recognises";
+  a delegated read is a proxy for the owner and the record must say "SME-advised", never imply
+  a cold owner read. The layer distinction is the record's honesty, not a routing obligation.
