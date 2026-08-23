@@ -1,33 +1,32 @@
 # Checkpoint — workspace_lint
 
 **Every earlier band** is archived verbatim at `.claude/state/checkpoint-archive.md`. This file holds
-the standing constraints and the current band only.
+the standing constraints and the current band only. **The incident narrative behind the constraints
+below lives in `.claude/reference/constraint-evidence.md`** — the rule and its check stay here, the
+receipt lives there, and that file is not loaded into a session unless you open it.
 
-⚠ **That sentence carried a band RANGE until 2026-08-18 and the range was wrong for six sessions** —
-it said "S001–S009" while the file held seven bands, then "S001–S020" the moment one more rotated.
-**ADR-0010 forbids a fingerprint containing anything volatile, and a count of bands in the one part
-of this file meant to be stable is exactly that.** The range is gone rather than corrected: the
-archive names its own bands, so this line does not need to.
+⚠ **This pointer carries NO band range and must never be given one.** **ADR-0010 forbids a
+fingerprint containing anything volatile, and a count of bands in the one part of this file meant to
+be stable is exactly that.** It was wrong for six sessions before it was deleted. The archive names
+its own bands.
 
 ## Standing constraints — always current, not session-scoped
 
 ⛔ **BEFORE YOU COMMIT A CLOSE: ROTATE. This file holds ONE band.** Move the previous band verbatim to
 `.claude/state/checkpoint-archive.md` in the same commit that writes the new one, and **hoist anything
 load-bearing out of it first** — the standing block below has claimed to be self-sufficient twice and
-was not, most recently on 2026-08-18 when five claims had to be rescued from bands about to be cut.
+was not.
 
 **This instruction lives here, not in the close skill, because the close skill has no rotation step
 and the rotation was pure model habit for nine sessions before it died at S016 and went unnoticed for
 six more (#73).** It is still model-pull, now from the always-loaded surface rather than from an
-unretrieved skill — which is weaker than a control and stronger than nothing. ~~#73 holds the real
-fix; until it lands this line is the only thing standing between the file and the same curve.~~
-**#73 is CLOSED and no mechanical fix landed** — it closed on the operator's own June Notion
-doctrine, which had already written the general rule: **a state file is never evidence about the
-thing it describes.** That doctrine also settles what this archive is for — G-010, *"Keep a pointer
-or use Trash. Never keep a mirror… Accurate history alone is not a keep verdict; version control,
-source history, and Trash already preserve rollback."* `checkpoint-archive.md` is a mirror of history
-`git log` already holds, and every close writes its band twice because the close commit body IS the
-band. **This line is now the only thing standing between the file and the same curve.**
+unretrieved skill — which is weaker than a control and stronger than nothing. **#73 is CLOSED and no
+mechanical fix landed**, on the doctrine that **a state file is never evidence about the thing it
+describes.** That doctrine also settles what the archive is for — **G-010**, *"Keep a pointer or use
+Trash. Never keep a mirror… Accurate history alone is not a keep verdict; version control, source
+history, and Trash already preserve rollback."* — which `checkpoint-archive.md` violates, because
+every close writes its band twice and the close commit body IS the band. **This line is now the only
+thing standing between the file and the same curve.**
 
 **This block is the authority, and it is complete on its own.** Archived bands each end with a
 "Standing cautions carried forward" paragraph pointing at the band before it. Those paragraphs are
@@ -47,15 +46,12 @@ read this block instead. Nothing here depends on a band still being present.
   2026-08-17. `UNSHARED_PAGE_ID`, `REVOKE_PARENT_ID` and `PAGINATION_PAGE_ID` are confirmed by use.
 - **`REAL_ROOT_ID` holds a REAL root as of 2026-08-22:** `Headquarters`
   (`28a1351d-6af4-818d-a555-de4585036900`, workspace-parent), shared by the operator in the Notion
-  UI and verified by a live retrieve before the `.env` line was updated in place. History: from
-  2026-08-19 to 2026-08-22 it pointed at `wl-outside-grant` (the never-connected contrast page,
-  404s by design) and the note read as *ready and waiting* for many sessions because nobody
-  dereferenced the value. **Q8 and the Q3 re-run are now one declared-root away** — and sprint
-  session B's run 1 is unblocked.
+  UI and verified by a live retrieve before the `.env` line was updated in place. **It pointed at a
+  404-by-design page for three days and read as *ready and waiting* because nobody dereferenced it.**
+  **Q8 and the Q3 re-run are now one declared-root away** — and sprint session B's run 1 is unblocked.
 - **THE GRANT IS NO LONGER FIXTURE-ONLY.** Re-measured 2026-08-22 with the same one-call
   `POST /v1/search` diagnostic: the fixture pages PLUS `Headquarters` and real content beneath it
-  (100+ results, `has_more: true`). The 2026-08-19 finding ("two workspace-level pages plus the 150
-  synthetic rows, nothing else") is superseded by the operator's share.
+  (100+ results, `has_more: true`), superseding the 2026-08-19 fixture-only finding.
   ⚠ *Search as a DIAGNOSTIC does not violate ADR-0014* — that decision governs the product's command
   paths, and search's weakness (unattested, eventually consistent) bears on denominators, not on
   discovery. It is not a licence to put search in the scan.
@@ -79,6 +75,14 @@ read this block instead. Nothing here depends on a band still being present.
 - **Q4 and Q5 are out of reach of any hand-built fixture.**
 
 **Documents.**
+
+⚠ **The supersession entries below are a REVERSE index and therefore a mirror.** Every ADR states its
+own forward relation in a structured `- **Supersedes:**` field, so **this list is re-derivable and
+must be re-derived rather than trusted when it matters**:
+`grep -rn '^- \*\*Supersedes:\*\*' docs/adr/`. It is kept because the forward field answers *what did
+ADR-0011 kill* while a reader usually holds a superseded ADR and asks *is this still good*, which the
+forward field cannot answer without reading all of them. **A mirror has rotted here four times; this
+one has a one-command check and no gate. #103 owns making prose like this annotatable.**
 
 - **ADRs are never edited in place.** A refuted claim standing in ADR-0002, ADR-0003 or ADR-0008 is
   correct, not a bug. **Living docs — `PRODUCT.md`, `CONTEXT.md` — are corrected directly.** That
@@ -132,26 +136,19 @@ read this block instead. Nothing here depends on a band still being present.
   per-run vendor charge, not unlimited**. ⛔ **The enterprise half is NOT asserted** — it needs
   Notion's own pricing page, which has not been read.
 - ⛔ **`CONTEXT.md`'s settled-default and glossary-distinction counts are RE-DERIVED BY COUNTING THE
-  LIST, NEVER RE-QUOTED FROM HERE.** ~~SEVEN settled defaults and SEVEN glossary distinctions~~ —
-  the distinctions count went to **eight** on 2026-08-22 when ADR-0017 added *a measurement is not a
-  finding*, and this line was the only surface that went stale saying so. **The number is deleted
-  rather than corrected**, which is G-010: this was a hand-kept mirror of a figure `CONTEXT.md`
-  states in its own prose two lines above the list it counts. Both counts had already been
-  stale-by-one once before, in the file's own prose, which is how they got mirrored here in the
-  first place. The check is `grep -c '^- \*\*' ` over each section, or reading the list.
+  LIST, NEVER RE-QUOTED FROM HERE.** **The numbers are deleted rather than corrected**, which is
+  G-010: a hand-kept mirror of a figure `CONTEXT.md` states in its own prose two lines above the list
+  it counts. Both had gone stale, here and in `CONTEXT.md` itself. The check is
+  `grep -c '^- \*\*' ` over each section, or reading the list.
 - **ADR-0006 decision 2's search row is superseded by ADR-0007.** Cite ADR-0007's table.
 - **ADR-0005's evidential floor is uneven and the ADR says so.** Decision 5's funnel rests on CONSORT,
   PRISMA and STROBE clauses **fetched but never re-verified**.
 - **A refuted claim is never in one place.** Five times now, and the last was **five surfaces at
-  once** — "the project is pre-build", standing in `CLAUDE.md`, `CONTEXT.md`, `README.md`,
-  `docs/agents/domain.md` and this file after PR #56. **Grep the STATE, not your phrasing.** The S019
-  sweep found two by grepping the words it was replacing (`pre-build`, `no source code`) and missed
-  three that asserted the same state differently — `README.md` named the branch, `domain.md` said
-  "there is no `src/` yet". A `/code-review` pass found all three. Grep branch names, paths, and the
-  negation of the claim you are about to write.
+  once**. **Grep the STATE, not your phrasing** — the sweep that grepped the words it was replacing
+  found two of five. **Grep branch names, paths, and the negation of the claim you are about to
+  write.**
 
-**Four constraints hoisted from the S021 band on 2026-08-18 before it was archived**, because each
-governs a design decision that has not been taken yet and nothing else in this file records them.
+**Design positions not yet taken.** Each governs a decision that is still open.
 
 - ⛔ **Any phrasing containing "no other tool", "first" or "only" about the declared-falsifier idea
   must be dropped.** Di Iorio, Draicchio, Vitali & Zacchiroli, *"Constrained Wiki: The WikiWay to
@@ -170,8 +167,7 @@ governs a design decision that has not been taken yet and nothing else in this f
   whose prose nobody edits because the claim must be re-derived. **Test any design against "does this
   make the prose more expensive to edit", never against "will people delete the claim".**
 
-**Four constraints hoisted from the S022 band on 2026-08-18 before it was archived**, because each
-governs a design decision that has not been taken yet and the code alone does not state why.
+**Config surface.** The code alone does not state why any of these are as they are.
 
 - **`scope` is REQUIRED on a `REQ001` config entry, and the absence of a default IS the decision.**
   A required-property rule with no scope asserts the property over every enumerated resource, which
@@ -185,10 +181,9 @@ governs a design decision that has not been taken yet and the code alone does no
   declaring a `REQ001` entry the CLI rejected at exit 4 — the only worked example in the repository
   was unusable, and nothing in the suite loaded it. `CHECK-config.ts` TEST 8 loads it now.
   Any future example artifact needs a test that executes it, not a reviewer who reads it.
-- ⚠ **Two NUL bytes once appeared inside a template literal in `config.ts`** where spaces were
-  written. The compiler, the tests and the diff were all clean and said nothing; the only signal was
-  `grep` reporting **"Binary file config.ts matches"** and `file` reporting `data`. **In a repository
-  whose method is grepping, a file that reads as binary is a silent loss of the primary instrument.**
+- ⚠ **NUL bytes have twice appeared inside a template literal where spaces were written** — see
+  "Byte-level and rendering hazards" below for the rule and the check. **In a repository whose method
+  is grepping, a file that reads as binary is a silent loss of the primary instrument.**
 
 **Research method.**
 
@@ -209,13 +204,12 @@ governs a design decision that has not been taken yet and the code alone does no
   a duplicate sweep.
 - **WebSearch is exhausted at 200/200 and has been since before the ADR-0013 sweep.** `WebFetch` and
   the Scholar Gateway MCP still work. Scholar Gateway's corpus is **Wiley**.
-- ⚠ **"Not checked" is a verdict, not a first response — work smarter, not harder.** S019 published a
-  sweep with **eight** items marked not-checked because `WebSearch` was gone. **Six were one
-  `WebFetch` away.** `http://export.arxiv.org/api/query?search_query=...` is a public no-key API and
-  reaches the ACM/IEEE-adjacent preprint literature; regulators publish their own guides free
-  (`stuklex.fi` turned a second-hand YVL quote into a first-hand one with a better requirement in it);
-  and every tool documents itself. **Before writing "not checked", name the route not taken.** When
-  nothing works, record the status codes — a 403 and a 402 are evidence, "unavailable" is not.
+- ⚠ **"Not checked" is a verdict, not a first response — work smarter, not harder.** A sweep once
+  published **eight** not-checked items and **six were one `WebFetch` away**.
+  `http://export.arxiv.org/api/query?search_query=...` is a public no-key API reaching the
+  ACM/IEEE-adjacent preprint literature; regulators publish their own guides free; and every tool
+  documents itself. **Before writing "not checked", name the route not taken.** When nothing works,
+  record the status codes — **a 403 and a 402 are evidence, "unavailable" is not.**
   Still genuinely blocked as of 2026-08-18: ISO OBP (403), IAEA (402), eCFR (bot-block redirect),
   nrc.gov (403), everyspec (404), and EIA-649 which has no public text at all.
   **The five-tier source ladder is at `docs/agents/domain.md` → "The source ladder".** Work down it;
@@ -263,49 +257,41 @@ PreToolUse wiring exists only on this machine. **CC Safety Net failed closed onc
 `gh issue create` heredoc** — write the body to the scratchpad and pass `--body-file`. The
 **`guard-canonical-doc-edit.py` (added 2026-08-17) blocks `Edit`/`Write` to `CLAUDE.md`,
 `CONTEXT.md`, `PRODUCT.md`, `docs/adr/**` and `docs/spec/**` unless an approved plan under
-`~/.claude/plans/`, modified within 24h, **names that file**.** **`CLAUDE.md` was added on
-2026-08-17 (S019)** after PR #56 left it asserting "Pre-build: no source code exists yet" to every
-new session — the guard covered the documents an ADR supersedes and left outside the set the one
-every session is bootstrapped from. It is guarded **machine-wide by basename, including
-`~/.claude/CLAUDE.md`**; `/init` writing a new `CLAUDE.md` is blocked until a plan names it.
+`~/.claude/plans/`, modified within 24h, **names that file**.** **`CLAUDE.md` is in the guarded set**
+and is guarded **machine-wide by basename, including `~/.claude/CLAUDE.md`**; `/init` writing a new
+`CLAUDE.md` is blocked until a plan names it.
 ⚠ **The matcher does not distinguish a plan's Files table from its background prose.** A file
-mentioned in passing is authorised. Treat the **Files table** as the authorisation; a quiet hook is
-not approval. `PRODUCT.md` would have passed on that slack in S019 and was filed as **#61** instead. The approved plan's Files table is the authorisation
-token. **There is deliberately no environment-variable escape** — an env var is a blanket unlock the
+mentioned in passing is authorised. **Treat the Files table as the authorisation token; a quiet hook
+is not approval** — the slack was filed as **#61**.
+**There is deliberately no environment-variable escape** — an env var is a blanket unlock the
 model can set for itself, which is the failure the guard exists to stop. The escape is
 `EnterPlanMode` → name the file in the plan → `ExitPlanMode`. **Not guarded, deliberately:**
 `.claude/state/*` (the close ritual writes it after the plan is spent) and `docs/research/` +
 `docs/proof/` (evidence, appended not decided — and gating them would tax the activity that outranks
 an ADR on a question of fact). Suite: `~/.claude/hooks/test_guard_canonical_doc_edit.py`, 32
-assertions **including a mutation check**, plus a 6-case end-to-end run against the wired hook. It
-exists because the §5 plan gate was model-pull and failed on two consecutive sessions. The
+assertions **including a mutation check**, plus a 6-case end-to-end run against the wired hook. **It
+exists because the §5 plan gate was model-pull and failed on two consecutive sessions.** The
 `guard-git-pull-rebase.py` hook **blocks bare `git pull`**; use `git fetch origin <branch>` then
 `git merge --ff-only origin/<branch>`. **`guard-gh-issue-triage-label.py` blocks `gh issue create`
 without a triage-role label**, reading the roles from `docs/agents/triage-labels.md`; escape is
 `TRIAGE_LABEL_ACK=1`. Its wiring is machine-local for the same reason the others' is.
 
-**Two standing risks in the enforcement layer, measured 2026-08-18 and deliberately NOT filed** —
-neither blocks a rule, and the S025 standing rule forbids opening a decision ticket that does not.
+**Two standing risks in the enforcement layer, deliberately NOT filed** — neither blocks a rule.
 
 - ⛔ **The enforcement layer exists on ONE machine and has no backup.** `~/.claude/settings.json` is
   gitignored, so every hook wiring in this project — the canonical-doc guard, the triage-label guard,
   the pull-rebase guard, the skill router — is reproducible nowhere. **§1 designates the hook layer as
   the place a discipline goes when it must survive the loop; that layer does not currently survive a
   disk.** This is the largest structural risk in the tooling and the cheapest to fix.
-- ⚠ **`skill-router.py` has no test suite.** Three of TWELVE hooks are tested — recounted
-  2026-08-19; the count read "nine" for two sessions and `ls ~/.claude/hooks/*.py` is the check
-  (`guard-canonical-doc-edit` 163 lines, `guard-gh-issue-triage-label` 113, `guard-git-pull-rebase`
-  98). The router is the untested one that matters most, because §14 marks
-  `downstream-instruction-framing` MANDATORY and the router is the whole of that enforcement. It was
-  measurably incomplete: on 2026-08-18 the rule matched `\bADR\b` and `execution plan` but **not the
-  bare word "plan"**, so *"write me a plan for issue 18"* fired nothing. Verified against the hook
-  before and after; three patterns were added and five probes confirm no false positive on
-  "plane"/"planner". **A rule that fires only when the operator's phrasing happens to contain a
-  different word is model-pull wearing a hook's clothes** — and a test suite is what would have
-  caught it, not a reading.
+- ⚠ **`skill-router.py` has no test suite.** Three of TWELVE hooks are tested.
+  **`ls ~/.claude/hooks/*.py` is the check, and that count has itself read wrong for two sessions.**
+  The router is the untested one that matters most, because §14 marks
+  `downstream-instruction-framing` MANDATORY and the router is the whole of that enforcement. **It
+  has already been caught firing on some phrasings of a trigger and not others**, and **a rule that
+  fires only when the operator's phrasing happens to contain a different word is model-pull wearing a
+  hook's clothes** — a test suite is what would have caught it, not a reading.
 
-**Six constraints hoisted from the S025 band on 2026-08-18 before it was archived**, plus two
-adopted in S026. Each governs work that is not done, and nothing else in this file records them.
+**The queue, the denominator, and what blocks `#51`.**
 
 - ⭐ **THE STANDING RULE: no new decision ticket opens until four rules ship, unless it blocks a
   rule.** Adopted S025. The queue was growing faster than the build. **It is now countable** — the
@@ -328,14 +314,11 @@ adopted in S026. Each governs work that is not done, and nothing else in this fi
   **THREE** call sites in `CHECK-sys001.ts` — lines 61, 140 and 330 — which sends a reversal to exit
   1 by throwing at TEST 1 before TEST 10's named ruling is reached; a diagnostic line now states the
   cause above the throw.
-  ⚠ **The S025 band said NINE and it was wrong.** Caught by the S026 close's deref step, which is
-  the first time anything dereferenced it. The **mechanism** was right and only the count was
-  invented; a count is the fastest-rotting claim there is because it is quoted and never visited,
-  and each re-quotation reads as corroboration. `grep -o "findingFor([^)]*)!" slice/CHECK-sys001.ts`
-  is the check. *(The same pass flagged `references.ts` line 245 as missing
-  `link_to_page.database_id` — a FALSE alarm: the line reads `b.link_to_page?.database_id` and the
-  grep omitted the optional chaining. The claim held; the check was the defect. Search for
-  `link_to_page` and read the line.)*
+  ⚠ **That count was carried as NINE for a band and was invented.** **A count is the fastest-rotting
+  claim there is, because it is quoted and never visited, and each re-quotation reads as
+  corroboration.** `grep -o "findingFor([^)]*)!" slice/CHECK-sys001.ts` is the check. **Its companion
+  grep raised a FALSE alarm by omitting optional chaining** — search for `link_to_page` and read the
+  line rather than trusting the pattern.
 - ⚠ **`sed -i` and `cat >>` heredocs rewrite a CRLF file to LF**, and the flip lands in the committed
   blob because `core.autocrlf` is `false` and there is no `.gitattributes`. An 80-line append became
   `445 insertions, 338 deletions`. **Use the `Edit` tool on this repo's source files.** When a script
@@ -358,8 +341,7 @@ adopted in S026. Each governs work that is not done, and nothing else in this fi
   surfaces five times. **Absolute-`cd` every verification command and carry a positive control**, so
   an empty result proves the search happened.
 
-**Four constraints hoisted from the S026 band on 2026-08-18 before it was archived**, because each
-is a machine or method fact that nothing else in this file records.
+**Skills, subagents and the machine.**
 
 - ⛔ **`~/.claude/skills/` IS A SYMLINK FARM OVER A VERSION-CONTROLLED REPO.**
   `subagent-research-reliability` resolves to
@@ -388,8 +370,7 @@ is a machine or method fact that nothing else in this file records.
   **One ADDITIVE ADR is still warranted** for the third `findingKind`. Unsettled: whether the
   `review` result also appears in a *configured* run.
 
-**Hoisted from the S031 band and its addendum on 2026-08-19 before rotation, plus what S032 settled.**
-Each governs work that is not done, and nothing else in this file records it.
+**Negation, the vendor corpus, and what the recogniser never gated.**
 
 - ⭐ **A NEGATIVE CLAIM ABOUT NOTION IS NOW GATE-ENFORCED.** *"The API cannot do X"*, derived from
   *"we looked and found no way"*, is **negation as failure** under a closed-world assumption, not a
@@ -452,53 +433,39 @@ The check: `gh issue list --label decision --state open --json number,labels --j
 
 **The gates. Both of them are closed, and nothing gates the build.**
 
-- **Gate 1, the demand test — CLOSED 2026-08-17** on owner research rather than on a five-team send.
-  #40 closed with it. Framing 2, the **policy-free decay report**, is the entry point — renamed from
-  "zero-config decay report" on 2026-08-18, substance unchanged. **It chose an
-  entry point and did not establish a price** — no willingness-to-pay figure exists for any framing.
-- **Gate 2, the 72-hour proof (#10) — CLOSED 2026-08-17** by the operator, on the grounds its own
-  triage comment gave: circular as filed, six of nine checks requiring the build it existed to gate.
-  Its checks are **build-acceptance criteria**, not pre-build gates.
-- **Gate 3, build at n=1: THE TRACER-BULLET SEQUENCE IS COMPLETE.** #42, #43, #44, #45 and #46 are
-  all built and all **CLOSED**. #10's "no source on `main`" constraint is discharged.
-- **Acceptance criterion 1 is CLOSED** (#43's live run, oracle committed before it, now 17
-  comparisons). **Criterion 4 is CLOSED** (#44, on discovery not injection). **Criterion 5 is
-  CLOSED** (#45, two live runs byte-identical at 5987 bytes — and the CONTROL is what closes it:
-  the same two runs *without* `--deterministic` differ, so the claim is about Normalization
-  removing something rather than about a report with nothing volatile in it).
+Gate 1 (demand, #40), Gate 2 (the 72-hour proof, #10) and Gate 3 (build at n=1 — #42 through #46, the
+tracer-bullet sequence) are all CLOSED, as are acceptance criteria 1, 4 and 5. Dates, grounds and the
+controls that closed them: `.claude/reference/constraint-evidence.md` → "The gates, as they closed".
+Three things from them still bind:
+
+- **Gate 1 chose an entry point and did not establish a price** — no willingness-to-pay figure exists
+  for any framing.
+- **#10's checks are build-acceptance criteria, not pre-build gates**, and its "no source on `main`"
+  constraint is discharged.
 - **SOURCE CODE IS ON `main`, in `slice/`, since PR #56 merged 2026-08-17 at 23:39Z** (merge commit
   `b138063`). This supersedes every earlier band's "not on `main`, nothing pushed" line **in
-  `checkpoint-archive.md`**; those stay
-  standing as dated records. **PR #57 was closed unmerged** — `build/t2-sys001` is a strict ancestor
-  of `t3`, so it delivered nothing extra, and merging it first would have restored
-  `prototypes/verdict.ts`, the second exit-byte implementation ADR-0012 decision 1 deleted.
-  A **`private: true`** package named `slice-v0.1`, deliberately **not** `src/`:
-  `src/` asserts *this is the product tree*, and that claim is due the same day **#8** lands.
-  **#8 no longer blocks anything from `main`.** `CONTEXT.md`'s Name constraint now reads "before the
-  first **publishable** `package.json`", which is what the shipped file already asserts about itself.
-  The operative trigger is `private: true` being removed or a tree being renamed `src/`.
+  `checkpoint-archive.md`**; those stay standing as dated records. **PR #57 was closed unmerged, and
+  merging it would have restored a second exit-byte implementation ADR-0012 decision 1 deleted.**
+  A **`private: true`** package named `slice-v0.1`, deliberately **not** `src/`, because `src/`
+  asserts *this is the product tree* and that claim is due the same day **#8** lands. **#8 no longer
+  blocks anything from `main`**, and **the operative trigger is `private: true` being removed or a
+  tree being renamed `src/`.**
   Suite: `cd slice && npm run check` — **ONE command, and it typechecks first**: `npm run typecheck
-  && ` then every registered suite, offline, no network, no token. The FILE COUNT is claim-gated
-  below; the assertion total is not written here at all.
+  && ` then every registered suite, offline, no network, no token. **The FILE COUNT is claim-gated
+  below; the assertion total is not written here at all.**
   ⛔ **THE PER-TERM SUM WAS DELETED ON 2026-08-19 AND MUST NOT BE RESTORED.** It was wrong three
-  times: `693`/ten terms while the gate ran 696 across ten; then `794`/eleven while the gate ran
-  795; the `CHECK-claims.ts` term was stale on both occasions. It is a hand-kept mirror of a number
-  the gate computes on every run and the claim gate cannot check, which is precisely **G-010** —
-  *keep a pointer, never a mirror*. **Re-derive it, never re-quote it:**
+  times. It is a hand-kept mirror of a number the gate computes on every run and the claim gate
+  cannot check, which is precisely **G-010** — *keep a pointer, never a mirror*. **Re-derive it,
+  never re-quote it:**
   `for f in slice/CHECK-*.ts; do npx tsx $f | grep -cE '^(PASS|FAIL)'; done`
-  ⚠ That loop's exclusions are NOT the gate's: it counts `CHECK-harness.ts` and `CHECK-fakes.ts`,
-  which are helpers that assert nothing and print nothing, so they contribute zero and the total is
-  right by accident. The claim comment below excludes them deliberately.
-  <!-- claim: count glob="slice/CHECK-*.ts" exclude="CHECK-harness.ts,CHECK-fakes.ts" equals=15 --> ~~`npm run check` DOES NOT TYPECHECK~~ — **#60 CLOSED**, and the
-  counterfactual is recorded: `main@f42fadd` printed `ALL CHECKS PASS` at **exit 0** over a tree
-  carrying a real `TS2322`. The chain is `&&`, so a type error now stops the gate before any
-  assertion runs. **`tsconfig.json` is a GLOB (`*.ts`), not a
-  hand-kept list** — it was an explicit 26-entry `include` and a new file was silently untypechecked
-  (#55). `CHECK-suite-registration.ts` is the control for both halves and now has FOUR tests: TEST 3
-  covers **which** files the typecheck reads, TEST 4 covers **whether anything runs it**. TEST 4
-  asserts the whole chain — invocation, that `typecheck` runs a real `tsc`, `--noEmit`, the `&&`
-  separator, and the ordering — because asserting invocation alone leaves the control substitutable
-  by `"typecheck": "echo ok"`.
+  ⚠ **That loop's exclusions are NOT the gate's** — it counts `CHECK-harness.ts` and `CHECK-fakes.ts`,
+  helpers that assert nothing, so they contribute zero and **the total is right by accident.**
+  <!-- claim: count glob="slice/CHECK-*.ts" exclude="CHECK-harness.ts,CHECK-fakes.ts" equals=15 -->
+  **#60 CLOSED** — the gate typechecks, the chain is `&&`, and a type error stops it before any
+  assertion runs. **`tsconfig.json` is a GLOB (`*.ts`), not a hand-kept list.**
+  `CHECK-suite-registration.ts` is the control for both halves: **TEST 3 covers WHICH files the
+  typecheck reads, TEST 4 covers WHETHER anything runs it**, and **TEST 4 asserts the whole chain
+  because asserting invocation alone leaves the control substitutable by `"typecheck": "echo ok"`.**
   Live: `npx tsx cli.ts scan --config ../wl.config.json --oracle`,
   after `npx tsx make-fixture-config.ts [ENV_KEY]` writes the gitignored config from `.env` —
   **the key argument is how the live exit-byte table was produced.**
@@ -506,8 +473,7 @@ The check: `gh issue list --label decision --state open --json number,labels --j
   implementation of the exit byte and it is `slice/verdict.ts`. `prototypes/live-ref001.ts` still
   exists and is still the proven `.env`-reading probe, but it **renders no verdict and no exit
   byte** — it exits `0` to mean *the probe completed*, never *the workspace conforms*.
-- **#14 is CLOSED** — finished in `cc16d63` on 2026-08-16, and three checkpoints carried it as the
-  blocker anyway.
+- **#14 is CLOSED**, and three checkpoints carried it as the blocker anyway.
 
 **What still holds about the proof:** the fixture is **narrower than #10 specified** — one data
 source rather than three, no archived target, no seeded `UNQ001`, `SCH001`, `DEP001` or `CAN001`.
@@ -516,10 +482,9 @@ Any recorded build result must state which criteria the fixture could not exerci
 **Three disciplines this cost.** Cite `PRODUCT.md` by **heading** — "Gates, in order", "Kill
 criteria" — never by line number. **Deref a NEXT-STEPS blocker against the artifact before adopting
 it**; `git log -- <file>` is usually enough. And **read an issue's COMMENTS, not only its body** —
-`gh api repos/OWNER/REPO/issues/N/comments`. A merged spec shipped two defects that #10's triage
-comment had already corrected, and `docs/inputs/` was skipped a third time the same session. **The
-artifact was opened and the discussion attached to it was not** — that is one failure shape, and it
-fired twice in one session.
+`gh api repos/OWNER/REPO/issues/N/comments` — because a merged spec shipped two defects #10's triage
+comment had already corrected. **The artifact was opened and the discussion attached to it was not**,
+which is one failure shape, and it fired twice in one session.
 
 **The code, and the four rules it has already paid for.** Added S015, each earned by a defect that
 shipped past a green suite.
@@ -583,8 +548,7 @@ of the close ritual still runs; the ritual line records `verdict=n/a`.
 
 **Operator rulings** are in `store.json` → `operator_rulings` and in project memory.
 
-**Six constraints hoisted from the S029 band on 2026-08-19 before it was archived**, because each
-governs work not yet done and nothing else in this file records them.
+**Auditing a document, and reading a tracker.**
 
 - ⭐ **AN ALWAYS-LOADED DOCUMENT IS NOT AUDITED BY READING IT FOR WRONGNESS — every line reads fine.
   It is audited by asking which lines a MECHANISM can falsify, and treating the rest as a mirror
@@ -600,16 +564,12 @@ governs work not yet done and nothing else in this file records them.
   blocked for four sessions by a dependency it had imposed on itself.
 - ⛔ **Do not inherit completion from a closure.** `#7` closed `COMPLETED` over its own "Blocked on
   (1)" comment; `#70` closed over a body naming three live decisions.
-  ⭐ **THE OBSERVATION WAS RIGHT AND THE CAUSE WAS WRONG, established 2026-08-19.** Neither was
-  closed by a person. **GitHub's parser closed both**, reading `<keyword> #<number>` out of narrative
-  prose in a merged state-file commit body — `resolved #70` in `71d26ed`, from the true sentence
-  *"Five isolated SME seats resolved #70 decision 1"*. **Four issues went this way: #7, #10, #70,
-  #73**, each one to two seconds after a merge, each `COMPLETED`, each credited to the merger.
-  ⛔ **`actor` CANNOT TELL YOU WHICH IT WAS.** Every actor here is `MrBinnacle` — the operator's
-  account, the identity `gh` writes as, and the merger. Reading it as "the operator decided" put a
-  non-question on the operator-only list for three sessions. **The tell is the lag: compare
-  `closedAt` against the merge times in the same minute.** Full doctrine and the pre-merge grep are
-  in `docs/agents/issue-tracker.md` → "A commit body can close an issue by accident".
+  ⭐ **GitHub's parser closed four issues — #7, #10, #70 and #73** — reading `<keyword> #<number>`
+  out of narrative prose in a merged state-file commit body. ⛔ **`actor` CANNOT TELL YOU WHICH IT
+  WAS**, because every actor here is `MrBinnacle`: the operator's account, the identity `gh` writes
+  as, and the merger. **The tell is the lag: compare `closedAt` against the merge times in the same
+  minute.** Full doctrine and the pre-merge grep are in `docs/agents/issue-tracker.md` → "A commit
+  body can close an issue by accident".
 - **A subagent's quotation is a claim about a file, and is checked by opening the file.**
 - ⚠ **A label read taken immediately after a label write can be stale.** GitHub's label index lags;
   a post-write count that looks like a failure should be re-read before it is recorded as one.
@@ -620,14 +580,13 @@ are in `docs/agents/triage-labels.md`. ⛔ **It was surfaced as the operator's v
 times and was never one** — §0.6's test was never run on it, and a label named `needs-triage` on an
 evaluated issue is simply false. The defect was an under-specified document, not an undecided call.
 
-**Four constraints adopted in S030, 2026-08-19.**
+**Byte-level and rendering hazards.**
 
-- ⛔ **THE WRITE TOOL CAN EMIT A NUL BYTE.** `slice/unq001.ts` was authored whole by `Write` and
-  shipped one NUL inside a template literal where a space was written — the identical shape to
-  `config.ts` one day earlier, so this is not a property of `sed`, heredocs or python round-trips.
-  A clean typecheck, twelve green suites and a mutation run all stayed silent. **Check every file
-  you WROTE, not only the ones you rewrote, before committing.** `file <path>` reporting `data` is
-  the cheap tell.
+- ⛔ **THE WRITE TOOL CAN EMIT A NUL BYTE.** Twice now — `config.ts` and `slice/unq001.ts`, one day
+  apart, both inside a template literal where a space was written — **so this is not a property of
+  `sed`, heredocs or python round-trips.** A clean typecheck, twelve green suites and a mutation run
+  all stayed silent; the tells are `grep` reporting **"Binary file … matches"** and `file <path>`
+  reporting `data`. **Check every file you WROTE, not only the ones you rewrote, before committing.**
 - ⛔ **A GUARD KEYED ON AN ENTRY COUNT IS AMBIGUOUS WHEN THE COVERAGE ITEM IS QUADRATIC.** `C(1,2)`
   is zero, so a one-member uniqueness scope that was hydrated and correctly compared is
   indistinguishable, by count, from a stage that never ran. `declareScopesNeverEnumerated` guards on
@@ -645,8 +604,7 @@ evaluated issue is simply false. The defect was an under-specified document, not
   abutted its unit. Third instance of the shape in this repo, after `heading.length + 20` in
   `CHECK-harness.ts`. **Found by the live run and by no assertion.**
 
-**Three constraints hoisted from the S027 band on 2026-08-19 before it was archived**, because each
-is a standing fact and nothing else in this file records it.
+**Merging, fixtures and the quarantine.**
 
 - ⛔ **THE OPERATOR MERGES EVERY PR. `gh pr merge` IS DENIED TO THE AGENT** by the auto-mode
   classifier. Both of S027's PRs and S028's were merged by the operator. This is a standing
@@ -669,8 +627,7 @@ is a standing fact and nothing else in this file records it.
   directory holds 22 entries, not four** — the rest come from other projects. Do not read the
   quarantine as this project's queue.
 
-**Two constraints hoisted from the S030 band on 2026-08-19 before it was archived**, because each
-governs how a result may be described and nothing else in this file records them.
+**How a result may be described.**
 
 - ⛔ **SAY THE v0.1 CATALOG IS BUILT, NEVER THAT IT IS PROVEN.** All four rules ship. `UNQ001`'s and
   `REQ001`'s conformity-violation paths have **never run against the live API** — every readable
@@ -684,33 +641,27 @@ governs how a result may be described and nothing else in this file records them
   goes stale exactly as the last one did. *Revisit if:* a future rule is catalogued but unbuilt
   **and** `unimplementedRules` turns out not to cover it.
 
-**Three constraints adopted in S031, 2026-08-19.** All three are about verification that reports
-success, which is this project's oldest failure shape.
+**Verification that reports success — this project's oldest failure shape.**
 
-- ⛔ **A SWEEP THAT STOPS AT THE FIRST HIT PRODUCES A CONFIDENT FALSE CORRECTION.** S031 grepped for
-  a fallback string, found `'(unknown block)'` in `references.ts`, and filed a public correction
-  saying #100's brief had invented `'(unrecorded block)'`. Both strings existed — `scan.ts` wrote the
-  second, for a different condition — and the brief was accurate. **This is "a refuted claim is never
-  in one place" running in reverse**, and it is worse than the forward version: a missed surface is a
-  silent gap, while a first-hit sweep produces a correction that reads as thorough. **Count the hits
-  before writing the verdict.** Both strings now name their own cause and `CHECK-report.ts` asserts
-  they are distinguishable, which is the assertion whose absence let a brief and a grep disagree.
-- ⛔ **AN ASSERTION WHOSE SUBJECT CAN GO EMPTY IS SUBSTITUTABLE.** `x.includes('')` is TRUE for every
-  `x`. `CHECK-report.ts` asserted `rendered.includes(SOURCE_NOT_APPLICABLE)`, so blanking that
-  constant left the check green while the report printed a bare label and nothing after it. The
-  mutation was run and this suite passed it; the catch came from a **literal regex in a different
-  file**, by accident of how that one was written. **Guard the subject's emptiness first, then assert
-  a literal that does not read the constant.** Same family as the `reportSection` → `''` hazard
-  `requiredSection` exists for.
-- ⛔ **VERIFY A MUTATION ACTUALLY SUBSTITUTED BEFORE SCORING THE RUN.** One of S031's six mutations
-  used a mis-escaped search string, matched nothing, and the gate stayed at exit 0. **An unapplied
-  mutation is indistinguishable from dead code, and both look like a green gate.** Print the
-  substitution count, or grep for the mutated text, before believing the exit byte. This extends the
-  standing rule that a green mutation names dead code: it may instead name a mutation that never
-  happened.
+- ⛔ **A SWEEP THAT STOPS AT THE FIRST HIT PRODUCES A CONFIDENT FALSE CORRECTION.** **This is "a
+  refuted claim is never in one place" running in reverse**, and it is worse than the forward
+  version: a missed surface is a silent gap, while **a first-hit sweep produces a correction that
+  reads as thorough**. **Count the hits before writing the verdict.**
+- ⛔ **AN ASSERTION THAT CANNOT FAIL PASSES AS LOUDLY AS A REAL ONE. Three instances here, one
+  family.** `x.includes('')` is TRUE for every `x`, so blanking the constant left `CHECK-report.ts`
+  green over a bare label; `rendered.includes(BLANKED)` the same way; and a disjunct
+  `|| /link:/.test(term)` was a tautology because the findings section prints `link:` four lines up.
+  **A disjunction whose second term is a tautology asserts nothing about the first.** **Guard the
+  subject's emptiness first, then assert a literal that does not read the constant.** Same family as
+  the `reportSection` → `''` hazard `requiredSection` exists for.
+- ⛔ **VERIFY A MUTATION ACTUALLY SUBSTITUTED BEFORE SCORING THE RUN**, and **score it on the exit
+  code** — a crashed suite prints no `FAIL`. A mis-escaped search string once matched nothing and the
+  gate stayed at exit 0. **An unapplied mutation is indistinguishable from dead code, and both look
+  like a green gate.** Print the substitution count, or grep for the mutated text, before believing
+  the exit byte. **This extends the standing rule that a green mutation names dead code: it may
+  instead name a mutation that never happened.**
 
-**Five constraints hoisted from the S037 band on 2026-08-22 before it was archived, plus what S038
-measured.** Each governs work that is not done, and nothing else in this file records it.
+**Measurements, and what `#143`/`#145` can actually compute.**
 
 - ⛔ **`#101` IS FROZEN AND ADR-0017 DID NOT PRE-DECIDE IT.** The `undeclared-invariant` tier is a
   tier **of a rule** and therefore has a rule-level channel to the exit byte; a Measurement owns no
@@ -738,14 +689,12 @@ measured.** Each governs work that is not done, and nothing else in this file re
   called "Owner" infers meaning from a label, which Principle 4 forbids. The property's own name
   prints as data beside the count.
 
-⭐ **THE n=1 PROBLEM IS DISTRIBUTION, NOT ACCESS. Established S031 on the operator's reframing.**
-The repository has read n=1 as an evidence problem to be solved by someone granting access. It is the
-other way round: **nobody grants access to a tool with nothing to show.** The operator stated it
-directly — *"it could be more than n=1 if we had results worth pitching to someone"* and *"why would
-I declare my intent as far as end users/customers when we don't have something worth selling
-ANYONE."* Both are right, and the second one refuses the request `#29` has been making for four
-sessions. **Do not schedule a buyer conversation, a segment declaration or a pricing question ahead
-of a measured rate.** `#117` owns the upstream half and names the three routes in cost order.
+⭐ **THE n=1 PROBLEM IS DISTRIBUTION, NOT ACCESS.** The repository has read n=1 as an evidence problem
+to be solved by someone granting access. It is the other way round: **nobody grants access to a tool
+with nothing to show** — the operator's own reframing, which refuses the request `#29` has been
+making for four sessions. **Do not schedule a buyer conversation, a segment declaration or a pricing
+question ahead of a measured rate.** `#117` owns the upstream half and names the three routes in cost
+order.
 
 ---
 
